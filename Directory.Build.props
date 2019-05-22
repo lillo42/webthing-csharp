@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <NCamelAppTargetFrameworks Condition="$(NhAppTargetFrameworks) == ''">netcoreapp2.1</NCamelAppTargetFrameworks>
+    <NCamelLibTargetFrameworks Condition="$(NhLibTargetFrameworks) == ''">netstandard2.0</NCamelLibTargetFrameworks>
+
+    <Product>NCamel</Product>
+    <Company>NHibernate.info</Company>
+    <Copyright>Licensed under LGPL.</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+
+    <PackageProjectUrl>https://github.com/lillo42/webthing-csharp</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>LGPL-2.1-only</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>
