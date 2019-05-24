@@ -91,6 +91,78 @@ namespace WebThing
         }
 
 
+        public JObject AsThingDescription()
+        {
+            var actions = new JObject();
+            
+            _availableActions.ForEach(action =>
+            {
+                var link = new JObject(
+                    new JProperty("rel", "action"),
+                    new JProperty("href", $"{HrefPrefix}/actions/{action.Key}"));
+
+                JObject metadata = action.Value.Metadata;
+                metadata .Add("links", new JArray(link));
+                actions.Add(action.Key, metadata);
+            });
+            
+            var events = new JObject();
+            
+            _availableEvents.ForEach(@event =>
+            {
+                var link = new JObject(
+                    new JProperty("rel", "event"),
+                    new JProperty("href", $"{HrefPrefix}/actions/{@event.Key}"));
+                
+                JObject metadata = @event.Value.Metadata;
+                metadata.Add("links", new JArray(link));
+                @events.Add(@event.Key, metadata );
+            });
+            
+            var obj = new JObject(
+                new JProperty("name", Name),
+                new JProperty("href", HrefPrefix),
+                new JProperty("@context", Context),
+                new JProperty("@type", Type),
+                new JProperty("properties", GetPropertyDescriptions()),
+                new JProperty("actions", actions),
+                new JProperty("events", events));
+
+            if (Description != null)
+            {
+                obj.Add("description", Description);
+            }
+            
+            var propertiesLink = new JObject(
+                new JProperty("rel", "properties"),
+                new JProperty("href", $"{HrefPrefix}/properties"));
+
+            var actionsLink = new JObject(
+                new JProperty("rel", "actions"),
+                new JProperty("href", $"{HrefPrefix}/actions"));
+            
+            var eventsLink = new JObject(
+                new JProperty("rel", "events"),
+                new JProperty("href", $"{HrefPrefix}/events"));
+            
+            var links = new JArray(propertiesLink, actionsLink, events);
+
+            if (UiHref != null)
+            {
+                var uiLink = new JObject(
+                    new JProperty("rel", "alternate"),
+                    new JProperty("mediaType", "text/html"),
+                    new JProperty("href", UiHref));
+                
+                links.Add(uiLink);
+            }
+            
+            obj.Add("links", links);
+
+            return obj;
+        }
+
+
         #region Property
 
         /// <summary>

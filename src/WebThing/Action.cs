@@ -73,7 +73,7 @@ namespace WebThing
             Id = id;
             Thing = thing;
             Name = name;
-            Input = input ?? new JObject();
+            Input = input;
             HrefPrefix = string.Empty;
             Href = $"/action/{name}/{id}";
             TimeRequested = DateTime.UtcNow;
