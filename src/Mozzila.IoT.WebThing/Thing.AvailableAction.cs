@@ -4,7 +4,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 
-namespace WebThing
+namespace Mozzila.IoT.WebThing
 {
     public partial class Thing
     {

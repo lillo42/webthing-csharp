@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace WebThing
+namespace Mozzila.IoT.WebThing
 {
     public partial class Thing
     {

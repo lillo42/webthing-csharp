@@ -1,3 +1,4 @@
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -5,10 +6,10 @@ using Microsoft.Extensions.Logging;
 
 namespace WebThing.AspNetCore.Extensions.Middlewares
 {
-    public class GetActionIdMiddleware : AbstractThingMiddleware
+    public class DeleteActionByIdMiddleware : AbstractThingMiddleware
     {
-        public GetActionIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
-            : base(next, loggerFactory.CreateLogger<GetActionIdMiddleware>(), thingType)
+        public DeleteActionByIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType)
+            : base(next, loggerFactory.CreateLogger<DeleteActionByIdMiddleware>(), thingType)
         {
         }
 
@@ -25,21 +26,20 @@ namespace WebThing.AspNetCore.Extensions.Middlewares
             string name = GetActionName(httpContext);
             string id = GetActionId(httpContext);
 
-            Action action = thing.GetAction(name, id);
-
-            if (action == null)
+            if (thing.RemoveAction(name, id))
+            {
+                httpContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
+            }
+            else
             {
                 await NotFoundAsync(httpContext);
-                return;
             }
-
-            await OkAsync(httpContext, action.AsActionDescription());
         }
 
-        private static string GetActionName(HttpContext httpContext) 
+        private static string GetActionName(HttpContext httpContext)
             => httpContext.GetRouteData().Values["actionName"].ToString();
-        
-        private static string GetActionId(HttpContext httpContext) 
+
+        private static string GetActionId(HttpContext httpContext)
             => httpContext.GetRouteData().Values["actionId"].ToString();
     }
 }

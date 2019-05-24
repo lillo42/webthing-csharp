@@ -1,4 +1,4 @@
-namespace WebThing
+namespace Mozzila.IoT.WebThing
 {
     public enum Status
     {

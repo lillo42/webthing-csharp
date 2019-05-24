@@ -1,12 +1,12 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Mozzila.IoT.WebThing.Annotations;
+using Mozzila.IoT.WebThing.Exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using WebThing.Annotations;
-using WebThing.Exceptions;
 
-namespace WebThing
+namespace Mozzila.IoT.WebThing
 {
     /// <summary>
     /// A Property represents an individual state value of a thing.

@@ -1,8 +1,8 @@
 using System;
 using System.Runtime.Serialization;
-using WebThing.Annotations;
+using Mozzila.IoT.WebThing.Annotations;
 
-namespace WebThing.Exceptions
+namespace Mozzila.IoT.WebThing.Exceptions
 {
     [Serializable]
     public class PropertyException : Exception

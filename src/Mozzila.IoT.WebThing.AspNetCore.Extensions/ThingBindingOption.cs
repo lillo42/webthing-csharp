@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using WebThing;
+using Mozzila.IoT.WebThing;
 
 namespace Microsoft.AspNetCore.Builder
 {

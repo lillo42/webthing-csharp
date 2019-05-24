@@ -5,10 +5,10 @@ using Microsoft.Extensions.Logging;
 
 namespace WebThing.AspNetCore.Extensions.Middlewares
 {
-    public class GetActionIdMiddleware : AbstractThingMiddleware
+    public class GetActionByIdMiddleware : AbstractThingMiddleware
     {
-        public GetActionIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
-            : base(next, loggerFactory.CreateLogger<GetActionIdMiddleware>(), thingType)
+        public GetActionByIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
+            : base(next, loggerFactory.CreateLogger<GetActionByIdMiddleware>(), thingType)
         {
         }
 
@@ -36,10 +36,24 @@ namespace WebThing.AspNetCore.Extensions.Middlewares
             await OkAsync(httpContext, action.AsActionDescription());
         }
 
-        private static string GetActionName(HttpContext httpContext) 
-            => httpContext.GetRouteData().Values["actionName"].ToString();
-        
+        private static string GetActionName(HttpContext httpContext)
+        {
+            if (httpContext.GetRouteData().Values.TryGetValue("actionName", out object data))
+            {
+                return data.ToString();
+            }
+            
+            return null;
+        }
+
         private static string GetActionId(HttpContext httpContext) 
-            => httpContext.GetRouteData().Values["actionId"].ToString();
+        {
+            if (httpContext.GetRouteData().Values.TryGetValue("actionId", out object data))
+            {
+                return data.ToString();
+            }
+            
+            return null;
+        }
     }
 }

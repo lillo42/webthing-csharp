@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace WebThing
+namespace Mozzila.IoT.WebThing
 {
     /// <summary>
     /// An Event represents an individual event from a thing.

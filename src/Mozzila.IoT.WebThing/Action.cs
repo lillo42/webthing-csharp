@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
-namespace WebThing
+namespace Mozzila.IoT.WebThing
 {
     /// <summary>
     /// An Action represents an individual action on a thing.

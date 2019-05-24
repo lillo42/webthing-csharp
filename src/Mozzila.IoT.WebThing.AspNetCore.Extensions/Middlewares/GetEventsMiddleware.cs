@@ -1,14 +1,14 @@
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace WebThing.AspNetCore.Extensions.Middlewares
 {
-    public class GetPropertiesThingMiddleware : AbstractThingMiddleware
+    public class GetEventsMiddleware : AbstractThingMiddleware
     {
-        public GetPropertiesThingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
-            : base(next, loggerFactory.CreateLogger<GetPropertiesThingMiddleware>(), thingType)
+        public GetEventsMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
+            : base(next, loggerFactory.CreateLogger<GetEventsMiddleware>(), thingType)
         {
         }
 
@@ -21,8 +21,8 @@ namespace WebThing.AspNetCore.Extensions.Middlewares
                 await NotFoundAsync(httpContext);
                 return;
             }
-
-            await OkAsync(httpContext, thing.GetPropertyDescriptions());
+            
+            await OkAsync(httpContext, thing.GetEventDescriptions().ToString());
         }
     }
 }

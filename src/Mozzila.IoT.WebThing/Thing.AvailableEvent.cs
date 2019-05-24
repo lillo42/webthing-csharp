@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using Newtonsoft.Json.Linq;
 
-namespace WebThing
+namespace Mozzila.IoT.WebThing
 {
     public partial class Thing
     {
