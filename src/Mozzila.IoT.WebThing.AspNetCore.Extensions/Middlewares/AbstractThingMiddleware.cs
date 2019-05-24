@@ -1,10 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Mozzila.IoT.WebThing;
 using Newtonsoft.Json.Linq;
 
 namespace WebThing.AspNetCore.Extensions.Middlewares

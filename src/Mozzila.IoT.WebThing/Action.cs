@@ -104,17 +104,27 @@ namespace Mozzila.IoT.WebThing
             return new JObject(new JProperty(Name, inner));
         }
 
+        /// <summary>
+        /// Start performing the action
+        /// </summary>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public async Task StartAsync(CancellationToken cancellation)
         {
             Status = Status.Pending;
             await PerformActionAsync(cancellation)
                 .ConfigureAwait(false);
+            
+            Finish();
         }
 
         protected virtual Task PerformActionAsync(CancellationToken cancellation) 
             => Task.CompletedTask;
 
 
+        /// <summary>
+        /// Finish performing the action.
+        /// </summary>
         public void Finish()
         {
             Status = Status.Completed;

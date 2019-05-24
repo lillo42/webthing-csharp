@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Mozzila.IoT.WebThing;
 
 namespace WebThing.AspNetCore.Extensions.Middlewares
 {

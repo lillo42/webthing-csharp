@@ -363,7 +363,7 @@ namespace Mozzila.IoT.WebThing
             try
             {
                 Type type = availableAction.Type;
-                Action action = (Action)Activator.CreateInstance(availableAction.Type, new object[] {this, input});
+                Action action = (Action)Activator.CreateInstance(availableAction.Type, this, input);
 
                 action.HrefPrefix = HrefPrefix;
                 await ActionNotifyAsync(action, cancellation);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Mozzila.IoT.WebThing;
 
 namespace WebThing.AspNetCore.Extensions
 {

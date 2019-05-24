@@ -1,9 +1,8 @@
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Routing;
 using Mozzila.IoT.WebThing;
-using Mozzila.IoT.WebThing.AspNetCore.Extensions;
-using Mozzila.IoT.WebThing.AspNetCore.Extensions.Middlewares;
+using WebThing.AspNetCore.Extensions;
+using WebThing.AspNetCore.Extensions.Middlewares;
 
 namespace Microsoft.AspNetCore.Builder
 {

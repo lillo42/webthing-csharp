@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Mozzila.IoT.WebThing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
@@ -53,7 +53,7 @@ namespace WebThing.AspNetCore.Extensions.Middlewares
             
             if (json.TryGetValue(name, out JToken token))
             {
-                Action action = await thing.PerformActionAsync(name, (JObject)token["input"], httpContext.RequestAborted);
+                var action = await thing.PerformActionAsync(name, (JObject)token["input"], httpContext.RequestAborted);
                 
                 if (action != null)
                 {
