@@ -14,7 +14,6 @@ namespace WebThing
         private const string DEFAULT_CONTEXT = "https://iot.mozilla.org/schemas";
         private const string DEFAULT_HREF_PREFIX = "/";
 
-        private readonly JArray _type;
         private readonly IDictionary<string, Property> _properties = new Dictionary<string, Property>();
 
         private readonly IDictionary<string, AvailableAction> _availableActions =
@@ -30,12 +29,36 @@ namespace WebThing
 
         private readonly ISet<WebSocket> _subscribers = new HashSet<WebSocket>();
 
-
+        /// <summary>
+        /// The type context of the thing.
+        /// </summary>
         public string Context { get; }
+        
+        /// <summary>
+        /// The name of the thing.
+        /// </summary>
         public string Name { get; }
+        
+        /// <summary>
+        /// The description of the thing.
+        /// </summary>
         public string Description { get; }
+        
+        /// <summary>
+        /// The type(s) of the thing.
+        /// </summary>
+        public JArray Type { get; }
+        
+        /// <summary>
+        /// The href of this thing's custom UI.
+        /// </summary>
+        public string UiHref { get; set; }
+        
         private string _hrefPrefix;
 
+        /// <summary>
+        /// This thing's href.
+        /// </summary>
         public string HrefPrefix
         {
             get => string.IsNullOrEmpty(_hrefPrefix) ? DEFAULT_HREF_PREFIX : _hrefPrefix;
@@ -47,7 +70,7 @@ namespace WebThing
             }
         }
 
-        public string UiHref { get; set; }
+        
 
         public Thing(string name)
             : this(name, null)
@@ -63,7 +86,7 @@ namespace WebThing
         {
             Name = name;
             Context = DEFAULT_CONTEXT;
-            _type = type;
+            Type = type;
             Description = description;
             HrefPrefix = string.Empty;
             UiHref = null;
