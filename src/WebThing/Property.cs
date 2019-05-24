@@ -20,8 +20,14 @@ namespace WebThing
             set => base.Value = value;
         }
 
+        public Property(Thing thing, string name, T value)
+        : base(thing, name, value)
+        {
+        }
+        
+        
         public Property(Thing thing, string name, T value, JObject metadata = null)
-        : base(thing, name, value, metadata)
+            : base(thing, name, value, metadata)
         {
         }
     }
@@ -75,8 +81,14 @@ namespace WebThing
         }
         
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public Property(Thing thing, string name, object value)
+            : this(thing, name, value, null)
+        {
+            
+        }
         
-        public Property(Thing thing, string name, object value, JObject metadata = null)
+        public Property(Thing thing, string name, object value, JObject metadata)
         {
             Thing = thing;
             Name = name;

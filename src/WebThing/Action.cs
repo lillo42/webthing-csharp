@@ -8,7 +8,7 @@ namespace WebThing
     /// <summary>
     /// An Action represents an individual action on a thing.
     /// </summary>
-    public class Action
+    public abstract class Action
     {
         private const string HREF = "href";
         private const string TIME_REQUESTED = "timeRequested";
@@ -62,7 +62,13 @@ namespace WebThing
         public JObject Input { get; }
         
 
-        public Action(string id, Thing thing, string name, JObject input = null)
+        protected Action(string id, Thing thing, string name)
+            : this(id, thing, name,null)
+        {
+            
+        }
+        
+        protected Action(string id, Thing thing, string name, JObject input)
         {
             Id = id;
             Thing = thing;

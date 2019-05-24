@@ -70,8 +70,6 @@ namespace WebThing
             }
         }
 
-        
-
         public Thing(string name)
             : this(name, null)
         {
