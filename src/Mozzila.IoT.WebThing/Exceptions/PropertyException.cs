@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using Mozzila.IoT.WebThing.Annotations;
 
 namespace Mozzila.IoT.WebThing.Exceptions
 {
@@ -11,7 +10,7 @@ namespace Mozzila.IoT.WebThing.Exceptions
         {
         }
 
-        protected PropertyException([NotNull] SerializationInfo info, StreamingContext context) : base(info, context)
+        protected PropertyException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 

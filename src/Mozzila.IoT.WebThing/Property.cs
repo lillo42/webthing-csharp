@@ -1,6 +1,4 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Mozzila.IoT.WebThing.Annotations;
+using System;
 using Mozzila.IoT.WebThing.Exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,59 +12,65 @@ namespace Mozzila.IoT.WebThing
     /// <typeparam name="T"></typeparam>
     public class Property<T> : Property
     {
+        public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
         public new T Value
         {
             get => (T)base.Value;
             set => base.Value = value;
-        }
+        } 
 
         public Property(Thing thing, string name, T value)
-        : base(thing, name, value)
+            : base(thing, name, value)
         {
         }
-        
-        
-        public Property(Thing thing, string name, T value, JObject metadata = null)
+
+
+        public Property(Thing thing, string name, T value, JObject metadata)
             : base(thing, name, value, metadata)
         {
         }
+
+        protected override void OnValueChanged()
+        {
+            ValuedChanged?.Invoke(this, new ValueChangedEventArgs<T>(Value));
+        }
     }
 
-    public class Property : INotifyPropertyChanged
+    public class Property
     {
         private const string REL = "rel";
         private const string PROPERTY = "property";
         private const string HREF = "href";
         private const string LINKS = "links";
-        
+
         /// <summary>
         /// The href of this property
         /// </summary>
         public Thing Thing { get; }
-        
+
         /// <summary>
         /// The name of this property
         /// </summary>
         public string Name { get; }
-        
+
         /// <summary>
         /// The href of this property
         /// </summary>
         public string Href { get; }
-        
+
         /// <summary>
         /// The prefix of any hrefs associated with this property.
         /// </summary>
         public string HrefPrefix { get; set; }
-        
-        
+
+
         /// <summary>
         /// 
         /// </summary>
         public JObject Metadata { get; }
-        
+
         protected JSchema Schema { get; }
-        
+
         private object _value;
 
         public object Value
@@ -76,18 +80,17 @@ namespace Mozzila.IoT.WebThing
             {
                 ValidateValue(value);
                 _value = value;
-                OnPropertyChanged();
+                OnValueChanged();
             }
         }
-        
-        public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler<ValueChangedEventArgs> ValuedChanged;
 
         public Property(Thing thing, string name, object value)
             : this(thing, name, value, null)
         {
-            
         }
-        
+
         public Property(Thing thing, string name, object value, JObject metadata)
         {
             Thing = thing;
@@ -95,17 +98,17 @@ namespace Mozzila.IoT.WebThing
             HrefPrefix = string.Empty;
             Href = $"/properties/{name}";
             Metadata = metadata ?? new JObject();
-            Value = value;
+            _value = value;
             Schema = JSchema.Load(Metadata.CreateReader());
         }
-        
+
         /// <summary>
         /// Get the property description.
         /// </summary>
         /// <returns>Description of the property as an object</returns>
         public JObject AsPropertyDescription()
         {
-            var description = new JObject(Metadata.DeepClone());
+            var description = new JObject(Metadata);
             var link = new JObject(
                 new JProperty(REL, PROPERTY),
                 new JProperty(HREF, HrefPrefix + Href));
@@ -128,24 +131,39 @@ namespace Mozzila.IoT.WebThing
 
             return description;
         }
-        
-        protected void ValidateValue(object value)
+
+        protected virtual void ValidateValue(object value)
         {
             if (Schema.ReadOnly.HasValue && Schema.ReadOnly.Value)
             {
-                throw  new PropertyException($"readonly property {Name}");
+                throw new PropertyException($"readonly property {Name}");
             }
 
-            if (Schema.IsValid(value))
+            if (!Schema.IsValid(value))
             {
                 throw new PropertyException("Invalid property value");
             }
         }
 
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnValueChanged()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            ValuedChanged?.Invoke(this, new ValueChangedEventArgs(Value));
         }
+    }
+
+    public class ValueChangedEventArgs : EventArgs
+    {
+        public object Value { get; }
+
+        public ValueChangedEventArgs(object value)
+            => Value = value;
+    }
+
+    public class ValueChangedEventArgs<T> : EventArgs
+    {
+        public T Value { get; }
+
+        public ValueChangedEventArgs(T value)
+            => Value = value;
     }
 }
