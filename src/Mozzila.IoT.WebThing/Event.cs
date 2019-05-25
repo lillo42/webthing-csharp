@@ -11,12 +11,18 @@ namespace Mozzila.IoT.WebThing
     public class Event<T> : Event
     {
         public new T Data => (T)base.Data;
-        
-        public Event(Thing thing, string name, T data = default) : base(thing, name, data)
+
+        public Event(Thing thing, string name)
+            : base(thing, name)
+        {
+        }
+
+        public Event(Thing thing, string name, T data)
+            : base(thing, name, data)
         {
         }
     }
-    
+
     /// <summary>
     /// An Event represents an individual event from a thing.
     /// </summary>
@@ -26,35 +32,40 @@ namespace Mozzila.IoT.WebThing
         private const string TIMESTAMP = "timestamp";
         private const string DATA = "data";
 
-        
+
         /// <summary>
         /// The thing associated with this event.
         /// </summary>
         public Thing Thing { get; }
-        
+
         /// <summary>
         /// The event's name. 
         /// </summary>
         public string Name { get; }
-        
+
         /// <summary>
         /// The event's data.
         /// </summary>
         public object Data { get; }
-        
+
         /// <summary>
         /// The event's timestamp.
         /// </summary>
         public DateTime Time { get; }
 
-        public Event(Thing thing, string name, object data = default)
+        public Event(Thing thing, string name)
+            : this(thing, name, null)
+        {
+        }
+
+        public Event(Thing thing, string name, object data)
         {
             Thing = thing;
             Name = name;
             Data = data;
             Time = DateTime.UtcNow;
         }
-        
+
         /// <summary>
         /// Get the event description. 
         /// </summary>
@@ -67,7 +78,7 @@ namespace Mozzila.IoT.WebThing
             {
                 inner.Add(new JProperty(DATA, Data));
             }
-            
+
             return new JObject(new JProperty(Name, inner));
         }
     }

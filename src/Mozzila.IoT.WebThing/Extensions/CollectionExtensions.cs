@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.Collections.Generic
 {
+    [ExcludeFromCodeCoverage]
     internal static class IEnumerableExtensions
     {
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)

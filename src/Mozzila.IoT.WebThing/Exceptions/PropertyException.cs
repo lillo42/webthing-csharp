@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace Mozzila.IoT.WebThing.Exceptions
 {
     [Serializable]
+    [ExcludeFromCodeCoverage]
     public class PropertyException : Exception
     {
         public PropertyException()
