@@ -1,5 +1,4 @@
 using System;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.AspNetCore.Extensions;

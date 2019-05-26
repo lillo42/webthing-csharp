@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{65C51E32-2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozilla.IoT.WebThing.Test", "test\Mozilla.IoT.WebThing.Test\Mozilla.IoT.WebThing.Test.csproj", "{63874B3F-6000-418D-BD19-C56A4D86B612}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozilla.IoT.WebThing.AspNetCore.Extensions.Test", "test\Mozilla.IoT.WebThing.AspNetCore.Extensions.Test\Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.csproj", "{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,10 +64,23 @@ Global
 		{63874B3F-6000-418D-BD19-C56A4D86B612}.Release|x64.Build.0 = Release|Any CPU
 		{63874B3F-6000-418D-BD19-C56A4D86B612}.Release|x86.ActiveCfg = Release|Any CPU
 		{63874B3F-6000-418D-BD19-C56A4D86B612}.Release|x86.Build.0 = Release|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Debug|x64.Build.0 = Debug|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Debug|x86.Build.0 = Debug|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Release|x64.ActiveCfg = Release|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Release|x64.Build.0 = Release|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Release|x86.ActiveCfg = Release|Any CPU
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4999C9EF-BCC2-4252-A404-0161E655AAD9} = {F6436C38-AB0A-4D3F-8BA7-E2C0FA30D052}
 		{4228B949-8210-47A0-A8F0-1D97A48AA14D} = {F6436C38-AB0A-4D3F-8BA7-E2C0FA30D052}
 		{63874B3F-6000-418D-BD19-C56A4D86B612} = {65C51E32-2901-4983-A238-0F931D9EB651}
+		{BA88B0E5-9CE9-4C85-BC0F-B9A318204060} = {65C51E32-2901-4983-A238-0F931D9EB651}
 	EndGlobalSection
 EndGlobal

@@ -30,7 +30,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
 
             JObject description = thing.AsThingDescription();
             
-            (description["links"] as JArray).Add(link);
+            (description["links"] as JArray)?.Add(link);
             
             await OkAsync(httpContext, description);
         }
