@@ -5,13 +5,13 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F6436C38-AB0A-4D3F-8BA7-E2C0FA30D052}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozzila.IoT.WebThing", "src\Mozzila.IoT.WebThing\Mozzila.IoT.WebThing.csproj", "{4999C9EF-BCC2-4252-A404-0161E655AAD9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozilla.IoT.WebThing", "src\Mozilla.IoT.WebThing\Mozilla.IoT.WebThing.csproj", "{4999C9EF-BCC2-4252-A404-0161E655AAD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozzila.IoT.WebThing.AspNetCore.Extensions", "src\Mozzila.IoT.WebThing.AspNetCore.Extensions\Mozzila.IoT.WebThing.AspNetCore.Extensions.csproj", "{4228B949-8210-47A0-A8F0-1D97A48AA14D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozilla.IoT.WebThing.AspNetCore.Extensions", "src\Mozilla.IoT.WebThing.AspNetCore.Extensions\Mozilla.IoT.WebThing.AspNetCore.Extensions.csproj", "{4228B949-8210-47A0-A8F0-1D97A48AA14D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{65C51E32-2901-4983-A238-0F931D9EB651}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozzila.IoT.WebThing.Test", "test\Mozzila.IoT.WebThing.Test\Mozzila.IoT.WebThing.Test.csproj", "{63874B3F-6000-418D-BD19-C56A4D86B612}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozilla.IoT.WebThing.Test", "test\Mozilla.IoT.WebThing.Test\Mozilla.IoT.WebThing.Test.csproj", "{63874B3F-6000-418D-BD19-C56A4D86B612}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
