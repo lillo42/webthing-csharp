@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using JsonDiffPatchDotNet;
-using Mozilla.IoT.WebThing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -26,13 +25,13 @@ namespace Mozilla.IoT.WebThing.Test
         [Fact]
         public void AsActionDescription()
         {
-            var action = new TestAction(_fixture.Create<Thing>())
+            var action = new TestAction(_fixture.Create<Thing>(), null)
             {
                 HrefPrefix = _fixture.Create<string>()
             };
 
             var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""fade"": {{
+                ""test"": {{
                     ""href"": ""{action.HrefPrefix + action.Href}"",
                     ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
                     ""status"": ""created""
@@ -55,7 +54,7 @@ namespace Mozilla.IoT.WebThing.Test
             };
 
             var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""fade"": {{
+                ""test"": {{
                     ""input"": {{
                         ""level"": 50,
                         ""duration"": 2000
@@ -86,7 +85,7 @@ namespace Mozilla.IoT.WebThing.Test
             Task performanceTask = action.StartAsync(CancellationToken.None);
             
             var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""fade"": {{
+                ""test"": {{
                     ""input"": {{
                         ""level"": 50,
                         ""duration"": 2000
@@ -105,9 +104,8 @@ namespace Mozilla.IoT.WebThing.Test
             action.Wait = false;
             await performanceTask;
             
-            
             json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""fade"": {{
+                ""test"": {{
                     ""input"": {{
                         ""level"": 50,
                         ""duration"": 2000
@@ -122,28 +120,30 @@ namespace Mozilla.IoT.WebThing.Test
             description = action.AsActionDescription();
             True(JToken.DeepEquals(json, description));
         }
-    }
-    
-    public class TestAction : Mozilla.IoT.WebThing.Action
-    {
-        public TestAction(Thing thing) 
-            : base(Guid.NewGuid().ToString(), thing, "fade")
+        
+        private class TestAction : Mozilla.IoT.WebThing.Action
         {
-        }
 
-        public TestAction(Thing thing, JObject input) 
-            : base(Guid.NewGuid().ToString(), thing, "fade", input)
-        {
-        }
+            internal volatile bool Wait = false;
 
-        internal volatile bool Wait = false;
+            public override string Id { get; } = Guid.NewGuid().ToString();
+            public override string Name { get; } = "test";
 
-        protected override async Task PerformActionAsync(CancellationToken cancellation)
-        {
-            while (Wait)
+            protected override async Task PerformActionAsync(CancellationToken cancellation)
             {
-                await Task.Delay(10);
+                while (Wait)
+                {
+                    await Task.Delay(10);
+                }
+            }
+
+            public TestAction(Thing thing, JObject input) 
+                : base(thing, input)
+            {
+                
             }
         }
     }
+    
+    
 }

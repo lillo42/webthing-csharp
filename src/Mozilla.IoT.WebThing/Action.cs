@@ -19,7 +19,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// Action's ID.
         /// </summary>
-        public string Id { get; }
+        public abstract string Id { get; }
         
         /// <summary>
         /// The thing associated with this action.
@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// Action's name.
         /// </summary>
-        public string Name { get; }
+        public abstract string Name { get; }
         
         /// <summary>
         /// The prefix of any hrefs associated with this action.
@@ -61,21 +61,13 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         public JObject Input { get; }
         
-
-        protected Action(string id, Thing thing, string name)
-            : this(id, thing, name,null)
-        {
-            
-        }
         
-        protected Action(string id, Thing thing, string name, JObject input)
+        protected Action(Thing thing, JObject input)
         {
-            Id = id;
             Thing = thing;
-            Name = name;
             Input = input;
             HrefPrefix = string.Empty;
-            Href = $"/action/{name}/{id}";
+            Href = $"/action/{Name}/{Id}";
             TimeRequested = DateTime.UtcNow;
             Status = Status.Created;
         }

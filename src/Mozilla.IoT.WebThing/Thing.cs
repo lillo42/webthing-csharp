@@ -66,6 +66,10 @@ namespace Mozilla.IoT.WebThing
             set
             {
                 _hrefPrefix = value;
+                if (!_hrefPrefix.EndsWith(DEFAULT_HREF_PREFIX))
+                {
+                    _hrefPrefix += DEFAULT_HREF_PREFIX;
+                }
                 _properties.ForEach(x => x.Value.HrefPrefix = value);
                 _actions.ForEach(x => x.Value.ForEach(y => y.HrefPrefix = value));
             }
@@ -100,7 +104,7 @@ namespace Mozilla.IoT.WebThing
             {
                 var link = new JObject(
                     new JProperty("rel", "action"),
-                    new JProperty("href", $"{HrefPrefix}/actions/{action.Key}"));
+                    new JProperty("href", $"{HrefPrefix}actions/{action.Key}"));
 
                 JObject metadata = action.Value.Metadata;
                 metadata .Add("links", new JArray(link));
@@ -113,7 +117,7 @@ namespace Mozilla.IoT.WebThing
             {
                 var link = new JObject(
                     new JProperty("rel", "event"),
-                    new JProperty("href", $"{HrefPrefix}/actions/{@event.Key}"));
+                    new JProperty("href", $"{HrefPrefix}event/{@event.Key}"));
                 
                 JObject metadata = @event.Value.Metadata;
                 metadata.Add("links", new JArray(link));
@@ -136,17 +140,17 @@ namespace Mozilla.IoT.WebThing
             
             var propertiesLink = new JObject(
                 new JProperty("rel", "properties"),
-                new JProperty("href", $"{HrefPrefix}/properties"));
+                new JProperty("href", $"{HrefPrefix}properties"));
 
             var actionsLink = new JObject(
                 new JProperty("rel", "actions"),
-                new JProperty("href", $"{HrefPrefix}/actions"));
+                new JProperty("href", $"{HrefPrefix}actions"));
             
             var eventsLink = new JObject(
                 new JProperty("rel", "events"),
-                new JProperty("href", $"{HrefPrefix}/events"));
+                new JProperty("href", $"{HrefPrefix}events"));
             
-            var links = new JArray(propertiesLink, actionsLink, events);
+            var links = new JArray(propertiesLink, actionsLink, eventsLink);
 
             if (UiHref != null)
             {
@@ -363,7 +367,6 @@ namespace Mozilla.IoT.WebThing
 
             try
             {
-                Type type = availableAction.Type;
                 Action action = (Action)Activator.CreateInstance(availableAction.Type, this, input);
 
                 action.HrefPrefix = HrefPrefix;
@@ -385,6 +388,11 @@ namespace Mozilla.IoT.WebThing
         /// <param name="cancellation"></param>
         public async Task ActionNotifyAsync(Action action, CancellationToken cancellation)
         {
+            if (!_subscribers.Any())
+            {
+                return;
+            }
+            
             var json = new JObject(
                 new JProperty("messageType", "actionStatus"),
                 new JProperty("data", action.AsActionDescription()));
@@ -396,18 +404,18 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// Remove an existing action. 
         /// </summary>
-        /// <param name="actionName">name of the action</param>
-        /// <param name="actionId">ID of the action</param>
+        /// <param name="name">name of the action</param>
+        /// <param name="id">ID of the action</param>
         /// <returns>indicating the presence of the action.</returns>
-        public bool RemoveAction(string actionName, string actionId)
+        public bool RemoveAction(string name, string id)
         {
-            Action action = GetAction(actionName, actionId);
+            Action action = GetAction(name, id);
             if (action == null)
             {
                 return false;
             }
 
-            _actions[actionName].Remove(action);
+            _actions[name].Remove(action);
             return true;
         }
 
@@ -417,14 +425,15 @@ namespace Mozilla.IoT.WebThing
         /// <param name="name">Name of the action</param>
         /// <param name="metadata">Action metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/></param>
         /// <param name="type">Type to instantiate for this action</param>
-        public void AddAvailableAction(string name, JObject metadata, Type type)
+        public void AddAvailableAction<T>(string name, JObject metadata = null)
+            where T : Action
         {
             if (metadata == null)
             {
                 metadata = new JObject();
             }
 
-            _availableActions.Add(name, new AvailableAction(metadata, type));
+            _availableActions.Add(name, new AvailableAction(metadata, typeof(T)));
             _actions.Add(name, new LinkedList<Action>());
         }
 
@@ -490,7 +499,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Name of the event</param>
         /// <param name="metadata">Event metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/>></param>
-        public void AddAvailableEvent(string name, JObject metadata)
+        public void AddAvailableEvent(string name, JObject metadata = null)
         {
             if (metadata == null)
             {
