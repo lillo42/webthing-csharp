@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using AutoFixture;
-using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
