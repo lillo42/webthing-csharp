@@ -43,15 +43,13 @@ onDescription.Add("title", "On/Off");
 onDescription.Add("type", "boolean");
 onDescription.Add("description", "Whether the lamp is turned on");
 
-Value<Boolean> on = new Value<>(true,
-                                // Here, you could send a signal to
-                                // the GPIO that switches the lamp
-                                // off
-                                v -> System.out.printf(
-                                        "On-State is now %s\n",
-                                        v));
+var property = new Property<bool>(light, "on", true, onDescription);
+property.ValuedChanged += (sender, value) => 
+{
+   Console.WriteLine($"On-State is now {value}");
+};
 
-light.AddProperty(new Property(light, "on", on, onDescription));
+light.AddProperty(property);
 ```
 
 The **`brightness`** property reports the brightness level of the light and sets the level. Like before, instead of actually setting the level of a light, we just log the level.
@@ -67,21 +65,20 @@ brightnessDescription.Add("minimum", 0);
 brightnessDescription.Add("maximum", 100);
 brightnessDescription.Add("unit", "percent");
 
-Value<Double> level = new Value<>(0.0,
-                                  // Here, you could send a signal
-                                  // to the GPIO that controls the
-                                  // brightness
-                                  l -> System.out.printf(
-                                          "Brightness is now %s\n",
-                                          l));
+var level = new Property<double>(light, "level", true, onDescription);
+level.ValuedChanged += (sender, value) => 
+{
+   Console.WriteLine($"Brightness is now {value}");
+};
 
-light.AddProperty(new Property(light, "level", level, brightnessDescription));
+light.AddProperty(level);
 ```
 
 Now we can add our newly created thing to the server and start it:
 
 ```csharp
-try {
+try 
+{
     // If adding more than one thing, use MultipleThings() with a name.
     // In the single thing case, the thing's name will be broadcast.
     WebThingServer server = new WebThingServer(new SingleThing(light), 8888);
@@ -109,8 +106,8 @@ A [`MultiLevelSensor`](https://iot.mozilla.org/schemas/#MultiLevelSensor) (a sen
 
 First we create a new Thing:
 
-```java
-Thing sensor = new Thing("My Humidity Sensor",
+```csharp
+var sensor = new Thing("My Humidity Sensor",
                          new JSONArray(Arrays.asList("MultiLevelSensor")),
                          "A web connected humidity sensor");
 ```
@@ -130,27 +127,18 @@ Then we create and add the appropriate property:
     levelDescription.Add("unit", "percent");
     levelDescription.Add("readOnly", true);
 
-    this.level = new Value<>(0.0);
-
-    sensor.AddProperty(new Property(sensor, "level", level, levelDescription));
+    sensor.AddProperty(new Property<double>(sensor, "level", 0, levelDescription));
     ```
 
 Now we have a sensor that constantly reports 0%. To make it usable, we need a thread or some kind of inAdd when the sensor has a new reading available. For this purpose we start a thread that queries the physical sensor every few seconds. For our purposes, it just calls a fake method.
 
 ```csharp
 // Start a thread that polls the sensor reading every 3 seconds
-new Thread(()->{
-    while(true){
-        try {
-            Thread.sleep(3000);
-            // Spdates the underlying value, which in turn notifies all
-            // listeners
-            this.level.notifyOfExternalUpdate(readFromGPIO());
-        } catch (InterruptedException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-}).start();
+
+await Task.Factory.StartNew(async () => {
+   await Task.Delay(3_000);
+   await level.NotifyOfExternalUpdate(ReadFromGPIO());
+});
 ```
 
-This will update our `Value` object with the sensor readings via the `this.level.notifyOfExternalUpdate(readFromGPIO());` call. The `Value` object now notifies the property and the thing that the value has changed, which in turn notifies all websocket listeners.
+This will update our `Value` object with the sensor readings via the `this.level.NotifyOfExternalUpdate(ReadFromGPIO());` call. The `Value` object now notifies the property and the thing that the value has changed, which in turn notifies all websocket listeners.
