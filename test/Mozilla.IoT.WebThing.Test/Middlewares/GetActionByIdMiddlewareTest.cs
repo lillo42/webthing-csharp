@@ -12,11 +12,12 @@ using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Xunit;
+
 using static Xunit.Assert;
 
 namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 {
-    public class DeleteActionByIdMiddlewareTest
+    public class GetActionByIdMiddlewareTest
     {
         private readonly Fixture _fixture;
         private readonly ILoggerFactory _factory;
@@ -27,7 +28,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         private readonly HttpResponse _response;
         private readonly IRoutingFeature _routing;
 
-        public DeleteActionByIdMiddlewareTest()
+        public GetActionByIdMiddlewareTest()
         {
             _factory = Substitute.For<ILoggerFactory>();
             _next = Substitute.For<RequestDelegate>();
@@ -44,12 +45,13 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         }
 
         #region Single
+
         [Fact]
         public async Task Invoke_Single_NotFound()
         {
             var single = new SingleThing(null);
 
-            var middleware = new DeleteActionByIdMiddleware(_next, _factory, single);
+            var middleware = new GetActionByIdMiddleware(_next, _factory, single);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -65,13 +67,13 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             True(code == (int)HttpStatusCode.NotFound);
         }
-
+        
         [Fact]
         public async Task Invoke_Single_Action_Not_Found()
         {
             var single = new SingleThing(_fixture.Create<Thing>());
 
-            var middleware = new DeleteActionByIdMiddleware(_next, _factory, single);
+            var middleware = new GetActionByIdMiddleware(_next, _factory, single);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -89,7 +91,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             True(code == (int)HttpStatusCode.NotFound);
         }
-        
+
         [Fact]
         public async Task Invoke_Single()
         {
@@ -101,7 +103,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
             await thing.PerformActionAsync(actionName, null, CancellationToken.None);
             
             var single = new SingleThing(thing);
-            var middleware = new DeleteActionByIdMiddleware(_next, _factory, single);
+            var middleware = new GetActionByIdMiddleware(_next, _factory, single);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -117,11 +119,13 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             await middleware.Invoke(_httpContext);
 
-            True(code == (int)HttpStatusCode.NoContent);
+            True(code == (int)HttpStatusCode.OK);
+            True(_body.Length > 0);
         }
         #endregion
 
         #region Multi
+
         [Theory]
         [InlineData(1)]
         [InlineData(-1)]
@@ -129,7 +133,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         {
             var multi = new MultipleThings(new List<Thing>(), _fixture.Create<string>());
 
-            var middleware = new DeleteActionByIdMiddleware(_next, _factory, multi);
+            var middleware = new GetActionByIdMiddleware(_next, _factory, multi);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -141,14 +145,14 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             True(code == (int)HttpStatusCode.NotFound);
         }
-
+        
         [Fact]
         public async Task Invoke_Multi_Action_Not_Found()
         {
             var multi = new MultipleThings(new List<Thing> {_fixture.Create<Thing>(), _fixture.Create<Thing>()},
                 _fixture.Create<string>());
 
-            var middleware = new DeleteActionByIdMiddleware(_next, _factory, multi);
+            var middleware = new GetActionByIdMiddleware(_next, _factory, multi);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -183,7 +187,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
                     _fixture.Create<Thing>()
                 },
                 _fixture.Create<string>() );
-            var middleware = new DeleteActionByIdMiddleware(_next, _factory, single);
+            var middleware = new GetActionByIdMiddleware(_next, _factory, single);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -199,8 +203,10 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             await middleware.Invoke(_httpContext);
 
-            True(code == (int)HttpStatusCode.NoContent);
+            True(code == (int)HttpStatusCode.OK);
+            True(_body.Length > 0);
         }
+
         #endregion
         
         private class TestAction : Action
@@ -213,6 +219,6 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             public override string Id => ID;
             public override string Name => "test";
-        } 
+        }
     }
 }
