@@ -1,9 +1,8 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.WebSockets;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ThingServiceCollectionExtensions
     {
