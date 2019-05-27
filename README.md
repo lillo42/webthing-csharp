@@ -37,11 +37,13 @@ Now we can add the required properties.
 The **`on`** property reports and sets the on/off state of the light. For this, we need to have a `Value` object which holds the actual state and also a method to turn the light on/off. For our purposes, we just want to log the new state if the light is switched on/off.
 
 ```csharp
-var onDescription = new JObject();
-onDescription.Add("@type", "OnOffProperty");
-onDescription.Add("title", "On/Off");
-onDescription.Add("type", "boolean");
-onDescription.Add("description", "Whether the lamp is turned on");
+var onDescription = new JObject
+{
+    {"@type", "OnOffProperty"},
+    {"title", "On/Off"},
+    {"type", "boolean"},
+    {"description", "Whether the lamp is turned on"}
+};
 
 var property = new Property<bool>(light, "on", true, onDescription);
 property.ValuedChanged += (sender, value) => 
@@ -55,15 +57,16 @@ light.AddProperty(property);
 The **`brightness`** property reports the brightness level of the light and sets the level. Like before, instead of actually setting the level of a light, we just log the level.
 
 ```csharp
-var brightnessDescription = new JObject();
-brightnessDescription.Add("@type", "BrightnessProperty");
-brightnessDescription.Add("title", "Brightness");
-brightnessDescription.Add("type", "number");
-brightnessDescription.Add("description",
-                          "The level of light from 0-100");
-brightnessDescription.Add("minimum", 0);
-brightnessDescription.Add("maximum", 100);
-brightnessDescription.Add("unit", "percent");
+var brightnessDescription = new JObject
+{
+    {"@type", "BrightnessProperty"},
+    {"title", "Brightness"},
+    {"type", "integer"},
+    {"description", "The level of light from 0-100"},
+    {"minimum", 0},
+    {"maximum", 100},
+    {"unit", "percent"}
+};
 
 var level = new Property<double>(light, "level", true, onDescription);
 level.ValuedChanged += (sender, value) => 
@@ -77,22 +80,15 @@ light.AddProperty(level);
 Now we can add our newly created thing to the server and start it:
 
 ```csharp
-try 
+// This method gets called by the runtime. Use this method to add services to the container.
+public void ConfigureServices(IServiceCollection services)
 {
-    // If adding more than one thing, use MultipleThings() with a name.
-    // In the single thing case, the thing's name will be broadcast.
-    WebThingServer server = new WebThingServer(new SingleThing(light), 8888);
+   services.AddThing();
+}
 
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-        public void run() {
-            server.stop();
-        }
-    });
-
-    server.start(false);
-} catch (IOException e) {
-    System.out.println(e);
-    System.exit(1);
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+   app.UseSingleThing(light);
 }
 ```
 
@@ -117,17 +113,19 @@ Then we create and add the appropriate property:
     * Contrary to the light, the value cannot be set via an API call, as it wouldn't make much sense, to SET what a sensor is reading. Therefore, we are creating a *readOnly* property.
 
     ```csharp
-    var levelDescription = new JObject();
-    levelDescription.Add("@type", "LevelProperty");
-    levelDescription.Add("title", "Humidity");
-    levelDescription.Add("type", "number");
-    levelDescription.Add("description", "The current humidity in %");
-    levelDescription.Add("minimum", 0);
-    levelDescription.Add("maximum", 100);
-    levelDescription.Add("unit", "percent");
-    levelDescription.Add("readOnly", true);
+   var levelDescription = new JObject
+   {
+       {"@type", "LevelProperty"},
+      {"title", "Humidity"},
+      {"type", "number"},
+      {"description", "The current humidity in %"},
+      {"minimum", 0},
+      {"maximum", 100},
+      {"unit", "percent"},
+      {"readOnly", true}
+   };
 
-    sensor.AddProperty(new Property<double>(sensor, "level", 0, levelDescription));
+sensor.AddProperty(new Property<double>(sensor, "level", 0, levelDescription));
     ```
 
 Now we have a sensor that constantly reports 0%. To make it usable, we need a thread or some kind of inAdd when the sensor has a new reading available. For this purpose we start a thread that queries the physical sensor every few seconds. For our purposes, it just calls a fake method.
