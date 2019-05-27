@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions
+namespace Mozilla.IoT.WebThing
 {
     public class MultipleThings : IThingType
     {
@@ -15,7 +15,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions
         {
             get
             {
-                if (index < 0 || index > _things.Count) 
+                if (index < 0 || index >= _things.Count) 
                 {
                     return null;
                 }

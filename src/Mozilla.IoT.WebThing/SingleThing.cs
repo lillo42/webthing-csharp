@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions
+namespace Mozilla.IoT.WebThing
 {
     public class SingleThing : IThingType
     {
