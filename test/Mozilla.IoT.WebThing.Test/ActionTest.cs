@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
-using JsonDiffPatchDotNet;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -14,12 +13,10 @@ namespace Mozilla.IoT.WebThing.Test
     public class ActionTest
     {
         private readonly Fixture _fixture;
-        private readonly JsonDiffPatch _jdp; 
 
         public ActionTest()
         {
             _fixture = new Fixture();
-            _jdp = new JsonDiffPatch();
         }
         
         [Fact]
@@ -121,7 +118,7 @@ namespace Mozilla.IoT.WebThing.Test
             True(JToken.DeepEquals(json, description));
         }
         
-        private class TestAction : Mozilla.IoT.WebThing.Action
+        private class TestAction : Action
         {
 
             internal volatile bool Wait = false;

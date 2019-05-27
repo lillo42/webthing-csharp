@@ -11,6 +11,16 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static void AddThing(this IServiceCollection services, Action<WebSocketOptions> webSocketConfigure)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (webSocketConfigure == null)
+            {
+                throw new ArgumentNullException(nameof(webSocketConfigure));
+            }
+            
             services.AddWebSockets(webSocketConfigure);
             services.AddCors();
         }

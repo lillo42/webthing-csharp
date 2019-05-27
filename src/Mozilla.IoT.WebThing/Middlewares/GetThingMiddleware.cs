@@ -17,6 +17,15 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
         {
             Thing thing = GetThing(httpContext);
 
+            if (httpContext.WebSockets.IsWebSocketRequest)
+            {
+                var webSocket =  await httpContext.WebSockets.AcceptWebSocketAsync();
+                var thingWebSocket = new ThingWebSocket(webSocket, thing);
+                thing.AddSubscriber(thingWebSocket);
+                
+                
+            }
+
             if (thing == null)
             {
                 await NotFoundAsync(httpContext);

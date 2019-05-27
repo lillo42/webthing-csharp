@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Builder
 
             thingOptions(option);
 
+            app.UseCors();
+            app.UseWebSockets();
             return AddRoute(app, new MultipleThings(option.Things, name), "/{thingId}");
         }
 
@@ -38,6 +40,8 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(thing));
             }
 
+            app.UseCors();
+            app.UseWebSockets();
             return AddRoute(app, new SingleThing(thing), string.Empty);
         }
 
