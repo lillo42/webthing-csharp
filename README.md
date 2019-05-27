@@ -9,7 +9,7 @@ Implementation of an HTTP [Web Thing](https://iot.mozilla.org/wot/).
 Add the following dependency to your project:
 
 ```bash
-dotnet add package XXXXX
+dotnet add package Mozilla.IoT.WebThing
 ```
 
 # Example
@@ -28,13 +28,13 @@ First we create a new Thing:
 
 ```csharp
 var light = new Thing("My Lamp",
-                        new JArray(Arrays.AsList("OnOffSwitch", "Light")),
+                        new JArray("OnOffSwitch", "Light"),
                         "A web connected lamp");
 ```
 
 Now we can add the required properties.
 
-The **`on`** property reports and sets the on/off state of the light. For this, we need to have a `Value` object which holds the actual state and also a method to turn the light on/off. For our purposes, we just want to log the new state if the light is switched on/off.
+The **`on`** property reports and sets the on/off state of the light. For this, we need to have a `Property` object which holds the actual state and also a method to turn the light on/off. For our purposes, we just want to log the new state if the light is switched on/off.
 
 ```csharp
 var onDescription = new JObject
@@ -77,7 +77,7 @@ level.ValuedChanged += (sender, value) =>
 light.AddProperty(level);
 ```
 
-Now we can add our newly created thing to the server and start it:
+Now we can add our newly created thing and add Thing middleware to Asp Net Core:
 
 ```csharp
 // This method gets called by the runtime. Use this method to add services to the container.
@@ -104,7 +104,7 @@ First we create a new Thing:
 
 ```csharp
 var sensor = new Thing("My Humidity Sensor",
-                         new JSONArray(Arrays.asList("MultiLevelSensor")),
+                         new JArray("MultiLevelSensor"),
                          "A web connected humidity sensor");
 ```
 
@@ -125,7 +125,7 @@ Then we create and add the appropriate property:
       {"readOnly", true}
    };
 
-sensor.AddProperty(new Property<double>(sensor, "level", 0, levelDescription));
+   sensor.AddProperty(new Property<double>(sensor, "level", 0, levelDescription));
     ```
 
 Now we have a sensor that constantly reports 0%. To make it usable, we need a thread or some kind of inAdd when the sensor has a new reading available. For this purpose we start a thread that queries the physical sensor every few seconds. For our purposes, it just calls a fake method.
@@ -133,7 +133,7 @@ Now we have a sensor that constantly reports 0%. To make it usable, we need a th
 ```csharp
 // Start a thread that polls the sensor reading every 3 seconds
 
-await Task.Factory.StartNew(async () => {
+Task.Factory.StartNew(async () => {
    await Task.Delay(3_000);
    await level.NotifyOfExternalUpdate(ReadFromGPIO());
 });
