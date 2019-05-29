@@ -1,7 +1,6 @@
 <Project>
   <PropertyGroup>
-    <NCamelAppTargetFrameworks Condition="$(NhAppTargetFrameworks) == ''">netcoreapp2.1</NCamelAppTargetFrameworks>
-    <NCamelLibTargetFrameworks Condition="$(NhLibTargetFrameworks) == ''">netstandard2.0</NCamelLibTargetFrameworks>
+    <ThingAppTargetFrameworks Condition="$(NhAppTargetFrameworks) == ''">netcoreapp3.0</ThingAppTargetFrameworks>
 
     <Product>NCamel</Product>
     <Company>NHibernate.info</Company>

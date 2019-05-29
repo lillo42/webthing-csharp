@@ -28,6 +28,8 @@ namespace Multi.Things
 
             _level = new Property<double>(this, "level", 0, levelDescription);
 
+            AddProperty(_level);
+            
             Task.Factory.StartNew(async () =>
             {
                 await Task.Delay(3_000);
