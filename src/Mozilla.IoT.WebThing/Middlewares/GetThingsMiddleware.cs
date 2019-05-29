@@ -34,15 +34,5 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
 
             await OkAsync(httpContext, array.ToString());
         }
-
-        private static string GetActionName(HttpContext httpContext)
-        {
-            if (httpContext.GetRouteData().Values.TryGetValue("actionName", out object data))
-            {
-                return data.ToString();
-            }
-            
-            return null;
-        }
     }
 }
