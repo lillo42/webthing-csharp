@@ -43,6 +43,7 @@ namespace Mozilla.IoT.WebThing
         private const string PROPERTY = "property";
         private const string HREF = "href";
         private const string LINKS = "links";
+        private const string DEFAULT_PREFIX = "/";
 
         /// <summary>
         /// The href of this property
@@ -59,10 +60,22 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         public string Href { get; }
 
+        private string _hrefPreix;
         /// <summary>
         /// The prefix of any hrefs associated with this property.
         /// </summary>
-        public string HrefPrefix { get; set; }
+        public string HrefPrefix
+        {
+            get => string.IsNullOrEmpty(_hrefPreix) ?  DEFAULT_PREFIX : _hrefPreix;
+            set
+            {
+                _hrefPreix = value;
+                if (!_hrefPreix.EndsWith("/"))
+                {
+                    _hrefPreix += DEFAULT_PREFIX;
+                }
+            }
+        }
 
 
         /// <summary>
