@@ -88,8 +88,8 @@ namespace Microsoft.AspNetCore.Builder
             router.MapMiddlewareGet($"{prefix}/events", 
                 builder => builder.UseMiddleware<GetEventsMiddleware>(thingType));
 
-            router.MapMiddlewareGet($"{prefix}/", 
-                builder => builder.UseMiddleware<GetPropertyThingMiddleware>(thingType));
+//            router.MapMiddlewareGet($"{prefix}/", 
+//                builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
             
             #endregion
             

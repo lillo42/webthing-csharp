@@ -97,7 +97,7 @@ namespace Mozilla.IoT.WebThing
             Thing = thing;
             Name = name;
             HrefPrefix = string.Empty;
-            Href = $"/properties/{name}";
+            Href = $"properties/{name}";
             Metadata = metadata ?? new JObject();
             _value = value;
             Schema = JSchema.Load(Metadata.CreateReader());

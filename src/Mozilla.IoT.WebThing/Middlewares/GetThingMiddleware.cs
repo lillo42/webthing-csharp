@@ -22,8 +22,6 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
                 var webSocket =  await httpContext.WebSockets.AcceptWebSocketAsync();
                 var thingWebSocket = new ThingWebSocket(webSocket, thing);
                 thing.AddSubscriber(thingWebSocket);
-                
-                
             }
 
             if (thing == null)

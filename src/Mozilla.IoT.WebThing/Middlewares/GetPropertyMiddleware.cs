@@ -40,7 +40,13 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
         private static string GetPropertyName(HttpContext httpContext)
         {
             RouteData routeData = httpContext.GetRouteData();
-            return routeData.Values["propertyName"].ToString();
+            
+            if (routeData.Values.TryGetValue("propertyName", out object data))
+            {
+                return data.ToString();
+            }
+
+            return null;
         }
     }
 }

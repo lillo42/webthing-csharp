@@ -20,7 +20,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(webSocketConfigure));
             }
-            
+
+            services.AddRouting();
             services.AddWebSockets(webSocketConfigure);
             services.AddCors();
         }

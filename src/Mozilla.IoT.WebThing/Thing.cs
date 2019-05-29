@@ -260,7 +260,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="propertyName">The property to look for</param>
         /// <returns>Indication of property presence.</returns>
         public bool ContainsProperty(string propertyName)
-            => _properties.ContainsKey(propertyName);
+            => !string.IsNullOrEmpty(propertyName) &&  _properties.ContainsKey(propertyName);
 
         /// <summary>
         /// Set a property value.
