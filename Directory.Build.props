@@ -1,10 +1,9 @@
 <Project>
   <PropertyGroup>
-    <ThingAppTargetFrameworks Condition="$(NhAppTargetFrameworks) == ''">netcoreapp3.0</ThingAppTargetFrameworks>
+    <ThingAppTargetFrameworks Condition="$(ThingAppTargetFrameworks) == ''">netcoreapp3.0</ThingAppTargetFrameworks>
+    <ThingLibTargetFrameworks Condition="$(ThingLibTargetFrameworks) == ''">netcoreapp3.0</ThingLibTargetFrameworks>
 
-    <Product>NCamel</Product>
-    <Company>NHibernate.info</Company>
-    <Copyright>Licensed under LGPL.</Copyright>
+    <Product>Mozilla.IoT.WebThings</Product>
     <NeutralLanguage>en-US</NeutralLanguage>
 
     <PackageProjectUrl>https://github.com/lillo42/webthing-csharp</PackageProjectUrl>
@@ -12,7 +11,6 @@
     <PackageLicenseExpression>LGPL-2.1-only</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
-    
-    <LangVersion>latest</LangVersion>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
 </Project>

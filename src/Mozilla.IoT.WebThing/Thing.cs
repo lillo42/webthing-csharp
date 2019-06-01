@@ -262,6 +262,22 @@ namespace Mozilla.IoT.WebThing
         public bool ContainsProperty(string propertyName)
             => !string.IsNullOrEmpty(propertyName) &&  _properties.ContainsKey(propertyName);
 
+        
+        /// <summary>
+        /// Set a property value.
+        /// </summary>
+        /// <param name="propertyName">Name of the property to set</param>
+        /// <param name="value">Value to set</param>
+        /// <typeparam name="T">Type of the property value</typeparam>
+        public void SetProperty(string propertyName, object value)
+        {
+            Property property = FindProperty(propertyName);
+            if (property != null)
+            {
+                property.Value = value;
+            }
+        }
+        
         /// <summary>
         /// Set a property value.
         /// </summary>
