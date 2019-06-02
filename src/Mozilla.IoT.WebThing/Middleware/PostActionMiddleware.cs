@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
@@ -54,21 +53,23 @@ namespace Mozilla.IoT.WebThing.Middleware
             
             if (json.TryGetValue(name, out JToken token))
             {
-                var action = await thing.PerformActionAsync(name, (JObject)token["input"], httpContext.RequestAborted)
+                JObject input = token.Contains("input") ? (JObject)token["input"] : new JObject();
+                var action = await thing.PerformActionAsync(name, input, httpContext.RequestAborted)
                     .ConfigureAwait(false);
                 
                 if (action != null)
                 {
                     response.Add(name, action.AsActionDescription());
-                }
-
-                var block = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
+                    
+                    var block = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
                 
-                await block.SendAsync(action)
-                    .ConfigureAwait(false);
+                    await block.SendAsync(action)
+                        .ConfigureAwait(false);
+                }
             }
             
-            await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
+            await httpContext.WriteBodyAsync(HttpStatusCode.Created, response)
+                .ConfigureAwait(false);
         }
     }
 }
