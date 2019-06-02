@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -7,8 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Middleware;
+using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
+using static Xunit.Assert;
 
 namespace Mozilla.IoT.WebThing.Test.Middleware
 {
@@ -22,6 +25,7 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
         private readonly HttpContext _httpContext;
         private readonly HttpResponse _response;
         private readonly IRoutingFeature _routing;
+        private readonly IServiceProvider _service;
 
         public GetThingMiddlewareTest()
         {
@@ -31,10 +35,15 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
             _body = new MemoryStream();
             _routing = Substitute.For<IRoutingFeature>();
             _response = Substitute.For<HttpResponse>();
+            _service = Substitute.For<IServiceProvider>();
 
             _httpContext.Features[typeof(IRoutingFeature)].Returns(_routing);
             _httpContext.Response.Returns(_response);
             _response.Body.Returns(_body);
+            _httpContext.RequestServices.Returns(_service);
+
+            _service.GetService(typeof(JsonSerializerSettings))
+                .Returns(new JsonSerializerSettings());
 
             _fixture = new Fixture();
         }
@@ -53,16 +62,16 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             var single = new SingleThing(thing);
             var middleware = new GetThingMiddleware(_next, _factory, single);
-            
+
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
 
             _routing.RouteData.Returns(new RouteData());
-            
+
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.OK);
-            Assert.True(_body.Length > 0);
+            True(code == (int)HttpStatusCode.OK);
+            True(_body.Length > 0);
         }
 
         #endregion
@@ -87,17 +96,14 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
             _response.StatusCode = Arg.Do<int>(args => code = args);
 
             _routing.RouteData.Returns(new RouteData(
-                RouteValueDictionary.FromArray(new[]
-                {
-                    new KeyValuePair<string, object>("thingId", 0),
-                })));
+                RouteValueDictionary.FromArray(new[] {new KeyValuePair<string, object>("thingId", 0),})));
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.OK);
-            Assert.True(_body.Length > 0);
+            True(code == (int)HttpStatusCode.OK);
+            True(_body.Length > 0);
         }
-        
+
         [Fact]
         public async Task Invoke_Multi_Not_Found()
         {
@@ -123,8 +129,7 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.NotFound);
-            Assert.True(_body.Length > 0);
+            True(code == (int)HttpStatusCode.NotFound);
         }
 
         #endregion

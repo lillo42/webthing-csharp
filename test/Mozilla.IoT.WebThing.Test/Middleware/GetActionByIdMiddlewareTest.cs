@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Middleware;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Xunit;
 
-namespace Mozilla.IoT.WebThing.Test.Middlewares
+namespace Mozilla.IoT.WebThing.Test.Middleware
 {
     public class GetActionByIdMiddlewareTest
     {
@@ -25,6 +26,7 @@ namespace Mozilla.IoT.WebThing.Test.Middlewares
         private readonly HttpContext _httpContext;
         private readonly HttpResponse _response;
         private readonly IRoutingFeature _routing;
+        private readonly IServiceProvider _service;
 
         public GetActionByIdMiddlewareTest()
         {
@@ -34,10 +36,15 @@ namespace Mozilla.IoT.WebThing.Test.Middlewares
             _routing = Substitute.For<IRoutingFeature>();
             _body = new MemoryStream();
             _response = Substitute.For<HttpResponse>();
+            _service = Substitute.For<IServiceProvider>();
 
             _httpContext.Features[typeof(IRoutingFeature)].Returns(_routing);
             _httpContext.Response.Returns(_response);
             _response.Body.Returns(_body);
+            _httpContext.RequestServices.Returns(_service);
+
+            _service.GetService(typeof(JsonSerializerSettings))
+                .Returns(new JsonSerializerSettings());
 
             _fixture = new Fixture();
         }

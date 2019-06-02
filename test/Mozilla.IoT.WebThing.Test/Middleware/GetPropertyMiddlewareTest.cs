@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -7,8 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Middleware;
+using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
+using static Xunit.Assert;
 
 namespace Mozilla.IoT.WebThing.Test.Middleware
 {
@@ -22,6 +25,7 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
         private readonly HttpContext _httpContext;
         private readonly HttpResponse _response;
         private readonly IRoutingFeature _routing;
+        private readonly IServiceProvider _service;
         
         public GetPropertyMiddlewareTest()
         {
@@ -31,10 +35,16 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
             _routing = Substitute.For<IRoutingFeature>();
             _body = new MemoryStream();
             _response = Substitute.For<HttpResponse>();
+            _service = Substitute.For<IServiceProvider>();
 
             _httpContext.Features[typeof(IRoutingFeature)].Returns(_routing);
             _httpContext.Response.Returns(_response);
             _response.Body.Returns(_body);
+            
+            _httpContext.RequestServices.Returns(_service);
+
+            _service.GetService(typeof(JsonSerializerSettings))
+                .Returns(new JsonSerializerSettings());
 
             _fixture = new Fixture();
         }
@@ -60,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.NotFound);
+            True(code == (int)HttpStatusCode.NotFound);
         }
         
         [Fact]
@@ -85,8 +95,7 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.NotFound);
-            Assert.True(_body.Length > 0);
+            True(code == (int)HttpStatusCode.NotFound);
         }
         
         [Fact]
@@ -114,8 +123,8 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.OK);
-            Assert.True(_body.Length > 0);
+            True(code == (int)HttpStatusCode.OK);
+            True(_body.Length > 0);
         }
         #endregion
         
@@ -138,7 +147,7 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.NotFound);
+            True(code == (int)HttpStatusCode.NotFound);
         }
         
         [Fact]
@@ -172,8 +181,7 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.NotFound);
-            Assert.True(_body.Length > 0);
+            True(code == (int)HttpStatusCode.NotFound);
         }
         
         [Fact]
@@ -207,8 +215,8 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             await middleware.Invoke(_httpContext);
 
-            Assert.True(code == (int)HttpStatusCode.OK);
-            Assert.True(_body.Length > 0);
+            True(code == (int)HttpStatusCode.OK);
+            True(_body.Length > 0);
         }
         #endregion
 

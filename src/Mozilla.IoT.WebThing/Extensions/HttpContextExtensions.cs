@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Http
 {
+    [ExcludeFromCodeCoverage]
     internal static class HttpContextExtensions
     {
         public static async Task<T> ReadBodyAsync<T>(this HttpContext context)
@@ -23,17 +25,11 @@ namespace Microsoft.AspNetCore.Http
         {
             JsonSerializerSettings settings = context.RequestServices.GetService<JsonSerializerSettings>();
             
-            string json = null;
-
-            if (value is JToken token)
+            string json =  value switch
             {
-                json = token.ToString(settings.Formatting);
-            }
-            else
-            {
-                json = JsonConvert.SerializeObject(value, settings);    
-            }
-            
+                JToken token => token.ToString(settings.Formatting),
+                _ => JsonConvert.SerializeObject(value, settings) 
+            };
             
             context.Response.StatusCode = (int) statusCode;
             context.Response.ContentType = "application/json";

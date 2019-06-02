@@ -8,7 +8,6 @@
 
     <PackageProjectUrl>https://github.com/lillo42/webthing-csharp</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>LGPL-2.1-only</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <LangVersion>8</LangVersion>
