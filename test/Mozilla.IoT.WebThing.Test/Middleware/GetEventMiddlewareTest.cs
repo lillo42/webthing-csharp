@@ -7,14 +7,13 @@ using AutoFixture;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
+using Mozilla.IoT.WebThing.Middleware;
 using NSubstitute;
 using Xunit;
-using static Xunit.Assert;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
+namespace Mozilla.IoT.WebThing.Test.Middleware
 {
-    public class GetPropertiesMiddlewareTest
+    public class GetEventMiddlewareTest
     {
         private readonly Fixture _fixture;
         private readonly ILoggerFactory _factory;
@@ -25,7 +24,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         private readonly HttpResponse _response;
         private readonly IRoutingFeature _routing;
         
-        public GetPropertiesMiddlewareTest()
+        public GetEventMiddlewareTest()
         {
             _factory = Substitute.For<ILoggerFactory>();
             _next = Substitute.For<RequestDelegate>();
@@ -48,7 +47,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         {
             var single = new SingleThing(null);
 
-            var middleware = new GetPropertiesMiddleware(_next, _factory, single);
+            var middleware = new GetEventMiddleware(_next, _factory, single);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -62,7 +61,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             await middleware.Invoke(_httpContext);
 
-            True(code == (int)HttpStatusCode.NotFound);
+            Assert.True(code == (int)HttpStatusCode.NotFound);
         }
         
         [Fact]
@@ -70,11 +69,14 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         {
             var thing = _fixture.Create<Thing>();
             
-            thing.AddProperty(_fixture.Create<Property<int>>());
-            thing.AddProperty(_fixture.Create<Property<int>>());
+            var @event = _fixture.Create<Event<int>>();
+            string eventName = _fixture.Create<string>();
+            
+            thing.AddAvailableEvent(@eventName, null);
+            await thing.AddEventAsync(@event, CancellationToken.None);
 
             var single = new SingleThing(thing);
-            var middleware = new GetPropertiesMiddleware(_next, _factory, single);
+            var middleware = new GetEventMiddleware(_next, _factory, single);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -82,13 +84,14 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
             _routing.RouteData.Returns(new RouteData(
                 RouteValueDictionary.FromArray(new[]
                 {
-                    new KeyValuePair<string, object>("thingId", _fixture.Create<int>())
+                    new KeyValuePair<string, object>("thingId", _fixture.Create<int>()),
+                    new KeyValuePair<string, object>("eventName", eventName)
                 })));
 
             await middleware.Invoke(_httpContext);
 
-            True(code == (int)HttpStatusCode.OK);
-            True(_body.Length > 0);
+            Assert.True(code == (int)HttpStatusCode.OK);
+            Assert.True(_body.Length > 0);
         }
         #endregion
         
@@ -101,7 +104,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         {
             var multi = new MultipleThings(new List<Thing>(), _fixture.Create<string>());
 
-            var middleware = new GetPropertiesMiddleware(_next, _factory, multi);
+            var middleware = new GetEventMiddleware(_next, _factory, multi);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -111,7 +114,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
 
             await middleware.Invoke(_httpContext);
 
-            True(code == (int)HttpStatusCode.NotFound);
+            Assert.True(code == (int)HttpStatusCode.NotFound);
         }
         
         [Fact]
@@ -119,8 +122,12 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
         {
             var thing = _fixture.Create<Thing>();
             
-            thing.AddProperty(_fixture.Create<Property<int>>());
-            thing.AddProperty(_fixture.Create<Property<int>>());
+            var @event = _fixture.Create<Event<int>>();
+            string eventName = _fixture.Create<string>();
+            
+            thing.AddAvailableEvent(@eventName, null);
+            await thing.AddEventAsync(@event, CancellationToken.None);
+
             
             var single = new MultipleThings(new List<Thing>
                 {
@@ -128,7 +135,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
                     _fixture.Create<Thing>()
                 },
                 _fixture.Create<string>() );
-            var middleware = new GetPropertiesMiddleware(_next, _factory, single);
+            var middleware = new GetActionsMiddleware(_next, _factory, single);
 
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
@@ -137,13 +144,14 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
             _routing.RouteData.Returns(new RouteData(
                 RouteValueDictionary.FromArray(new[]
                 {
-                    new KeyValuePair<string, object>("thingId", 0)
+                    new KeyValuePair<string, object>("thingId", 0),
+                    new KeyValuePair<string, object>("actionName", eventName),
                 })));
 
             await middleware.Invoke(_httpContext);
 
-            True(code == (int)HttpStatusCode.OK);
-            True(_body.Length > 0);
+            Assert.True(code == (int)HttpStatusCode.OK);
+            Assert.True(_body.Length > 0);
         }
         #endregion
 

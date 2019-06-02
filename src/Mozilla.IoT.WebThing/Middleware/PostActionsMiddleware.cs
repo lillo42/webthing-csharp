@@ -1,14 +1,13 @@
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
+namespace Mozilla.IoT.WebThing.Middleware
 {
     public class PostActionsMiddleware : AbstractThingMiddleware
     {
@@ -25,15 +24,16 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
 
             if (thing == null)
             {
-                await NotFoundAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
             
-            JObject json = ParseBody(httpContext);
+            JObject json = await httpContext.ReadBodyAsync<JObject>()
+                .ConfigureAwait(false);
 
             if (json == null)
             {
-                await NotFoundAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
 
@@ -54,25 +54,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
                 }
             }
             
-            await CreatedAsync(httpContext, response);
-        }
-
-        private static JObject ParseBody(HttpContext httpContext)
-        {
-            using (var reader = new BsonDataReader(httpContext.Request.Body))
-            {
-                return s_serializer.Deserialize<JObject>(reader);
-            }
-        }
-
-        private static string GetActionName(HttpContext httpContext)
-        {
-            if (httpContext.GetRouteData().Values.TryGetValue("actionName", out object data))
-            {
-                return data.ToString();
-            }
-            
-            return null;
+            await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
         }
     }
 }

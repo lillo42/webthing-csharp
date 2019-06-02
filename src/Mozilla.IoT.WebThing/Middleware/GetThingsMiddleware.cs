@@ -1,10 +1,10 @@
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
+namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetThingsMiddleware : AbstractThingMiddleware
     {
@@ -15,7 +15,6 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
 
         public async Task Invoke(HttpContext httpContext)
         {
-
             string ws = string.Empty;
             
             var array = new JArray();
@@ -27,12 +26,13 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
                     new JProperty("rel", "alternate"),
                     new JProperty("href", $"{ws}/{thing.HrefPrefix}"));
                 
-                (description["links"] as JArray).Add(link);
+                ((JArray)description["links"]).Add(link);
                 
                 array.Add(description);
             }
 
-            await OkAsync(httpContext, array.ToString());
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK, array.ToString())
+                .ConfigureAwait(false);
         }
     }
 }

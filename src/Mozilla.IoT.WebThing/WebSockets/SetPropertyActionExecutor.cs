@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public class SetPropertyExecutor : IWebSocketExecutor
+    public class SetPropertyActionExecutor : IWebSocketActionExecutor
     {
         public string Action => "setProperty";
 

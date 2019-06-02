@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public interface IWebSocketExecutor
+    public interface IWebSocketActionExecutor
     {
         string Action { get; }
 

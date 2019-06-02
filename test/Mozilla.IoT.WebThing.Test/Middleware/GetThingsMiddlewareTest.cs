@@ -1,18 +1,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
+using Mozilla.IoT.WebThing.Middleware;
 using NSubstitute;
 using Xunit;
-using static Xunit.Assert;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
+namespace Mozilla.IoT.WebThing.Test.Middleware
 {
     public class GetThingsMiddlewareTest
     {
@@ -68,8 +66,8 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Test.Middlewares
             
             await middleware.Invoke(_httpContext);
 
-            True(code == (int)HttpStatusCode.OK);
-            True(_body.Length > 0);
+            Assert.True(code == (int)HttpStatusCode.OK);
+            Assert.True(_body.Length > 0);
         }
         #endregion
 

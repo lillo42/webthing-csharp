@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
+namespace Mozilla.IoT.WebThing.Middleware
 {
     public class PostActionMiddleware : AbstractThingMiddleware
     {
@@ -26,25 +27,26 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
 
             if (thing == null)
             {
-                await NotFoundAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
             
-            JObject json = ParseBody(httpContext);
+            JObject json = await httpContext.ReadBodyAsync<JObject>()
+                .ConfigureAwait(false);
 
             if (json == null)
             {
-                await NotFoundAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
 
-            string name = GetActionName(httpContext);
+            string name = httpContext.GetValueFromRoute<string>("actionName");
 
             IEnumerable<JProperty> properties = json.Properties();
 
             if (properties == null || !properties.Any())
             {
-                await BadRequestAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
                 return;
             }
             
@@ -52,36 +54,21 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
             
             if (json.TryGetValue(name, out JToken token))
             {
-                var action = await thing.PerformActionAsync(name, (JObject)token["input"], httpContext.RequestAborted);
+                var action = await thing.PerformActionAsync(name, (JObject)token["input"], httpContext.RequestAborted)
+                    .ConfigureAwait(false);
                 
                 if (action != null)
                 {
                     response.Add(name, action.AsActionDescription());
                 }
 
-                action.StartAsync(CancellationToken.None)
+                var block = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
+                
+                await block.SendAsync(action)
                     .ConfigureAwait(false);
             }
             
-            await CreatedAsync(httpContext, response);
-        }
-
-        private static JObject ParseBody(HttpContext httpContext)
-        {
-            using (var reader = new BsonDataReader(httpContext.Request.Body))
-            {
-                return s_serializer.Deserialize<JObject>(reader);
-            }
-        }
-
-        private static string GetActionName(HttpContext httpContext)
-        {
-            if (httpContext.GetRouteData().Values.TryGetValue("actionName", out object data))
-            {
-                return data.ToString();
-            }
-            
-            return null;
+            await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
         }
     }
 }

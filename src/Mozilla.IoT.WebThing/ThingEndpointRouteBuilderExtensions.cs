@@ -1,8 +1,8 @@
 using System;
 using Microsoft.AspNetCore.Routing;
 using Mozilla.IoT.WebThing;
-using Mozilla.IoT.WebThing.AspNetCore.Extensions;
 using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
+using Mozilla.IoT.WebThing.Middleware;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -88,9 +88,6 @@ namespace Microsoft.AspNetCore.Builder
             router.MapMiddlewareGet($"{prefix}/events", 
                 builder => builder.UseMiddleware<GetEventsMiddleware>(thingType));
 
-//            router.MapMiddlewareGet($"{prefix}/", 
-//                builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
-            
             #endregion
             
             #region Thing

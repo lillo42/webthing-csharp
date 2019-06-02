@@ -1,9 +1,9 @@
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
+namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetEventMiddleware : AbstractThingMiddleware
     {
@@ -18,21 +18,13 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
 
             if (thing == null)
             {
-                await NotFoundAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
             
-            await OkAsync(httpContext, thing.GetEventDescriptions(GetEventName(httpContext)).ToString());
-        }
-
-        private static string GetEventName(HttpContext httpContext)
-        {
-            if (httpContext.GetRouteData().Values.TryGetValue("eventName", out object data))
-            {
-                return data.ToString();
-            }
-            
-            return null;
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK,
+                    thing.GetEventDescriptions(httpContext.GetValueFromRoute<string>("eventName")))
+                .ConfigureAwait(false);
         }
     }
 }

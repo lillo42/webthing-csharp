@@ -386,7 +386,8 @@ namespace Mozilla.IoT.WebThing
                 Action action = (Action)Activator.CreateInstance(availableAction.Type, this, input);
 
                 action.HrefPrefix = HrefPrefix;
-                await ActionNotifyAsync(action, cancellation);
+                await ActionNotifyAsync(action, cancellation)
+                    .ConfigureAwait(false);
 
                 _actions[actionName].Add(action);
                 return action;
@@ -591,7 +592,8 @@ namespace Mozilla.IoT.WebThing
                 {
                     await subscriber.SendAsync(write, WebSocketMessageType.Text, true, cancellation)
                         .ConfigureAwait(false);
-                });
+                })
+                .ConfigureAwait(false);
         }
     }
 }

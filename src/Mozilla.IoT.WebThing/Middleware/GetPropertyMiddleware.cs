@@ -1,10 +1,11 @@
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
 using Newtonsoft.Json.Linq;
 
-namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
+namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetPropertyThingMiddleware : AbstractThingMiddleware
     {
@@ -19,34 +20,23 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
             
             if (thing == null)
             {
-                await NotFoundAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
-            
-            string propertyName = GetPropertyName(httpContext);
+
+            string propertyName = httpContext.GetValueFromRoute<string>("propertyName");
             
             if (!thing.ContainsProperty(propertyName))
             {
-                await NotFoundAsync(httpContext);
+                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
             
             var value = thing.GetProperty(propertyName);
 
-            await OkAsync(httpContext,
-                new JObject {{propertyName, value == null ? JValue.CreateNull() : new JValue(value)}});
-        }
-
-        private static string GetPropertyName(HttpContext httpContext)
-        {
-            RouteData routeData = httpContext.GetRouteData();
-            
-            if (routeData.Values.TryGetValue("propertyName", out object data))
-            {
-                return data.ToString();
-            }
-
-            return null;
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK,
+                    new JObject {{propertyName, value == null ? JValue.CreateNull() : new JValue(value)}})
+                .ConfigureAwait(false);
         }
     }
 }
