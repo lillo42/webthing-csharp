@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Extensions;
 using Newtonsoft.Json.Linq;
 
+[assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
 {
     public partial class Thing
-    {
+    {   
         private const string DEFAULT_CONTEXT = "https://iot.mozilla.org/schemas";
         private const string DEFAULT_HREF_PREFIX = "/";
 
@@ -75,6 +77,11 @@ namespace Mozilla.IoT.WebThing
             }
         }
 
+        protected internal Thing()
+         : this(Guid.NewGuid().ToString())
+        {
+            
+        }
         public Thing(string name)
             : this(name, null)
         {
@@ -269,7 +276,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="propertyName">Name of the property to set</param>
         /// <param name="value">Value to set</param>
         /// <typeparam name="T">Type of the property value</typeparam>
-        public void SetProperty(string propertyName, object value)
+        public virtual void SetProperty(string propertyName, object value)
         {
             Property property = FindProperty(propertyName);
             if (property != null)
@@ -284,7 +291,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="propertyName">Name of the property to set</param>
         /// <param name="value">Value to set</param>
         /// <typeparam name="T">Type of the property value</typeparam>
-        public void SetProperty<T>(string propertyName, T value)
+        public virtual  void SetProperty<T>(string propertyName, T value)
         {
             Property<T> property = FindProperty<T>(propertyName);
             if (property != null)
@@ -531,7 +538,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Name of the event</param>
         /// <param name="ws">The websocket</param>
-        public void AddEventSubscriber(string name, WebSocket ws)
+        public virtual void AddEventSubscriber(string name, WebSocket ws)
         {
             if (_availableEvents.ContainsKey(name))
             {
