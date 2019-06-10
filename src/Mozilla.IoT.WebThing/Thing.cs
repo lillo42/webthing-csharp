@@ -375,7 +375,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="input">Any action inputs</param>
         /// <param name="cancellation"></param>
         /// <returns>The action that was created.</returns>
-        public async Task<Action> PerformActionAsync(string actionName, JObject input, CancellationToken cancellation)
+        public virtual async Task<Action> PerformActionAsync(string actionName, JObject input, CancellationToken cancellation)
         {
             if (!_availableActions.ContainsKey(actionName))
             {

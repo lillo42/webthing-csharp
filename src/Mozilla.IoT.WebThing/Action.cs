@@ -1,8 +1,10 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
+[assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
 {
     /// <summary>
@@ -15,53 +17,58 @@ namespace Mozilla.IoT.WebThing
         private const string STATUS = "status";
         private const string INPUT = "input";
         private const string TIME_COMPLETED = "timeCompleted";
-        
+
         /// <summary>
         /// Action's ID.
         /// </summary>
         public abstract string Id { get; }
-        
+
         /// <summary>
         /// The thing associated with this action.
         /// </summary>
         public Thing Thing { get; }
-        
+
         /// <summary>
         /// Action's name.
         /// </summary>
         public abstract string Name { get; }
-        
+
         /// <summary>
         /// The prefix of any hrefs associated with this action.
         /// </summary>
         public string HrefPrefix { get; set; }
-        
+
         /// <summary>
         /// Action's href.
         /// </summary>
         public string Href { get; }
-        
+
         /// <summary>
         /// Action's status.
         /// </summary>
         public Status Status { get; private set; }
-        
+
         /// <summary>
         /// The time the action was requested.
         /// </summary>
         public DateTime TimeRequested { get; }
-        
+
         /// <summary>
         /// The time the action was completed.
         /// </summary>
         public DateTime? TimeCompleted { get; private set; }
-        
+
         /// <summary>
         /// The inputs for this action.
         /// </summary>
         public JObject Input { get; }
-        
-        
+
+
+        protected internal Action()
+            : this(null, null)
+        {
+        }
+
         protected Action(Thing thing, JObject input)
         {
             Thing = thing;
@@ -92,7 +99,7 @@ namespace Mozilla.IoT.WebThing
             {
                 inner.Add(TIME_COMPLETED, TimeCompleted);
             }
-            
+
             return new JObject(new JProperty(Name, inner));
         }
 
@@ -106,11 +113,11 @@ namespace Mozilla.IoT.WebThing
             Status = Status.Pending;
             await PerformActionAsync(cancellation)
                 .ConfigureAwait(false);
-            
+
             Finish();
         }
 
-        protected virtual Task PerformActionAsync(CancellationToken cancellation) 
+        protected virtual Task PerformActionAsync(CancellationToken cancellation)
             => Task.CompletedTask;
 
 

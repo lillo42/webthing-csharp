@@ -10,6 +10,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 {
     public class RequestActionExecutor : IWebSocketActionExecutor
     {
+        private static readonly  ArraySegment<byte> s_errorMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"{""messageType"": ""error"",""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid action request""}}"));
         public string Action => "requestAction";
 
         private readonly ITargetBlock<Action> _target;
@@ -41,16 +42,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 }
                 else
                 {
-                    await webSocket.SendAsync(new ArraySegment<byte>(Encoding.Default.GetBytes(new JObject
-                            {
-                                { "messageType", "error" },
-                                {
-                                    "data", new JObject(
-                                        new JProperty("status", "400 Bad Request"),
-                                        new JProperty("message", "Invalid action request"))
-                                }
-                            }
-                            .ToString())), WebSocketMessageType.Text, true, cancellation)
+                    await webSocket.SendAsync(s_errorMessage, WebSocketMessageType.Text, true, cancellation)
                         .ConfigureAwait(false);
                 }
             }
