@@ -35,34 +35,34 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The type context of the thing.
         /// </summary>
-        public string Context { get; }
+        public virtual string Context { get; }
         
         /// <summary>
         /// The name of the thing.
         /// </summary>
-        public string Name { get; }
+        public virtual string Name { get; }
         
         /// <summary>
         /// The description of the thing.
         /// </summary>
-        public string Description { get; }
+        public virtual string Description { get; }
         
         /// <summary>
         /// The type(s) of the thing.
         /// </summary>
-        public JArray Type { get; }
+        public virtual JArray Type { get; }
         
         /// <summary>
         /// The href of this thing's custom UI.
         /// </summary>
-        public string UiHref { get; set; }
+        public virtual string UiHref { get; set; }
         
         private string _hrefPrefix;
 
         /// <summary>
         /// This thing's href.
         /// </summary>
-        public string HrefPrefix
+        public virtual  string HrefPrefix
         {
             get => string.IsNullOrEmpty(_hrefPrefix) ? DEFAULT_HREF_PREFIX : _hrefPrefix;
             set
@@ -103,7 +103,7 @@ namespace Mozilla.IoT.WebThing
         }
 
 
-        public JObject AsThingDescription()
+        public virtual JObject AsThingDescription()
         {
             var actions = new JObject();
             
@@ -181,7 +181,7 @@ namespace Mozilla.IoT.WebThing
         /// Get the thing's properties as a <see cref="Newtonsoft.Json.Linq.JObject"/>
         /// </summary>
         /// <returns></returns>
-        public JObject GetPropertyDescriptions()
+        public virtual JObject GetPropertyDescriptions()
         {
             var obj = new JObject();
             _properties.ForEach(p => obj.Add(p.Key, p.Value.AsPropertyDescription()));
@@ -192,7 +192,7 @@ namespace Mozilla.IoT.WebThing
         /// Add a property to this thing.
         /// </summary>
         /// <param name="property">Property to add.</param>
-        public void AddProperty(Property property)
+        public virtual void AddProperty(Property property)
         {
             property.HrefPrefix = HrefPrefix;
             _properties.Add(property.Name, property);
@@ -202,7 +202,7 @@ namespace Mozilla.IoT.WebThing
         /// Remove a property from this thing.
         /// </summary>
         /// <param name="property">Property to remove.</param>
-        public void RemoveProperty(Property property)
+        public virtual void RemoveProperty(Property property)
         {
             if (_properties.ContainsKey(property.Name))
             {
@@ -215,7 +215,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="propertyName">Name of the property to find</param>
         /// <returns>Property if found, else null.</returns>
-        public Property FindProperty(string propertyName)
+        public virtual Property FindProperty(string propertyName)
         {
             if (_properties.ContainsKey(propertyName))
             {
@@ -231,7 +231,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="propertyName">Name of the property to find</param>
         /// <returns>Property if found, else null.</returns>
         /// <typeparam name="T">Type of the property value</typeparam>
-        public Property<T> FindProperty<T>(string propertyName)
+        public virtual Property<T> FindProperty<T>(string propertyName)
         {
             if (_properties.ContainsKey(propertyName))
             {
@@ -246,7 +246,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="propertyName">Name of the property to get the value of</param>
         /// <returns>Current property value if found, else null.</returns>
-        public object GetProperty(string propertyName)
+        public virtual object GetProperty(string propertyName)
             => FindProperty(propertyName)?.Value;
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="propertyName">Name of the property to get the value of</param>
         /// <returns>Current property value if found, else default.</returns>
         /// <typeparam name="T">Type of the property value</typeparam>
-        public T GetProperty<T>(string propertyName)
+        public virtual T GetProperty<T>(string propertyName)
         {
             var property = FindProperty<T>(propertyName);
             return property != null ? property.Value : default;
@@ -266,7 +266,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="propertyName">The property to look for</param>
         /// <returns>Indication of property presence.</returns>
-        public bool ContainsProperty(string propertyName)
+        public virtual bool ContainsProperty(string propertyName)
             => !string.IsNullOrEmpty(propertyName) &&  _properties.ContainsKey(propertyName);
 
         
@@ -306,7 +306,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="property">The property that changed</param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public async Task PropertyNotifyAsync(Property property, CancellationToken cancellation)
+        public virtual async Task PropertyNotifyAsync(Property property, CancellationToken cancellation)
         {
             var json = new JObject(
                 new JProperty("messageType", "propertyStatus"));
@@ -327,7 +327,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Optional action name to get descriptions for</param>
         /// <returns>Action descriptions.</returns>
-        public JArray GetActionDescriptions(string name = null)
+        public virtual JArray GetActionDescriptions(string name = null)
         {
             var array = new JArray();
 
@@ -358,7 +358,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="name">Name of the action</param>
         /// <param name="id">ID of the action</param>
         /// <returns>The requested action if found, else null.</returns>
-        public Action GetAction(string name, string id)
+        public virtual Action GetAction(string name, string id)
         {
             if (!_actions.ContainsKey(name))
             {
@@ -410,7 +410,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="action">The action whose status changed</param>
         /// <param name="cancellation"></param>
-        public async Task ActionNotifyAsync(Action action, CancellationToken cancellation)
+        public virtual async Task ActionNotifyAsync(Action action, CancellationToken cancellation)
         {
             if (!_subscribers.Any())
             {
@@ -431,7 +431,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="name">name of the action</param>
         /// <param name="id">ID of the action</param>
         /// <returns>indicating the presence of the action.</returns>
-        public bool RemoveAction(string name, string id)
+        public virtual  bool RemoveAction(string name, string id)
         {
             Action action = GetAction(name, id);
             if (action == null)
@@ -449,7 +449,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="name">Name of the action</param>
         /// <param name="metadata">Action metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/></param>
         /// <param name="type">Type to instantiate for this action</param>
-        public void AddAvailableAction<T>(string name, JObject metadata = null)
+        public virtual void AddAvailableAction<T>(string name, JObject metadata = null)
             where T : Action
         {
             if (metadata == null)
@@ -470,7 +470,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Optional event name to get descriptions for</param>
         /// <returns>Event descriptions.</returns>
-        public JArray GetEventDescriptions(string name = null)
+        public virtual JArray GetEventDescriptions(string name = null)
         {
             var array = new JArray();
 
@@ -503,7 +503,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="event">The event that occurred.</param>
         /// <param name="cancellation"></param>
-        public async Task EventNotifyAsync(Event @event, CancellationToken cancellation)
+        public virtual  async Task EventNotifyAsync(Event @event, CancellationToken cancellation)
         {
             if (!_availableEvents.ContainsKey(@event.Name))
             {
@@ -523,7 +523,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Name of the event</param>
         /// <param name="metadata">Event metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/>></param>
-        public void AddAvailableEvent(string name, JObject metadata = null)
+        public virtual  void AddAvailableEvent(string name, JObject metadata = null)
         {
             if (metadata == null)
             {
@@ -551,7 +551,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Name of the event</param>
         /// <param name="ws">The websocket</param>
-        public void RemoveEventSubscriber(string name, WebSocket ws)
+        public virtual  void RemoveEventSubscriber(string name, WebSocket ws)
         {
             if (_availableEvents.ContainsKey(name))
             {
@@ -567,14 +567,14 @@ namespace Mozilla.IoT.WebThing
         /// Add a new websocket subscriber.
         /// </summary>
         /// <param name="ws">The websocket</param>
-        public void AddSubscriber(WebSocket ws)
+        public virtual void AddSubscriber(WebSocket ws)
             => _subscribers.Add(ws);
 
         /// <summary>
         /// Remove a websocket subscriber 
         /// </summary>
         /// <param name="ws">The websocket</param>
-        public void RemoveSubscriber(WebSocket ws)
+        public virtual void RemoveSubscriber(WebSocket ws)
         {
             if (_subscribers.Contains(ws))
             {

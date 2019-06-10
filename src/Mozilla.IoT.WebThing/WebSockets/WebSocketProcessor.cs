@@ -15,11 +15,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
 {
     public class WebSocketProcessor
     {
-        private static readonly ArraySegment<byte> s_error = new ArraySegment<byte>(Encoding.UTF8.GetBytes(new JObject
-        {
-            new JProperty("messageType", "error"),
-            new JObject {new JProperty("status", "400 Bad Request"), new JProperty("message", "Invalid message")}
-        }.ToString(Formatting.None)));
+        private static readonly ArrayPool<byte> s_pool = ArrayPool<byte>.Create();
+        private static readonly ArraySegment<byte> s_error = new ArraySegment<byte>(
+            Encoding.UTF8.GetBytes(
+                @"{""messageType"": ""error"", ""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid message""}}"));
 
         private readonly IServiceProvider _service;
 
@@ -36,7 +35,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
             var options = _service.GetService<WebSocketOptions>();
 
-            var buffer = ArrayPool<byte>.Shared.Rent(options.ReceiveBufferSize);
+            var buffer = s_pool.Rent(options.ReceiveBufferSize);
 
             try
             {
@@ -46,7 +45,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                 var jsonSetting = _service.GetService<JsonSerializerSettings>();
 
-                while (!result.CloseStatus.HasValue || !cancellation.IsCancellationRequested)
+                while (!result.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
                     var json = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(buffer), jsonSetting);
                     
@@ -54,6 +53,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     {
                         await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
                             .ConfigureAwait(false);
+                        
+                        result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None)
+                            .ConfigureAwait(false);
+                        
+                        continue;
                     }
 
                     JToken type = json["messageType"];
@@ -79,8 +83,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             finally
             {
                 thing.RemoveSubscriber(webSocket);
-                
-                ArrayPool<byte>.Shared.Return(buffer);
+                s_pool.Return(buffer);
             }
         }
     }
