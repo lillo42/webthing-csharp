@@ -399,7 +399,7 @@ namespace Mozilla.IoT.WebThing
                 _actions[actionName].Add(action);
                 return action;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
