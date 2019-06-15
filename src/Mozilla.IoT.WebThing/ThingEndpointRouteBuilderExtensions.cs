@@ -55,6 +55,9 @@ namespace Microsoft.AspNetCore.Builder
 
             router.MapMiddlewareGet($"{prefix}/properties/{{propertyName}}", 
                 builder => builder.UseMiddleware<GetPropertyThingMiddleware>(thingType));
+            
+            router.MapMiddlewarePut($"{prefix}/properties/{{propertyName}}", 
+                builder => builder.UseMiddleware<PutSetPropertyMiddleware>(thingType));
             #endregion
 
             #region Actions

@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.TestHost;
 using Mozilla.IoT.WebThing.Accepted.Test.Startups;
 using Newtonsoft.Json.Linq;
@@ -25,6 +27,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         }
 
         #region Get
+
         [Fact]
         public async Task Get()
         {
@@ -140,7 +143,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             var expected = JObject.Parse(expectedJson);
             JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
         }
-        
+
         [Fact]
         public async Task GetProperty_NotFound()
         {
@@ -158,6 +161,26 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             json.Should().NotBeNullOrEmpty();
             json.Should().Be("[]");
         }
+
+        #endregion
+
+        #region Put
+
+        [Theory]
+        [InlineData("on", @"{ ""on"": false }")]
+        public async Task PutProperty(string property, string expectedJson)
+        {
+            var content = new StringContent(expectedJson);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var responseMessage = await _httpClient.PutAsync($"/properties/{property}", content);
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            var expected = JObject.Parse(expectedJson);
+            JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
+        }
+
         #endregion
     }
 }

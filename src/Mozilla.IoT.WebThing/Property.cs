@@ -14,11 +14,12 @@ namespace Mozilla.IoT.WebThing
     public class Property<T> : Property
     {
         public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
+
         public new T Value
         {
             get => (T)base.Value;
             set => base.Value = value;
-        } 
+        }
 
         public Property(Thing thing, string name, T value)
             : base(thing, name, value)
@@ -61,12 +62,13 @@ namespace Mozilla.IoT.WebThing
         public string Href { get; }
 
         private string _hrefPreix;
+
         /// <summary>
         /// The prefix of any hrefs associated with this property.
         /// </summary>
         public string HrefPrefix
         {
-            get => string.IsNullOrEmpty(_hrefPreix) ?  DEFAULT_PREFIX : _hrefPreix;
+            get => string.IsNullOrEmpty(_hrefPreix) ? DEFAULT_PREFIX : _hrefPreix;
             set
             {
                 _hrefPreix = value;
@@ -93,10 +95,21 @@ namespace Mozilla.IoT.WebThing
             set
             {
                 ValidateValue(value);
-                _value = value;
+                _value = GetValue();
                 OnValueChanged();
+
+                object GetValue()
+                {
+                    if (value is JValue jValue)
+                    {
+                        return jValue.Value;
+                    }
+
+                    return value;
+                }
             }
         }
+
 
         public event EventHandler<ValueChangedEventArgs> ValuedChanged;
 

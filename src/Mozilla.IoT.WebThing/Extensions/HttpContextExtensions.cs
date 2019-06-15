@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,10 +15,11 @@ namespace Microsoft.AspNetCore.Http
     {
         public static async Task<T> ReadBodyAsync<T>(this HttpContext context)
         {
-            var buffer = new byte[context.Request.Body.Length];
-            await context.Request.Body.ReadAsync(buffer, 0, buffer.Length)
-                .ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(buffer));
+            using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
+            {
+                return JsonConvert.DeserializeObject<T>(await reader.ReadToEndAsync()
+                    .ConfigureAwait(false));
+            }
         }
         
         
