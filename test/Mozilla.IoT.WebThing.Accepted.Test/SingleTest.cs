@@ -1,12 +1,16 @@
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.WebSockets;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.TestHost;
 using Mozilla.IoT.WebThing.Accepted.Test.Startups;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -17,13 +21,14 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         private readonly Fixture _fixture;
         private readonly TestServer _server;
         private readonly HttpClient _httpClient;
-
+        private readonly WebSocketClient _webSocketClient;
 
         public SingleTest()
         {
             _fixture = new Fixture();
             _server = new TestServer(WebHostBuilder.Create<SingleStartup>());
             _httpClient = _server.CreateClient();
+            _webSocketClient = _server.CreateWebSocketClient();
         }
 
         #region Get
@@ -93,6 +98,20 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
 
             JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
         }
+        
+        [Fact]
+        public async Task GetAction()
+        {
+            var responseMessage = await _httpClient.GetAsync($"/actions");
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            json.Should().Be("[]");
+        }
+
+        #endregion
+
+        #region Property
 
         [Fact]
         public async Task GetProperties()
@@ -151,21 +170,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             responseMessage.IsSuccessStatusCode.Should().BeFalse();
             Assert.Equal(HttpStatusCode.NotFound, responseMessage.StatusCode);
         }
-
-        [Fact]
-        public async Task GetAction()
-        {
-            var responseMessage = await _httpClient.GetAsync($"/actions");
-            responseMessage.IsSuccessStatusCode.Should().BeTrue();
-            string json = await responseMessage.Content.ReadAsStringAsync();
-            json.Should().NotBeNullOrEmpty();
-            json.Should().Be("[]");
-        }
-
-        #endregion
-
-        #region Put
-
+        
         [Theory]
         [InlineData("on", @"{ ""on"": false }")]
         public async Task PutProperty(string property, string expectedJson)
@@ -179,6 +184,33 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             json.Should().NotBeNullOrEmpty();
             var expected = JObject.Parse(expectedJson);
             JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
+        }
+        
+        [Fact]
+        public async Task PutProperty_NotFound()
+        {
+            string property = _fixture.Create<string>();
+            var content = new StringContent($@"{{ ""{property}"": {_fixture.Create<int>()} }}");
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var responseMessage = await _httpClient.PutAsync($"/properties/{property}", content);
+            responseMessage.IsSuccessStatusCode.Should().BeFalse();
+            responseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        
+        [Theory]
+        [InlineData("on", @"{ ""on"": true }")]
+        [InlineData("level", @"{ ""level"": 0.0 }")]
+        public async Task SetProperty(string property, string expectedJson)
+        {
+            var ws = await _webSocketClient.ConnectAsync(new Uri($"ws://{_server.BaseAddress.Host}:{_server.BaseAddress.Port}"), CancellationToken.None);
+            var json = Encoding.UTF8.GetBytes(JObject.Parse($@"{{
+                ""messageType"": ""setProperty"",
+                ""data"": {expectedJson} 
+            }}").ToString(Formatting.None));
+            await ws.SendAsync(new ArraySegment<byte>(json), WebSocketMessageType.Text, true, CancellationToken.None);
+            await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye bye", CancellationToken.None);
+            await GetProperty(property, expectedJson);
         }
 
         #endregion
