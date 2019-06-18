@@ -95,18 +95,13 @@ namespace Mozilla.IoT.WebThing
             set
             {
                 ValidateValue(value);
-                _value = GetValue();
-                OnValueChanged();
-
-                object GetValue()
+                _value = value switch
                 {
-                    if (value is JValue jValue)
-                    {
-                        return jValue.Value;
-                    }
-
-                    return value;
-                }
+                    JValue jValue => jValue.Value,
+                    _ => value
+                };
+                
+                OnValueChanged();
             }
         }
 

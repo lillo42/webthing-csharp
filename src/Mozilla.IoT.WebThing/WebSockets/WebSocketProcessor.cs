@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -33,9 +34,9 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
             var executors = _service.GetService<IEnumerable<IWebSocketActionExecutor>>();
 
-            var options = _service.GetService<WebSocketOptions>();
+            var options = _service.GetService<IOptions<WebSocketOptions>>();
 
-            var buffer = s_pool.Rent(options.ReceiveBufferSize);
+            var buffer = s_pool.Rent(options.Value.ReceiveBufferSize);
 
             try
             {
@@ -48,23 +49,24 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 while (!result.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
                     var json = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(buffer), jsonSetting);
-                    
+
                     if (!json.ContainsKey("messageType") || !json.ContainsKey("data"))
                     {
                         await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
                             .ConfigureAwait(false);
-                        
+
                         result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None)
                             .ConfigureAwait(false);
-                        
+
                         continue;
                     }
 
                     JToken type = json["messageType"];
                     JToken data = json["data"];
 
-                    IWebSocketActionExecutor actionExecutor = executors.FirstOrDefault(x =>  x.Action.Equals(type.Value<string>(), StringComparison.OrdinalIgnoreCase));
-                    
+                    IWebSocketActionExecutor actionExecutor = executors.FirstOrDefault(x =>
+                        x.Action.Equals(type.Value<string>(), StringComparison.OrdinalIgnoreCase));
+
                     if (actionExecutor != null)
                     {
                         await actionExecutor.ExecuteAsync(thing, webSocket, data as JObject, cancellation)
@@ -75,7 +77,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
                             .ConfigureAwait(false);
                     }
-                    
+
                     result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None)
                         .ConfigureAwait(false);
                 }

@@ -37,10 +37,23 @@ namespace Mozilla.IoT.WebThing.Middleware
             {
                 var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync()
                     .ConfigureAwait(false);
-
-                var process = httpContext.RequestServices.GetService<WebSocketProcessor>();
-
-                await process.ExecuteAsync(thing, webSocket, CancellationToken.None);
+                try
+                {
+                    var process = httpContext.RequestServices.GetService<WebSocketProcessor>();
+                    
+                    await process.ExecuteAsync(thing, webSocket, httpContext.RequestAborted)
+                        .ConfigureAwait(false);
+                    
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close sent", CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(), CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                return;
+                
             }
 
             if (thing == null)
