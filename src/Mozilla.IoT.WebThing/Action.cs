@@ -76,7 +76,7 @@ namespace Mozilla.IoT.WebThing
             Thing = thing;
             Input = input;
             HrefPrefix = string.Empty;
-            Href = $"/action/{Name}/{Id}";
+            Href = $"/actions/{Name}/{Id}";
             TimeRequested = DateTime.UtcNow;
             Status = Status.Created;
         }

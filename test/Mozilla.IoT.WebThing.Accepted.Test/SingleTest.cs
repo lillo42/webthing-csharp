@@ -233,7 +233,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         [Fact]
         public async Task GetActions()
         {
-            var responseMessage = await _httpClient.PostAsync($"/actions/fake", new StringContent(@"{
+            await _httpClient.PostAsync($"/actions/fake", new StringContent(@"{
                 ""fake"": {}
             }", Encoding.UTF8));
             
@@ -259,7 +259,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             
             var jObject = JObject.Parse(json);
 
-            var getResponseMessage = await _httpClient.GetAsync(jObject["href"].Value<string>());
+            var getResponseMessage = await _httpClient.GetAsync(jObject["fake"]["href"].Value<string>());
             getResponseMessage.IsSuccessStatusCode.Should().BeTrue();
             string getJson = await getResponseMessage.Content.ReadAsStringAsync();
             getJson.Should().NotBeNullOrEmpty();
@@ -380,6 +380,33 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             JArray array = JArray.Parse(getJson);
             array.Should().HaveCount(1);
             array[0]["status"].Value<string>().Should().Be("completed");
+        }
+
+        [Fact]
+        public async Task DeleteActions()
+        {
+            var responseMessage = await _httpClient.PostAsync($"/actions", new StringContent(@"{
+                ""fake"": {}
+            }", Encoding.UTF8));
+            
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            responseMessage.StatusCode.Should().Be(HttpStatusCode.Created);
+            
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            
+            var jObject = JObject.Parse(json);
+            jObject.ContainsKey("fake").Should().BeTrue();
+
+            var deleteResult = await _httpClient.DeleteAsync(jObject["fake"]["href"].Value<string>());
+            deleteResult.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            
+            var getResponseMessage = await _httpClient.GetAsync("/actions");
+            getResponseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string getJson = await getResponseMessage.Content.ReadAsStringAsync();
+            getJson.Should().NotBeNullOrEmpty();
+            getJson.Should().Be("[]");
+
         }
         
         #endregion

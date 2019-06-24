@@ -2,6 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
@@ -33,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                 return;
             }
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, action.AsActionDescription())
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK, new JObject(new JProperty(name, action.AsActionDescription())))
                 .ConfigureAwait(false);
         }
     }

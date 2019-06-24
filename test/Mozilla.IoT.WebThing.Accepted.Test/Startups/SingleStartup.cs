@@ -92,7 +92,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
         }
         
         public override string Id { get; } = Guid.NewGuid().ToString();
-        public override string Name { get; } = nameof(FakeAction);
+        public override string Name { get; } = "fake";
 
         protected override async Task PerformActionAsync(CancellationToken cancellation) 
             => await Task.Delay(3_000, cancellation);
