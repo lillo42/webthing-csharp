@@ -69,14 +69,7 @@ namespace Mozilla.IoT.WebThing
         public string HrefPrefix
         {
             get => string.IsNullOrEmpty(_hrefPreix) ? DEFAULT_PREFIX : _hrefPreix;
-            set
-            {
-                _hrefPreix = value;
-                if (!_hrefPreix.EndsWith("/"))
-                {
-                    _hrefPreix += DEFAULT_PREFIX;
-                }
-            }
+            set => _hrefPreix = value;
         }
 
 
@@ -133,7 +126,7 @@ namespace Mozilla.IoT.WebThing
             var description = new JObject(Metadata);
             var link = new JObject(
                 new JProperty(REL, PROPERTY),
-                new JProperty(HREF, HrefPrefix + Href));
+                new JProperty(HREF, HrefPrefix.JoinUrl(Href)));
 
             if (description.TryGetValue(LINKS, out JToken token))
             {

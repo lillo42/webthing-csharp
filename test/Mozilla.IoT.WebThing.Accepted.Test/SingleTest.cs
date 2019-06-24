@@ -231,15 +231,157 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         #region Action
 
         [Fact]
+        public async Task GetActions()
+        {
+            var responseMessage = await _httpClient.PostAsync($"/actions/fake", new StringContent(@"{
+                ""fake"": {}
+            }", Encoding.UTF8));
+            
+            var getResponseMessage = await _httpClient.GetAsync("/actions");
+            getResponseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string json = await getResponseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            
+            JArray array = JArray.Parse(json);
+            array.Should().HaveCount(1);
+            array[0]["status"].Value<string>().Should().Be("pending");
+        }
+        
+        [Fact]
         public async Task GetAction()
         {
-            var responseMessage = await _httpClient.GetAsync($"/actions");
-            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            var responseMessage = await _httpClient.PostAsync($"/actions/fake", new StringContent(@"{
+                ""fake"": {}
+            }", Encoding.UTF8));
+            
             string json = await responseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
-            json.Should().Be("[]");
+            
+            var jObject = JObject.Parse(json);
+
+            var getResponseMessage = await _httpClient.GetAsync(jObject["href"].Value<string>());
+            getResponseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string getJson = await getResponseMessage.Content.ReadAsStringAsync();
+            getJson.Should().NotBeNullOrEmpty();
+
+            var getAction = JObject.Parse(getJson);
+            getAction.ContainsKey("fake").Should().BeTrue();
+            
+            var fake = getAction["fake"] as JObject;
+            fake.Should().NotBeNull();
+
+            fake.ContainsKey("href").Should().BeTrue("Should contain \"href\" ");
+            fake["href"].Value<string>().Should().NotBeNullOrEmpty();
+            fake.ContainsKey("status").Should().BeTrue("Should contain \"href\" ");
+            fake["status"].Value<string>().Should().NotBeNullOrEmpty();
+        }
+        
+        
+        [Fact]
+        public async Task PostActions()
+        {
+            var responseMessage = await _httpClient.PostAsync($"/actions", new StringContent(@"{
+                ""fake"": {}
+            }", Encoding.UTF8));
+            
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            responseMessage.StatusCode.Should().Be(HttpStatusCode.Created);
+            
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            
+            var jObject = JObject.Parse(json);
+            jObject.ContainsKey("fake").Should().BeTrue();
+            
+            var fake = jObject["fake"] as JObject;
+            fake.Should().NotBeNull();
+
+            fake.ContainsKey("href").Should().BeTrue("Should contain \"href\" ");
+            fake["href"].Value<string>().Should().NotBeNullOrEmpty();
+            fake.ContainsKey("status").Should().BeTrue("Should contain \"href\" ");
+            fake["status"].Value<string>().Should().NotBeNullOrEmpty();
+            
+            var getResponseMessage = await _httpClient.GetAsync("/actions");
+            getResponseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string getJson = await getResponseMessage.Content.ReadAsStringAsync();
+            getJson.Should().NotBeNullOrEmpty();
+            getJson.Should().NotBe("[]");
         }
 
+        [Theory]
+        [InlineData("fake", "{}")]
+        public async Task PostAction(string action, string sendJson)
+        {
+            var responseMessage = await _httpClient.PostAsync($"/actions/{action}", new StringContent($@"{{
+                ""{action}"": {sendJson}
+            }}", Encoding.UTF8));
+            
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            responseMessage.StatusCode.Should().Be(HttpStatusCode.Created);
+            
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            
+            var jObject = JObject.Parse(json);
+            jObject.ContainsKey(action).Should().BeTrue();
+            
+            var fake = jObject[action] as JObject;
+            fake.Should().NotBeNull();
+
+            fake.ContainsKey("href").Should().BeTrue("Should contain \"href\" ");
+            fake["href"].Value<string>().Should().NotBeNullOrEmpty();
+            fake.ContainsKey("status").Should().BeTrue("Should contain \"href\" ");
+            fake["status"].Value<string>().Should().NotBeNullOrEmpty();
+            
+            var getResponseMessage = await _httpClient.GetAsync("/actions");
+            getResponseMessage.IsSuccessStatusCode.Should().BeTrue();
+            
+            string getJson = await getResponseMessage.Content.ReadAsStringAsync();
+            getJson.Should().NotBeNullOrEmpty();
+
+            JArray array = JArray.Parse(getJson);
+            array.Should().HaveCount(1);
+            array[0]["status"].Value<string>().Should().Be("pending");
+        }
+        
+        [Fact]
+        public async Task PostAndWaitActions()
+        {
+            var responseMessage = await _httpClient.PostAsync($"/actions", new StringContent(@"{
+                ""fake"": {}
+            }", Encoding.UTF8));
+            
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            responseMessage.StatusCode.Should().Be(HttpStatusCode.Created);
+            
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            
+            var jObject = JObject.Parse(json);
+            jObject.ContainsKey("fake").Should().BeTrue();
+            
+            var fake = jObject["fake"] as JObject;
+            fake.Should().NotBeNull();
+
+            fake.ContainsKey("href").Should().BeTrue("Should contain \"href\" ");
+            fake["href"].Value<string>().Should().NotBeNullOrEmpty();
+            fake.ContainsKey("status").Should().BeTrue("Should contain \"href\" ");
+            fake["status"].Value<string>().Should().NotBeNullOrEmpty();
+
+
+            await Task.Delay(3_000);
+            
+            var getResponseMessage = await _httpClient.GetAsync("/actions/fake");
+            getResponseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string getJson = await getResponseMessage.Content.ReadAsStringAsync();
+            getJson.Should().NotBeNullOrEmpty();
+            getJson.Should().NotBe("[]");
+            
+            JArray array = JArray.Parse(getJson);
+            array.Should().HaveCount(1);
+            array[0]["status"].Value<string>().Should().Be("completed");
+        }
+        
         #endregion
     }
 }

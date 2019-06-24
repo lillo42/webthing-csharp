@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -83,8 +85,17 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
 
     public class FakeAction : Action
     {
+        public FakeAction(Thing thing, JObject input)
+            : base(thing, input)
+        {
+            
+        }
+        
         public override string Id { get; } = Guid.NewGuid().ToString();
         public override string Name { get; } = nameof(FakeAction);
+
+        protected override async Task PerformActionAsync(CancellationToken cancellation) 
+            => await Task.Delay(3_000, cancellation);
     }
 
 }

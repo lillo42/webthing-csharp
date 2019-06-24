@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Mozilla.IoT.WebThing.Extensions;
 using Newtonsoft.Json.Linq;
 
 [assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
@@ -64,7 +65,8 @@ namespace Mozilla.IoT.WebThing
         public JObject Input { get; }
 
 
-        protected internal Action()
+        
+        internal Action()
             : this(null, null)
         {
         }
@@ -86,11 +88,11 @@ namespace Mozilla.IoT.WebThing
         public JObject AsActionDescription()
         {
             var inner = new JObject(
-                new JProperty(HREF, HrefPrefix + Href),
+                new JProperty(HREF, HrefPrefix.JoinUrl(Href)),
                 new JProperty(TIME_REQUESTED, TimeRequested),
                 new JProperty(STATUS, Status.ToString().ToLower()));
 
-            if (Input != null)
+            if (Input != null && Input.HasValues) 
             {
                 inner.Add(INPUT, Input);
             }
@@ -100,7 +102,7 @@ namespace Mozilla.IoT.WebThing
                 inner.Add(TIME_COMPLETED, TimeCompleted);
             }
 
-            return new JObject(new JProperty(Name, inner));
+            return inner;
         }
 
         /// <summary>
@@ -117,8 +119,7 @@ namespace Mozilla.IoT.WebThing
             Finish();
         }
 
-        protected virtual Task PerformActionAsync(CancellationToken cancellation)
-            => Task.CompletedTask;
+        protected abstract Task PerformActionAsync(CancellationToken cancellation);
 
 
         /// <summary>
