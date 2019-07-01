@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -69,17 +68,23 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// Get the event description. 
         /// </summary>
-        /// <returns>Description of the event as a JObject.</returns>
-        public JObject AsEventDescription()
+        /// <returns>Description of the event as a <see cref="IDictionary{TKey,TValue}"/>>.</returns>
+        public virtual IDictionary<string, object> AsEventDescription()
         {
-            var inner = new JObject(new JProperty(TIMESTAMP, Time));
+            var inner = new Dictionary<string, object>
+            {
+                [TIMESTAMP] =  Time
+            };
 
             if (Data != null)
             {
-                inner.Add(new JProperty(DATA, Data));
+                inner.Add(DATA, Data);
             }
 
-            return new JObject(new JProperty(Name, inner));
+            return new Dictionary<string, object>
+            {
+              [Name] = inner  
+            };
         }
     }
 }

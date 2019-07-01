@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -17,22 +16,19 @@ namespace Microsoft.AspNetCore.Http
         {
             using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
             {
-                return JsonConvert.DeserializeObject<T>(await reader.ReadToEndAsync()
+                var convert =  context.RequestServices.GetService<IJsonConvert>();
+                return convert.Deserialize<T>(await reader.ReadToEndAsync()
                     .ConfigureAwait(false));
             }
         }
-        
-        
+
         public static async Task WriteBodyAsync<T>(this HttpContext context, HttpStatusCode statusCode, T value)
         {
-            JsonSerializerSettings settings = context.RequestServices.GetService<JsonSerializerSettings>();
-            
-            string json =  value switch
-            {
-                JToken token => token.ToString(settings.Formatting),
-                _ => JsonConvert.SerializeObject(value, settings) 
-            };
-            
+            var settings = context.RequestServices.GetService<IJsonSerializerSettings>();
+            var convert =  context.RequestServices.GetService<IJsonConvert>();
+
+            string json = convert.Serialize(value, settings);
+
             context.Response.StatusCode = (int) statusCode;
             context.Response.ContentType = "application/json";
             

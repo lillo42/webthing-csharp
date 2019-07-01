@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Net.WebSockets;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -8,10 +7,10 @@ namespace Mozilla.IoT.WebThing
     {
         private class AvailableEvent
         {
-            public JObject Metadata { get; }
+            public IDictionary<string, object> Metadata { get; }
             public ISet<WebSocket> Subscribers { get; } = new HashSet<WebSocket>();
 
-            public AvailableEvent(JObject metadata)
+            public AvailableEvent(IDictionary<string, object> metadata)
             {
                 Metadata = metadata;
             }

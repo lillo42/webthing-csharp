@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Mozilla.IoT.WebThing.Extensions;
-using Newtonsoft.Json.Linq;
 
 [assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
@@ -62,7 +62,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The inputs for this action.
         /// </summary>
-        public JObject Input { get; }
+        public IDictionary<string, object> Input { get; }
 
 
         
@@ -71,7 +71,7 @@ namespace Mozilla.IoT.WebThing
         {
         }
 
-        protected Action(Thing thing, JObject input)
+        protected Action(Thing thing, IDictionary<string, object> input)
         {
             Thing = thing;
             Input = input;
@@ -85,14 +85,16 @@ namespace Mozilla.IoT.WebThing
         /// Get the action description.
         /// </summary>
         /// <returns>Description of the action as a JSONObject.</returns>
-        public JObject AsActionDescription()
+        public virtual IDictionary<string, object> AsActionDescription()
         {
-            var inner = new JObject(
-                new JProperty(HREF, HrefPrefix.JoinUrl(Href)),
-                new JProperty(TIME_REQUESTED, TimeRequested),
-                new JProperty(STATUS, Status.ToString().ToLower()));
+            var inner = new Dictionary<string, object>
+            {
+                [HREF] = HrefPrefix.JoinUrl(Href),
+                [TIME_REQUESTED] = TimeRequested,
+                [STATUS] = Status.ToString().ToLower()
+            };
 
-            if (Input != null && Input.HasValues) 
+            if (Input != null && Input.Any()) 
             {
                 inner.Add(INPUT, Input);
             }

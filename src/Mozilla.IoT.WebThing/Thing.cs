@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Extensions;
-using Newtonsoft.Json.Linq;
 
 [assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
@@ -50,7 +49,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The type(s) of the thing.
         /// </summary>
-        public virtual JArray Type { get; }
+        public virtual ICollection<object> Type { get; }
         
         /// <summary>
         /// The href of this thing's custom UI.
@@ -87,12 +86,12 @@ namespace Mozilla.IoT.WebThing
         {
         }
 
-        public Thing(string name, JArray type)
+        public Thing(string name, ICollection<object> type)
             : this(name, type, null)
         {
         }
 
-        public Thing(string name, JArray type, string description)
+        public Thing(string name, ICollection<object> type, string description)
         {
             Name = name;
             Context = DEFAULT_CONTEXT;
@@ -103,9 +102,9 @@ namespace Mozilla.IoT.WebThing
         }
 
 
-        public virtual JObject AsThingDescription()
+        public virtual IDictionary<string, object> AsThingDescription()
         {
-            var actions = new JObject();
+            var actions = new Dictionary<string, object>();
             
             _availableActions.ForEach(action =>
             {

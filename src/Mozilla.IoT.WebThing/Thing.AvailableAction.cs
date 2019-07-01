@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -11,18 +9,18 @@ namespace Mozilla.IoT.WebThing
         private class AvailableAction
         {
             private const string INPUT = "input";
-            public JObject Metadata { get; }
+            public IDictionary<string, object> Metadata { get; }
             public Type Type { get; }
-            public JSchema Schema { get; }
+            public IJsonSchema Schema { get; }
 
-            public AvailableAction(JObject metadata, Type type)
+            public AvailableAction(IDictionary<string, object>  metadata, Type type)
             {
                 Metadata = metadata;
                 Type = type;
 
-                if (metadata.TryGetValue(INPUT, out JToken token))
+                if (metadata.TryGetValue(INPUT, out var token))
                 {
-                    Schema = JSchema.Load(token.CreateReader());
+                    //Schema = JSchema.Load(token.CreateReader());
                 }
                 else
                 {
@@ -30,7 +28,7 @@ namespace Mozilla.IoT.WebThing
                 }
             }
 
-            public bool ValidateActionInput(JObject jObject)
+            public bool ValidateActionInput(IDictionary<string, object> jObject)
             {
                 if (Schema == null)
                 {

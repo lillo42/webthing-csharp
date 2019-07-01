@@ -1,9 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Mozilla.IoT.WebThing.Exceptions;
-using Mozilla.IoT.WebThing.Extensions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -27,7 +26,7 @@ namespace Mozilla.IoT.WebThing
         }
 
 
-        public Property(Thing thing, string name, T value, JObject metadata)
+        public Property(Thing thing, string name, T value, IDictionary<string, object> metadata)
             : base(thing, name, value, metadata)
         {
         }
@@ -76,9 +75,9 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// 
         /// </summary>
-        public JObject Metadata { get; }
+        public IDictionary<string, object> Metadata { get; }
 
-        protected JSchema Schema { get; }
+        protected IJsonSchema Schema { get; }
 
         private object _value;
 
@@ -88,12 +87,8 @@ namespace Mozilla.IoT.WebThing
             set
             {
                 ValidateValue(value);
-                _value = value switch
-                {
-                    JValue jValue => jValue.Value,
-                    _ => value
-                };
-                
+                _value = value;
+
                 OnValueChanged();
             }
         }
@@ -106,42 +101,45 @@ namespace Mozilla.IoT.WebThing
         {
         }
 
-        public Property(Thing thing, string name, object value, JObject metadata)
+        public Property(Thing thing, string name, object value, IDictionary<string, object> metadata)
         {
             Thing = thing;
             Name = name;
             HrefPrefix = string.Empty;
             Href = $"properties/{name}";
-            Metadata = metadata ?? new JObject();
+            Metadata = metadata ?? new Dictionary<string, object>();
             _value = value;
-            Schema = JSchema.Load(Metadata.CreateReader());
+            //Schema = JSchema.Load(Metadata.CreateReader());
         }
 
         /// <summary>
         /// Get the property description.
         /// </summary>
         /// <returns>Description of the property as an object</returns>
-        public JObject AsPropertyDescription()
+        public virtual IDictionary<string, object> AsPropertyDescription()
         {
-            var description = new JObject(Metadata);
-            var link = new JObject(
-                new JProperty(REL, PROPERTY),
-                new JProperty(HREF, HrefPrefix.JoinUrl(Href)));
+            var description = Metadata.ToDictionary(
+                entry => entry.Key,
+                entry => entry.Value);
 
-            if (description.TryGetValue(LINKS, out JToken token))
+            var link = new Dictionary<string, object>
             {
-                if (token is JArray array)
+                [REL] = PROPERTY,
+                [HREF] = HrefPrefix.JoinUrl(Href)
+            };
+
+            if (description.TryGetValue(LINKS, out var token))
+            {
+                if (token is ICollection<object>  array)
                 {
                     array.Add(link);
-                }
-                else
-                {
-                    throw new JsonException();
                 }
             }
             else
             {
-                description.Add(LINKS, new JArray(link));
+                ICollection<object> links = new LinkedList<object>();
+                links.Add(link);
+                description.Add(LINKS, link);
             }
 
             return description;
@@ -149,7 +147,7 @@ namespace Mozilla.IoT.WebThing
 
         protected virtual void ValidateValue(object value)
         {
-            if (Schema.ReadOnly.HasValue && Schema.ReadOnly.Value)
+            if (Schema.IsReadOnly)
             {
                 throw new PropertyException($"readonly property {Name}");
             }
