@@ -11,15 +11,17 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ThingServiceCollectionExtensions
     {
-        public static void AddThing(this IServiceCollection services) 
-            => AddThing(services, option =>{});
+        public static void AddThing(this IServiceCollection services)
+            => AddThing(services, option => { });
 
         public static void AddThing(this IServiceCollection services, JsonSerializerSettings settings)
-            => AddThing(services, null, options => {});
-        
+            => AddThing(services, null, options => { });
+
         public static void AddThing(this IServiceCollection services, Action<WebSocketOptions> webSocketConfigure)
-            => AddThing(services, null, options => {});
-        public static void AddThing(this IServiceCollection services, JsonSerializerSettings settings, Action<WebSocketOptions> webSocketConfigure)
+            => AddThing(services, null, options => { });
+
+        public static void AddThing(this IServiceCollection services, JsonSerializerSettings settings,
+            Action<WebSocketOptions> webSocketConfigure)
         {
             if (services == null)
             {
@@ -41,20 +43,22 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else
             {
-                services.TryAddSingleton(service => JsonConvert.DefaultSettings());
+                services.TryAddSingleton(service => new JsonSerializerSettings {Formatting = Formatting.None});
             }
-            
+
             services.AddHostedService<ActionExecutorHostedService>();
-            
+
             var block = new BufferBlock<Mozilla.IoT.WebThing.Action>();
             services.AddSingleton<ISourceBlock<Mozilla.IoT.WebThing.Action>>(block);
             services.AddSingleton<ITargetBlock<Mozilla.IoT.WebThing.Action>>(block);
 
             services.AddTransient<WebSocketProcessor>();
-            
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketActionExecutor, AddEventSubscriptionActionExecutor>());
+
+            services.TryAddEnumerable(ServiceDescriptor
+                .Transient<IWebSocketActionExecutor, AddEventSubscriptionActionExecutor>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketActionExecutor, RequestActionExecutor>());
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketActionExecutor, SetPropertyActionExecutor>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IWebSocketActionExecutor, SetPropertyActionExecutor>());
         }
     }
 }

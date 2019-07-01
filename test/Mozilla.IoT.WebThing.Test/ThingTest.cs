@@ -613,6 +613,8 @@ namespace Mozilla.IoT.WebThing.Test
 
             public override string Id { get; } = Guid.NewGuid().ToString();
             public override string Name { get; } = "test";
+            protected override Task PerformActionAsync(CancellationToken cancellation) 
+                => Task.CompletedTask;
         }
     }
 }

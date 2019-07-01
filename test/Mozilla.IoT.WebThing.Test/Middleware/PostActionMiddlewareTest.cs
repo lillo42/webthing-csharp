@@ -421,6 +421,9 @@ namespace Mozilla.IoT.WebThing.Test.Middleware
 
             public override string Id => ID;
             public override string Name => "test";
+            
+            protected override Task PerformActionAsync(CancellationToken cancellation) 
+                => Task.CompletedTask;
         }
     }
 }
