@@ -28,11 +28,9 @@ namespace Mozilla.IoT.WebThing.Test
             };
 
             var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""test"": {{
-                    ""href"": ""{action.HrefPrefix + action.Href}"",
+                    ""href"": ""/{action.HrefPrefix + action.Href}"",
                     ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
                     ""status"": ""created""
-                }}
             }}");
 
             JObject description = action.AsActionDescription();
@@ -51,15 +49,13 @@ namespace Mozilla.IoT.WebThing.Test
             };
 
             var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""test"": {{
                     ""input"": {{
                         ""level"": 50,
                         ""duration"": 2000
                     }},
-                    ""href"": ""{action.HrefPrefix + action.Href}"",
+                    ""href"": ""/{action.HrefPrefix + action.Href}"",
                     ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
                     ""status"": ""created""
-                }}
             }}");
 
             JObject description = action.AsActionDescription();
@@ -82,15 +78,13 @@ namespace Mozilla.IoT.WebThing.Test
             Task performanceTask = action.StartAsync(CancellationToken.None);
             
             var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""test"": {{
                     ""input"": {{
                         ""level"": 50,
                         ""duration"": 2000
                     }},
-                    ""href"": ""{action.HrefPrefix + action.Href}"",
+                    ""href"": ""/{action.HrefPrefix + action.Href}"",
                     ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
                     ""status"": ""pending""
-                }}
             }}");
             
 
@@ -102,16 +96,14 @@ namespace Mozilla.IoT.WebThing.Test
             await performanceTask;
             
             json = JsonConvert.DeserializeObject<JObject>($@"{{
-                ""test"": {{
                     ""input"": {{
                         ""level"": 50,
                         ""duration"": 2000
                     }},
-                    ""href"": ""{action.HrefPrefix + action.Href}"",
+                    ""href"": ""/{action.HrefPrefix + action.Href}"",
                     ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
                     ""timeCompleted"": ""{action.TimeCompleted:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
                     ""status"": ""completed""
-                }}
             }}");
             
             description = action.AsActionDescription();
