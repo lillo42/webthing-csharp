@@ -409,6 +409,44 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
 
         }
         
+        //TODO: WebSocket
+        
+        #endregion
+
+        #region Event
+
+        [Fact]
+        public async Task GetEmptyEvents()
+        {
+            var responseMessage = await _httpClient.GetAsync("/events");
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+            json.Should().Be("[]");
+        }
+        
+        [Fact]
+        public async Task GetEvents()
+        {
+            await _httpClient.PostAsync($"/actions", new StringContent(@"{
+                ""fake"": {}
+            }", Encoding.UTF8));
+
+            await Task.Delay(3_000)
+                .ConfigureAwait(false);
+            
+            var responseMessage = await _httpClient.GetAsync("/events");
+            responseMessage.IsSuccessStatusCode.Should().BeTrue();
+            string json = await responseMessage.Content.ReadAsStringAsync();
+            json.Should().NotBeNullOrEmpty();
+//            json.Should().NotBe("[]");
+//            
+//            JArray array = JArray.Parse(json);
+//            array.Should().NotBeNullOrEmpty();
+//            array.Should().HaveCount(1);
+
+        }
+
         #endregion
     }
 }

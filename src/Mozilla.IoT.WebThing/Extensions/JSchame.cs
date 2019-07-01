@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
+    [ExcludeFromCodeCoverage]
     internal static class JSchemaExtensions
     {
         public static bool IsValid(this JSchema schema, object value)

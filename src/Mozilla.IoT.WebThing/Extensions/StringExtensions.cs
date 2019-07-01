@@ -1,5 +1,8 @@
-namespace Mozilla.IoT.WebThing.Extensions
+using System.Diagnostics.CodeAnalysis;
+
+namespace System
 {
+    [ExcludeFromCodeCoverage]
     internal static class StringExtensions
     {
         internal static string JoinUrl(this string left, string right)
