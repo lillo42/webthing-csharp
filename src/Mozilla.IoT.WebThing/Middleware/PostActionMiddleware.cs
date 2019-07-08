@@ -6,15 +6,11 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
     public class PostActionMiddleware : AbstractThingMiddleware
     {
-        private static readonly JsonSerializer s_serializer = new JsonSerializer();
-        
         public PostActionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
             : base(next, loggerFactory.CreateLogger<PostActionMiddleware>(), thingType)
         {
@@ -30,8 +26,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                 return;
             }
             
-            JObject json = await httpContext.ReadBodyAsync<JObject>()
-                .ConfigureAwait(false);
+            var json = await httpContext.ReadBodyAsync<IDictionary<string, object>>();
 
             if (json == null)
             {
@@ -41,19 +36,18 @@ namespace Mozilla.IoT.WebThing.Middleware
 
             string name = httpContext.GetValueFromRoute<string>("actionName");
 
-            IEnumerable<JProperty> properties = json.Properties();
-
-            if (properties == null || !properties.Any())
+            if (!json.Keys.Any()) 
             {
                 httpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
                 return;
             }
             
-            var response = new JObject();
+            var response = new Dictionary<string, object>();
             
-            if (json.TryGetValue(name, out JToken token))
+            if (json.TryGetValue(name, out var token))
             {
-                JObject input = token.Contains("input") ? (JObject)token["input"] : new JObject();
+                object input = GetInput(token);
+                
                 var action = await thing.PerformActionAsync(name, input, httpContext.RequestAborted)
                     .ConfigureAwait(false);
                 
@@ -62,14 +56,21 @@ namespace Mozilla.IoT.WebThing.Middleware
                     response.Add(name, action.AsActionDescription());
                     
                     var block = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
-                
-                    await block.SendAsync(action)
-                        .ConfigureAwait(false);
+                    await block.SendAsync(action);
                 }
             }
             
-            await httpContext.WriteBodyAsync(HttpStatusCode.Created, response)
-                .ConfigureAwait(false);
+            await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
+        }
+
+        private static object GetInput(object token)
+        {
+            if (token is IDictionary<string, object> dictionary && dictionary.ContainsKey("input"))
+            {
+                return dictionary["input"];
+            }
+            
+            return new object();
         }
     }
 }

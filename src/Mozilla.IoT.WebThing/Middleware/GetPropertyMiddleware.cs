@@ -1,9 +1,8 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
@@ -35,8 +34,10 @@ namespace Mozilla.IoT.WebThing.Middleware
             var value = thing.GetProperty(propertyName);
 
             await httpContext.WriteBodyAsync(HttpStatusCode.OK,
-                    new JObject {{propertyName, value == null ? JValue.CreateNull() : new JValue(value)}})
-                .ConfigureAwait(false);
+                    new Dictionary<string, object>
+                    {
+                        [propertyName] =  value
+                    });
         }
     }
 }

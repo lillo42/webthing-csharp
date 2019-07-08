@@ -1,8 +1,8 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
@@ -17,22 +17,23 @@ namespace Mozilla.IoT.WebThing.Middleware
         {
             string ws = string.Empty;
             
-            var array = new JArray();
+            ICollection<IDictionary<string, object>> array = new LinkedList<IDictionary<string, object>>();
             
             foreach (Thing thing in ThingType.Things)
             {
-                JObject description = thing.AsThingDescription();
-                var link = new JObject(
-                    new JProperty("rel", "alternate"),
-                    new JProperty("href", $"{ws}/{thing.HrefPrefix}"));
+                IDictionary<string, object> description = thing.AsThingDescription();
+
+                var link = new Dictionary<string, object>
+                {
+                    ["rel"] = "alternate",
+                    ["href"] = $"{ws}/{thing.HrefPrefix}" 
+                };
                 
-                ((JArray)description["links"]).Add(link);
-                
+                ((ICollection<IDictionary<string, object>>)description["links"]).Add(link);
                 array.Add(description);
             }
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, array.ToString())
-                .ConfigureAwait(false);
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK, array);
         }
     }
 }

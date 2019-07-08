@@ -1,8 +1,8 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
@@ -25,8 +25,7 @@ namespace Mozilla.IoT.WebThing.Middleware
             
             string propertyName = httpContext.GetValueFromRoute<string>("propertyName");
             
-            JObject json = await httpContext.ReadBodyAsync<JObject>()
-                .ConfigureAwait(false);
+            var json = await httpContext.ReadBodyAsync<IDictionary<string, object>>();
             
             if (!thing.ContainsProperty(propertyName) || !json.ContainsKey(propertyName))
             {
@@ -34,11 +33,13 @@ namespace Mozilla.IoT.WebThing.Middleware
                 return;
             }
 
-            thing.SetProperty(propertyName, json[propertyName].Value<object>());
+            thing.SetProperty(propertyName, json[propertyName]);
 
             await httpContext.WriteBodyAsync(HttpStatusCode.Created, 
-                    new JObject(new JProperty(propertyName, thing.GetProperty(propertyName))))
-                .ConfigureAwait(false);
+                new Dictionary<string, object>
+                {
+                    [propertyName] = thing.GetProperty(propertyName)
+                });
         }
     }
 }

@@ -1,28 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.WebSockets;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetThingMiddleware : AbstractThingMiddleware
     {
-        private static readonly ArraySegment<byte> s_error = new ArraySegment<byte>(Encoding.UTF8.GetBytes(new JObject
+        private readonly static IDictionary<string, object> s_error = new Dictionary<string, object>
         {
-            new JProperty("messageType", "error"),
-            new JObject {new JProperty("status", "400 Bad Request"), new JProperty("message", "Invalid message")}
-        }.ToString(Formatting.None)));
+            ["messageType"] = "error", ["status"] = "400 Bad Request", ["message"] = "Invalid message",
+        };
 
         public GetThingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType)
             : base(next, loggerFactory.CreateLogger<GetThingMiddleware>(), thingType)
@@ -40,20 +34,19 @@ namespace Mozilla.IoT.WebThing.Middleware
                 try
                 {
                     var process = httpContext.RequestServices.GetService<WebSocketProcessor>();
-                    
-                    await process.ExecuteAsync(thing, webSocket, httpContext.RequestAborted)
-                        .ConfigureAwait(false);
-                    
-                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close sent", CancellationToken.None)
-                        .ConfigureAwait(false);
+
+                    await process.ExecuteAsync(thing, webSocket, httpContext.RequestAborted);
+
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close sent",
+                            CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
-                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(), CancellationToken.None)
-                        .ConfigureAwait(false);
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(),
+                            CancellationToken.None);
                 }
+
                 return;
-                
             }
 
             if (thing == null)
@@ -63,16 +56,31 @@ namespace Mozilla.IoT.WebThing.Middleware
             }
 
             string ws = string.Empty;
-            var link = new JObject(
-                new JProperty("rel", "alternate"),
-                new JProperty("href", ws));
+            
+            var link = new Dictionary<string, object>
+            {
+                ["rel"] = "alternate",
+                ["href"] = ws
+            };
 
-            JObject description = thing.AsThingDescription();
-
-            ((JArray)description["links"]).Add(link);
-
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, description)
-                .ConfigureAwait(false);
+            IDictionary<string, object> description = thing.AsThingDescription();
+            
+            if(description.TryGetValue("links", out var objLinks))
+            {
+                if (objLinks is ICollection<IDictionary<string, object>> links)
+                {
+                    links.Add(link);
+                }
+            }
+            else
+            {
+                description.Add("links", new List<IDictionary<string, object>>
+                {
+                    link
+                });
+            }
+            
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK, description);
         }
     }
 }

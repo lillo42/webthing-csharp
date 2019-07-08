@@ -8,11 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Extensions;
 
-[assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
 {
     public partial class Thing
-    {   
+    {
         private const string DEFAULT_CONTEXT = "https://iot.mozilla.org/schemas";
         private const string DEFAULT_HREF_PREFIX = "/";
 
@@ -35,33 +34,33 @@ namespace Mozilla.IoT.WebThing
         /// The type context of the thing.
         /// </summary>
         public virtual string Context { get; }
-        
+
         /// <summary>
         /// The name of the thing.
         /// </summary>
         public virtual string Name { get; }
-        
+
         /// <summary>
         /// The description of the thing.
         /// </summary>
         public virtual string Description { get; }
-        
+
         /// <summary>
         /// The type(s) of the thing.
         /// </summary>
         public virtual ICollection<object> Type { get; }
-        
+
         /// <summary>
         /// The href of this thing's custom UI.
         /// </summary>
         public virtual string UiHref { get; set; }
-        
+
         private string _hrefPrefix;
 
         /// <summary>
         /// This thing's href.
         /// </summary>
-        public virtual  string HrefPrefix
+        public virtual string HrefPrefix
         {
             get => string.IsNullOrEmpty(_hrefPrefix) ? DEFAULT_HREF_PREFIX : _hrefPrefix;
             set
@@ -71,16 +70,17 @@ namespace Mozilla.IoT.WebThing
                 {
                     _hrefPrefix += DEFAULT_HREF_PREFIX;
                 }
+
                 _properties.ForEach(x => x.Value.HrefPrefix = value);
                 _actions.ForEach(x => x.Value.ForEach(y => y.HrefPrefix = value));
             }
         }
 
         protected internal Thing()
-         : this(Guid.NewGuid().ToString())
+            : this(Guid.NewGuid().ToString())
         {
-            
         }
+
         public Thing(string name)
             : this(name, null)
         {
@@ -105,69 +105,87 @@ namespace Mozilla.IoT.WebThing
         public virtual IDictionary<string, object> AsThingDescription()
         {
             var actions = new Dictionary<string, object>();
-            
+
             _availableActions.ForEach(action =>
             {
-                var link = new JObject(
-                    new JProperty("rel", "action"),
-                    new JProperty("href", $"{HrefPrefix}actions/{action.Key}"));
+                var link = new Dictionary<string, object>
+                {
+                    ["rel"] = "action", ["href"] = $"{HrefPrefix}actions/{action.Key}"
+                };
+                IDictionary<string, object> metadata = action.Value.Metadata;
+                metadata.Add("links",);
 
-                JObject metadata = action.Value.Metadata;
-                metadata .Add("links", new JArray(link));
                 actions.Add(action.Key, metadata);
             });
-            
-            var events = new JObject();
-            
+
+            var events = new Dictionary<string, object>();
+
             _availableEvents.ForEach(@event =>
             {
-                var link = new JObject(
-                    new JProperty("rel", "event"),
-                    new JProperty("href", $"{HrefPrefix}event/{@event.Key}"));
-                
-                JObject metadata = @event.Value.Metadata;
-                metadata.Add("links", new JArray(link));
-                @events.Add(@event.Key, metadata );
+                var link = new Dictionary<string, object>
+                {
+                    ["rel"] = "event", ["href"] = $"{HrefPrefix}event/{@event.Key}"
+                };
+
+                IDictionary<string, object> metadata = @event.Value.Metadata;
+
+                metadata.Add("links", new List<IDictionary<string, object>> {link});
+
+                @events.Add(@event.Key, metadata);
             });
-            
-            var obj = new JObject(
-                new JProperty("name", Name),
-                new JProperty("href", HrefPrefix),
-                new JProperty("@context", Context),
-                new JProperty("@type", Type),
-                new JProperty("properties", GetPropertyDescriptions()),
-                new JProperty("actions", actions),
-                new JProperty("events", events));
+
+            var obj = new Dictionary<string, object>
+            {
+                ["name"] = Name,
+                ["href"] = HrefPrefix,
+                ["@context"] = Context,
+                ["@type"] = Type,
+                ["properties"] = GetPropertyDescriptions(),
+                ["actions"] = actions,
+                ["events"] = events
+            };
 
             if (Description != null)
             {
                 obj.Add("description", Description);
             }
-            
-            var propertiesLink = new JObject(
-                new JProperty("rel", "properties"),
-                new JProperty("href", $"{HrefPrefix}properties"));
 
-            var actionsLink = new JObject(
-                new JProperty("rel", "actions"),
-                new JProperty("href", $"{HrefPrefix}actions"));
-            
-            var eventsLink = new JObject(
-                new JProperty("rel", "events"),
-                new JProperty("href", $"{HrefPrefix}events"));
-            
-            var links = new JArray(propertiesLink, actionsLink, eventsLink);
+            var propertiesLink = new Dictionary<string, object>
+            {
+                ["rel"] = "properties", ["href"] = $"{HrefPrefix}properties"
+            };
+
+            var actionsLink = new Dictionary<string, object>
+            {
+                ["rel"] = "actions", 
+                ["href"] = $"{HrefPrefix}actions"
+            };
+
+            var eventsLink = new Dictionary<string, object>
+            {
+                ["rel"] = "events", 
+                ["href"] = $"{HrefPrefix}events"
+            };
+
+            var links = new List<IDictionary<string, object>>
+            {
+                propertiesLink, 
+                actionsLink, 
+                eventsLink
+            };
 
             if (UiHref != null)
             {
-                var uiLink = new JObject(
-                    new JProperty("rel", "alternate"),
-                    new JProperty("mediaType", "text/html"),
-                    new JProperty("href", UiHref));
-                
+                var uiLink = new Dictionary<string, object>
+                {
+                    ["rel"] = "alternate", 
+                    ["mediaType"] = "text/html", 
+                    ["href"] = UiHref
+                };
+
                 links.Add(uiLink);
             }
-            
+
             obj.Add("links", links);
 
             return obj;
@@ -177,12 +195,12 @@ namespace Mozilla.IoT.WebThing
         #region Property
 
         /// <summary>
-        /// Get the thing's properties as a <see cref="Newtonsoft.Json.Linq.JObject"/>
+        /// Get the thing's properties as a <see cref="IDictionary{TKey,TValue}"/>
         /// </summary>
         /// <returns></returns>
-        public virtual JObject GetPropertyDescriptions()
+        public virtual IDictionary<string, object> GetPropertyDescriptions()
         {
-            var obj = new JObject();
+            var obj = new Dictionary<string, object>();
             _properties.ForEach(p => obj.Add(p.Key, p.Value.AsPropertyDescription()));
             return obj;
         }
@@ -266,9 +284,9 @@ namespace Mozilla.IoT.WebThing
         /// <param name="propertyName">The property to look for</param>
         /// <returns>Indication of property presence.</returns>
         public virtual bool ContainsProperty(string propertyName)
-            => !string.IsNullOrEmpty(propertyName) &&  _properties.ContainsKey(propertyName);
+            => !string.IsNullOrEmpty(propertyName) && _properties.ContainsKey(propertyName);
 
-        
+
         /// <summary>
         /// Set a property value.
         /// </summary>
@@ -283,14 +301,14 @@ namespace Mozilla.IoT.WebThing
                 property.Value = value;
             }
         }
-        
+
         /// <summary>
         /// Set a property value.
         /// </summary>
         /// <param name="propertyName">Name of the property to set</param>
         /// <param name="value">Value to set</param>
         /// <typeparam name="T">Type of the property value</typeparam>
-        public virtual  void SetProperty<T>(string propertyName, T value)
+        public virtual void SetProperty<T>(string propertyName, T value)
         {
             Property<T> property = FindProperty<T>(propertyName);
             if (property != null)
@@ -307,14 +325,19 @@ namespace Mozilla.IoT.WebThing
         /// <returns></returns>
         public virtual async Task PropertyNotifyAsync(Property property, CancellationToken cancellation)
         {
-            var json = new JObject(
-                new JProperty("messageType", "propertyStatus"));
-            var inner = new JObject(
-                new JProperty(property.Name, property.Value));
+            var json = new Dictionary<string, object>
+            {
+                ["messageType"] = "propertyStatus"
+            };
+            
+            var inner = new Dictionary<string, object>
+            {
+                [property.Name] =  property.Value    
+            };
 
             json.Add("data", inner);
 
-            await NotifyAllAsync(_subscribers, json.ToString(), cancellation);
+            await NotifyAllAsync(_subscribers, json, cancellation);
         }
 
         #endregion
@@ -326,9 +349,9 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Optional action name to get descriptions for</param>
         /// <returns>Action descriptions.</returns>
-        public virtual JArray GetActionDescriptions(string name = null)
+        public virtual ICollection<IDictionary<string, object>> GetActionDescriptions(string name = null)
         {
-            var array = new JArray();
+            ICollection<IDictionary<string, object>> array = new LinkedList<IDictionary<string, object>>();
 
             if (name == null)
             {
@@ -374,7 +397,8 @@ namespace Mozilla.IoT.WebThing
         /// <param name="input">Any action inputs</param>
         /// <param name="cancellation"></param>
         /// <returns>The action that was created.</returns>
-        public virtual async Task<Action> PerformActionAsync(string actionName, JObject input, CancellationToken cancellation)
+        public virtual async Task<Action> PerformActionAsync(string actionName, object input,
+            CancellationToken cancellation)
         {
             if (!_availableActions.ContainsKey(actionName))
             {
@@ -415,13 +439,14 @@ namespace Mozilla.IoT.WebThing
             {
                 return;
             }
-            
-            var json = new JObject(
-                new JProperty("messageType", "actionStatus"),
-                new JProperty("data", action.AsActionDescription()));
 
-            await NotifyAllAsync(_subscribers, json.ToString(), cancellation)
-                .ConfigureAwait(false);
+            var json = new Dictionary<string, object>
+            {
+                ["messageType"] = "actionStatus",
+                ["data"] = action.AsActionDescription()
+            };
+
+            await NotifyAllAsync(_subscribers, json, cancellation);
         }
 
         /// <summary>
@@ -430,7 +455,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="name">name of the action</param>
         /// <param name="id">ID of the action</param>
         /// <returns>indicating the presence of the action.</returns>
-        public virtual  bool RemoveAction(string name, string id)
+        public virtual bool RemoveAction(string name, string id)
         {
             Action action = GetAction(name, id);
             if (action == null)
@@ -446,14 +471,13 @@ namespace Mozilla.IoT.WebThing
         /// Add an available action.
         /// </summary>
         /// <param name="name">Name of the action</param>
-        /// <param name="metadata">Action metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/></param>
-        /// <param name="type">Type to instantiate for this action</param>
-        public virtual void AddAvailableAction<T>(string name, JObject metadata = null)
+        /// <param name="metadata">Action metadata, i.e. type, description, etc., as a <see cref="IDictionary{TKey,TValue}"/></param>
+        public virtual void AddAvailableAction<T>(string name, IDictionary<string, object> metadata = null)
             where T : Action
         {
             if (metadata == null)
             {
-                metadata = new JObject();
+                metadata = new Dictionary<string, object>();
             }
 
             _availableActions.Add(name, new AvailableAction(metadata, typeof(T)));
@@ -465,13 +489,13 @@ namespace Mozilla.IoT.WebThing
         #region Event
 
         /// <summary>
-        /// Get the thing's events as a <see cref="Newtonsoft.Json.Linq.JArray"/>
+        /// Get the thing's events as a <see cref="IDictionary{TKey,TValue}"/>
         /// </summary>
         /// <param name="name">Optional event name to get descriptions for</param>
         /// <returns>Event descriptions.</returns>
-        public virtual JArray GetEventDescriptions(string name = null)
+        public virtual ICollection<IDictionary<string, object>> GetEventDescriptions(string name = null)
         {
-            var array = new JArray();
+            ICollection<IDictionary<string, object>> array = new LinkedList<IDictionary<string, object>>();();
 
             if (name == null)
             {
@@ -502,16 +526,18 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="event">The event that occurred.</param>
         /// <param name="cancellation"></param>
-        public virtual  async Task EventNotifyAsync(Event @event, CancellationToken cancellation)
+        public virtual async Task EventNotifyAsync(Event @event, CancellationToken cancellation)
         {
             if (!_availableEvents.ContainsKey(@event.Name))
             {
                 return;
             }
 
-            var json = new JObject(
-                new JProperty("messageType", "event"),
-                new JProperty("data", @event.AsEventDescription()));
+            var json = new Dictionary<string, object>
+            {
+                ["messageType"] = "event",
+                ["data"] =  @event.AsEventDescription()
+            };
 
             await NotifyAllAsync(_availableEvents[@event.Name]
                 .Subscribers, json.ToString(), cancellation);
@@ -521,12 +547,12 @@ namespace Mozilla.IoT.WebThing
         /// Add an available event.
         /// </summary>
         /// <param name="name">Name of the event</param>
-        /// <param name="metadata">Event metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/>></param>
-        public virtual  void AddAvailableEvent(string name, JObject metadata = null)
+        /// <param name="metadata">Event metadata, i.e. type, description, etc., as a <see cref="IDictionary{TKey,TValue}"/>></param>
+        public virtual void AddAvailableEvent(string name, IDictionary<string, object> metadata = null)
         {
             if (metadata == null)
             {
-                metadata = new JObject();
+                metadata = new Dictionary<string, object>();
             }
 
             _availableEvents.Add(name, new AvailableEvent(metadata));
@@ -550,7 +576,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="name">Name of the event</param>
         /// <param name="ws">The websocket</param>
-        public virtual  void RemoveEventSubscriber(string name, WebSocket ws)
+        public virtual void RemoveEventSubscriber(string name, WebSocket ws)
         {
             if (_availableEvents.ContainsKey(name))
             {
@@ -596,10 +622,8 @@ namespace Mozilla.IoT.WebThing
             await subscribers
                 .ForEachAsync(async subscriber =>
                 {
-                    await subscriber.SendAsync(write, WebSocketMessageType.Text, true, cancellation)
-                        .ConfigureAwait(false);
-                })
-                .ConfigureAwait(false);
+                    await subscriber.SendAsync(write, WebSocketMessageType.Text, true, cancellation);
+                });
         }
     }
 }
