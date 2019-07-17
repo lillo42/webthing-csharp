@@ -6,6 +6,7 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
@@ -48,7 +49,7 @@ namespace Mozilla.IoT.WebThing.Middleware
             {
                 object input = GetInput(token);
                 
-                var action = await thing.PerformActionAsync(name, input, httpContext.RequestAborted)
+                var action = await thing.PerformActionAsync(name, input, httpContext.RequestServices.GetService<IJsonConvert>(), httpContext.RequestAborted)
                     .ConfigureAwait(false);
                 
                 if (action != null)

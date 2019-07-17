@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -113,7 +113,7 @@ namespace Mozilla.IoT.WebThing
                     ["rel"] = "action", ["href"] = $"{HrefPrefix}actions/{action.Key}"
                 };
                 IDictionary<string, object> metadata = action.Value.Metadata;
-                metadata.Add("links",);
+                metadata.Add("links", link);
 
                 actions.Add(action.Key, metadata);
             });
@@ -323,7 +323,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="property">The property that changed</param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public virtual async Task PropertyNotifyAsync(Property property, CancellationToken cancellation)
+        public virtual async Task PropertyNotifyAsync(Property property, IJsonConvert convert, CancellationToken cancellation)
         {
             var json = new Dictionary<string, object>
             {
@@ -336,8 +336,8 @@ namespace Mozilla.IoT.WebThing
             };
 
             json.Add("data", inner);
-
-            await NotifyAllAsync(_subscribers, json, cancellation);
+            
+            await NotifyAllAsync(_subscribers, convert.Serialize(json), cancellation);
         }
 
         #endregion
@@ -397,7 +397,7 @@ namespace Mozilla.IoT.WebThing
         /// <param name="input">Any action inputs</param>
         /// <param name="cancellation"></param>
         /// <returns>The action that was created.</returns>
-        public virtual async Task<Action> PerformActionAsync(string actionName, object input,
+        public virtual async Task<Action> PerformActionAsync(string actionName, object input, IJsonConvert convert,
             CancellationToken cancellation)
         {
             if (!_availableActions.ContainsKey(actionName))
@@ -406,7 +406,7 @@ namespace Mozilla.IoT.WebThing
             }
 
             AvailableAction availableAction = _availableActions[actionName];
-            if (!availableAction.ValidateActionInput(input))
+            if (!availableAction.ValidateActionInput(input as IDictionary<string, object>))
             {
                 return null;
             }
@@ -416,7 +416,7 @@ namespace Mozilla.IoT.WebThing
                 Action action = (Action)Activator.CreateInstance(availableAction.Type, this, input);
 
                 action.HrefPrefix = HrefPrefix;
-                await ActionNotifyAsync(action, cancellation)
+                await ActionNotifyAsync(action, convert, cancellation)
                     .ConfigureAwait(false);
 
                 _actions[actionName].Add(action);
@@ -433,7 +433,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="action">The action whose status changed</param>
         /// <param name="cancellation"></param>
-        public virtual async Task ActionNotifyAsync(Action action, CancellationToken cancellation)
+        public virtual async Task ActionNotifyAsync(Action action, IJsonConvert convert, CancellationToken cancellation)
         {
             if (!_subscribers.Any())
             {
@@ -446,7 +446,7 @@ namespace Mozilla.IoT.WebThing
                 ["data"] = action.AsActionDescription()
             };
 
-            await NotifyAllAsync(_subscribers, json, cancellation);
+            await NotifyAllAsync(_subscribers, convert.Serialize(json), cancellation);
         }
 
         /// <summary>
@@ -495,7 +495,7 @@ namespace Mozilla.IoT.WebThing
         /// <returns>Event descriptions.</returns>
         public virtual ICollection<IDictionary<string, object>> GetEventDescriptions(string name = null)
         {
-            ICollection<IDictionary<string, object>> array = new LinkedList<IDictionary<string, object>>();();
+            ICollection<IDictionary<string, object>> array = new LinkedList<IDictionary<string, object>>();
 
             if (name == null)
             {

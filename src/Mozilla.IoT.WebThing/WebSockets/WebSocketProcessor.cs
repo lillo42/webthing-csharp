@@ -9,8 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -44,11 +43,12 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     .ReceiveAsync(new ArraySegment<byte>(buffer), cancellation)
                     .ConfigureAwait(false);
 
-                var jsonSetting = _service.GetService<JsonSerializerSettings>();
+                var jsonSetting = _service.GetService<IJsonSerializerSettings>();
+                var jsonConvert = _service.GetService<IJsonConvert>();
 
                 while (!result.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
-                    var json = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(buffer), jsonSetting);
+                    var json = jsonConvert.Deserialize<IDictionary<string, object>>(Encoding.UTF8.GetString(buffer), jsonSetting);
 
                     if (!json.ContainsKey("messageType") || !json.ContainsKey("data"))
                     {
@@ -61,15 +61,15 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         continue;
                     }
 
-                    JToken type = json["messageType"];
-                    JToken data = json["data"];
+                    object type = json["messageType"];
+                    object data = json["data"];
 
                     IWebSocketActionExecutor actionExecutor = executors.FirstOrDefault(x =>
-                        x.Action.Equals(type.Value<string>(), StringComparison.OrdinalIgnoreCase));
+                        x.Action.Equals(type.ToString(), StringComparison.OrdinalIgnoreCase));
 
                     if (actionExecutor != null)
                     {
-                        await actionExecutor.ExecuteAsync(thing, webSocket, data as JObject, cancellation)
+                        await actionExecutor.ExecuteAsync(thing, webSocket, data as IDictionary<string, object>, cancellation)
                             .ConfigureAwait(false);
                     }
                     else

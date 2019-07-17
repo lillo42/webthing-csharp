@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing.Background;
+using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
-using Newtonsoft.Json;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -14,13 +14,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static void AddThing(this IServiceCollection services)
             => AddThing(services, option => { });
 
-        public static void AddThing(this IServiceCollection services, JsonSerializerSettings settings)
+        public static void AddThing(this IServiceCollection services, IJsonSerializerSettings settings)
             => AddThing(services, null, options => { });
 
         public static void AddThing(this IServiceCollection services, Action<WebSocketOptions> webSocketConfigure)
             => AddThing(services, null, options => { });
 
-        public static void AddThing(this IServiceCollection services, JsonSerializerSettings settings,
+        public static void AddThing(this IServiceCollection services, IJsonSerializerSettings settings,
             Action<WebSocketOptions> webSocketConfigure)
         {
             if (services == null)
@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             else
             {
-                services.TryAddSingleton(service => new JsonSerializerSettings {Formatting = Formatting.None});
+                //services.TryAddSingleton(service => new JsonSerializerSettings {Formatting = Formatting.None});
             }
 
             services.AddHostedService<ActionExecutorHostedService>();

@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Newtonsoft.Json.Linq;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -13,26 +14,26 @@ namespace Mozilla.IoT.WebThing.WebSockets
         private static readonly  ArraySegment<byte> s_errorMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"{""messageType"": ""error"",""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid action request""}}"));
         public string Action => "requestAction";
 
+        private readonly IJsonConvert _convert;
         private readonly ITargetBlock<Action> _target;
 
-        public RequestActionExecutor(ITargetBlock<Action> target)
+        public RequestActionExecutor(ITargetBlock<Action> target, IJsonConvert convert)
         {
             _target = target;
+            _convert = convert;
         }
 
-        public async Task ExecuteAsync(Thing thing, WebSocket webSocket, JObject data, CancellationToken cancellation)
+        public async Task ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
         {
-            foreach ((string key, JToken token) in data)
+            foreach ((string key, object token) in data)
             {
-                JObject body = token.Value<JObject>();
-
-                JObject input = null;
-                if (body.ContainsKey("input"))
+                object input = null;
+                if (token is IDictionary<string, object> body && body.ContainsKey("input"))
                 {
-                    input = body["input"] as JObject;
+                    input = body["input"];
                 }
 
-                Action action = await thing.PerformActionAsync(key, input, cancellation)
+                Action action = await thing.PerformActionAsync(key, input, _convert, cancellation)
                     .ConfigureAwait(false);
 
                 if (action != null)

@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -9,6 +9,6 @@ namespace Mozilla.IoT.WebThing.WebSockets
     {
         string Action { get; }
 
-        Task ExecuteAsync(Thing thing, WebSocket webSocket, JObject data, CancellationToken cancellation);
+        Task ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation);
     }
 }
