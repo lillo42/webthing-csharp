@@ -27,11 +27,12 @@ namespace Mozilla.IoT.WebThing.WebSockets
             _service = service ?? throw new ArgumentException(nameof(service));
         }
 
-        public async Task ExecuteAsync(Thing thing, WebSocket webSocket, CancellationToken cancellation)
+        public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, CancellationToken cancellation)
         {
-            thing.AddSubscriber(webSocket);
+            Guid id = Guid.NewGuid();
+            thing.Subscribers.TryAdd(id, webSocket);
 
-            var executors = _service.GetService<IEnumerable<IWebSocketActionExecutor>>();
+            var executors = _service.GetService<IEnumerable<IWebSocketAction>>();
 
             var options = _service.GetService<IOptions<WebSocketOptions>>();
 
@@ -48,7 +49,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                 while (!result.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
-                    var json = jsonConvert.Deserialize<IDictionary<string, object>>(Encoding.UTF8.GetString(buffer), jsonSetting);
+                    var json = jsonConvert.Deserialize<IDictionary<string, object>>(buffer, jsonSetting);
 
                     if (!json.ContainsKey("messageType") || !json.ContainsKey("data"))
                     {
@@ -64,12 +65,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     object type = json["messageType"];
                     object data = json["data"];
 
-                    IWebSocketActionExecutor actionExecutor = executors.FirstOrDefault(x =>
-                        x.Action.Equals(type.ToString(), StringComparison.OrdinalIgnoreCase));
+                    IWebSocketAction action = executors.FirstOrDefault(x => x.Action == type.ToString());
 
-                    if (actionExecutor != null)
+                    if (action != null)
                     {
-                        await actionExecutor.ExecuteAsync(thing, webSocket, data as IDictionary<string, object>, cancellation)
+                        await action.ExecuteAsync(thing, webSocket, data as IDictionary<string, object>, cancellation)
                             .ConfigureAwait(false);
                     }
                     else
@@ -84,7 +84,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             }
             finally
             {
-                thing.RemoveSubscriber(webSocket);
+                thing.Subscribers.TryRemove(id, out _);
                 s_pool.Return(buffer);
             }
         }

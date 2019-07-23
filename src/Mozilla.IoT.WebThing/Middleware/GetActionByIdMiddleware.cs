@@ -1,15 +1,18 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Description;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetActionByIdMiddleware : AbstractThingMiddleware
     {
-        public GetActionByIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
-            : base(next, loggerFactory.CreateLogger<GetActionByIdMiddleware>(), thingType)
+        public GetActionByIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things) 
+            : base(next, loggerFactory.CreateLogger<GetActionByIdMiddleware>(), things)
         {
         }
 
@@ -17,27 +20,24 @@ namespace Mozilla.IoT.WebThing.Middleware
         {
             Thing thing = GetThing(httpContext);
 
-            if (thing == null)
+            if (thing != null)
             {
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
-                return;
-            }
-
-            string name = httpContext.GetValueFromRoute<string>("actionName");
-            string id = httpContext.GetValueFromRoute<string>("actionId");
-
-            Action action = thing.GetAction(name, id);
-
-            if (action == null)
-            {
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
-                return;
-            }
-            
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object>
+                string name = httpContext.GetValueFromRoute<string>("actionName");
+                if (thing.Actions.ContainsKey(name))
                 {
-                    [name] = action.AsActionDescription()
-                }).ConfigureAwait(false);
+                    string id = httpContext.GetValueFromRoute<string>("actionId");
+                    Action action = thing.Actions[name].FirstOrDefault(x => x.Id == id);
+                    if (action != null)
+                    {
+                        var description = httpContext.RequestServices.GetService<IDescription<Action>>();
+                        await httpContext.WriteBodyAsync(HttpStatusCode.OK,
+                            new Dictionary<string, object> {[name] = description.CreateDescription(action)});
+                        return;
+                    }
+                }
+            }
+
+            httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
         }
     }
 }

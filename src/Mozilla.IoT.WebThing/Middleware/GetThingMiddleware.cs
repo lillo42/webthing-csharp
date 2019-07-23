@@ -7,19 +7,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetThingMiddleware : AbstractThingMiddleware
     {
-        private readonly static IDictionary<string, object> s_error = new Dictionary<string, object>
-        {
-            ["messageType"] = "error", ["status"] = "400 Bad Request", ["message"] = "Invalid message",
-        };
-
-        public GetThingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType)
-            : base(next, loggerFactory.CreateLogger<GetThingMiddleware>(), thingType)
+        public GetThingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things)
+            : base(next, loggerFactory.CreateLogger<GetThingMiddleware>(), things)
         {
         }
 
@@ -63,7 +59,9 @@ namespace Mozilla.IoT.WebThing.Middleware
                 ["href"] = ws
             };
 
-            IDictionary<string, object> description = thing.AsThingDescription();
+            var descriptor = httpContext.RequestServices.GetService<IDescription<Thing>>();
+            
+            IDictionary<string, object> description = descriptor.CreateDescription(thing);
             
             if(description.TryGetValue("links", out var objLinks))
             {

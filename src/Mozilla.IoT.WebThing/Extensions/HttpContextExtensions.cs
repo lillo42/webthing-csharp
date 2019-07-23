@@ -1,7 +1,6 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,12 +13,11 @@ namespace Microsoft.AspNetCore.Http
     {
         public static async Task<T> ReadBodyAsync<T>(this HttpContext context)
         {
-            using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
-            {
-                var convert =  context.RequestServices.GetService<IJsonConvert>();
-                return convert.Deserialize<T>(await reader.ReadToEndAsync()
-                    .ConfigureAwait(false));
-            }
+            var convert =  context.RequestServices.GetService<IJsonConvert>();
+
+            var buffer = new Memory<byte>(new byte[context.Request.Body.Length]);
+            await context.Request.Body.ReadAsync(buffer);
+            return convert.Deserialize<T>(buffer.Span);
         }
 
         public static async Task WriteBodyAsync<T>(this HttpContext context, HttpStatusCode statusCode, T value)
@@ -27,13 +25,12 @@ namespace Microsoft.AspNetCore.Http
             var settings = context.RequestServices.GetService<IJsonSerializerSettings>();
             var convert =  context.RequestServices.GetService<IJsonConvert>();
 
-            string json = convert.Serialize(value, settings);
+            byte[] json = convert.Serialize(value, settings);
 
             context.Response.StatusCode = (int) statusCode;
             context.Response.ContentType = "application/json";
-            
-            await context.Response.WriteAsync(json)
-                .ConfigureAwait(false);
+
+            await context.Response.Body.WriteAsync(new ReadOnlyMemory<byte>(json));
         }
 
         public static T GetValueFromRoute<T>(this HttpContext context, string key)

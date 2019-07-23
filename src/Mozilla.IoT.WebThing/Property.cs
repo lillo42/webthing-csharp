@@ -1,169 +1,85 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Mozilla.IoT.WebThing.Exceptions;
-using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
 {
-    /// <summary>
-    /// A Property represents an individual state value of a thing.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class Property<T> : Property
     {
-        public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
-
-        public new T Value
-        {
-            get => (T)base.Value;
-            set => base.Value = value;
-        }
-
-        public Property(Thing thing, string name, T value)
-            : base(thing, name, value)
+        public Property()
         {
         }
 
-
-        public Property(Thing thing, string name, T value, IDictionary<string, object> metadata)
+        public Property(Thing thing, string name, object value, IDictionary<string, object> metadata) 
             : base(thing, name, value, metadata)
         {
         }
 
+        public Property(string name, object value, IDictionary<string, object> metadata) 
+            : base(name, value, metadata)
+        {
+        }
+
+        public virtual new T Value
+        {
+            get => (T)base.Value;
+            set => base.Value = value;
+        }
+        
+        public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
+        
         protected override void OnValueChanged()
         {
             ValuedChanged?.Invoke(this, new ValueChangedEventArgs<T>(Value));
         }
     }
-
+    
     public class Property
     {
-        private const string REL = "rel";
-        private const string PROPERTY = "property";
-        private const string HREF = "href";
-        private const string LINKS = "links";
-        private const string DEFAULT_PREFIX = "/";
-
-        /// <summary>
-        /// The href of this property
-        /// </summary>
-        public Thing Thing { get; }
-
-        /// <summary>
-        /// The name of this property
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        /// The href of this property
-        /// </summary>
-        public string Href { get; }
-
-        private string _hrefPreix;
-
-        /// <summary>
-        /// The prefix of any hrefs associated with this property.
-        /// </summary>
-        public string HrefPrefix
+        public Property()
         {
-            get => string.IsNullOrEmpty(_hrefPreix) ? DEFAULT_PREFIX : _hrefPreix;
-            set => _hrefPreix = value;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public IDictionary<string, object> Metadata { get; }
-
-        protected IJsonSchema Schema { get; }
-
-        private object _value;
-
-        public object Value
-        {
-            get => _value;
-            set
-            {
-                ValidateValue(value);
-                _value = value;
-
-                OnValueChanged();
-            }
-        }
-
-
-        public event EventHandler<ValueChangedEventArgs> ValuedChanged;
-
-        public Property(Thing thing, string name, object value)
-            : this(thing, name, value, null)
-        {
+            
         }
 
         public Property(Thing thing, string name, object value, IDictionary<string, object> metadata)
         {
             Thing = thing;
             Name = name;
-            HrefPrefix = string.Empty;
-            Href = $"properties/{name}";
-            Metadata = metadata ?? new Dictionary<string, object>();
             _value = value;
-            //Schema = JSchema.Load(Metadata.CreateReader());
+            Metadata = metadata;
         }
-
-        /// <summary>
-        /// Get the property description.
-        /// </summary>
-        /// <returns>Description of the property as an object</returns>
-        public virtual IDictionary<string, object> AsPropertyDescription()
+        
+        public Property(string name, object value, IDictionary<string, object> metadata)
         {
-            var description = Metadata.ToDictionary(
-                entry => entry.Key,
-                entry => entry.Value);
-
-            var link = new Dictionary<string, object>
-            {
-                [REL] = PROPERTY,
-                [HREF] = HrefPrefix.JoinUrl(Href)
-            };
-
-            if (description.TryGetValue(LINKS, out var token))
-            {
-                if (token is ICollection<object>  array)
-                {
-                    array.Add(link);
-                }
-            }
-            else
-            {
-                ICollection<object> links = new LinkedList<object>();
-                links.Add(link);
-                description.Add(LINKS, link);
-            }
-
-            return description;
+            _value = value;
+            Name = name;
+            Metadata = metadata;
         }
 
-        protected virtual void ValidateValue(object value)
+
+        public virtual Thing Thing { get;  set; }
+        public virtual string Name { get; set; }
+        public virtual string Href { get; set; }
+        public virtual string HrefPrefix { get; set; }
+        private object _value;
+        public virtual object Value
         {
-            if (Schema.IsReadOnly)
+            get => _value;
+            set
             {
-                throw new PropertyException($"readonly property {Name}");
-            }
-
-            if (!Schema.IsValid(value))
-            {
-                throw new PropertyException("Invalid property value");
+                _value = value;
+                OnValueChanged();
             }
         }
+        public virtual IDictionary<string, object> Metadata { get; set; }
 
+        public event EventHandler<ValueChangedEventArgs> ValuedChanged;
+        
         protected virtual void OnValueChanged()
         {
             ValuedChanged?.Invoke(this, new ValueChangedEventArgs(Value));
         }
     }
-
+    
     public class ValueChangedEventArgs : EventArgs
     {
         public object Value { get; }

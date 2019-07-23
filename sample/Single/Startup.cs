@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
-using Newtonsoft.Json.Linq;
 
 namespace Single
 {
@@ -20,7 +20,46 @@ namespace Single
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddThing();
+            var light = new Thing
+            {
+                Name = "My Lamp", Type = new[] {"OnOffSwitch", "Light"}, Description = "A web connected lamp"
+            };
+            var onDescription = new Dictionary<string, object>
+            {
+                ["@type"] = "OnOffProperty",
+                ["title"] = "On/Off",
+                ["type"] = "boolean",
+                ["description"] = "Whether the lamp is turned on"
+            };
+
+            var property = new Property<bool>(light, "on", true, onDescription);
+            property.ValuedChanged += (sender, value) =>
+            {
+                Console.WriteLine($"On-State is now {value}");
+            };
+
+            light.AddProperty(property);
+
+            var brightnessDescription = new Dictionary<string, object>
+            {
+                ["@type"] = "BrightnessProperty",
+                ["title"] = "Brightness",
+                ["type"] = "number",
+                ["description"] = "The level of light from 0-100",
+                ["minimum"] = 0,
+                ["maximum"] = 100,
+                ["unit"] = "percent"
+            };
+
+            var level = new Property<double>(light, "level", 0.0, brightnessDescription);
+            level.ValuedChanged += (sender, value) =>
+            {
+                Console.WriteLine($"Brightness is now {value}");
+            };
+
+            light.AddProperty(level);
+
+            services.AddThing(options => options.AddThing(light));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,46 +76,9 @@ namespace Single
             }
 
             app.UseHttpsRedirection();
-            
-            var light = new Thing("My Lamp", new JArray("OnOffSwitch", "Light"),
-                "A web connected lamp");
 
-            var onDescription = new JObject
-            {
-                { "@type", "OnOffProperty"},
-                { "title", "On/Off"},
-                { "type", "boolean"},
-                { "description", "Whether the lamp is turned on"}
-            };
 
-            var property = new Property<bool>(light, "on", true, onDescription);
-            property.ValuedChanged += (sender, value) => 
-            {
-                Console.WriteLine($"On-State is now {value}");
-            };
-
-            light.AddProperty(property);
-
-            var brightnessDescription = new JObject
-            {
-                {"@type", "BrightnessProperty"},
-                {"title", "Brightness"},
-                {"type", "number"},
-                {"description", "The level of light from 0-100"},
-                {"minimum", 0},
-                {"maximum", 100},
-                {"unit", "percent"}
-            };
-
-            var level = new Property<double>(light, "level", 0.0, brightnessDescription);
-            level.ValuedChanged += (sender, value) => 
-            {
-                Console.WriteLine($"Brightness is now {value}");
-            };
-
-            light.AddProperty(level);
-            
-            app.UseSingleThing(light);
+            app.UseThing();
         }
     }
 }

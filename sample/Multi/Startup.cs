@@ -18,7 +18,11 @@ namespace Multi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddThing();
+            services.AddThing(options =>
+            {
+                options.AddThing<ExampleDimmableLight>();
+                options.AddThing<FakeGpioHumiditySensor>();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,11 +39,7 @@ namespace Multi
             }
 
             app.UseHttpsRedirection();
-            app.UseMultiThing("LightAndTempDevice",options =>
-            {
-                options.AddThing(new ExampleDimmableLight());
-                options.AddThing(new FakeGpioHumiditySensor());
-            });
+            app.UseThing();
         }
     }
 }

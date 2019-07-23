@@ -13,10 +13,12 @@ namespace Mozilla.IoT.WebThing.Background
     {
         private readonly ISourceBlock<Action> _actions;
         private readonly LinkedList<ConfiguredTaskAwaitable> _tasks = new LinkedList<ConfiguredTaskAwaitable>();
+        private readonly IServiceProvider _provider;
 
-        public ActionExecutorHostedService(ISourceBlock<Action> actions)
+        public ActionExecutorHostedService(ISourceBlock<Action> actions, IServiceProvider provider)
         {
             _actions = actions ?? throw new ArgumentNullException(nameof(actions));
+            _provider = provider;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Background
                 var action = await _actions.ReceiveAsync(stoppingToken)
                     .ConfigureAwait(false);
 
-                ConfiguredTaskAwaitable task = action.StartAsync(stoppingToken)
+                ConfiguredTaskAwaitable task = action.StartAsync(_provider, stoppingToken)
                     .ConfigureAwait(false);
 
                 _tasks.AddLast(task);

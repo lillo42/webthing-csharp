@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public interface IWebSocketActionExecutor
+    public interface IWebSocketAction
     {
         string Action { get; }
 
-        Task ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation);
+        ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation);
     }
 }

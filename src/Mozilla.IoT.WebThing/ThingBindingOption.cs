@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Mozilla.IoT.WebThing;
 
@@ -5,11 +6,15 @@ namespace Microsoft.AspNetCore.Builder
 {
     public class ThingBindingOption
     {
-        private readonly IList<Thing> _things = new List<Thing>();
+        internal List<Type> ThingsType { get; } = new List<Type>();
+        internal List<Thing> Things { get; } = new List<Thing>();
 
-        internal IList<Thing> Things => _things;
-        
-        public void AddThing(Thing thing) 
-            => _things.Add(thing);
+        public bool IsMultiThing { get; set; }
+        public void AddThing(Thing thing)
+            => Things.Add(thing);
+
+        public void AddThing<T>()
+            where T : Thing
+            => ThingsType.Add(typeof(T));
     }
 }

@@ -1,53 +1,55 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
+using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Middleware;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class ThingEndpointRouteBuilderExtensions
     {
-        public static IApplicationBuilder UseMultiThing(this IApplicationBuilder app, string name, Action<ThingBindingOption> thingOptions)
+
+        public static IApplicationBuilder UseThing(this IApplicationBuilder app)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (thingOptions == null)
-            {
-                throw new ArgumentNullException(nameof(thingOptions));
-            }
-            var option = new ThingBindingOption();
-
-            thingOptions(option);
-
             app.UseCors();
             app.UseWebSockets();
-            return AddRoute(app, new MultipleThings(option.Things, name), "/{thingId}");
+            var things = app.ApplicationServices.GetService<IReadOnlyList<Thing>>();
+            
+            return AddRoute(app, things);
         }
 
-        public static IApplicationBuilder UseSingleThing(this IApplicationBuilder app, Thing thing)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            if (thing == null)
-            {
-                throw new ArgumentNullException(nameof(thing));
-            }
-
-            app.UseCors();
-            app.UseWebSockets();
-            return AddRoute(app, new SingleThing(thing), string.Empty);
-        }
-
-        private static IApplicationBuilder AddRoute(IApplicationBuilder app, IThingType thingType, string prefix)
+        private static IApplicationBuilder AddRoute(IApplicationBuilder app, IReadOnlyList<Thing> thingType)
         {
             var router = new RouteBuilder(app);
+
+            string prefix = string.Empty;
+            
+            #region Thing
+
+            if (thingType is SingleThingCollection)
+            {
+                router.MapMiddlewareGet("/", 
+                    builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
+            }
+            else
+            {
+                prefix = "/{thingId}";
+                router.MapMiddlewareGet(prefix, 
+                    builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
+                
+                router.MapMiddlewareGet("/", 
+                    builder => builder.UseMiddleware<GetThingsMiddleware>(thingType));
+            }
+            #endregion
+            
 
             #region Property
             router.MapMiddlewareGet($"{prefix}/properties",
@@ -92,25 +94,8 @@ namespace Microsoft.AspNetCore.Builder
                 builder => builder.UseMiddleware<GetEventsMiddleware>(thingType));
 
             #endregion
-            
-            #region Thing
 
-            if (thingType is SingleThing)
-            {
-                router.MapMiddlewareGet("/", 
-                    builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
-            }
-            else
-            {
-                router.MapMiddlewareGet(prefix, 
-                    builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
-                
-                router.MapMiddlewareGet("/", 
-                    builder => builder.UseMiddleware<GetThingsMiddleware>(thingType));
-            }
-            #endregion
-            
-            return app.UseRouter(router.Build());;
+            return app.UseRouter(router.Build());
         }
     }
 }

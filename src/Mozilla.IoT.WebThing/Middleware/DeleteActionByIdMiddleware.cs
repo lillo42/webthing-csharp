@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -8,8 +9,8 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
 {
     public class DeleteActionByIdMiddleware : AbstractThingMiddleware
     {
-        public DeleteActionByIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType)
-            : base(next, loggerFactory.CreateLogger<DeleteActionByIdMiddleware>(), thingType)
+        public DeleteActionByIdMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things)
+            : base(next, loggerFactory.CreateLogger<DeleteActionByIdMiddleware>(), things)
         {
         }
 
@@ -26,7 +27,8 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
             string name = httpContext.GetValueFromRoute<string>("actionName");
             string id = httpContext.GetValueFromRoute<string>("actionId");
 
-            httpContext.Response.StatusCode = thing.RemoveAction(name, id) ? 
+            httpContext.Response.StatusCode =
+                thing.Actions.ContainsKey(name) && thing.Actions[name].Remove(x => x.Id == id) ?
                 (int)HttpStatusCode.NoContent : (int) HttpStatusCode.NotFound;
             
             return Task.CompletedTask;

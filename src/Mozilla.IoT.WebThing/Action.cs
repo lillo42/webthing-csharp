@@ -1,136 +1,94 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-[assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
 {
-    /// <summary>
-    /// An Action represents an individual action on a thing.
-    /// </summary>
     public abstract class Action
     {
-        private const string HREF = "href";
-        private const string TIME_REQUESTED = "timeRequested";
-        private const string STATUS = "status";
-        private const string INPUT = "input";
-        private const string TIME_COMPLETED = "timeCompleted";
-
         /// <summary>
         /// Action's ID.
         /// </summary>
-        public abstract string Id { get; }
-
-        /// <summary>
-        /// The thing associated with this action.
-        /// </summary>
-        public Thing Thing { get; }
-
+        public virtual string Id { get; } = Guid.NewGuid().ToString();
+        
         /// <summary>
         /// Action's name.
         /// </summary>
-        public abstract string Name { get; }
+        public virtual string Name { get; set; }
+        
+        /// <summary>
+        /// Action's href.
+        /// </summary>
+        public virtual string Href { get; set; }
 
         /// <summary>
         /// The prefix of any hrefs associated with this action.
         /// </summary>
-        public string HrefPrefix { get; set; }
-
-        /// <summary>
-        /// Action's href.
-        /// </summary>
-        public string Href { get; }
-
+        public virtual string HrefPrefix { get; set; } = string.Empty;
+        
         /// <summary>
         /// Action's status.
         /// </summary>
-        public Status Status { get; private set; }
-
+        public virtual Status Status { get; private set; }
+        
         /// <summary>
         /// The time the action was requested.
         /// </summary>
-        public DateTime TimeRequested { get; }
+        public virtual DateTime TimeRequested { get; }
 
         /// <summary>
         /// The time the action was completed.
         /// </summary>
-        public DateTime? TimeCompleted { get; private set; }
-
+        public virtual DateTime? TimeCompleted { get; private set; }
+        
         /// <summary>
         /// The inputs for this action.
         /// </summary>
-        public IDictionary<string, object> Input { get; }
-
-
+        public virtual IDictionary<string, object> Input { get; internal set; }
         
-        internal Action()
-            : this(null, null)
-        {
-        }
+        
+        public virtual IDictionary<string, object> Metadata { get; set; }
+        
+        /// <summary>
+        /// The thing associated with this action.
+        /// </summary>
+        public Thing Thing { get; set; }
 
-        protected Action(Thing thing, IDictionary<string, object> input)
+        protected Action()
         {
-            Thing = thing;
-            Input = input;
-            HrefPrefix = string.Empty;
-            Href = $"/actions/{Name}/{Id}";
             TimeRequested = DateTime.UtcNow;
             Status = Status.Created;
         }
+        
+        protected abstract Task ExecuteAsync(CancellationToken cancellation);
 
-        /// <summary>
-        /// Get the action description.
-        /// </summary>
-        /// <returns>Description of the action as a JSONObject.</returns>
-        public virtual IDictionary<string, object> AsActionDescription()
-        {
-            var inner = new Dictionary<string, object>
-            {
-                [HREF] = HrefPrefix.JoinUrl(Href),
-                [TIME_REQUESTED] = TimeRequested,
-                [STATUS] = Status.ToString().ToLower()
-            };
-
-            if (Input != null && Input.Any()) 
-            {
-                inner.Add(INPUT, Input);
-            }
-
-            if (TimeCompleted.HasValue)
-            {
-                inner.Add(TIME_COMPLETED, TimeCompleted);
-            }
-
-            return inner;
-        }
-
-        /// <summary>
-        /// Start performing the action
-        /// </summary>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
-        public async Task StartAsync(CancellationToken cancellation)
+        public async Task StartAsync(IServiceProvider service, CancellationToken cancellation)
         {
             Status = Status.Pending;
-            await PerformActionAsync(cancellation)
-                .ConfigureAwait(false);
 
-            Finish();
-        }
+            try
+            {
+                await ExecuteAsync(cancellation)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                var logger = service.GetService<ILogger>();
+                logger.LogError(exception, $"Error to executor action: {ToString()}");
+            }
 
-        protected abstract Task PerformActionAsync(CancellationToken cancellation);
-
-
-        /// <summary>
-        /// Finish performing the action.
-        /// </summary>
-        public void Finish()
-        {
             Status = Status.Completed;
             TimeCompleted = DateTime.UtcNow;
         }
+
+        public override string ToString()
+            => $"[{nameof(Id)}: {Id}]" +
+            $"[{nameof(Name)}: {Name}]" +
+            $"[{nameof(Href)}: {Href}]" +
+            $"[{nameof(HrefPrefix)}: {HrefPrefix}]" +
+            $"[{nameof(TimeRequested)}: {TimeRequested}]";
     }
 }

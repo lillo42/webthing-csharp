@@ -2,14 +2,16 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Description;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetThingsMiddleware : AbstractThingMiddleware
     {
-        public GetThingsMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
-            : base(next, loggerFactory.CreateLogger<GetThingsMiddleware>(), thingType)
+        public GetThingsMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things) 
+            : base(next, loggerFactory.CreateLogger<GetThingsMiddleware>(), things)
         {
         }
 
@@ -17,11 +19,12 @@ namespace Mozilla.IoT.WebThing.Middleware
         {
             string ws = string.Empty;
             
-            ICollection<IDictionary<string, object>> array = new LinkedList<IDictionary<string, object>>();
+            LinkedList<IDictionary<string, object>> array = new LinkedList<IDictionary<string, object>>();
+            var descriptor = httpContext.RequestServices.GetService<IDescription<Thing>>();
             
-            foreach (Thing thing in ThingType.Things)
+            foreach (Thing thing in Things)
             {
-                IDictionary<string, object> description = thing.AsThingDescription();
+                IDictionary<string, object> description = descriptor.CreateDescription(thing);
 
                 var link = new Dictionary<string, object>
                 {
@@ -30,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                 };
                 
                 ((ICollection<IDictionary<string, object>>)description["links"]).Add(link);
-                array.Add(description);
+                array.AddLast(description);
             }
 
             await httpContext.WriteBodyAsync(HttpStatusCode.OK, array);

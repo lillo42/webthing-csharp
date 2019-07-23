@@ -5,19 +5,17 @@ using System.Threading.Tasks;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public class AddEventSubscriptionActionExecutor : IWebSocketActionExecutor
+    public class AddEventSubscription : IWebSocketAction
     {
         public string Action => "addEventSubscription";
-
-        public Task ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
+        public ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
         {
             foreach (var keyPair in data)
             {
-                thing.AddEventSubscriber(keyPair.Key
-                    , webSocket);
+                thing.EventSubscribers.TryAdd(keyPair.Key, webSocket);
             }
-
-            return Task.CompletedTask;
+            
+            return new ValueTask();
         }
     }
 }

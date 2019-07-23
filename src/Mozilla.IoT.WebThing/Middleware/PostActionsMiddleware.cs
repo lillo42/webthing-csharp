@@ -1,19 +1,24 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Json;
+using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
     public class PostActionsMiddleware : AbstractThingMiddleware
     {
-        public PostActionsMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType)
-            : base(next, loggerFactory.CreateLogger<PostActionsMiddleware>(), thingType)
+        public PostActionsMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things)
+            : base(next, loggerFactory.CreateLogger<PostActionsMiddleware>(), things)
         {
         }
 
@@ -36,31 +41,45 @@ namespace Mozilla.IoT.WebThing.Middleware
             }
 
             var response = new Dictionary<string, object>();
+            var descriptor = httpContext.RequestServices.GetService<IDescription<Action>>();
+            var target = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
+            var convert = httpContext.RequestServices.GetService<IJsonConvert>();
+            var setting = httpContext.RequestServices.GetService<IJsonSerializerSettings>();
 
             foreach ((string key, object token) in json)
             {
                 object input = GetInput(token);
-                
-                Action action = await thing.PerformActionAsync(key, input, httpContext.RequestServices.GetService<IJsonConvert>(), httpContext.RequestAborted);
 
-                if (action != null)
+                Action action = thing.GetAction(key, input as IDictionary<string, object>, httpContext.RequestServices);
+                
+                if (thing.Subscribers.Any())
                 {
-                    response.Add(key, action.AsActionDescription());
-                    var target = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
-                    await target.SendAsync(action);
+                    var message = new Dictionary<string, object>
+                    {
+                        [INPUT] = action.Input,
+                        [HREF] = action.HrefPrefix.JoinUrl(action.Href),
+                        [STATUS] = action.Status.ToString().ToLower()
+                    };
+
+                    await thing.NotifySubscribersAsync(message, convert, setting, httpContext.RequestAborted);
                 }
+
+                IDictionary<string, object> actionDescriptor = descriptor.CreateDescription(action);
+                response.Add(key, actionDescriptor);
+
+                await target.SendAsync(action);
             }
 
             await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
         }
-        
+
         private static object GetInput(object token)
         {
             if (token is IDictionary<string, object> dictionary && dictionary.ContainsKey("input"))
             {
                 return dictionary["input"];
             }
-            
+
             return new object();
         }
     }

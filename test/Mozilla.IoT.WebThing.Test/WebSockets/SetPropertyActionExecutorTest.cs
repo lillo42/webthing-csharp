@@ -25,14 +25,14 @@ namespace Mozilla.IoT.WebThing.Test.WebSockets
         [Fact]
         public void Action()
         {
-            var executor = new SetPropertyActionExecutor();
+            var executor = new SetThingProperty();
             executor.Action.Should().Be("setProperty");
         }
         
         [Fact]
         public async Task ExecuteAsync_Not_Token()
         {
-            var executor = new SetPropertyActionExecutor();
+            var executor = new SetThingProperty();
 
             Thing thing = _fixture.Create<Thing>();
 
@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing.Test.WebSockets
         [Fact]
         public async Task ExecuteAsync_Throw()
         {
-            var executor = new SetPropertyActionExecutor();
+            var executor = new SetThingProperty();
 
             Thing thing = Substitute.For<Thing>();
 
@@ -64,7 +64,7 @@ namespace Mozilla.IoT.WebThing.Test.WebSockets
         [Fact]
         public async Task ExecuteAsync()
         {
-            var executor = new SetPropertyActionExecutor();
+            var executor = new SetThingProperty();
 
             Thing thing = Substitute.For<Thing>();
 

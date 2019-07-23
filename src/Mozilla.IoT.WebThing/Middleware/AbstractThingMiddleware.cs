@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -7,16 +8,16 @@ namespace Mozilla.IoT.WebThing.Middleware
     {
         protected readonly RequestDelegate Next;
         protected ILogger Logger { get; }
-        protected IThingType ThingType { get; }
+        protected IReadOnlyList<Thing> Things { get; }
         
-        protected AbstractThingMiddleware(RequestDelegate next, ILogger logger, IThingType thingType)
+        protected AbstractThingMiddleware(RequestDelegate next, ILogger logger, IReadOnlyList<Thing> things)
         {
             Next = next;
             Logger = logger;
-            ThingType = thingType;
+            Things = things;
         }
 
         protected Thing GetThing(HttpContext context) 
-            => ThingType[context.GetValueFromRoute<int>("thingId")];
+            => Things[context.GetValueFromRoute<int>("thingId")];
     }
 }

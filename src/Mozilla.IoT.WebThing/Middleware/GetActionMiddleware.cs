@@ -1,14 +1,18 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Description;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetActionMiddleware : AbstractThingMiddleware
     {
-        public GetActionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
-            : base(next, loggerFactory.CreateLogger<GetActionMiddleware>(), thingType)
+        public GetActionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things)
+            : base(next, loggerFactory.CreateLogger<GetActionMiddleware>(), things)
         {
         }
 
@@ -16,15 +20,22 @@ namespace Mozilla.IoT.WebThing.Middleware
         {
             Thing thing = GetThing(httpContext);
 
-            if (thing == null)
+            if (thing != null)
             {
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
-                return;
+                string name = httpContext.GetValueFromRoute<string>("actionName");
+
+                if (thing.Actions.ContainsKey(name))
+                {
+                    var description = httpContext.RequestServices.GetService<IDescription<Action>>();
+                    var result = thing.Actions[name]
+                        .ToDictionary(x => x.Name,
+                            x => description.CreateDescription(x));
+
+                    await httpContext.WriteBodyAsync(HttpStatusCode.OK, result);
+                }
             }
-            
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK,
-                    thing.GetActionDescriptions(httpContext.GetValueFromRoute<string>("actionName")))
-                .ConfigureAwait(false);
+
+            httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }
     }
 }

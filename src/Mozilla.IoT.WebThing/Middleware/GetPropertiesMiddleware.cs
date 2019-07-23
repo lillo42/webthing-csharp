@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -7,8 +8,8 @@ namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetPropertiesMiddleware : AbstractThingMiddleware
     {
-        public GetPropertiesMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingType thingType) 
-            : base(next, loggerFactory.CreateLogger<GetPropertiesMiddleware>(), thingType)
+        public GetPropertiesMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things) 
+            : base(next, loggerFactory.CreateLogger<GetPropertiesMiddleware>(), things)
         {
         }
 
@@ -21,8 +22,15 @@ namespace Mozilla.IoT.WebThing.Middleware
                 httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
+            
+            var result = new Dictionary<string, object>();
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, thing.GetPropertyDescriptions())
+            foreach (Property property in thing.Properties)
+            {
+                result.Add(property.Name, property.Value);
+            }
+
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK, result)
                 .ConfigureAwait(false);
         }
     }
