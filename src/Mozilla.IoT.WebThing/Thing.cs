@@ -59,18 +59,19 @@ namespace Mozilla.IoT.WebThing
         /// The type(s) of the thing.
         /// </summary>
         public virtual object Type { get; set; }
-
+        public virtual IReadOnlyDictionary<string, (Type type, IDictionary<string, object> metadata)> ActionsTypeInfo => _actionsTypeInfo;
         public virtual ConcurrentDictionary<Guid,WebSocket> Subscribers { get; } = new ConcurrentDictionary<Guid, WebSocket>();
+        internal static LinkedList<Type> ActionsTypes { get; } = new LinkedList<Type>();
 
         internal ConcurrentDictionary<string, WebSocket> EventSubscribers { get; } =
             new ConcurrentDictionary<string, WebSocket>();
-
-        internal IReadOnlyDictionary<string, (Type type, IDictionary<string, object> metadata)> ActionsTypes => _actionsTypes;
         internal ConcurrentDictionary<string, LinkedList<Action>> Actions { get; } = new ConcurrentDictionary<string, LinkedList<Action>>();
+        internal IJsonConvert JsonConvert { get; set; } 
+        internal IJsonSerializerSettings JsonSettings { get; set; }
 
         private readonly LinkedList<Event> _events = new LinkedList<Event>();
         private readonly LinkedList<Property> _properties = new LinkedList<Property>();
-        private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypes = new Dictionary<string, (Type type, IDictionary<string, object> metadata)>();
+        private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypeInfo = new Dictionary<string, (Type type, IDictionary<string, object> metadata)>();
 
         public Thing()
         {
@@ -82,13 +83,14 @@ namespace Mozilla.IoT.WebThing
         protected virtual void AddAction<T>(string name, IDictionary<string, object> metadata = null)
             where T : Action
         {
-            _actionsTypes.Add(name, (typeof(T), metadata));
+            _actionsTypeInfo.Add(name, (typeof(T), metadata));
             Actions.TryAdd(name, new LinkedList<Action>());
+            ActionsTypes.AddLast(typeof(T));
         }
 
         public virtual Action GetAction(string name, IDictionary<string, object> input, IServiceProvider service)
         {
-            (Type type, _) = ActionsTypes[name];
+            (Type type, _) = ActionsTypeInfo[name];
             Action action = (Action)service.GetService(type);
 
             action.Thing = this;
@@ -151,20 +153,18 @@ namespace Mozilla.IoT.WebThing
 
         #region Notify
 
-        public virtual async Task NotifySubscribersAsync(IDictionary<string, object> message, IJsonConvert convert, IJsonSerializerSettings settings, CancellationToken cancellation)
+        public virtual async Task NotifySubscribersAsync(IDictionary<string, object> message, CancellationToken cancellation)
         {
             if (!Subscribers.IsEmpty)
             {
-                await NotifySubscribersAsync(Subscribers.Values, message, convert, settings, cancellation)
+                await NotifySubscribersAsync(Subscribers.Values, message, cancellation)
                     .ConfigureAwait(false);
             }
         }
-        
-        
 
-        protected virtual async Task NotifySubscribersAsync(IEnumerable<WebSocket> subscribers, IDictionary<string, object> message, IJsonConvert convert, IJsonSerializerSettings settings, CancellationToken cancellation)
+        protected virtual async Task NotifySubscribersAsync(IEnumerable<WebSocket> subscribers, IDictionary<string, object> message, CancellationToken cancellation)
         {
-            byte[] json = convert.Serialize(message, settings);
+            byte[] json = JsonConvert.Serialize(message, JsonSettings);
             
             var buffer = new ArraySegment<byte>(json);
             foreach (WebSocket socket in subscribers)

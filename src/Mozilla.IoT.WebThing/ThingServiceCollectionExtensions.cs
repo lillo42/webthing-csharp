@@ -124,7 +124,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void RegisterActions(IServiceCollection services, Thing thing)
         {
-            foreach ((Type type, _) in thing.ActionsTypes.Values)
+            foreach ((Type type, _) in thing.ActionsTypeInfo.Values)
             {
                 services.AddTransient(type);
             }

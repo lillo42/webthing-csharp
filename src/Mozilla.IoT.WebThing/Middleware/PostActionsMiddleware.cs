@@ -61,7 +61,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                         [STATUS] = action.Status.ToString().ToLower()
                     };
 
-                    await thing.NotifySubscribersAsync(message, convert, setting, httpContext.RequestAborted);
+                    await thing.NotifySubscribersAsync(message, httpContext.RequestAborted);
                 }
 
                 IDictionary<string, object> actionDescriptor = descriptor.CreateDescription(action);

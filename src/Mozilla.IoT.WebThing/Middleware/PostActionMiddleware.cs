@@ -48,7 +48,7 @@ namespace Mozilla.IoT.WebThing.Middleware
 
             var response = new Dictionary<string, object>();
             string name = httpContext.GetValueFromRoute<string>("actionName");
-            if (thing.ActionsTypes.ContainsKey(name) && json.TryGetValue(name, out var token))
+            if (thing.ActionsTypeInfo.ContainsKey(name) && json.TryGetValue(name, out var token))
             {
                 object input = GetInput(token);
                 Action action = thing.GetAction(name, input as IDictionary<string, object>, httpContext.RequestServices);
@@ -62,8 +62,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                         [STATUS] = action.Status.ToString().ToLower()
                     };
 
-                   await thing.NotifySubscribersAsync(message, httpContext.RequestServices.GetService<IJsonConvert>(),
-                       httpContext.RequestServices.GetService<IJsonSerializerSettings>(), httpContext.RequestAborted);
+                   await thing.NotifySubscribersAsync(message, httpContext.RequestAborted);
                 }
 
                 var descriptor = httpContext.RequestServices.GetService<IDescription<Action>>();

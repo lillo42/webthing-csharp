@@ -18,7 +18,7 @@ namespace Mozilla.IoT.WebThing.Description
         {
             var actions = new Dictionary<string, object>();
             
-            value.ActionsTypes.ForEach(action =>
+            value.ActionsTypeInfo.ForEach(action =>
             {
                 var metadata = action.Value.metadata.ToDictionary(x => x.Key, x => x.Value);
                 metadata.Add(LINKS, new Dictionary<string, object>
