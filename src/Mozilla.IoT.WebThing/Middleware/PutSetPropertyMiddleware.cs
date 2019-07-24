@@ -37,9 +37,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                 return;
             }
 
-            var schemaValidator = httpContext.RequestServices.GetService<IJsonSchemaValidator>();
-            
-            thing.SetProperty(property, json[propertyName], schemaValidator);
+            thing.SetProperty(property, json[propertyName]);
 
             await httpContext.WriteBodyAsync(HttpStatusCode.Created, 
                 new Dictionary<string, object>

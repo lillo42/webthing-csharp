@@ -14,5 +14,6 @@ namespace Mozilla.IoT.WebThing
         internal const string DEFAULT_CONTEXT = "https://iot.mozilla.org/schemas";
         internal const string DEFAULT_HREF_PREFIX = "/";
         internal const string MESSAGE_TYPE = "messageType";
+        internal const string MESSAGE = "message";
     }
 }

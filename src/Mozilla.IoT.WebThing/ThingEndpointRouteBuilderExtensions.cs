@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
 using Mozilla.IoT.WebThing.Collections;
+using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.Middleware;
 
 namespace Microsoft.AspNetCore.Builder
@@ -49,7 +51,6 @@ namespace Microsoft.AspNetCore.Builder
                     builder => builder.UseMiddleware<GetThingsMiddleware>(thingType));
             }
             #endregion
-            
 
             #region Property
             router.MapMiddlewareGet($"{prefix}/properties",
@@ -94,6 +95,14 @@ namespace Microsoft.AspNetCore.Builder
                 builder => builder.UseMiddleware<GetEventsMiddleware>(thingType));
 
             #endregion
+            
+            foreach (Thing thing in thingType)
+            {
+                thing.JsonConvert = app.ApplicationServices.GetService<IJsonConvert>();
+                thing.JsonSettings = app.ApplicationServices.GetService<IJsonSerializerSettings>();
+                thing.JsonSchemaValidator = app.ApplicationServices.GetService<IJsonSchemaValidator>();
+                thing.EventDescriptor = app.ApplicationServices.GetService<IDescription<Event>>();
+            }
 
             return app.UseRouter(router.Build());
         }

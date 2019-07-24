@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -13,16 +12,14 @@ namespace Mozilla.IoT.WebThing.WebSockets
     {
         private static readonly  ArraySegment<byte> s_errorMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"{""messageType"": ""error"",""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid action request""}}"));
         public string Action => "requestAction";
-
-        private readonly IJsonConvert _convert;
+        
         private readonly ITargetBlock<Action> _target;
-        private readonly IServiceProvider _service;
+        private readonly IActionFactory _factory;
 
-        public RequestAction(ITargetBlock<Action> target, IJsonConvert convert, IServiceProvider service)
+        public RequestAction(ITargetBlock<Action> target, IActionFactory factory)
         {
             _target = target;
-            _convert = convert;
-            _service = service;
+            _factory = factory;
         }
 
         public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
@@ -35,16 +32,14 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     input = body["input"];
                 }
 
-                Action action = thing.GetAction(key, input as IDictionary<string, object>, _service);
+                Action action = await _factory.CreateAsync(thing, key, input as IDictionary<string, object>, cancellation);
                 if (action != null)
                 {
-                    await _target.SendAsync(action, cancellation)
-                        .ConfigureAwait(false);
+                    await _target.SendAsync(action, cancellation);
                 }
                 else
                 {
-                    await webSocket.SendAsync(s_errorMessage, WebSocketMessageType.Text, true, cancellation)
-                        .ConfigureAwait(false);
+                    await webSocket.SendAsync(s_errorMessage, WebSocketMessageType.Text, true, cancellation);
                 }
             }
         }

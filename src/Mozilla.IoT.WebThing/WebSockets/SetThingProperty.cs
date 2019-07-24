@@ -12,11 +12,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
 {
     public class SetThingProperty : IWebSocketAction
     {
-        private readonly IServiceProvider _services;
+        private readonly IJsonConvert _convert;
 
-        public SetThingProperty(IServiceProvider services)
+        public SetThingProperty(IJsonConvert convert)
         {
-            _services = services;
+            _convert = convert;
         }
 
         public string Action => "setProperty";
@@ -28,19 +28,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 try
                 {
                     Property property = thing.Properties.FirstOrDefault(x => x.Name == key);
-                    thing.SetProperty(property, token, _services.GetService<IJsonSchemaValidator>());
+                    thing.SetProperty(property, token);
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    await SendError(webSocket, e, _services.GetService<IJsonConvert>(), cancellation)
-                        .ConfigureAwait(false);
-                }
-            }
-        }
-
-        private static async Task SendError(WebSocket webSocket, Exception exception, IJsonConvert convert, CancellationToken cancellation)
-        {
-            await webSocket.SendAsync(new ArraySegment<byte>(convert.Serialize(new Dictionary<string, object>
+                    await webSocket.SendAsync(new ArraySegment<byte>(_convert.Serialize(new Dictionary<string, object>
                     {
                         ["messageType"] = MessageType.Error.ToString().ToLower(), 
                         ["data"] =  new Dictionary<string, object>
@@ -48,8 +40,9 @@ namespace Mozilla.IoT.WebThing.WebSockets
                             ["status"] = "400 Bad Request",
                             ["message"] = exception.Message
                         }
-                    })), WebSocketMessageType.Text, true, cancellation)
-                .ConfigureAwait(false);
+                    })), WebSocketMessageType.Text, true, cancellation);
+                }
+            }
         }
     }
 }

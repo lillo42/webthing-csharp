@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.WebSockets;
@@ -11,7 +10,6 @@ using Mozilla.IoT.WebThing.Background;
 using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
-using Action = System.Action;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -22,19 +20,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static void AddThing<T>(this IServiceCollection services)
             where T : Thing
         {
-            RegisterCommon(services);
-            services.AddSingleton(typeof(T));
-            services.TryAddSingleton<IReadOnlyList<Thing>>(provider =>
-            {
-                Thing thing = (Thing)provider.GetService(typeof(T));
-                RegisterActions(services, thing);
-                return new SingleThingCollection(thing);
-            });
+            AddThing(services, options => options.AddThing<T>());
         }
 
         #endregion
 
         #region Multi
+
         public static void AddThing(this IServiceCollection services, Action<ThingBindingOption> thingOptions)
         {
             RegisterCommon(services);
@@ -43,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(thingOptions));
             }
-            
+
             var option = new ThingBindingOption();
 
             thingOptions(option);
@@ -56,16 +48,20 @@ namespace Microsoft.Extensions.DependencyInjection
             foreach (Thing thing in option.Things)
             {
                 services.AddSingleton(thing);
-                RegisterActions(services, thing);
+            }
+
+            foreach (Type action in Thing.ActionsTypes)
+            {
+                services.AddTransient(action);
             }
 
             services.TryAddSingleton<IReadOnlyList<Thing>>(provider =>
             {
                 var things = new List<Thing>(option.ThingsType.Count + option.Things.Count);
+                
                 foreach (Type thingType in option.ThingsType)
                 {
                     var thing = (Thing)provider.GetService(thingType);
-                    RegisterActions(services, thing);
                     things.Add(thing);
                 }
 
@@ -76,11 +72,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (things.Count == 1 && !option.IsMultiThing)
                 {
-                    return new SingleThingCollection(things[0]);   
+                    return new SingleThingCollection(things[0]);
                 }
                 else
                 {
-                    return new MultipleThingsCollections(things);    
+                    return new MultipleThingsCollections(things);
                 }
             });
         }
@@ -108,6 +104,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IJsonConvert, DefaultJsonConvert>();
             services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
+            
+            services.TryAddScoped<IActionFactory, ActionFactory>();
 
             services.AddHostedService<ActionExecutorHostedService>();
 
@@ -120,14 +118,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, AddEventSubscription>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, RequestAction>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, SetThingProperty>());
-        }
-
-        private static void RegisterActions(IServiceCollection services, Thing thing)
-        {
-            foreach ((Type type, _) in thing.ActionsTypeInfo.Values)
-            {
-                services.AddTransient(type);
-            }
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, GetThingProperty>());
         }
     }
 }

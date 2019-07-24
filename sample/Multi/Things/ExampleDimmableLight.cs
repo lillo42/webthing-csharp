@@ -105,23 +105,14 @@ namespace Multi.Things
         
         public class FadeAction : Action
         {
-            private readonly IJsonSchemaValidator _schemaValidator;
-            private readonly IDescription<Event> _description; 
-
-            public FadeAction(IJsonSchemaValidator schemaValidator, IDescription<Event> description)
-            {
-                _schemaValidator = schemaValidator;
-                _description = description;
-            }
-
             public override string Name => "fade";
             
             protected override async Task ExecuteAsync(CancellationToken cancellation)
             {
                 int value = Input["input"] as int? ?? 0;
                 await Task.Delay(value, cancellation);
-                Thing.SetProperty(Thing.Properties.FirstOrDefault(x=>x.Name == "brightness"), value, _schemaValidator);
-                Thing.AddEvent(new OverheatedEvent(Thing, 102), _description);
+                Thing.SetProperty(Thing.Properties.FirstOrDefault(x=>x.Name == "brightness"), value);
+                await Thing.AddEventAsync(new OverheatedEvent(Thing, 102), cancellation);
             }
         }
     }

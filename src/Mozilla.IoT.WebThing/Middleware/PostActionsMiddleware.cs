@@ -1,17 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Description;
-using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Json;
-using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing.Middleware
 {
@@ -43,31 +38,21 @@ namespace Mozilla.IoT.WebThing.Middleware
             var response = new Dictionary<string, object>();
             var descriptor = httpContext.RequestServices.GetService<IDescription<Action>>();
             var target = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
-            var convert = httpContext.RequestServices.GetService<IJsonConvert>();
-            var setting = httpContext.RequestServices.GetService<IJsonSerializerSettings>();
+            IActionFactory factory = httpContext.RequestServices.GetService<IActionFactory>();
 
             foreach ((string key, object token) in json)
             {
                 object input = GetInput(token);
 
-                Action action = thing.GetAction(key, input as IDictionary<string, object>, httpContext.RequestServices);
-                
-                if (thing.Subscribers.Any())
+                Action action = await factory.CreateAsync(thing, key, input as IDictionary<string, object>,
+                    httpContext.RequestAborted);
+
+                if (action != null)
                 {
-                    var message = new Dictionary<string, object>
-                    {
-                        [INPUT] = action.Input,
-                        [HREF] = action.HrefPrefix.JoinUrl(action.Href),
-                        [STATUS] = action.Status.ToString().ToLower()
-                    };
-
-                    await thing.NotifySubscribersAsync(message, httpContext.RequestAborted);
+                    IDictionary<string, object> actionDescriptor = descriptor.CreateDescription(action);
+                    response.Add(key, actionDescriptor);
+                    await target.SendAsync(action);
                 }
-
-                IDictionary<string, object> actionDescriptor = descriptor.CreateDescription(action);
-                response.Add(key, actionDescriptor);
-
-                await target.SendAsync(action);
             }
 
             await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
