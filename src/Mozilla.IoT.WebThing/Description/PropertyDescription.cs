@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mozilla.IoT.WebThing.Exceptions;
 using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing.Description
@@ -28,7 +29,7 @@ namespace Mozilla.IoT.WebThing.Description
                 else
                 {
                     // TODO: Change exception
-                    throw new Exception();
+                    throw new DescriptionException("Invalid type on property links");
                 }
             }
             else

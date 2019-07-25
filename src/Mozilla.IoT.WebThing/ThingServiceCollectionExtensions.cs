@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Builder;
@@ -8,8 +9,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Background;
 using Mozilla.IoT.WebThing.Collections;
+using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
+using Action = Mozilla.IoT.WebThing.Action;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -29,46 +32,31 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static void AddThing(this IServiceCollection services, Action<ThingBindingOption> thingOptions)
         {
-            RegisterCommon(services);
-
             if (thingOptions == null)
             {
                 throw new ArgumentNullException(nameof(thingOptions));
             }
-
+            
+            RegisterCommon(services);
+            
             var option = new ThingBindingOption();
 
             thingOptions(option);
 
             foreach (Type thing in option.ThingsType)
             {
-                services.AddSingleton(thing);
+                services.TryAddSingleton(thing);
             }
-
-            foreach (Thing thing in option.Things)
-            {
-                services.AddSingleton(thing);
-            }
-
+            
             foreach (Type action in Thing.ActionsTypes)
             {
-                services.AddTransient(action);
+                services.TryAddTransient(action);
             }
 
             services.TryAddSingleton<IReadOnlyList<Thing>>(provider =>
             {
-                var things = new List<Thing>(option.ThingsType.Count + option.Things.Count);
-                
-                foreach (Type thingType in option.ThingsType)
-                {
-                    var thing = (Thing)provider.GetService(thingType);
-                    things.Add(thing);
-                }
-
-                foreach (Thing thing in option.Things)
-                {
-                    things.Add(thing);
-                }
+                var things = option.Things.ToList();
+                things.AddRange(option.ThingsType.Select(thing => (Thing)provider.GetService(thing)));
 
                 if (things.Count == 1 && !option.IsMultiThing)
                 {
@@ -106,6 +94,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
             
             services.TryAddScoped<IActionFactory, ActionFactory>();
+            services.TryAddScoped<IDescription<Action>, ActionDescription>();
+            services.TryAddScoped<IDescription<Event>, EventDescription>();
+            services.TryAddScoped<IDescription<Property>, PropertyDescription>();
+            services.TryAddScoped<IDescription<Thing>, ThingDescription>();
 
             services.AddHostedService<ActionExecutorHostedService>();
 

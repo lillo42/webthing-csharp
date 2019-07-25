@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Mozilla.IoT.WebThing
@@ -28,16 +27,16 @@ namespace Mozilla.IoT.WebThing
         /// The prefix of any hrefs associated with this action.
         /// </summary>
         public virtual string HrefPrefix { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Action's status.
         /// </summary>
-        public virtual Status Status { get; private set; }
+        public virtual Status Status { get; protected set; } = Status.Created;
         
         /// <summary>
         /// The time the action was requested.
         /// </summary>
-        public virtual DateTime TimeRequested { get; }
+        public virtual DateTime TimeRequested { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// The time the action was completed.
@@ -49,23 +48,14 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         public virtual IDictionary<string, object> Input { get; internal set; }
         
-        
-        public virtual IDictionary<string, object> Metadata { get; set; }
-        
         /// <summary>
         /// The thing associated with this action.
         /// </summary>
-        public Thing Thing { get; set; }
+        public virtual Thing Thing { get; set; }
 
-        protected Action()
-        {
-            TimeRequested = DateTime.UtcNow;
-            Status = Status.Created;
-        }
-        
         protected abstract Task ExecuteAsync(CancellationToken cancellation);
 
-        public async Task StartAsync(IServiceProvider service, CancellationToken cancellation)
+        public async Task StartAsync(ILogger logger, CancellationToken cancellation)
         {
             Status = Status.Pending;
 
@@ -76,7 +66,6 @@ namespace Mozilla.IoT.WebThing
             }
             catch (Exception exception)
             {
-                var logger = service.GetService<ILogger>();
                 logger.LogError(exception, $"Error to executor action: {ToString()}");
             }
 
@@ -89,6 +78,6 @@ namespace Mozilla.IoT.WebThing
             $"[{nameof(Name)}: {Name}]" +
             $"[{nameof(Href)}: {Href}]" +
             $"[{nameof(HrefPrefix)}: {HrefPrefix}]" +
-            $"[{nameof(TimeRequested)}: {TimeRequested}]";
+            $"[{nameof(TimeRequested)}: {TimeRequested}]]";
     }
 }

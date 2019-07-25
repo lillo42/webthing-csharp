@@ -23,7 +23,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The thing associated with this event.
         /// </summary>
-        public Thing Thing { get; internal set; }
+        public virtual Thing Thing { get; internal set; }
         
         /// <summary>
         /// The event's name. 
@@ -42,6 +42,12 @@ namespace Mozilla.IoT.WebThing
 
         internal IDictionary<string, object> Metadata { get; set; }
 
+        protected internal Event()
+            : this(null, null, null)
+        {
+            
+        }
+        
         public Event(Thing thing, string name, object data)
         {
             Thing = thing;

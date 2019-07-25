@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Mozilla.IoT.WebThing.Background
 {
@@ -13,12 +14,12 @@ namespace Mozilla.IoT.WebThing.Background
     {
         private readonly ISourceBlock<Action> _actions;
         private readonly LinkedList<ConfiguredTaskAwaitable> _tasks = new LinkedList<ConfiguredTaskAwaitable>();
-        private readonly IServiceProvider _provider;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public ActionExecutorHostedService(ISourceBlock<Action> actions, IServiceProvider provider)
+        public ActionExecutorHostedService(ISourceBlock<Action> actions, ILoggerFactory loggerFactory)
         {
             _actions = actions ?? throw new ArgumentNullException(nameof(actions));
-            _provider = provider;
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,7 +29,7 @@ namespace Mozilla.IoT.WebThing.Background
                 var action = await _actions.ReceiveAsync(stoppingToken)
                     .ConfigureAwait(false);
 
-                ConfiguredTaskAwaitable task = action.StartAsync(_provider, stoppingToken)
+                ConfiguredTaskAwaitable task = action.StartAsync(_loggerFactory.CreateLogger(typeof(Action)), stoppingToken)
                     .ConfigureAwait(false);
 
                 _tasks.AddLast(task);

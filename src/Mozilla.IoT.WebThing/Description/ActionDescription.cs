@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using static Mozilla.IoT.WebThing.Const;
@@ -10,7 +11,7 @@ namespace Mozilla.IoT.WebThing.Description
         {
             var result = new Dictionary<string, object>
             {
-                [HREF] = value.Href,
+                [HREF] = value.HrefPrefix.JoinUrl(value.Href),
                 [TIME_REQUESTED] = value.TimeRequested,
                 [STATUS] = value.Status.ToString().ToLower()
             };

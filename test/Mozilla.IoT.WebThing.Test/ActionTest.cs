@@ -1,138 +1,56 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Xunit;
-
-using static Xunit.Assert;
 
 namespace Mozilla.IoT.WebThing.Test
 {
     public class ActionTest
     {
         private readonly Fixture _fixture;
+        private readonly Action _action;
+        private readonly ILogger _logger;
 
         public ActionTest()
         {
             _fixture = new Fixture();
+            _action = new TestAction();
+            _logger = Substitute.For<ILogger>();
         }
-        
+
         [Fact]
-        public void AsActionDescription()
+        public async Task ExecuteAsync_Should_ChangeStatusAndTimeCompleted_When_StartAsyncIsCalled()
         {
-            var action = new TestAction(_fixture.Create<Thing>(), null)
-            {
-                HrefPrefix = _fixture.Create<string>()
-            };
+            _action.Status.Should().Be(Status.Created);
+            _action.TimeCompleted.Should().BeNull();
 
-            var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                    ""href"": ""/{action.HrefPrefix + action.Href}"",
-                    ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
-                    ""status"": ""created""
-            }}");
+            Task action =  _action.StartAsync(_logger, CancellationToken.None);
+            
+            _action.Status.Should().Be(Status.Pending);
+            _action.TimeCompleted.Should().BeNull();
+            ((TestAction) _action).Wait = false;
 
-            JObject description = action.AsActionDescription();
-
-            True(JToken.DeepEquals(json, description));
+            await action;
+            
+            _action.Status.Should().Be(Status.Completed);
+            _action.TimeCompleted.Should().NotBeNull();
         }
-        
-        [Fact]
-        public void AsActionDescription_With_Input()
-        {
-            var action = new TestAction(_fixture.Create<Thing>(), new JObject(
-                new JProperty("level", 50),
-                new JProperty("duration", 2000)))
-            {
-                HrefPrefix = _fixture.Create<string>()
-            };
 
-            var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                    ""input"": {{
-                        ""level"": 50,
-                        ""duration"": 2000
-                    }},
-                    ""href"": ""/{action.HrefPrefix + action.Href}"",
-                    ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
-                    ""status"": ""created""
-            }}");
-
-            JObject description = action.AsActionDescription();
-
-            True(JToken.DeepEquals(json, description));
-        }
-        
-        [Fact]
-        public async Task AsActionDescription_With_Pending()
-        {
-            var action = new TestAction(_fixture.Create<Thing>(), new JObject(
-                new JProperty("level", 50),
-                new JProperty("duration", 2000)))
-            {
-                HrefPrefix = _fixture.Create<string>(), 
-                Wait = true
-            };
-
-
-            Task performanceTask = action.StartAsync(CancellationToken.None);
-            
-            var json = JsonConvert.DeserializeObject<JObject>($@"{{
-                    ""input"": {{
-                        ""level"": 50,
-                        ""duration"": 2000
-                    }},
-                    ""href"": ""/{action.HrefPrefix + action.Href}"",
-                    ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
-                    ""status"": ""pending""
-            }}");
-            
-
-            JObject description = action.AsActionDescription();
-
-            True(JToken.DeepEquals(json, description));
-
-            action.Wait = false;
-            await performanceTask;
-            
-            json = JsonConvert.DeserializeObject<JObject>($@"{{
-                    ""input"": {{
-                        ""level"": 50,
-                        ""duration"": 2000
-                    }},
-                    ""href"": ""/{action.HrefPrefix + action.Href}"",
-                    ""timeRequested"": ""{action.TimeRequested:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
-                    ""timeCompleted"": ""{action.TimeCompleted:yyyy-MM-ddTHH:mm:ss.fffffffZ}"",
-                    ""status"": ""completed""
-            }}");
-            
-            description = action.AsActionDescription();
-            True(JToken.DeepEquals(json, description));
-        }
-        
         private class TestAction : Action
         {
+            internal volatile bool Wait = true;
+            public override string Name => "test";
 
-            internal volatile bool Wait = false;
-
-            public override string Id { get; } = Guid.NewGuid().ToString();
-            public override string Name { get; } = "test";
-
-            protected override async Task PerformActionAsync(CancellationToken cancellation)
+            protected override async Task ExecuteAsync(CancellationToken cancellation)
             {
                 while (Wait)
                 {
-                    await Task.Delay(10);
+                    await Task.Delay(10, cancellation);
                 }
-            }
-
-            public TestAction(Thing thing, JObject input) 
-                : base(thing, input)
-            {
-                
             }
         }
     }
-    
-    
 }
