@@ -46,9 +46,9 @@ namespace Mozilla.IoT.WebThing.Middleware
             if (thing.ActionsTypeInfo.ContainsKey(name) && json.TryGetValue(name, out var token))
             {
                 object input = GetInput(token);
-                IActionFactory factory = httpContext.RequestServices.GetService<IActionFactory>();
+                IActionActivator activator = httpContext.RequestServices.GetService<IActionActivator>();
                 
-                Action action = await factory.CreateAsync(thing, name, input as IDictionary<string, object>, 
+                Action action = await activator.CreateAsync(thing, name, input as IDictionary<string, object>, 
                     httpContext.RequestAborted);
 
                 if (action != null)

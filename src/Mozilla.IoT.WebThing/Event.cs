@@ -23,7 +23,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The thing associated with this event.
         /// </summary>
-        public virtual Thing Thing { get; internal set; }
+        public virtual Thing Thing { get; set; }
         
         /// <summary>
         /// The event's name. 

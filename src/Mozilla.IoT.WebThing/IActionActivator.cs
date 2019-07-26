@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Mozilla.IoT.WebThing
 {
-    public interface IActionFactory
+    public interface IActionActivator
     {
         ValueTask<Action> CreateAsync(Thing thing, string name, IDictionary<string, object> input, CancellationToken cancellation);
     }

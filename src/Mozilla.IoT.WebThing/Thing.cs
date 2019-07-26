@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;
 using static Mozilla.IoT.WebThing.Const;
@@ -54,7 +56,7 @@ namespace Mozilla.IoT.WebThing
         public virtual string UiHref { get; set; }
 
         public virtual IReadOnlyCollection<Property> Properties => _properties;
-        public virtual IReadOnlyCollection<Event> Events => _events;
+        public virtual IObservableCollection<Event> Events { get; set; }
 
         /// <summary>
         /// The type(s) of the thing.
@@ -74,13 +76,8 @@ namespace Mozilla.IoT.WebThing
 
         internal ConcurrentDictionary<string, LinkedList<Action>> Actions { get; } =
             new ConcurrentDictionary<string, LinkedList<Action>>();
-
-        protected internal IJsonConvert JsonConvert { get; internal set; }
-        protected internal IJsonSerializerSettings JsonSettings { get; internal set; }
-        protected internal IDescription<Event> EventDescriptor { get; internal set; }
-
-    internal IJsonSchemaValidator JsonSchemaValidator { get; set; }
-        private readonly LinkedList<Event> _events = new LinkedList<Event>();
+        
+        internal IJsonSchemaValidator JsonSchemaValidator { get; set; }
         private readonly LinkedList<Property> _properties = new LinkedList<Property>();
 
         private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypeInfo =
@@ -100,31 +97,9 @@ namespace Mozilla.IoT.WebThing
             Actions.TryAdd(name, new LinkedList<Action>());
             ActionsTypes.AddLast(typeof(T));
         }
+
         #endregion
-
-
-        public virtual async Task AddEventAsync(Event @event, CancellationToken cancellation)
-        {
-            _events.AddLast(@event);
-            if (@event.Thing == null)
-                
-            {
-                @event.Thing = this;
-            }
-
-            @event.Metadata = EventDescriptor.CreateDescription(@event);
-
-            if (!EventSubscribers.IsEmpty)
-            {
-                var message = new Dictionary<string, object>
-                {
-                    [MESSAGE_TYPE] = MessageType.Event, [DATA] = @event.Metadata
-                };
-
-                await NotifySubscribersAsync(EventSubscribers.Values, message, cancellation);
-            }
-        }
-
+        
         #region Property
 
         public virtual void AddProperty(Property property)
@@ -141,32 +116,13 @@ namespace Mozilla.IoT.WebThing
 
         public virtual void SetProperty(Property property, object value)
         {
-            if (property != null)
+            if (property != null && JsonSchemaValidator.IsValid(value, property.Metadata))
             {
-                if (JsonSchemaValidator.IsValid(value, property.Metadata))
-                {
-                    property.Value = value;
-                }
+                property.Value = value;
             }
         }
 
         #endregion
-
-        #region Notify
-
-        protected virtual async Task NotifySubscribersAsync(IEnumerable<WebSocket> subscribers,
-            IDictionary<string, object> message, CancellationToken cancellation)
-        {
-            byte[] json = JsonConvert.Serialize(message, JsonSettings);
-
-            var buffer = new ArraySegment<byte>(json);
-            foreach (WebSocket socket in subscribers)
-            {
-                await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation)
-                    .ConfigureAwait(false);
-            }
-        }
-
-        #endregion
+        
     }
 }

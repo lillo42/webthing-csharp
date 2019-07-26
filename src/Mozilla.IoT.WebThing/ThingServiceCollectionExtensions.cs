@@ -93,11 +93,12 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IJsonConvert, DefaultJsonConvert>();
             services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
             
-            services.TryAddScoped<IActionFactory, ActionFactory>();
+            services.TryAddScoped<IActionActivator, ActionActivator>();
             services.TryAddScoped<IDescription<Action>, ActionDescription>();
             services.TryAddScoped<IDescription<Event>, EventDescription>();
             services.TryAddScoped<IDescription<Property>, PropertyDescription>();
             services.TryAddScoped<IDescription<Thing>, ThingDescription>();
+            services.TryAddTransient(typeof(IObservableCollection<>), typeof(DefaultObservableCollection<>));
 
             services.AddHostedService<ActionExecutorHostedService>();
 

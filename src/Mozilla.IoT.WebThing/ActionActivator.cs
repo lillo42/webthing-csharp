@@ -8,13 +8,13 @@ using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class ActionFactory : IActionFactory
+    public class ActionActivator : IActionActivator
     {
         private readonly IServiceProvider _service;
         private readonly IJsonConvert _jsonConvert;
         private readonly IJsonSerializerSettings _jsonSettings;
 
-        public ActionFactory(IServiceProvider service, IJsonConvert jsonConvert, IJsonSerializerSettings jsonSettings)
+        public ActionActivator(IServiceProvider service, IJsonConvert jsonConvert, IJsonSerializerSettings jsonSettings)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _jsonConvert = jsonConvert ?? throw new ArgumentNullException(nameof(jsonConvert));

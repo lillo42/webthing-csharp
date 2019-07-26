@@ -38,13 +38,13 @@ namespace Mozilla.IoT.WebThing.Middleware
             var response = new Dictionary<string, object>();
             var descriptor = httpContext.RequestServices.GetService<IDescription<Action>>();
             var target = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
-            IActionFactory factory = httpContext.RequestServices.GetService<IActionFactory>();
+            IActionActivator activator = httpContext.RequestServices.GetService<IActionActivator>();
 
             foreach ((string key, object token) in json)
             {
                 object input = GetInput(token);
 
-                Action action = await factory.CreateAsync(thing, key, input as IDictionary<string, object>,
+                Action action = await activator.CreateAsync(thing, key, input as IDictionary<string, object>,
                     httpContext.RequestAborted);
 
                 if (action != null)

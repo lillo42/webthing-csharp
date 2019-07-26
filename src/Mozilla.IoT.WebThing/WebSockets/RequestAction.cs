@@ -14,12 +14,12 @@ namespace Mozilla.IoT.WebThing.WebSockets
         public string Action => "requestAction";
         
         private readonly ITargetBlock<Action> _target;
-        private readonly IActionFactory _factory;
+        private readonly IActionActivator _activator;
 
-        public RequestAction(ITargetBlock<Action> target, IActionFactory factory)
+        public RequestAction(ITargetBlock<Action> target, IActionActivator activator)
         {
             _target = target;
-            _factory = factory;
+            _activator = activator;
         }
 
         public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
@@ -32,7 +32,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     input = body["input"];
                 }
 
-                Action action = await _factory.CreateAsync(thing, key, input as IDictionary<string, object>, cancellation);
+                Action action = await _activator.CreateAsync(thing, key, input as IDictionary<string, object>, cancellation);
                 if (action != null)
                 {
                     await _target.SendAsync(action, cancellation);

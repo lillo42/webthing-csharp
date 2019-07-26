@@ -112,7 +112,7 @@ namespace Multi.Things
                 int value = Input["input"] as int? ?? 0;
                 await Task.Delay(value, cancellation);
                 Thing.SetProperty(Thing.Properties.FirstOrDefault(x=>x.Name == "brightness"), value);
-                await Thing.AddEventAsync(new OverheatedEvent(Thing, 102), cancellation);
+                Thing.Events.Add(new OverheatedEvent(Thing, 102));
             }
         }
     }
