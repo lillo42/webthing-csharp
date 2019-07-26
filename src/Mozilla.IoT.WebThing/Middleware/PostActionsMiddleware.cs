@@ -44,11 +44,12 @@ namespace Mozilla.IoT.WebThing.Middleware
             {
                 object input = GetInput(token);
 
-                Action action = await activator.CreateAsync(thing, key, input as IDictionary<string, object>,
-                    httpContext.RequestAborted);
+                Action action = activator.CreateInstance(httpContext.RequestServices, thing, key,
+                    input as IDictionary<string, object>);
 
                 if (action != null)
                 {
+                    thing.Actions.Add(action);
                     IDictionary<string, object> actionDescriptor = descriptor.CreateDescription(action);
                     response.Add(key, actionDescriptor);
                     await target.SendAsync(action);

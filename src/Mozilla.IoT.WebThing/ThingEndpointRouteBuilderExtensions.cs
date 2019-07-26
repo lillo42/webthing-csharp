@@ -9,34 +9,14 @@ using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.Middleware;
+using Mozilla.IoT.WebThing.Notify;
+
+using Action = Mozilla.IoT.WebThing.Action;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class ThingEndpointRouteBuilderExtensions
     {
-        public static void MapThing<T>(this IEndpointRouteBuilder builder)
-            where T : Thing
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            ValidateServicesRegistered(builder.ServiceProvider);
-
-            var things = builder.ServiceProvider.GetService<IReadOnlyList<Thing>>();
-        }
-        
-        private static void ValidateServicesRegistered(IServiceProvider serviceProvider)
-        {
-            var marker = serviceProvider.GetService(typeof(ThingMarkService));
-            if (marker == null)
-            {
-                throw new InvalidOperationException("Unable to find the required services. Please add all the required services by calling " +
-                                                    "'IServiceCollection.AddThing' inside the call to 'ConfigureServices(...)' in the application startup code.");
-            }
-        }
-
         public static IApplicationBuilder UseThing(this IApplicationBuilder app)
         {
             if (app == null)
@@ -46,10 +26,12 @@ namespace Microsoft.AspNetCore.Builder
 
             app.UseCors();
             app.UseWebSockets();
+            MapThingsRoute(app, app.ApplicationServices.GetService<IReadOnlyList<Thing>>());
+                
             return app;
         }
 
-        private static IApplicationBuilder AddRoute(IApplicationBuilder app, IReadOnlyList<Thing> thingType)
+        private static IApplicationBuilder MapThingsRoute(IApplicationBuilder app, IReadOnlyList<Thing> thingType)
         {
             var router = new RouteBuilder(app);
 
@@ -120,27 +102,49 @@ namespace Microsoft.AspNetCore.Builder
 
             #endregion
 
+            BindingThingNotify(app.ApplicationServices, thingType);
+
+            return app.UseRouter(router.Build());
+        }
+
+        private static void BindingThingNotify(IServiceProvider serviceProvider, IReadOnlyList<Thing> thingType)
+        {
+            var eventDescription = serviceProvider.GetService<IDescription<Event>>();
+
+            var jsonConvert = serviceProvider.GetService<IJsonConvert>();
+            var jsonSettings = serviceProvider.GetService<IJsonSerializerSettings>();
+            var jsonSchemaValidator = serviceProvider.GetService<IJsonSchemaValidator>();
+
+            var actionNotify = new NotifySubscribesOnActionAdded(serviceProvider.GetService<IDescription<Action>>(),
+                jsonConvert,
+                jsonSettings
+            );
+
+            var propertyNotify = new NotifySubscribesOnPropertyChanged(jsonConvert, jsonSettings);
+
             foreach (Thing thing in thingType)
             {
-                var notify = new NotifySubscribesOnEventAdded(thing,
-                    app.ApplicationServices.GetService<IDescription<Event>>(),
-                    app.ApplicationServices.GetService<IJsonConvert>(),
-                    app.ApplicationServices.GetService<IJsonSerializerSettings>()
+                var eventNotify = new NotifySubscribesOnEventAdded(thing,
+                    eventDescription,
+                    jsonConvert,
+                    jsonSettings
                 );
 
                 if (thing.Events == null)
                 {
-                    thing.Events = app.ApplicationServices.GetService<IObservableCollection<Event>>();
+                    thing.Events = serviceProvider.GetService<IObservableCollection<Event>>();
                 }
-
-                thing.Events.CollectionChanged += notify.Notify;
                 
-                var jsonSchemaValidator = app.ApplicationServices.GetService<IJsonSchemaValidator>();
-                ((PropertyCollection)thing.Properties).JsonSchemaValidator = jsonSchemaValidator;
-                thing.Properties.Cast<PropertyProxy>().ForEach(property => property.SchemaValidator = jsonSchemaValidator);
-            }
+                ((PropertyCollection) thing.Properties).JsonSchemaValidator = jsonSchemaValidator;
 
-            return app.UseRouter(router.Build());
+                thing.Events.CollectionChanged += eventNotify.Notify;
+                thing.Actions.CollectionChanged += actionNotify.Notify;
+                thing.Properties.Cast<PropertyProxy>().ForEach(property =>
+                {
+                    property.SchemaValidator = jsonSchemaValidator;
+                    property.ValuedChanged += propertyNotify.Notify;
+                });
+            }
         }
     }
 }

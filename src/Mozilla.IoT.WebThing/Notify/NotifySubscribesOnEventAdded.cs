@@ -8,7 +8,7 @@ using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;
 using static Mozilla.IoT.WebThing.Const;
 
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Notify
 {
     internal sealed class NotifySubscribesOnEventAdded
     {
@@ -17,8 +17,7 @@ namespace Mozilla.IoT.WebThing
         private readonly IJsonConvert _jsonConvert;
         private readonly IJsonSerializerSettings _jsonSettings;
 
-        public NotifySubscribesOnEventAdded(Thing thing, 
-            IDescription<Event> description, 
+        public NotifySubscribesOnEventAdded(Thing thing, IDescription<Event> description, 
             IJsonConvert jsonConvert,
             IJsonSerializerSettings jsonSettings)
         {
@@ -35,11 +34,12 @@ namespace Mozilla.IoT.WebThing
                 @event.Thing = _thing;
                 @event.Metadata = _description.CreateDescription(@event);
 
-                if (_thing.EventSubscribers.IsEmpty)
+                if (@event.Thing.EventSubscribers.IsEmpty)
                 {
                     var message = new Dictionary<string, object>
                     {
-                        [MESSAGE_TYPE] = MessageType.Event, [DATA] = @event.Metadata
+                        [MESSAGE_TYPE] = MessageType.Event.ToString().ToLower(), 
+                        [DATA] = @event.Metadata
                     };
 
                     await NotifySubscribersAsync(message, CancellationToken.None);

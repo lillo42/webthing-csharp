@@ -33,7 +33,7 @@ namespace Multi.Things
                 Console.WriteLine($"On-State is now {args.Value}");
             };
     
-            AddProperty(on);
+            Properties.Add(on);
 
             var brightnessDescription = new Dictionary<string, object>
             {
@@ -52,7 +52,7 @@ namespace Multi.Things
                 Console.WriteLine($"Brightness is now {args.Value}");
             };
             
-            AddProperty(brightness);
+            Properties.Add(brightness);
 
 
             var fadeMetadata = new Dictionary<string, object>
@@ -111,7 +111,13 @@ namespace Multi.Things
             {
                 int value = Input["input"] as int? ?? 0;
                 await Task.Delay(value, cancellation);
-                Thing.SetProperty(Thing.Properties.FirstOrDefault(x=>x.Name == "brightness"), value);
+                
+                var property = Thing.Properties.FirstOrDefault(x => x.Name == "brightness");
+                if (property != null)
+                {
+                    property.Value = value;
+                }
+                
                 Thing.Events.Add(new OverheatedEvent(Thing, 102));
             }
         }

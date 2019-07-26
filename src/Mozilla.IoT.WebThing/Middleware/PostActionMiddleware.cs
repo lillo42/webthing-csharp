@@ -48,11 +48,12 @@ namespace Mozilla.IoT.WebThing.Middleware
                 object input = GetInput(token);
                 IActionActivator activator = httpContext.RequestServices.GetService<IActionActivator>();
                 
-                Action action = await activator.CreateAsync(thing, name, input as IDictionary<string, object>, 
-                    httpContext.RequestAborted);
+                Action action = activator.CreateInstance(httpContext.RequestServices, 
+                    thing, name, input as IDictionary<string, object>);
 
                 if (action != null)
                 {
+                    thing.Actions.Add(action);
                     var descriptor = httpContext.RequestServices.GetService<IDescription<Action>>();
                     response.Add(name, descriptor.CreateDescription(action));
                     var block = httpContext.RequestServices.GetService<ITargetBlock<Action>>();

@@ -8,18 +8,20 @@ using System.Threading.Tasks.Dataflow;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public class RequestAction : IWebSocketAction
+    internal sealed class RequestAction : IWebSocketAction
     {
         private static readonly  ArraySegment<byte> s_errorMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"{""messageType"": ""error"",""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid action request""}}"));
         public string Action => "requestAction";
         
         private readonly ITargetBlock<Action> _target;
         private readonly IActionActivator _activator;
+        private readonly IServiceProvider _provider;
 
-        public RequestAction(ITargetBlock<Action> target, IActionActivator activator)
+        public RequestAction(ITargetBlock<Action> target, IActionActivator activator, IServiceProvider provider)
         {
             _target = target;
             _activator = activator;
+            _provider = provider;
         }
 
         public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
@@ -32,9 +34,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     input = body["input"];
                 }
 
-                Action action = await _activator.CreateAsync(thing, key, input as IDictionary<string, object>, cancellation);
+                Action action = _activator.CreateInstance(_provider, thing, key, input as IDictionary<string, object>);
                 if (action != null)
                 {
+                    thing.Actions.Add(action);
                     await _target.SendAsync(action, cancellation);
                 }
                 else

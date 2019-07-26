@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
         public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
         {
-            foreach ((string key, object token) in data)
+            foreach ((string key, object _) in data)
             {
                 Property property = thing.Properties.FirstOrDefault(x => x.Name == key);
                 var result = property switch

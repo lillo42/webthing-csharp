@@ -69,17 +69,14 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                     if (action != null)
                     {
-                        await action.ExecuteAsync(thing, webSocket, data as IDictionary<string, object>, cancellation)
-                            .ConfigureAwait(false);
+                        await action.ExecuteAsync(thing, webSocket, data as IDictionary<string, object>, cancellation);
                     }
                     else
                     {
-                        await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
-                            .ConfigureAwait(false);
+                        await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation);
                     }
 
-                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None)
-                        .ConfigureAwait(false);
+                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 }
             }
             finally

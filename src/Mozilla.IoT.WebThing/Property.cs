@@ -30,6 +30,7 @@ namespace Mozilla.IoT.WebThing
         protected override void OnValueChanged()
         {
             ValuedChanged?.Invoke(this, new ValueChangedEventArgs<T>(Value));
+            base.OnValueChanged();
         }
     }
     
@@ -71,7 +72,6 @@ namespace Mozilla.IoT.WebThing
             }
         }
         public virtual IDictionary<string, object> Metadata { get; set; }
-
         public event EventHandler<ValueChangedEventArgs> ValuedChanged;
         
         protected virtual void OnValueChanged()

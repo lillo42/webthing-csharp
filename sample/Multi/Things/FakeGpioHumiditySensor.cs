@@ -29,7 +29,7 @@ namespace Multi.Things
 
             _level = new Property<double>(this, "level", 0, levelDescription);
 
-            AddProperty(_level);
+            Properties.Add(_level);
             
             Task.Factory.StartNew(async () =>
             {

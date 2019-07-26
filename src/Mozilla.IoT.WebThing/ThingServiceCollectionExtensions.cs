@@ -62,6 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddCors();
             services.TryAddSingleton(typeof(ThingMarkService));
             services.TryAddSingleton<IThingActivator, ThingActivator>();
+            services.TryAddSingleton<IActionActivator, ActionActivator>();
 
             services.TryAddSingleton<IJsonSerializerSettings>(service => new DefaultJsonSerializerSettings(
                 new JsonSerializerOptions
@@ -74,7 +75,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IJsonConvert, DefaultJsonConvert>();
             services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
 
-            services.TryAddScoped<IActionActivator, ActionActivator>();
             services.TryAddScoped<IDescription<Action>, ActionDescription>();
             services.TryAddScoped<IDescription<Event>, EventDescription>();
             services.TryAddScoped<IDescription<Property>, PropertyDescription>();
