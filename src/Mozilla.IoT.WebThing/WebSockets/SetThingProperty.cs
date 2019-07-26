@@ -28,7 +28,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 try
                 {
                     Property property = thing.Properties.FirstOrDefault(x => x.Name == key);
-                    thing.SetProperty(property, token);
+                    if (property != null)
+                    {
+                        property.Value = token;
+                    }
                 }
                 catch (Exception exception)
                 {

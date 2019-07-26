@@ -37,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                 return;
             }
 
-            thing.SetProperty(property, json[propertyName]);
+            property.Value = json[propertyName];
 
             await httpContext.WriteBodyAsync(HttpStatusCode.Created, 
                 new Dictionary<string, object>

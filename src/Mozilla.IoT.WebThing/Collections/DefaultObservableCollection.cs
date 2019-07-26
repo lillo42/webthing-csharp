@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Mozilla.IoT.WebThing.Collections
 {
+    [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
+    [DebuggerDisplay("Count = {Count}")]
     public class DefaultObservableCollection<T> : IObservableCollection<T>
     {
         private readonly LinkedList<T> _events = new LinkedList<T>();

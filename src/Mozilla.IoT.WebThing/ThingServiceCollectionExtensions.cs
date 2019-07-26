@@ -18,17 +18,11 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ThingServiceCollectionExtensions
     {
-        #region Singles
-
         public static void AddThing<T>(this IServiceCollection services)
             where T : Thing
         {
             AddThing(services, options => options.AddThing<T>());
         }
-
-        #endregion
-
-        #region Multi
 
         public static void AddThing(this IServiceCollection services, Action<ThingBindingOption> thingOptions)
         {
@@ -43,33 +37,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             thingOptions(option);
 
-            foreach (Type thing in option.ThingsType)
-            {
-                services.TryAddSingleton(thing);
-            }
-            
-            foreach (Type action in Thing.ActionsTypes)
-            {
-                services.TryAddTransient(action);
-            }
-
             services.TryAddSingleton<IReadOnlyList<Thing>>(provider =>
             {
-                var things = option.Things.ToList();
-                things.AddRange(option.ThingsType.Select(thing => (Thing)provider.GetService(thing)));
+                var things = provider.GetServices(typeof(Thing)).Cast<Thing>().ToList();
 
                 if (things.Count == 1 && !option.IsMultiThing)
                 {
                     return new SingleThingCollection(things[0]);
                 }
-                else
-                {
-                    return new MultipleThingsCollections(things);
-                }
+
+                return new MultipleThingsCollections(things);
             });
         }
-
-        #endregion
 
         private static void RegisterCommon(IServiceCollection services)
         {
@@ -81,6 +60,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddRouting();
             services.AddWebSockets(options => { });
             services.AddCors();
+            services.TryAddSingleton(typeof(ThingMarkService));
+            services.TryAddSingleton<IThingActivator, ThingActivator>();
 
             services.TryAddSingleton<IJsonSerializerSettings>(service => new DefaultJsonSerializerSettings(
                 new JsonSerializerOptions
@@ -92,7 +73,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IJsonConvert, DefaultJsonConvert>();
             services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
-            
+
             services.TryAddScoped<IActionActivator, ActionActivator>();
             services.TryAddScoped<IDescription<Action>, ActionDescription>();
             services.TryAddScoped<IDescription<Event>, EventDescription>();
@@ -102,9 +83,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddHostedService<ActionExecutorHostedService>();
 
-            var block = new BufferBlock<Mozilla.IoT.WebThing.Action>();
-            services.AddSingleton<ISourceBlock<Mozilla.IoT.WebThing.Action>>(block);
-            services.AddSingleton<ITargetBlock<Mozilla.IoT.WebThing.Action>>(block);
+            var block = new BufferBlock<Action>();
+            services.AddSingleton<ISourceBlock<Action>>(block);
+            services.AddSingleton<ITargetBlock<Action>>(block);
 
             services.AddTransient<WebSocketProcessor>();
 

@@ -1,8 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mozilla.IoT.WebThing.Collections
 {
+    [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
+    [DebuggerDisplay("Count = {Count}")]
     public class MultipleThingsCollections : IReadOnlyList<Thing>
     {
         private readonly List<Thing> _things;
@@ -10,7 +13,6 @@ namespace Mozilla.IoT.WebThing.Collections
         public MultipleThingsCollections(List<Thing> things)
         {
             _things = things;
-            
             
         }
 

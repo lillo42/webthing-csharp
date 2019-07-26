@@ -23,7 +23,7 @@ namespace Mozilla.IoT.WebThing.Middleware
             if (thing != null)
             {
                 string name = httpContext.GetValueFromRoute<string>("actionName");
-                if (thing.Actions.ContainsKey(name))
+                if (thing.Actions.Contains(name))
                 {
                     string id = httpContext.GetValueFromRoute<string>("actionId");
                     Action action = thing.Actions[name].FirstOrDefault(x => x.Id == id);

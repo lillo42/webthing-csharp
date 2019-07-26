@@ -1,18 +1,18 @@
+using System;
 using System.Collections.Generic;
 using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
 {
-    internal sealed class PropertyProxy : Property
+    internal sealed class PropertyProxy : Property, IEquatable<Property>
     {
         private readonly Property _property;
-        private readonly IJsonSchemaValidator _schemaValidator;
+        internal IJsonSchemaValidator SchemaValidator { get; set; }
 
-        public PropertyProxy(Thing thing, Property property, IJsonSchemaValidator schemaValidator)
+        public PropertyProxy(Property property, IJsonSchemaValidator schemaValidator)
         {
             _property = property;
-            _schemaValidator = schemaValidator;
-            _property.Thing = thing;
+            SchemaValidator = schemaValidator;
         }
 
         public override Thing Thing
@@ -44,7 +44,7 @@ namespace Mozilla.IoT.WebThing
             get => _property.Value;
             set
             {
-                if (_schemaValidator.IsValid(value, _property.Metadata))
+                if (SchemaValidator.IsValid(value, _property.Metadata))
                 {
                     _property.Value = value;
                 }
@@ -56,61 +56,39 @@ namespace Mozilla.IoT.WebThing
             get => _property.Metadata;
             set => _property.Metadata = value;
         }
-    }
-    
-    
-    internal sealed class PropertyProxy<T> : Property<T>
-    {
-        private readonly Property<T> _property;
-        private readonly IJsonSchemaValidator _schemaValidator;
 
-        public PropertyProxy(Thing thing, Property<T> property, IJsonSchemaValidator schemaValidator)
+        public override bool Equals(object obj)
         {
-            _property = property;
-            _schemaValidator = schemaValidator;
-            _property.Thing = thing;
-        }
-
-        public override Thing Thing
-        {
-            get => _property.Thing;
-            set => _property.Thing = value;
-        }
-
-        public override string Name
-        {
-            get => _property.Name;
-            set => _property.Name = value;
-        }
-
-        public override string Href
-        {
-            get => _property.Href;
-            set => _property.Href = value;
-        }
-
-        public override string HrefPrefix
-        {
-            get => _property.HrefPrefix;
-            set => _property.HrefPrefix = value;
-        }
-
-        public override T Value
-        {
-            get => _property.Value;
-            set
+            if (ReferenceEquals(obj, null))
             {
-                if (_schemaValidator.IsValid(value, _property.Metadata))
-                {
-                    _property.Value = value;
-                }
+                return false;
             }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj is Property property && !(obj is PropertyProxy))
+            {
+                return Equals(property);
+            }
+
+            return false;
         }
 
-        public override IDictionary<string, object> Metadata
+        public bool Equals(Property other)
         {
-            get => _property.Metadata;
-            set => _property.Metadata = value;
+            if (ReferenceEquals(other, null))
+            {
+                return false;
+            }
+
+            return ReferenceEquals(_property, other) || _property.Equals(other);
         }
+
+        public override int GetHashCode()
+            => (_property != null ? _property.GetHashCode() : 0);
+        
     }
 }

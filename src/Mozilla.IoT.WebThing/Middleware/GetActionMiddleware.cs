@@ -24,7 +24,7 @@ namespace Mozilla.IoT.WebThing.Middleware
             {
                 string name = httpContext.GetValueFromRoute<string>("actionName");
 
-                if (thing.Actions.ContainsKey(name))
+                if (thing.Actions.Contains(name))
                 {
                     var description = httpContext.RequestServices.GetService<IDescription<Action>>();
                     var result = thing.Actions[name]

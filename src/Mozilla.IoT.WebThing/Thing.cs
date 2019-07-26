@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Collections;
-using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;
 using static Mozilla.IoT.WebThing.Const;
 
@@ -55,30 +51,24 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         public virtual string UiHref { get; set; }
 
-        public virtual IReadOnlyCollection<Property> Properties => _properties;
-        public virtual IObservableCollection<Event> Events { get; set; }
+        public ICollection<Property> Properties { get; }
+        public IObservableCollection<Event> Events { get; internal set; }
 
         /// <summary>
         /// The type(s) of the thing.
         /// </summary>
         public virtual object Type { get; set; }
 
-        public virtual IReadOnlyDictionary<string, (Type type, IDictionary<string, object> metadata)> ActionsTypeInfo =>
+        public IReadOnlyDictionary<string, (Type type, IDictionary<string, object> metadata)> ActionsTypeInfo =>
             _actionsTypeInfo;
 
         public virtual ConcurrentDictionary<Guid, WebSocket> Subscribers { get; } =
             new ConcurrentDictionary<Guid, WebSocket>();
 
-        internal static LinkedList<Type> ActionsTypes { get; } = new LinkedList<Type>();
-
         internal ConcurrentDictionary<string, WebSocket> EventSubscribers { get; } =
             new ConcurrentDictionary<string, WebSocket>();
 
-        internal ConcurrentDictionary<string, LinkedList<Action>> Actions { get; } =
-            new ConcurrentDictionary<string, LinkedList<Action>>();
-        
-        internal IJsonSchemaValidator JsonSchemaValidator { get; set; }
-        private readonly LinkedList<Property> _properties = new LinkedList<Property>();
+        internal ObservableActionCollection Actions { get; } = new ObservableActionCollection();
 
         private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypeInfo =
             new Dictionary<string, (Type type, IDictionary<string, object> metadata)>();
@@ -86,6 +76,7 @@ namespace Mozilla.IoT.WebThing
         public Thing()
         {
             Context = DEFAULT_CONTEXT;
+            Properties = new PropertyCollection(this);
         }
 
         #region Actions
@@ -94,35 +85,8 @@ namespace Mozilla.IoT.WebThing
             where T : Action
         {
             _actionsTypeInfo.Add(name, (typeof(T), metadata));
-            Actions.TryAdd(name, new LinkedList<Action>());
-            ActionsTypes.AddLast(typeof(T));
         }
 
         #endregion
-        
-        #region Property
-
-        public virtual void AddProperty(Property property)
-        {
-            _properties.AddLast(property);
-
-            if (property.Thing == null)
-            {
-                property.Thing = this;
-            }
-
-            property.HrefPrefix = HrefPrefix;
-        }
-
-        public virtual void SetProperty(Property property, object value)
-        {
-            if (property != null && JsonSchemaValidator.IsValid(value, property.Metadata))
-            {
-                property.Value = value;
-            }
-        }
-
-        #endregion
-        
     }
 }

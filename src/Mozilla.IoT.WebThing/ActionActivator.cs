@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Json;
 using static Mozilla.IoT.WebThing.Const;
 
@@ -11,26 +13,27 @@ namespace Mozilla.IoT.WebThing
     public class ActionActivator : IActionActivator
     {
         private readonly IServiceProvider _service;
-        private readonly IJsonConvert _jsonConvert;
-        private readonly IJsonSerializerSettings _jsonSettings;
 
-        public ActionActivator(IServiceProvider service, IJsonConvert jsonConvert, IJsonSerializerSettings jsonSettings)
+        private readonly Func<Type, ObjectFactory> _createFactory = type =>
+            ActivatorUtilities.CreateFactory(type, Type.EmptyTypes);
+
+        private readonly ConcurrentDictionary<Type, ObjectFactory>
+            _typeActivatorCache = new ConcurrentDictionary<Type, ObjectFactory>();
+
+        public ActionActivator(IServiceProvider service)
         {
-            _service = service ?? throw new ArgumentNullException(nameof(service));
-            _jsonConvert = jsonConvert ?? throw new ArgumentNullException(nameof(jsonConvert));
-            _jsonSettings = jsonSettings ?? throw new ArgumentNullException(nameof(jsonSettings));
+            _service = service;
         }
 
-        public ValueTask<Action> CreateAsync(Thing thing, string name, IDictionary<string, object> input,
-            CancellationToken cancellation)
+        public Action CreateInstance(Thing thing, string name, IDictionary<string, object> input)
         {
             if (!thing.ActionsTypeInfo.ContainsKey(name))
             {
-                return new ValueTask<Action>(result: null);
+                return null;
             }
 
             (Type type, _) = thing.ActionsTypeInfo[name];
-            Action action = (Action)_service.GetService(type);
+            Action action = CreateAction(type);
 
             action.Thing = thing;
             action.Name = name;
@@ -39,8 +42,13 @@ namespace Mozilla.IoT.WebThing
             action.Href = $"/actions/{name}/{action.Id}";
             thing.Actions[name].AddLast(action);
 
-            return !thing.Subscribers.IsEmpty ? new ValueTask<Action>(NotifySubscribersAsync(thing, action, cancellation)) 
-                : new ValueTask<Action>(action);
+            return action;
+        }
+
+        private Action CreateAction(Type implementationType)
+        {
+            var createFactory = _typeActivatorCache.GetOrAdd(implementationType, _createFactory);
+            return (Action)createFactory(_service, arguments: null);
         }
 
         private async Task<Action> NotifySubscribersAsync(Thing thing, Action action, CancellationToken cancellation)

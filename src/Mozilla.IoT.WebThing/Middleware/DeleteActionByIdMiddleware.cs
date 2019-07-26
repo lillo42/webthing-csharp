@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares
             string id = httpContext.GetValueFromRoute<string>("actionId");
 
             httpContext.Response.StatusCode =
-                thing.Actions.ContainsKey(name) && thing.Actions[name].Remove(x => x.Id == id) ?
+                thing.Actions.Contains(name) && thing.Actions[name].Remove(x => x.Id == id) ?
                 (int)HttpStatusCode.NoContent : (int) HttpStatusCode.NotFound;
             
             return Task.CompletedTask;
