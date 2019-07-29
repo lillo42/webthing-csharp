@@ -27,11 +27,7 @@ namespace Mozilla.IoT.WebThing
             set => _property.Name = value;
         }
 
-        public override string Href
-        {
-            get => _property.Href;
-            set => _property.Href = value;
-        }
+        public override string Href => _property.Href;
 
         public override string HrefPrefix
         {

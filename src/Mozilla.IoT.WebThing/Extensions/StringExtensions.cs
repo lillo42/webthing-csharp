@@ -7,12 +7,34 @@ namespace System
     {
         internal static string JoinUrl(this string left, string right)
         {
+            if (left == null)
+            {
+                left = string.Empty;
+            }
+
+            if (right == null)
+            {
+                right = string.Empty;
+            }
+
             var start = string.Empty;
+            
 
             if (!left.StartsWith('/'))
             {
                 start = "/";
             }
+
+            if (string.IsNullOrEmpty(left))
+            {
+                if (right.StartsWith('/'))
+                {
+                    return right;
+                }
+
+                return string.Concat(start, right);
+            }
+            
 
             if ((left.EndsWith('/') && !right.StartsWith('/'))
                 || (!left.EndsWith('/') && right.StartsWith('/')))
@@ -24,7 +46,7 @@ namespace System
             {
                 if (left.Length == 1 && right.Length == 1)
                 {
-                    return $"{start}/";        
+                    return $"{start}/";
                 }
 
                 if (left.Length == 1 && right.Length > 1)
@@ -34,7 +56,7 @@ namespace System
 
                 return $"{start}{left.Remove(left.Length - 2)}{right}";
             }
-            
+
             return $"{start}{left}/{right}";
         }
     }

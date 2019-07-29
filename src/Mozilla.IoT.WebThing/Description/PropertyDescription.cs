@@ -10,12 +10,12 @@ namespace Mozilla.IoT.WebThing.Description
     {
         public IDictionary<string, object> CreateDescription(Property value)
         {
-            var result = value.Metadata.ToDictionary(x => x.Key, x => x.Value);
+            var result = value.Metadata?.ToDictionary(x => x.Key, x => x.Value) ?? new Dictionary<string, object>();
 
             var link = new Dictionary<string, object>
             {
                 [REL] = RelType.Property.ToString().ToLower(),
-                [HREF] = value.Href
+                [HREF] = value.HrefPrefix.JoinUrl(value.Href)
             };
 
             ICollection<IDictionary<string, object>> links;
@@ -28,7 +28,6 @@ namespace Mozilla.IoT.WebThing.Description
                 }
                 else
                 {
-                    // TODO: Change exception
                     throw new DescriptionException("Invalid type on property links");
                 }
             }

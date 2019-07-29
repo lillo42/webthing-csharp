@@ -59,7 +59,7 @@ namespace Mozilla.IoT.WebThing
 
         public virtual Thing Thing { get;  set; }
         public virtual string Name { get; set; }
-        public virtual string Href { get; set; }
+        public virtual string Href => $"/properties/{Name}";
         public virtual string HrefPrefix { get; set; }
         private object _value;
         public virtual object Value
