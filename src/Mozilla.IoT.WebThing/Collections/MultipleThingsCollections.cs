@@ -1,19 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing.Collections
 {
-    [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
+    [DebuggerTypeProxy(typeof (IThingReadOnlyCollectionDebugView))]
     [DebuggerDisplay("Count = {Count}")]
-    public class MultipleThingsCollections : IReadOnlyList<Thing>
+    public class MultipleThingsCollections : IThingReadOnlyCollection
     {
-        private readonly List<Thing> _things;
+        private readonly LinkedList<Thing> _things;
 
-        public MultipleThingsCollections(List<Thing> things)
+        public MultipleThingsCollections(IEnumerable<Thing> things)
         {
-            _things = things;
+            _things = new LinkedList<Thing>(things);
             
         }
 
@@ -24,7 +25,7 @@ namespace Mozilla.IoT.WebThing.Collections
             => GetEnumerator();
 
         public int Count => _things.Count;
-
-        public Thing this[int index] => _things[index];
+        
+        public Thing this[string name] => _things.FirstOrDefault(x => x.Name == name);
     }
 }

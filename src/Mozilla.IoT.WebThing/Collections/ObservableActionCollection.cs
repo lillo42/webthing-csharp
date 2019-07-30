@@ -19,8 +19,7 @@ namespace Mozilla.IoT.WebThing.Collections
             var actions = _actions.GetOrAdd(item.Name, name => new LinkedList<Action>());
             lock (_locker)
             {
-                
-                _actions[item.Name].AddLast(item);
+                actions.AddLast(item);
                 Notify(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
             }
         }
@@ -44,7 +43,7 @@ namespace Mozilla.IoT.WebThing.Collections
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
         
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Notify(NotifyCollectionChangedEventArgs eventArgs)
         {
             var change = CollectionChanged;

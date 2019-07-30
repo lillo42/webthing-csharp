@@ -37,13 +37,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
             thingOptions(option);
 
-            services.TryAddSingleton<IReadOnlyList<Thing>>(provider =>
+            services.TryAddSingleton<IThingReadOnlyCollection>(provider =>
             {
-                var things = provider.GetServices(typeof(Thing)).Cast<Thing>().ToList();
+                var things = provider.GetServices(typeof(Thing)).Cast<Thing>();
 
-                if (things.Count == 1 && !option.IsMultiThing)
+                if (!option.IsMultiThing && things.Any())
                 {
-                    return new SingleThingCollection(things[0]);
+                    return new SingleThingCollection(things.FirstOrDefault());
                 }
 
                 return new MultipleThingsCollections(things);

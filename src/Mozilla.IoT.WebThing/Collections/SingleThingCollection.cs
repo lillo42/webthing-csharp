@@ -5,9 +5,9 @@ using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing.Collections
 {
-    [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
+    [DebuggerTypeProxy(typeof (IThingReadOnlyCollectionDebugView))]
     [DebuggerDisplay("Count = {Count}")]
-    public class SingleThingCollection : IReadOnlyList<Thing>
+    public class SingleThingCollection : IThingReadOnlyCollection
     {
         private readonly Thing _thing;
 
@@ -27,6 +27,6 @@ namespace Mozilla.IoT.WebThing.Collections
 
         public int Count => 1;
 
-        public Thing this[int index] => _thing;
+        public Thing this[string name] => _thing;
     }
 }

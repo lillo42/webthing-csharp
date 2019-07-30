@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
-using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
 using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;

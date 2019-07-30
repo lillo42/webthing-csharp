@@ -80,6 +80,5 @@ namespace Mozilla.IoT.WebThing
 
         public override int GetHashCode()
             => (Property != null ? Property.GetHashCode() : 0);
-        
     }
 }
