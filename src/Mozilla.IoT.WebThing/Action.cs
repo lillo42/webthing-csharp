@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Mozilla.IoT.WebThing
 {
-    public abstract class Action
+    public abstract class Action : IEquatable<Action>
     {
         /// <summary>
         /// Action's ID.
@@ -79,5 +79,60 @@ namespace Mozilla.IoT.WebThing
             $"[{nameof(Href)}: {Href}]" +
             $"[{nameof(HrefPrefix)}: {HrefPrefix}]" +
             $"[{nameof(TimeRequested)}: {TimeRequested}]]";
+
+        public bool Equals(Action other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(Id, other.Id) 
+                   && string.Equals(Name, other.Name) 
+                   && string.Equals(Href, other.Href)
+                   && string.Equals(HrefPrefix, other.HrefPrefix) 
+                   && Status == other.Status 
+                   && TimeRequested.Equals(other.TimeRequested)
+                   && TimeCompleted.Equals(other.TimeCompleted) 
+                   && Equals(Input, other.Input)
+                   && Equals(Thing, other.Thing);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((Action) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Id != null ? Id.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Href != null ? Href.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (HrefPrefix != null ? HrefPrefix.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (int) Status;
+                hashCode = (hashCode * 397) ^ TimeRequested.GetHashCode();
+                hashCode = (hashCode * 397) ^ TimeCompleted.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Input != null ? Input.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Thing != null ? Thing.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 }

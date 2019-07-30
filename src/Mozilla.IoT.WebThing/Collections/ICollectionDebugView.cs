@@ -10,9 +10,7 @@ namespace Mozilla.IoT.WebThing.Collections
 
         public ICollectionDebugView(ICollection<T> collection)
         {
-            if (collection == null)
-                throw new ArgumentNullException(nameof(collection));
-            this._collection = collection;
+            this._collection = collection ?? throw new ArgumentNullException(nameof(collection));
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -20,8 +18,8 @@ namespace Mozilla.IoT.WebThing.Collections
         {
             get
             {
-                var array = new T[this._collection.Count];
-                this._collection.CopyTo(array, 0);
+                var array = new T[_collection.Count];
+                _collection.CopyTo(array, 0);
                 return array;
             }
         }

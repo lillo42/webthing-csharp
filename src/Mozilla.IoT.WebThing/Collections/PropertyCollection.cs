@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +8,7 @@ namespace Mozilla.IoT.WebThing.Collections
 {
     [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class PropertyCollection : ICollection<Property>
+    internal sealed class PropertyCollection : ICollection<Property>, IEquatable<PropertyCollection>
     {
         private readonly LinkedList<Property> _properties = new LinkedList<Property>();
         private readonly Thing _thing;
@@ -50,5 +51,21 @@ namespace Mozilla.IoT.WebThing.Collections
 
         public int Count => _properties.Count;
         public bool IsReadOnly => false;
+
+        public bool Equals(PropertyCollection other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            return ReferenceEquals(this, other) || Equals(_properties, other._properties);
+        }
+
+        public override bool Equals(object obj) 
+            => ReferenceEquals(this, obj) || obj is PropertyCollection other && Equals(other);
+
+        public override int GetHashCode() 
+            => (_properties != null ? _properties.GetHashCode() : 0);
     }
 }

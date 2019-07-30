@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -8,7 +9,7 @@ namespace Mozilla.IoT.WebThing.Collections
 {
     [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class DefaultObservableCollection<T> : IObservableCollection<T>
+    public class DefaultObservableCollection<T> : IObservableCollection<T>, IEquatable<DefaultObservableCollection<T>>
     {
         private readonly LinkedList<T> _events = new LinkedList<T>();
 
@@ -55,5 +56,38 @@ namespace Mozilla.IoT.WebThing.Collections
         public int Count => _events.Count;
         public bool IsReadOnly => false;
         public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        public bool Equals(DefaultObservableCollection<T> other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(_events, other._events);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((DefaultObservableCollection<T>) obj);
+        }
+
+        public override int GetHashCode() 
+            => (_events != null ? _events.GetHashCode() : 0);
     }
 }

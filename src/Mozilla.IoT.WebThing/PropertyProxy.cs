@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
 {
-    internal sealed class PropertyProxy : Property, IEquatable<Property>
+    internal sealed class PropertyProxy : Property
     {
         private readonly Property _property;
         internal IJsonSchemaValidator SchemaValidator { get; set; }
@@ -65,22 +64,12 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            if (obj is Property property && !(obj is PropertyProxy))
+            if (obj is Property property)
             {
                 return Equals(property);
             }
 
             return false;
-        }
-
-        public bool Equals(Property other)
-        {
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            return ReferenceEquals(_property, other) || _property.Equals(other);
         }
 
         public override int GetHashCode()

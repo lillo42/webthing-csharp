@@ -3,12 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using Mozilla.IoT.WebThing.Collections;
-using Mozilla.IoT.WebThing.Json;
 using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class Thing
+    public class Thing : IEquatable<Thing>
     {
         /// <summary>
         /// The type context of the thing.
@@ -88,5 +87,66 @@ namespace Mozilla.IoT.WebThing
         }
 
         #endregion
+
+        public bool Equals(Thing other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(_hrefPrefix, other._hrefPrefix) 
+                   && Equals(_actionsTypeInfo, other._actionsTypeInfo) 
+                   && string.Equals(Context, other.Context) 
+                   && string.Equals(Name, other.Name) 
+                   && string.Equals(Description, other.Description) 
+                   && string.Equals(UiHref, other.UiHref) 
+                   && Equals(Properties, other.Properties) 
+                   && Equals(Events, other.Events) 
+                   && Equals(Type, other.Type) 
+                   && Equals(Subscribers, other.Subscribers) 
+                   && Equals(EventSubscribers, other.EventSubscribers) 
+                   && Equals(Actions, other.Actions);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((Thing) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (_hrefPrefix?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (_actionsTypeInfo?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Context?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Description?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (UiHref?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Properties?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Events?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Type?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Subscribers?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (EventSubscribers?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Actions?.GetHashCode() ?? 0);
+                return hashCode;
+            }
+        }
     }
 }

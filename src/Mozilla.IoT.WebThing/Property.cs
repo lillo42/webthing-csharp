@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class Property<T> : Property
+    public class Property<T> : Property,  IEquatable<Property<T>>
     {
         public Property()
         {
@@ -32,9 +32,12 @@ namespace Mozilla.IoT.WebThing
             ValuedChanged?.Invoke(this, new ValueChangedEventArgs<T>(Value));
             base.OnValueChanged();
         }
+
+        public bool Equals(Property<T> other) 
+            => base.Equals(other);
     }
     
-    public class Property
+    public class Property : IEquatable<Property>
     {
         public Property()
         {
@@ -77,6 +80,53 @@ namespace Mozilla.IoT.WebThing
         protected virtual void OnValueChanged()
         {
             ValuedChanged?.Invoke(this, new ValueChangedEventArgs(Value));
+        }
+
+        public bool Equals(Property other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(_value, other._value) 
+                   && Equals(Thing, other.Thing) 
+                   && string.Equals(Name, other.Name) 
+                   && string.Equals(HrefPrefix, other.HrefPrefix) 
+                   && Equals(Metadata, other.Metadata);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((Property) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (_value?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Thing?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (HrefPrefix?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Metadata?.GetHashCode() ?? 0);
+                return hashCode;
+            }
         }
     }
     

@@ -3,22 +3,22 @@ using System.Collections.Generic;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class Event<T> : Event
+    public abstract class Event<T> : Event
     {
         public new virtual T Data => (T) base.Data;
 
-        public Event(Thing thing, string name, T data) 
+        protected Event(Thing thing, string name, T data) 
             : base(thing, name, data)
         {
         }
 
-        public Event(string name, T data) 
+        protected Event(string name, T data) 
             : base(name, data)
         {
         }
     }
     
-    public class Event
+    public abstract class Event : IEquatable<Event>
     {
         /// <summary>
         /// The thing associated with this event.
@@ -48,18 +48,65 @@ namespace Mozilla.IoT.WebThing
             
         }
         
-        public Event(Thing thing, string name, object data)
+        protected Event(Thing thing, string name, object data)
         {
             Thing = thing;
             Name = name;
             Data = data;
         }
 
-        public Event(string name, object data)
+        protected Event(string name, object data)
         {
             Name = name;
             Data = data;
             Time = DateTime.UtcNow;
+        }
+
+        public bool Equals(Event other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(Thing, other.Thing) 
+                   && string.Equals(Name, other.Name) 
+                   && Equals(Data, other.Data) 
+                   && Time.Equals(other.Time) 
+                   && Equals(Metadata, other.Metadata);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((Event) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Thing?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Data?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ Time.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Metadata?.GetHashCode() ?? 0);
+                return hashCode;
+            }
         }
     }
 }
