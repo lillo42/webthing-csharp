@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing.Collections
 {

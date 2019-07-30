@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Mozilla.IoT.WebThing.Collections;
+using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -37,6 +40,8 @@ namespace Mozilla.IoT.WebThing
             => base.Equals(other);
     }
     
+    [DebuggerTypeProxy(typeof(PropertyProxyDebugView))]
+    [DebuggerDisplay("Value = {Value}")]
     public class Property : IEquatable<Property>
     {
         public Property()

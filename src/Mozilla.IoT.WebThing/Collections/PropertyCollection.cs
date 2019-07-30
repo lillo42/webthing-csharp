@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Mozilla.IoT.WebThing.DebugView;
 using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Collections

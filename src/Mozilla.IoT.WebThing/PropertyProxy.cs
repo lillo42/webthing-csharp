@@ -1,55 +1,61 @@
 using System.Collections.Generic;
+using System.Diagnostics;
+using Mozilla.IoT.WebThing.Collections;
+using Mozilla.IoT.WebThing.DebugView;
 using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
 {
+    [DebuggerTypeProxy(typeof (PropertyProxyDebugView))]
+    [DebuggerDisplay("Value = {Value}")]
     internal sealed class PropertyProxy : Property
     {
-        private readonly Property _property;
         internal IJsonSchemaValidator SchemaValidator { get; set; }
+
+        internal Property Property {get; }
 
         public PropertyProxy(Property property, IJsonSchemaValidator schemaValidator)
         {
-            _property = property;
+            Property = property;
             SchemaValidator = schemaValidator;
         }
 
         public override Thing Thing
         {
-            get => _property.Thing;
-            set => _property.Thing = value;
+            get => Property.Thing;
+            set => Property.Thing = value;
         }
 
         public override string Name
         {
-            get => _property.Name;
-            set => _property.Name = value;
+            get => Property.Name;
+            set => Property.Name = value;
         }
 
-        public override string Href => _property.Href;
+        public override string Href => Property.Href;
 
         public override string HrefPrefix
         {
-            get => _property.HrefPrefix;
-            set => _property.HrefPrefix = value;
+            get => Property.HrefPrefix;
+            set => Property.HrefPrefix = value;
         }
 
         public override object Value
         {
-            get => _property.Value;
+            get => Property.Value;
             set
             {
-                if (SchemaValidator.IsValid(value, _property.Metadata))
+                if (SchemaValidator.IsValid(value, Property.Metadata))
                 {
-                    _property.Value = value;
+                    Property.Value = value;
                 }
             }
         }
 
         public override IDictionary<string, object> Metadata
         {
-            get => _property.Metadata;
-            set => _property.Metadata = value;
+            get => Property.Metadata;
+            set => Property.Metadata = value;
         }
 
         public override bool Equals(object obj)
@@ -73,7 +79,7 @@ namespace Mozilla.IoT.WebThing
         }
 
         public override int GetHashCode()
-            => (_property != null ? _property.GetHashCode() : 0);
+            => (Property != null ? Property.GetHashCode() : 0);
         
     }
 }

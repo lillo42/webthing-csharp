@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing.Collections
 {

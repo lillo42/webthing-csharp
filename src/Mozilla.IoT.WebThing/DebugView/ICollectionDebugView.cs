@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Mozilla.IoT.WebThing.Collections
+namespace Mozilla.IoT.WebThing.DebugView
 {
     internal sealed class ICollectionDebugView<T>
     {
