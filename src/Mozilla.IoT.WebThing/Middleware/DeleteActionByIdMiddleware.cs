@@ -18,7 +18,7 @@ namespace Mozilla.IoT.WebThing.Middleware
         {
             Logger.LogInformation("Delete is calling action");
             
-            var thingId =httpContext.GetValueFromRoute<string>("thingId"); 
+            var thingId =httpContext.GetValueFromRoute<string>("thing"); 
             var name = httpContext.GetValueFromRoute<string>("actionName");
             var id = httpContext.GetValueFromRoute<string>("actionId");
             

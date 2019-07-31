@@ -17,8 +17,5 @@ namespace Mozilla.IoT.WebThing.Middleware
             Logger = logger;
             Things = things;
         }
-
-        protected Thing GetThing(HttpContext context) 
-            => Things[context.GetValueFromRoute<string>("thingId")];
     }
 }

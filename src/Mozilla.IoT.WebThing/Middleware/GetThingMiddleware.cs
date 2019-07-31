@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.WebSockets;
 
@@ -14,14 +15,17 @@ namespace Mozilla.IoT.WebThing.Middleware
 {
     public class GetThingMiddleware : AbstractThingMiddleware
     {
-        public GetThingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IReadOnlyList<Thing> things)
+        public GetThingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingReadOnlyCollection things)
             : base(next, loggerFactory.CreateLogger<GetThingMiddleware>(), things)
         {
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            Thing thing = GetThing(httpContext);
+            var thingId = httpContext.GetValueFromRoute<string>("thing");
+            Logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
+            
+            var thing = Things[thingId];
 
             if (httpContext.WebSockets.IsWebSocketRequest)
             {

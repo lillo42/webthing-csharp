@@ -20,7 +20,7 @@ namespace Mozilla.IoT.WebThing.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            Logger.LogInformation("Get Actions is calling");
+            Logger.LogInformation("Get Action by Id is calling");
 
             var thingId = httpContext.GetValueFromRoute<string>("thing");
             var name = httpContext.GetValueFromRoute<string>("actionName");
@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Middleware
 
             var thing = Things[thingId];
 
-            Logger.LogInformation("Get action: [" +
+            Logger.LogInformation("Get Action by Id: [" +
                                   $"[thing: {thingId}]" +
                                   $"[actionId: {id}]" +
                                   $"[actionName: {name}]]");
@@ -46,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Middleware
             }
 
             Logger.LogInformation(
-                $"Thing or Action not found. [[thing: {thingId}][actionId: {id}][actionName: {name}]]");
+                $"Get Action by Id: Thing or Action not found. [[thing: {thingId}][actionId: {id}][actionName: {name}]]");
 
             httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
         }

@@ -17,7 +17,7 @@ namespace Mozilla.IoT.WebThing
         /// Action's name.
         /// </summary>
         public virtual string Name { get; set; }
-        
+
         /// <summary>
         /// Action's href.
         /// </summary>

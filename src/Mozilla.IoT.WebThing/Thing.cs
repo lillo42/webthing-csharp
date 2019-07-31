@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The type context of the thing.
         /// </summary>
-        public virtual string Context { get; set; }
+        public virtual string Context => DEFAULT_CONTEXT;
 
         /// <summary>
         /// The name of the thing.
@@ -74,7 +74,6 @@ namespace Mozilla.IoT.WebThing
 
         public Thing()
         {
-            Context = DEFAULT_CONTEXT;
             Properties = new PropertyCollection(this);
         }
 
