@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing
@@ -22,9 +21,17 @@ namespace Mozilla.IoT.WebThing
         {
         }
 
-        public virtual new T Value
+        public new virtual T Value
         {
-            get => (T)base.Value;
+            get
+            {
+                if (base.Value == null)
+                {
+                    return default;
+                }
+
+                return (T)base.Value;
+            }
             set => base.Value = value;
         }
         

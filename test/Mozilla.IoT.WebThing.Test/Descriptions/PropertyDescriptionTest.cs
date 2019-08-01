@@ -24,7 +24,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
         [Fact]
         public void CreateDescription_Should_ReturnMinimum_When_DoNotHaveMetadata()
         {
-            string name = _fixture.Create<string>();
+            var name = _fixture.Create<string>();
             _property.Name = name;
 
             var expected = new Dictionary<string, object>
@@ -47,21 +47,15 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
         [Fact]
         public void CreateDescription_Should_MetadataAndLink_When_HaveMetadataDoesNotHaveLink()
         {
-            string href = _fixture.Create<string>();
-            _property.Href.Returns(href);
+            _property.Name = _fixture.Create<string>();
 
-            string name = _fixture.Create<string>();
-            _property.Name.Returns(name);
+            var property = _fixture.Create<string>();
+            var propertyValue = _fixture.Create<string>();
 
-            string property = _fixture.Create<string>();
-            string propertyValue = _fixture.Create<string>();
-
-            var metadata = new Dictionary<string, object>
+            _property.Metadata = new Dictionary<string, object>
             {
                 [property] = propertyValue,
             };
-            
-            _property.Metadata.Returns(metadata);
 
             var expected = new Dictionary<string, object>
             {
@@ -71,7 +65,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                     new Dictionary<string, object>
                     {
                         ["rel"] = "property", 
-                        ["href"] = $"/properties/{name}"
+                        ["href"] = $"/properties/{_property.Name}"
                     }
                 }
             };
@@ -82,19 +76,15 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
         }
 
         [Fact]
-        public void CreateDescription_Should_MetadaAndLink_When_HaveMetadataAndLink()
+        public void CreateDescription_Should_MetadataAndLink_When_HaveMetadataAndLink()
         {
-            string href = _fixture.Create<string>();
-            _property.Href.Returns(href);
+            _property.Name = _fixture.Create<string>();
 
-            string name = _fixture.Create<string>();
-            _property.Name.Returns(name);
-
-            string rel = _fixture.Create<string>();
-            string hrefLinks = _fixture.Create<string>();
+            var rel = _fixture.Create<string>();
+            var hrefLinks = _fixture.Create<string>();
             
-            string property = _fixture.Create<string>();
-            string propertyValue = _fixture.Create<string>();
+            var property = _fixture.Create<string>();
+            var propertyValue = _fixture.Create<string>();
             
             var metadata = new Dictionary<string, object>
             {
@@ -109,7 +99,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 }
             };
 
-            _property.Metadata.Returns(metadata);
+            _property.Metadata = metadata;
 
             var expected = new Dictionary<string, object>
             {
@@ -124,7 +114,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                     new Dictionary<string, object>
                     {
                         ["rel"] = "property", 
-                        ["href"] = $"/properties/{name}"
+                        ["href"] = $"/properties/{_property.Name}"
                     }
                 }
             };
@@ -134,18 +124,15 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
             expected.Should().BeEquivalentTo(result);
         }
 
-        [Fact] public void CreateDescription_Should_Throw_When_LinksIsNotACollections()
+        [Fact] 
+        public void CreateDescription_Should_Throw_When_LinksIsNotACollections()
         {
-            string href = _fixture.Create<string>();
-            _property.Href.Returns(href);
+            _property.Name = _fixture.Create<string>();
 
-            string name = _fixture.Create<string>();
-            _property.Name.Returns(name);
-
-            string rel = _fixture.Create<string>();
-            string hrefLinks = _fixture.Create<string>();
+            var rel = _fixture.Create<string>();
+            var hrefLinks = _fixture.Create<string>();
             
-            var metadata = new Dictionary<string, object>
+            _property.Metadata = new Dictionary<string, object>
             {
                 ["links"] = new Dictionary<string, object>
                 {
@@ -153,8 +140,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                     ["href"] = hrefLinks
                 }
             };
-
-            _property.Metadata.Returns(metadata);
+            
             Assert.Throws<DescriptionException>(() => _propertyDescription.CreateDescription(_property));
         }
     }

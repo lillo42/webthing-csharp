@@ -10,13 +10,11 @@ namespace Mozilla.IoT.WebThing.Test
 {
     public class ActionTest
     {
-        private readonly Fixture _fixture;
         private readonly Action _action;
         private readonly ILogger _logger;
 
         public ActionTest()
         {
-            _fixture = new Fixture();
             _action = new TestAction();
             _logger = Substitute.For<ILogger>();
         }
