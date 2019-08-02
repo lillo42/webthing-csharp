@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Builder;
 using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 
@@ -23,6 +24,7 @@ namespace Mozilla.IoT.WebThing.Middleware
             
             var array = new LinkedList<IDictionary<string, object>>();
             var descriptor = httpContext.RequestServices.GetService<IDescription<Thing>>();
+            var builder = httpContext.RequestServices.GetService<IWsUrlBuilder>();
             
             foreach (var thing in Things)
             {
@@ -31,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Middleware
                 var link = new Dictionary<string, object>
                 {
                     ["rel"] = "alternate",
-                    ["href"] = $"{ws}/{thing.HrefPrefix}" 
+                    ["href"] = builder.Build(httpContext.Request, thing.Name)
                 };
                 
                 ((ICollection<IDictionary<string, object>>)description["links"]).Add(link);

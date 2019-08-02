@@ -6,16 +6,40 @@ using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Endpoints;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.Middleware;
 using Mozilla.IoT.WebThing.Notify;
-
 using Action = Mozilla.IoT.WebThing.Action;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class ThingEndpointRouteBuilderExtensions
     {
+        public static ThingEndpointConventionBuilder MapThing<T>(this IEndpointRouteBuilder builder)
+            where T : Thing
+        {
+            var activator = builder.ServiceProvider.GetService<IThingActivator>();
+            activator.Register<T>(typeof(T).Name);
+            
+            ValidateServicesRegistered(builder.ServiceProvider);
+            
+            var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
+            var endpointConventionBuilders = serviceRouteBuilder.Build(builder);
+
+            return new ThingEndpointConventionBuilder(endpointConventionBuilders);
+        }
+        
+        private static void ValidateServicesRegistered(IServiceProvider serviceProvider)
+        {
+            var marker = serviceProvider.GetService(typeof(ThingMarkService));
+            if (marker == null)
+            {
+                throw new InvalidOperationException("Unable to find the required services. Please add all the required services by calling " +
+                                                    "'IServiceCollection.AddThing' inside the call to 'ConfigureServices(...)' in the application startup code.");
+            }
+        }
+
         public static IApplicationBuilder UseThing(this IApplicationBuilder app)
         {
             if (app == null)
@@ -26,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder
             app.UseCors();
             app.UseWebSockets();
             MapThingsRoute(app, app.ApplicationServices.GetService<IReadOnlyList<Thing>>());
-                
+
             return app;
         }
 
@@ -100,50 +124,9 @@ namespace Microsoft.AspNetCore.Builder
                 builder => builder.UseMiddleware<GetEventsMiddleware>(thingType));
 
             #endregion
-
-            BindingThingNotify(app.ApplicationServices, thingType);
+            
 
             return app.UseRouter(router.Build());
-        }
-
-        private static void BindingThingNotify(IServiceProvider serviceProvider, IReadOnlyList<Thing> thingType)
-        {
-            var eventDescription = serviceProvider.GetService<IDescription<Event>>();
-
-            var jsonConvert = serviceProvider.GetService<IJsonConvert>();
-            var jsonSettings = serviceProvider.GetService<IJsonSerializerSettings>();
-            var jsonSchemaValidator = serviceProvider.GetService<IJsonSchemaValidator>();
-
-            var actionNotify = new NotifySubscribesOnActionAdded(serviceProvider.GetService<IDescription<Action>>(),
-                jsonConvert,
-                jsonSettings
-            );
-
-            var propertyNotify = new NotifySubscribesOnPropertyChanged(jsonConvert, jsonSettings);
-
-            foreach (Thing thing in thingType)
-            {
-                var eventNotify = new NotifySubscribesOnEventAdded(thing,
-                    eventDescription,
-                    jsonConvert,
-                    jsonSettings
-                );
-
-                if (thing.Events == null)
-                {
-                    thing.Events = serviceProvider.GetService<IObservableCollection<Event>>();
-                }
-                
-                ((PropertyCollection) thing.Properties).JsonSchemaValidator = jsonSchemaValidator;
-
-                thing.Events.CollectionChanged += eventNotify.Notify;
-                thing.Actions.CollectionChanged += actionNotify.Notify;
-                thing.Properties.Cast<PropertyProxy>().ForEach(property =>
-                {
-                    property.SchemaValidator = jsonSchemaValidator;
-                    property.ValuedChanged += propertyNotify.Notify;
-                });
-            }
         }
     }
 }

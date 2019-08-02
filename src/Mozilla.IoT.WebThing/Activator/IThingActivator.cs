@@ -4,8 +4,11 @@ namespace Mozilla.IoT.WebThing
 {
     internal interface IThingActivator
     {
-        void RegisterInstance<T>(T thing)
+        void Register<T>(T thing, IServiceProvider service)
             where T : Thing;
-        Thing CreateInstance(IServiceProvider serviceProvider,Type implementationType);
+        void Register<T>(string thing)
+            where T : Thing;
+        
+        Thing CreateInstance(IServiceProvider serviceProvider, string thingName);
     }
 }

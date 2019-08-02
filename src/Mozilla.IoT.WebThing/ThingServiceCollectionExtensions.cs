@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Background;
+using Mozilla.IoT.WebThing.Builder;
 using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;
@@ -18,48 +19,31 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ThingServiceCollectionExtensions
     {
-        public static void AddThing<T>(this IServiceCollection services)
-            where T : Thing
-        {
-            AddThing(services, options => options.AddThing<T>());
-        }
 
         public static void AddThing(this IServiceCollection services, Action<ThingBindingOption> thingOptions)
-        {
-            if (thingOptions == null)
-            {
-                throw new ArgumentNullException(nameof(thingOptions));
-            }
-            
-            RegisterCommon(services);
-            
-            var option = new ThingBindingOption();
-
-            thingOptions(option);
-
-            services.TryAddSingleton<IThingReadOnlyCollection>(provider =>
-            {
-                var things = provider.GetServices(typeof(Thing)).Cast<Thing>();
-
-                if (!option.IsMultiThing && things.Any())
-                {
-                    return new SingleThingCollection(things.FirstOrDefault());
-                }
-
-                return new MultipleThingsCollections(things);
-            });
-        }
-
-        private static void RegisterCommon(IServiceCollection services)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
+            
+            if (thingOptions == null)
+            {
+                throw new ArgumentNullException(nameof(thingOptions));
+            }
 
+            var option = new ThingBindingOption();
+
+            thingOptions(option);
+
+            services.AddSingleton(option);
+            
             services.AddRouting();
             services.AddWebSockets(options => { });
             services.AddCors();
+
+            services.AddSingleton<ServiceRouteBuilder>();
+            
             services.TryAddSingleton(typeof(ThingMarkService));
             services.TryAddSingleton<IThingActivator, ThingActivator>();
             services.TryAddSingleton<IActionActivator, ActionActivator>();
@@ -74,11 +58,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IJsonConvert, DefaultJsonConvert>();
             services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
+            services.TryAddSingleton<IWsUrlBuilder, WsUrlBuilder>();
 
-            services.TryAddScoped<IDescription<Action>, ActionDescription>();
-            services.TryAddScoped<IDescription<Event>, EventDescription>();
-            services.TryAddScoped<IDescription<Property>, PropertyDescription>();
-            services.TryAddScoped<IDescription<Thing>, ThingDescription>();
+            services.TryAddSingleton<IDescription<Action>, ActionDescription>();
+            services.TryAddSingleton<IDescription<Event>, EventDescription>();
+            services.TryAddSingleton<IDescription<Property>, PropertyDescription>();
+            services.TryAddSingleton<IDescription<Thing>, ThingDescription>();
             services.TryAddTransient(typeof(IObservableCollection<>), typeof(DefaultObservableCollection<>));
 
             services.AddHostedService<ActionExecutorHostedService>();
@@ -93,6 +78,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, RequestAction>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, SetThingProperty>());
             services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, GetThingProperty>());
+        }
+
+        private static void RegisterCommon(IServiceCollection services)
+        {
+            
         }
     }
 }
