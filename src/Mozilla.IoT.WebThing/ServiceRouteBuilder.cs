@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Mozilla.IoT.WebThing.Endpoints;
 
 namespace Mozilla.IoT.WebThing
 {
     internal sealed class ServiceRouteBuilder
     {
         private readonly ThingBindingOption _option;
-        private bool _isGenericSet = false;
+        private bool _isSet = false;
 
         public ServiceRouteBuilder(ThingBindingOption option)
         {
@@ -18,31 +19,67 @@ namespace Mozilla.IoT.WebThing
         {
             var result = new LinkedList<IEndpointConventionBuilder>();
 
-            if (!_isGenericSet)
+            if (!_isSet)
             {
-                endpointRouteBuilder.MapGet("")
-                /*
-                 *  router.MapMiddlewareGet($"{prefix}/actions/{{actionName}}/{{actionId}}",
-                builder => builder.UseMiddleware<GetActionByIdMiddleware>(thingType));
-
-            router.MapMiddlewareDelete($"{prefix}/actions/{{actionName}}/{{actionId}}",
-                builder => builder.UseMiddleware<DeleteActionByIdMiddleware>(thingType));
-
-
-            router.MapMiddlewareGet($"{prefix}/actions/{{actionName}}",
-                builder => builder.UseMiddleware<GetActionMiddleware>(thingType));
-
-            router.MapMiddlewarePost($"{prefix}/actions/{{actionName}}",
-                builder => builder.UseMiddleware<PostActionMiddleware>(thingType));
-
-            router.MapMiddlewareGet($"{prefix}/actions",
-                builder => builder.UseMiddleware<GetActionsMiddleware>(thingType));
-
-            router.MapMiddlewarePost($"{prefix}/actions",
-                builder => builder.UseMiddleware<PostActionsMiddleware>(thingType));
-                 */
+                string prefix = string.Empty;
                 
-                _isGenericSet = true;
+                #region Thing
+                
+                if (!_option.IsSingleThing)
+                {
+                    prefix = "/{{thing}}";
+                    result.AddLast(endpointRouteBuilder.MapGet("/", GetThings.Invoke));
+                    result.AddLast(endpointRouteBuilder.MapGet(prefix, GetThing.Invoke));
+                    
+                }
+                else
+                {
+                    result.AddLast(endpointRouteBuilder.MapGet("/", GetThing.Invoke));
+                }
+                
+                #endregion
+                
+                #region Actions
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/actions",
+                    GetActions.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapPost($"{prefix}/actions",
+                    PostActions.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/actions/{{name}}",
+                    GetAction.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/actions/{{name}}",
+                    PostAction.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/actions/{{name}}/{{id}}",
+                    GetActionById.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapDelete($"{prefix}/actions/{{name}}/{{id}}",
+                    DeleteActionById.Invoke));
+
+                #endregion
+
+                #region Events
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/events", GetEvents.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/events/{{name}}", GetEvent.Invoke));
+
+                #endregion
+
+                #region Property
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/properties", GetProperties.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/properties/{{name}}", GetProperty.Invoke));
+
+                result.AddLast(endpointRouteBuilder.MapPut($"{prefix}/properties/{{name}}", PutProperty.Invoke));
+
+                #endregion
+
+                _isSet = true;
             }
 
             return result;

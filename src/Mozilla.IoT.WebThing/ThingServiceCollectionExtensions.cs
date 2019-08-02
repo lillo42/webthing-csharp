@@ -19,6 +19,10 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ThingServiceCollectionExtensions
     {
+        public static void AddThing(this IServiceCollection services)
+        {
+            AddThing(services, option => { });
+        }
 
         public static void AddThing(this IServiceCollection services, Action<ThingBindingOption> thingOptions)
         {

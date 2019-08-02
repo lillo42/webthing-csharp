@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -14,26 +14,38 @@ namespace Mozilla.IoT.WebThing.Endpoints
         {
             var services = httpContext.RequestServices;
             var logger = services.GetService<ILogger>();
-            logger.LogInformation("Get Action is calling");
-
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
-            var name = httpContext.GetValueFromRoute<string>("actionName");
-
-            logger.LogInformation($"Get Action: [[thing: {thingId}][actionName: {name}]]");
-            var thing = services.GetService<IThingActivator>().CreateInstance(services, thingId);;
             
-            if (thing != null && thing.Actions.Contains(name))
+            logger.LogInformation("Get Actions is calling");
+            var thingId = httpContext.GetValueFromRoute<string>("thing");
+            
+            logger.LogInformation($"Get Actions: [[thing: {thingId}]]");
+            var thing = services.GetService<IThingActivator>()
+                .CreateInstance(services, thingId);
+
+            if (thing == null)
             {
-                var description = services.GetService<IDescription<Action>>();
-                var result = thing.Actions[name].ToDictionary(x => x.Name, x => description.CreateDescription(x));
-                await httpContext.WriteBodyAsync(HttpStatusCode.OK, result);
-            }
-            else
-            {
-                logger.LogInformation(
-                    $"Get Action: Thing or action not found [[thing: {thingId}][actionName: {name}]]");
+                logger.LogInformation($"Get Action: Thing not found [[thing: {thingId}]]");
                 httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
+
+            var description = services.GetService<IDescription<Action>>();
+
+
+            var result = new LinkedList<IDictionary<string,object>>();
+
+            foreach ((string name, ICollection<Action> actions) in thing.Actions)
+            {
+                foreach (var action in actions)
+                {
+                    result.AddFirst(new Dictionary<string, object>
+                    {
+                        [name] = description.CreateDescription(action)
+                    });
+                }
+            }
+
+            await httpContext.WriteBodyAsync(HttpStatusCode.OK, result);
         }
     }
 }

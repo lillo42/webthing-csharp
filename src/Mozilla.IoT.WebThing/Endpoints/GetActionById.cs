@@ -18,8 +18,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogInformation("Get Action by Id is calling");
 
             var thingId = httpContext.GetValueFromRoute<string>("thing");
-            var name = httpContext.GetValueFromRoute<string>("actionName");
-            var id = httpContext.GetValueFromRoute<string>("actionId");
+            var name = httpContext.GetValueFromRoute<string>("name");
+            var id = httpContext.GetValueFromRoute<string>("id");
 
             var thing = services.GetService<IThingActivator>().CreateInstance(services, thingId);
 

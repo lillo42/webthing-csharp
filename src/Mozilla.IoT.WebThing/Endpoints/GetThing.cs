@@ -7,25 +7,24 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Collections;
+using Mozilla.IoT.WebThing.Builder;
 using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.WebSockets;
 
-namespace Mozilla.IoT.WebThing.Middleware
+namespace Mozilla.IoT.WebThing.Endpoints
 {
-    public class GetThingMiddleware : AbstractThingMiddleware
+    internal static class GetThing
     {
-        public GetThingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingReadOnlyCollection things)
-            : base(next, loggerFactory.CreateLogger<GetThingMiddleware>(), things)
+        internal static async Task Invoke(HttpContext httpContext)
         {
-        }
+            var services = httpContext.RequestServices;
+            var logger = services.GetService<ILogger>();
 
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
-            Logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
-            
-            var thing = Things[thingId];
+            string thingId = httpContext.GetValueFromRoute<string>("thing");
+            logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
+
+            var thing = services.GetService<IThingActivator>()
+                .CreateInstance(services, thingId);
 
             if (httpContext.WebSockets.IsWebSocketRequest)
             {
@@ -38,12 +37,12 @@ namespace Mozilla.IoT.WebThing.Middleware
                     await process.ExecuteAsync(thing, webSocket, httpContext.RequestAborted);
 
                     await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close sent",
-                            CancellationToken.None);
+                        CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
                     await webSocket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(),
-                            CancellationToken.None);
+                        CancellationToken.None);
                 }
 
                 return;
@@ -54,20 +53,21 @@ namespace Mozilla.IoT.WebThing.Middleware
                 httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-
-            string ws = string.Empty;
             
+            var builder = httpContext.RequestServices.GetService<IWsUrlBuilder>();
+            string ws = string.Empty;
+
             var link = new Dictionary<string, object>
             {
-                ["rel"] = "alternate",
-                ["href"] = ws
+                ["rel"] = "alternate", 
+                ["href"] = builder.Build(httpContext.Request, thingId)
             };
 
             var descriptor = httpContext.RequestServices.GetService<IDescription<Thing>>();
-            
-            IDictionary<string, object> description = descriptor.CreateDescription(thing);
-            
-            if(description.TryGetValue("links", out var objLinks))
+
+            var description = descriptor.CreateDescription(thing);
+
+            if (description.TryGetValue("links", out var objLinks))
             {
                 if (objLinks is ICollection<IDictionary<string, object>> links)
                 {
@@ -76,12 +76,9 @@ namespace Mozilla.IoT.WebThing.Middleware
             }
             else
             {
-                description.Add("links", new List<IDictionary<string, object>>
-                {
-                    link
-                });
+                description.Add("links", new List<IDictionary<string, object>> {link});
             }
-            
+
             await httpContext.WriteBodyAsync(HttpStatusCode.OK, description);
         }
     }

@@ -15,9 +15,9 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var logger = services.GetService<ILogger>();
             logger.LogInformation("Delete is calling action");
             
-            var thingId =httpContext.GetValueFromRoute<string>("thing"); 
-            var name = httpContext.GetValueFromRoute<string>("actionName");
-            var id = httpContext.GetValueFromRoute<string>("actionId");
+            string thingId =httpContext.GetValueFromRoute<string>("thing"); 
+            string name = httpContext.GetValueFromRoute<string>("name");
+            string id = httpContext.GetValueFromRoute<string>("id");
             
             
             logger.LogInformation("Delete action: [" +

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,19 +20,28 @@ namespace Mozilla.IoT.WebThing
 
         private readonly ConcurrentDictionary<Type, Thing>
             _typeActivatorCache = new ConcurrentDictionary<Type, Thing>();
+        
+        public void Register<T>(IServiceProvider service) where T : Thing
+        {
+            string name = typeof(T).Name;
+            Register<T>(service, name.Remove(name.Length - 5));
+        }
 
-        public void Register<T>(T thing, IServiceProvider service)
+        public void Register<T>(IServiceProvider service, string thing)
+            where T : Thing
+        {
+            _thingType.TryAdd(thing, typeof(T));
+            CreateInstance(service, thing);
+        }
+
+        public void Register<T>(IServiceProvider service, T thing)
             where T : Thing
 
         {
-            Register<T>(thing.Name);
             _typeActivatorCache.TryAdd(typeof(T), thing);
             BindingThingNotify(thing, service);
         }
 
-        public void Register<T>(string thing) 
-            where T : Thing 
-            => _thingType.TryAdd(thing, typeof(T));
 
         public Thing CreateInstance(IServiceProvider serviceProvider, string thingName)
         {
@@ -42,12 +52,12 @@ namespace Mozilla.IoT.WebThing
 
             if (thingName == null)
             {
-                throw new ArgumentNullException(nameof(thingName));
-            }
+                if (_thingType.Count > 1)
+                {
+                    throw new ArgumentNullException(nameof(thingName));
+                }
 
-            if (!_thingType.ContainsKey(thingName))
-            {
-                return null;
+                thingName = _thingType.First().Key;
             }
 
             Type implementationType = _thingType[thingName];
@@ -99,5 +109,11 @@ namespace Mozilla.IoT.WebThing
                 property.ValuedChanged += propertyNotify.Notify;
             });
         }
+
+        public IEnumerator<Thing> GetEnumerator() 
+            => _typeActivatorCache.Values.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() 
+            => GetEnumerator();
     }
 }

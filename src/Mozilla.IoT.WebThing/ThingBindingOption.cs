@@ -2,6 +2,6 @@ namespace Microsoft.AspNetCore.Builder
 {
     public class ThingBindingOption
     {
-        public bool IsMultiThing { get; set; }
+        public bool IsSingleThing { get; set; }
     }
 }

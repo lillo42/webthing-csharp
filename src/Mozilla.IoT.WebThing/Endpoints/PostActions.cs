@@ -6,28 +6,26 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 
-namespace Mozilla.IoT.WebThing.Middleware
+namespace Mozilla.IoT.WebThing.Endpoints
 {
-    public class PostActionsMiddleware : AbstractThingMiddleware
+    internal static  class PostActions
     {
-        public PostActionsMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingReadOnlyCollection things)
-            : base(next, loggerFactory.CreateLogger<PostActionsMiddleware>(), things)
+        internal static async Task Invoke(HttpContext httpContext)
         {
-        }
-
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
-            Logger.LogInformation($"Post Actions is calling: [[thing: {thingId}]");
+            var services = httpContext.RequestServices;
+            var logger = services.GetService<ILogger>();
             
-            var thing = Things[thingId];
+            var thingId = httpContext.GetValueFromRoute<string>("thing");
+            logger.LogInformation($"Post Actions is calling: [[thing: {thingId}]");
+            
+            var thing = services.GetService<IThingActivator>()
+                .CreateInstance(services, thingId);
 
             if (thing == null)
             {
-                Logger.LogInformation($"Post Actions: Thing not found [[thing: {thingId}]]");
+                logger.LogInformation($"Post Actions: Thing not found [[thing: {thingId}]]");
                 httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
@@ -36,22 +34,22 @@ namespace Mozilla.IoT.WebThing.Middleware
             
             if (json == null)
             {
-                Logger.LogInformation("Post Action: Body not found");
+                logger.LogInformation("Post Action: Body not found");
                 httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }
 
             if (!json.Keys.Any())
             {
-                Logger.LogInformation("Post Action: Body is empty");
+                logger.LogInformation("Post Action: Body is empty");
                 httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
 
             var response = new Dictionary<string, object>();
-            var descriptor = httpContext.RequestServices.GetService<IDescription<Action>>();
-            var target = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
-            var activator = httpContext.RequestServices.GetService<IActionActivator>();
+            var descriptor = services.GetService<IDescription<Action>>();
+            var target = services.GetService<ITargetBlock<Action>>();
+            var activator = services.GetService<IActionActivator>();
 
             foreach ((string key, object token) in json)
             {

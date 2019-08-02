@@ -5,29 +5,27 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Collections;
-using Mozilla.IoT.WebThing.Json;
 
-namespace Mozilla.IoT.WebThing.Middleware
+namespace Mozilla.IoT.WebThing.Endpoints
 {
-    public class PutSetPropertyMiddleware : AbstractThingMiddleware
+    internal static class PutProperty
     {
-        public PutSetPropertyMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingReadOnlyCollection things) 
-            : base(next, loggerFactory.CreateLogger<PostActionMiddleware>(), things)
+        internal static async Task Invoke(HttpContext httpContext)
         {
-        }
-
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
-            var propertyName = httpContext.GetValueFromRoute<string>("propertyName");
-            Logger.LogInformation($"Put Property is calling: [[thing: {thingId}][property: {propertyName}]]");
+            var services = httpContext.RequestServices;
+            var logger = services.GetService<ILogger>();
             
-            var thing = Things[thingId];
+            var thingId = httpContext.GetValueFromRoute<string>("thing");
+            var propertyName = httpContext.GetValueFromRoute<string>("name");
+            logger.LogInformation($"Put Property is calling: [[thing: {thingId}][property: {propertyName}]]");
+            
+            var thing = services.GetService<IThingActivator>()
+                .CreateInstance(services, thingId);
+
 
             if (thing == null)
             {
-                Logger.LogInformation($"Put Property: Thing not found [[thing: {thingId}][property: {propertyName}]]");
+                logger.LogInformation($"Put Property: Thing not found [[thing: {thingId}][property: {propertyName}]]");
                 httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
@@ -35,22 +33,22 @@ namespace Mozilla.IoT.WebThing.Middleware
             var json = await httpContext.ReadBodyAsync<IDictionary<string, object>>();
             if (json == null)
             {
-                Logger.LogInformation($"Put Property: Body not found [[thing: {thingId}][property: {propertyName}]]");
+                logger.LogInformation($"Put Property: Body not found [[thing: {thingId}][property: {propertyName}]]");
                 httpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
                 return;
             }
 
             if (!json.Keys.Any()) 
             {
-                Logger.LogInformation($"Put Property: Body is empty [[thing: {thingId}][property: {propertyName}]]");
+                logger.LogInformation($"Put Property: Body is empty [[thing: {thingId}][property: {propertyName}]]");
                 httpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
                 return;
             }
 
-            Property property = thing.Properties.FirstOrDefault(x => x.Name == propertyName); 
+            var property = thing.Properties.FirstOrDefault(x => x.Name == propertyName); 
             if (property == null || !json.ContainsKey(propertyName))
             {
-                Logger.LogInformation($"Put Property: Property not found [[thing: {thingId}][property: {propertyName}]]");
+                logger.LogInformation($"Put Property: Property not found [[thing: {thingId}][property: {propertyName}]]");
                 httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
                 return;
             }

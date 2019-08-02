@@ -6,45 +6,43 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.Description;
 
-namespace Mozilla.IoT.WebThing.Middleware
+namespace Mozilla.IoT.WebThing.Endpoints
 {
-    public class PostActionMiddleware : AbstractThingMiddleware
+    internal static class PostAction
     {
-        public PostActionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IThingReadOnlyCollection things) 
-            : base(next, loggerFactory.CreateLogger<PostActionMiddleware>(), things)
+        internal static async Task Invoke(HttpContext httpContext)
         {
-        }
+            var services = httpContext.RequestServices;
+            var logger = services.GetService<ILogger>();
 
-        public async Task Invoke(HttpContext httpContext)
-        {
             var thingId = httpContext.GetValueFromRoute<string>("thing");
-            Logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
-            
-            var thing = Things[thingId];
+            logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
+
+            var thing = services.GetService<IThingActivator>()
+                .CreateInstance(services, thingId);
 
             if (thing == null)
             {
-                Logger.LogInformation($"Post Action: Thing not found [[thing: {thingId}]]");
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                logger.LogInformation($"Post Action: Thing not found [[thing: {thingId}]]");
+                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-            
+
             var json = await httpContext.ReadBodyAsync<IDictionary<string, object>>();
 
             if (json == null)
             {
-                Logger.LogInformation("Post Action: Body not found");
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                logger.LogInformation("Post Action: Body not found");
+                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
 
-            if (!json.Keys.Any()) 
+            if (!json.Keys.Any())
             {
-                Logger.LogInformation("Post Action: Body is empty");
-                httpContext.Response.StatusCode = (int) HttpStatusCode.BadRequest;
+                logger.LogInformation("Post Action: Body is empty");
+                httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
 
@@ -53,21 +51,21 @@ namespace Mozilla.IoT.WebThing.Middleware
             if (thing.ActionsTypeInfo.ContainsKey(name) && json.TryGetValue(name, out var token))
             {
                 var input = GetInput(token);
-                var activator = httpContext.RequestServices.GetService<IActionActivator>();
-                
-                Action action = activator.CreateInstance(httpContext.RequestServices, 
+                var activator = services.GetService<IActionActivator>();
+
+                Action action = activator.CreateInstance(httpContext.RequestServices,
                     thing, name, input as IDictionary<string, object>);
 
                 if (action != null)
                 {
                     thing.Actions.Add(action);
-                    var descriptor = httpContext.RequestServices.GetService<IDescription<Action>>();
+                    var descriptor = services.GetService<IDescription<Action>>();
                     response.Add(name, descriptor.CreateDescription(action));
-                    var block = httpContext.RequestServices.GetService<ITargetBlock<Action>>();
-                    await block.SendAsync(action);    
+                    var block = services.GetService<ITargetBlock<Action>>();
+                    await block.SendAsync(action);
                 }
             }
-            
+
             await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
         }
 
@@ -77,7 +75,7 @@ namespace Mozilla.IoT.WebThing.Middleware
             {
                 return dictionary["input"];
             }
-            
+
             return new object();
         }
     }
