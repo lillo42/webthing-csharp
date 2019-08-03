@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
+using Mozilla.IoT.WebThing.Activator;
 using NSubstitute;
 using Xunit;
 

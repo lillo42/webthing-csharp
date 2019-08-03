@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using Mozilla.IoT.WebThing.Activator;
 
 namespace Mozilla.IoT.WebThing
 {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing;
+using Mozilla.IoT.WebThing.Activator;
 using Mozilla.IoT.WebThing.Background;
 using Mozilla.IoT.WebThing.Builder;
 using Mozilla.IoT.WebThing.Collections;

@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
+using Mozilla.IoT.WebThing.Activator;
 
 namespace Microsoft.AspNetCore.Routing
 {

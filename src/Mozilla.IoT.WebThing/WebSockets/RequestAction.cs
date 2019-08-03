@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Mozilla.IoT.WebThing.Activator;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
