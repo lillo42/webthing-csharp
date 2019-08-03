@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,16 +14,16 @@ namespace Mozilla.IoT.WebThing.Notify
     internal sealed class NotifySubscribesOnEventAdded
     {
         private readonly Thing _thing;
-        private readonly IDescription<Event> _description;
+        private readonly IDescriptor<Event> _descriptor;
         private readonly IJsonConvert _jsonConvert;
         private readonly IJsonSerializerSettings _jsonSettings;
 
-        public NotifySubscribesOnEventAdded(Thing thing, IDescription<Event> description, 
+        public NotifySubscribesOnEventAdded(Thing thing, IDescriptor<Event> descriptor,
             IJsonConvert jsonConvert,
             IJsonSerializerSettings jsonSettings)
         {
             _thing = thing;
-            _description = description;
+            _descriptor = descriptor;
             _jsonConvert = jsonConvert;
             _jsonSettings = jsonSettings;
         }
@@ -32,27 +33,30 @@ namespace Mozilla.IoT.WebThing.Notify
             if (eventArgs.Action == NotifyCollectionChangedAction.Add && eventArgs.NewItems[0] is Event @event)
             {
                 @event.Thing = _thing;
-                @event.Metadata = _description.CreateDescription(@event);
+                @event.Metadata = _descriptor.CreateDescription(@event);
 
-                if (@event.Thing.EventSubscribers.IsEmpty)
+                IEnumerable<WebSocket> webSockets = _thing.AvailableEvent.ContainsKey(@event.Name)
+                    ? _thing.AvailableEvent[@event.Name].Subscribers
+                    : null;
+                
+                if (webSockets != null && webSockets.Any())
                 {
                     var message = new Dictionary<string, object>
                     {
-                        [MESSAGE_TYPE] = MessageType.Event.ToString().ToLower(), 
-                        [DATA] = @event.Metadata
+                        [MESSAGE_TYPE] = MessageType.Event.ToString().ToLower(), [DATA] = @event.Metadata
                     };
 
-                    await NotifySubscribersAsync(message, CancellationToken.None);
+                    await NotifySubscribersAsync(webSockets, message, CancellationToken.None);
                 }
             }
         }
 
-        private async Task NotifySubscribersAsync(IDictionary<string, object> message, CancellationToken cancellation)
+        private async Task NotifySubscribersAsync(IEnumerable<WebSocket> sockets, IDictionary<string, object> message, CancellationToken cancellation)
         {
-            byte[] json = _jsonConvert.Serialize(message, _jsonSettings);
+            var json = _jsonConvert.Serialize(message, _jsonSettings);
 
             var buffer = new ArraySegment<byte>(json);
-            foreach (WebSocket socket in _thing.EventSubscribers.Values)
+            foreach (var socket in sockets)
             {
                 await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation)
                     .ConfigureAwait(false);

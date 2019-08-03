@@ -6,7 +6,7 @@ using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing.Description
 {
-    public class PropertyDescription : IDescription<Property>
+    public class PropertyDescriptor : IDescriptor<Property>
     {
         public IDictionary<string, object> CreateDescription(Property value)
         {

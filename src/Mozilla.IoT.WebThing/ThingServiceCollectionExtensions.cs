@@ -64,10 +64,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
             services.TryAddSingleton<IWsUrlBuilder, WsUrlBuilder>();
 
-            services.TryAddSingleton<IDescription<Action>, ActionDescription>();
-            services.TryAddSingleton<IDescription<Event>, EventDescription>();
-            services.TryAddSingleton<IDescription<Property>, PropertyDescription>();
-            services.TryAddSingleton<IDescription<Thing>, ThingDescription>();
+            services.TryAddSingleton<IDescriptor<Action>, ActionDescriptor>();
+            services.TryAddSingleton<IDescriptor<Event>, EventDescriptor>();
+            services.TryAddSingleton<IDescriptor<Property>, PropertyDescriptor>();
+            services.TryAddSingleton<IDescriptor<Thing>, ThingDescriptor>();
             services.TryAddTransient(typeof(IObservableCollection<>), typeof(DefaultObservableCollection<>));
 
             services.AddHostedService<ActionExecutorHostedService>();

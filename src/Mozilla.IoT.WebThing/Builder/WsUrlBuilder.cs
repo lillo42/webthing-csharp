@@ -9,14 +9,17 @@ namespace Mozilla.IoT.WebThing.Builder
         private const string WSS = "wss";
 
         public string Build(HttpRequest request, string thing)
-            => UriHelper.BuildAbsolute(GetScheme(request.Scheme),
-                request.Host,
-                request.Path.Add(PathString.FromUriComponent(thing)));
+        {
+            return UriHelper.BuildAbsolute(GetScheme(request.Scheme), 
+                request.Host, 
+                string.IsNullOrEmpty(thing) ? request.Path 
+                    : request.Path.Add(PathString.FromUriComponent($"/things/{thing}")));
+        }
 
-        private static string GetScheme(string scheme) 
+        private static string GetScheme(string scheme)
             => scheme switch
             {
-                "https"  => WSS,
+                "https" => WSS,
                 _ => WS
             };
     }

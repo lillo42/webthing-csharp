@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            var description = services.GetService<IDescription<Action>>();
+            var description = services.GetService<IDescriptor<Action>>();
 
 
             var result = new LinkedList<IDictionary<string,object>>();

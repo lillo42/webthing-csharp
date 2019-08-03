@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 var action = thing.Actions[name].FirstOrDefault(x => x.Id == id);
                 if (action != null)
                 {
-                    var description = httpContext.RequestServices.GetService<IDescription<Action>>();
+                    var description = httpContext.RequestServices.GetService<IDescriptor<Action>>();
                     await httpContext.WriteBodyAsync(HttpStatusCode.OK,
                         new Dictionary<string, object>
                         {

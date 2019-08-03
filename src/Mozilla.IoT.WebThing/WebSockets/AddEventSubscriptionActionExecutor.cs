@@ -12,7 +12,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             foreach (var keyPair in data)
             {
-                thing.EventSubscribers.TryAdd(keyPair.Key, webSocket);
+                if (thing.AvailableEvent.ContainsKey(keyPair.Key))
+                {
+                    thing.AvailableEvent[keyPair.Key].Subscribers.Add(webSocket);
+                }
             }
             
             return new ValueTask();

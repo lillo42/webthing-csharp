@@ -12,12 +12,12 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
     {
         private readonly Fixture _fixture;
         private readonly Event _event;
-        private readonly EventDescription _description;
+        private readonly EventDescriptor _descriptor;
 
         public EventDescriptionTest()
         {
             _fixture = new Fixture();
-            _description = new EventDescription();
+            _descriptor = new EventDescriptor();
             _event = Substitute.For<Event>();
         }
         
@@ -31,7 +31,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["timestamp"] =_event.Time 
             };
             
-            var result = _description.CreateDescription(_event);
+            var result = _descriptor.CreateDescription(_event);
             
             result.Should().BeEquivalentTo(expected);
         }
@@ -48,7 +48,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["data"] = _event.Data
             };
             
-            var result = _description.CreateDescription(_event);
+            var result = _descriptor.CreateDescription(_event);
             
             result.Should().BeEquivalentTo(expected);
         }

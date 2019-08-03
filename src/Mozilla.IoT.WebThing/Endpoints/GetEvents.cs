@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            var descriptor = services.GetService<IDescription<Event>>();
+            var descriptor = services.GetService<IDescriptor<Event>>();
             
             var result = thing.Events
                 .ToDictionary<Event, string, object>(@event => @event.Name, 

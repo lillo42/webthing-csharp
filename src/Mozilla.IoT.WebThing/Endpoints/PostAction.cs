@@ -59,7 +59,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 if (action != null)
                 {
                     thing.Actions.Add(action);
-                    var descriptor = services.GetService<IDescription<Action>>();
+                    var descriptor = services.GetService<IDescriptor<Action>>();
                     response.Add(name, descriptor.CreateDescription(action));
                     var block = services.GetService<ITargetBlock<Action>>();
                     await block.SendAsync(action);

@@ -12,15 +12,15 @@ namespace Mozilla.IoT.WebThing.Notify
 {
     internal sealed class NotifySubscribesOnActionAdded
     {
-        private readonly IDescription<Action> _description;
+        private readonly IDescriptor<Action> _descriptor;
         private readonly IJsonConvert _jsonConvert;
         private readonly IJsonSerializerSettings _jsonSettings;
 
-        public NotifySubscribesOnActionAdded(IDescription<Action> description, 
+        public NotifySubscribesOnActionAdded(IDescriptor<Action> descriptor, 
             IJsonConvert jsonConvert,
             IJsonSerializerSettings jsonSettings)
         {
-            _description = description;
+            _descriptor = descriptor;
             _jsonConvert = jsonConvert;
             _jsonSettings = jsonSettings;
         }
@@ -36,7 +36,7 @@ namespace Mozilla.IoT.WebThing.Notify
                     [MESSAGE_TYPE] = "actionStatus",
                     [DATA] = new Dictionary<string, object>
                     {
-                        [action.Name] = _description.CreateDescription(action)
+                        [action.Name] = _descriptor.CreateDescription(action)
                     }
                 };
 

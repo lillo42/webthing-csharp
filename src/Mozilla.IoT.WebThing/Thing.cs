@@ -35,11 +35,6 @@ namespace Mozilla.IoT.WebThing
             set
             {
                 _hrefPrefix = value;
-                if (!_hrefPrefix.EndsWith(DEFAULT_HREF_PREFIX))
-                {
-                    _hrefPrefix += DEFAULT_HREF_PREFIX;
-                }
-
                 Properties.ForEach(property => property.HrefPrefix = value);
                 Actions.ForEach(x => x.Value.ForEach(action => action.HrefPrefix = value));
             }
@@ -61,13 +56,13 @@ namespace Mozilla.IoT.WebThing
         public IReadOnlyDictionary<string, (Type type, IDictionary<string, object> metadata)> ActionsTypeInfo =>
             _actionsTypeInfo;
 
+        internal ConcurrentDictionary<string, AvailableEvent> AvailableEvent { get; } =
+            new ConcurrentDictionary<string, AvailableEvent>();
+
         public virtual ConcurrentDictionary<Guid, WebSocket> Subscribers { get; } =
             new ConcurrentDictionary<Guid, WebSocket>();
 
-        internal ConcurrentDictionary<string, WebSocket> EventSubscribers { get; } =
-            new ConcurrentDictionary<string, WebSocket>();
-
-        internal ObservableActionCollection Actions { get; } = new ObservableActionCollection();
+        internal virtual ObservableActionCollection Actions { get; } = new ObservableActionCollection();
 
         private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypeInfo =
             new Dictionary<string, (Type type, IDictionary<string, object> metadata)>();
@@ -78,12 +73,23 @@ namespace Mozilla.IoT.WebThing
         }
 
         #region Actions
+        
+        public virtual void AddAction<T>(IDictionary<string, object> metadata = null)
+            where T : Action 
+            => AddAction<T>(typeof(T).Name.Replace("Action", ""), metadata);
 
-        protected virtual void AddAction<T>(string name, IDictionary<string, object> metadata = null)
-            where T : Action
+        public virtual void AddAction<T>(string name, IDictionary<string, object> metadata = null)
+            where T : Action 
+            => _actionsTypeInfo.Add(name, (typeof(T), metadata));
+
+        public virtual void AddEvent<T>(IDictionary<string, object> metadata = null)
         {
-            _actionsTypeInfo.Add(name, (typeof(T), metadata));
+            string name = typeof(T).Name.Remove(typeof(T).Name.Length - 5);
+            AvailableEvent.TryAdd(name, new AvailableEvent(name, metadata));
         }
+
+        public virtual void AddEvent(string name, IDictionary<string, object> metadata = null)
+            => AvailableEvent.TryAdd(name, new AvailableEvent(name, metadata));
 
         #endregion
 
@@ -99,17 +105,17 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            return string.Equals(_hrefPrefix, other._hrefPrefix) 
-                   && Equals(_actionsTypeInfo, other._actionsTypeInfo) 
-                   && string.Equals(Context, other.Context) 
-                   && string.Equals(Name, other.Name) 
-                   && string.Equals(Description, other.Description) 
-                   && string.Equals(UiHref, other.UiHref) 
-                   && Equals(Properties, other.Properties) 
-                   && Equals(Events, other.Events) 
-                   && Equals(Type, other.Type) 
-                   && Equals(Subscribers, other.Subscribers) 
-                   && Equals(EventSubscribers, other.EventSubscribers) 
+            return string.Equals(_hrefPrefix, other._hrefPrefix)
+                   && Equals(_actionsTypeInfo, other._actionsTypeInfo)
+                   && string.Equals(Context, other.Context)
+                   && string.Equals(Name, other.Name)
+                   && string.Equals(Description, other.Description)
+                   && string.Equals(UiHref, other.UiHref)
+                   && Equals(Properties, other.Properties)
+                   && Equals(Events, other.Events)
+                   && Equals(Type, other.Type)
+                   && Equals(Subscribers, other.Subscribers)
+                   && Equals(AvailableEvent, other.AvailableEvent)
                    && Equals(Actions, other.Actions);
         }
 
@@ -125,7 +131,7 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((Thing) obj);
+            return obj.GetType() == GetType() && Equals((Thing)obj);
         }
 
         public override int GetHashCode()
@@ -142,7 +148,7 @@ namespace Mozilla.IoT.WebThing
                 hashCode = (hashCode * 397) ^ (Events?.GetHashCode() ?? 0);
                 hashCode = (hashCode * 397) ^ (Type?.GetHashCode() ?? 0);
                 hashCode = (hashCode * 397) ^ (Subscribers?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (EventSubscribers?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (AvailableEvent?.GetHashCode() ?? 0);
                 hashCode = (hashCode * 397) ^ (Actions?.GetHashCode() ?? 0);
                 return hashCode;
             }

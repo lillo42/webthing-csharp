@@ -13,12 +13,12 @@ using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal static class GetThing
+    internal class GetThing
     {
         internal static async Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILogger>();
+            var logger = services.GetService<ILoggerFactory>().CreateLogger<GetThing>();
 
             string thingId = httpContext.GetValueFromRoute<string>("thing");
             logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
@@ -54,7 +54,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            var builder = httpContext.RequestServices.GetService<IWsUrlBuilder>();
+            var builder = services.GetService<IWsUrlBuilder>();
             string ws = string.Empty;
 
             var link = new Dictionary<string, object>
@@ -63,7 +63,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 ["href"] = builder.Build(httpContext.Request, thingId)
             };
 
-            var descriptor = httpContext.RequestServices.GetService<IDescription<Thing>>();
+            var descriptor = services.GetService<IDescriptor<Thing>>();
 
             var description = descriptor.CreateDescription(thing);
 

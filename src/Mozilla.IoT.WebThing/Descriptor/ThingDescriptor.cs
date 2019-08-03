@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -5,13 +6,13 @@ using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing.Description
 {
-    public class ThingDescription : IDescription<Thing>
+    public class ThingDescriptor : IDescriptor<Thing>
     {
-        private readonly IDescription<Property> _propertyDescription;
+        private readonly IDescriptor<Property> _propertyDescriptor;
 
-        public ThingDescription(IDescription<Property> propertyDescription)
+        public ThingDescriptor(IDescriptor<Property> propertyDescriptor)
         {
-            _propertyDescription = propertyDescription;
+            _propertyDescriptor = propertyDescriptor;
         }
 
         public IDictionary<string, object> CreateDescription(Thing value)
@@ -24,19 +25,19 @@ namespace Mozilla.IoT.WebThing.Description
                 metadata.Add(LINKS, new Dictionary<string, object>
                 {
                     [REL] = RelType.Action.ToString().ToLower(),
-                    [HREF] = $"{value.HrefPrefix}actions/{action.Key}"
+                    [HREF] = value.HrefPrefix.JoinUrl($"/actions/{action.Key}")
                 });
                 actions.Add(action.Key, metadata);
             });
             
             var events = new Dictionary<string, object>();
-            value.Events.ForEach(@event =>
+            value.AvailableEvent.Values.ForEach(@event =>
             {
                 var metadata = @event.Metadata.ToDictionary(x => x.Key, x => x.Value);
                 metadata.Add(LINKS, new Dictionary<string, object>
                 {
                     [REL] = RelType.Event.ToString().ToLower(),
-                    [HREF] = $"{value.HrefPrefix}event/{@event.Name}" 
+                    [HREF] = value.HrefPrefix.JoinUrl($"/event/{@event.Name}") 
                 });
                 
                 events.Add(@event.Name, metadata);
@@ -45,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Description
             var properties = new Dictionary<string, object>();
             value.Properties.ForEach(property =>
             {
-                properties.Add(property.Name, _propertyDescription.CreateDescription(property));
+                properties.Add(property.Name, _propertyDescriptor.CreateDescription(property));
             });
             
             var result = new Dictionary<string, object>
@@ -67,19 +68,19 @@ namespace Mozilla.IoT.WebThing.Description
             var propertiesLink = new Dictionary<string, object>
             {
                 [REL] = RelType.Properties.ToString().ToLower(), 
-                [HREF] = $"{value.HrefPrefix}properties"
+                [HREF] = value.HrefPrefix.JoinUrl("properties")
             };
 
             var actionsLink = new Dictionary<string, object>
             {
                 [REL] = RelType.Actions.ToString().ToLower(), 
-                [HREF] = $"{value.HrefPrefix}actions"
+                [HREF] = value.HrefPrefix.JoinUrl("actions")
             };
 
             var eventsLink = new Dictionary<string, object>
             {
                 [REL] = RelType.Events.ToString().ToLower(), 
-                [HREF] = $"{value.HrefPrefix}events"
+                [HREF] = value.HrefPrefix.JoinUrl("events")
             };
 
             var links = new List<IDictionary<string, object>>

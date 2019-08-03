@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Mozilla.IoT.WebThing
@@ -20,19 +21,20 @@ namespace Mozilla.IoT.WebThing
                 return null;
             }
 
-            (Type type, _) = thing.ActionsTypeInfo[name];
-            Action action = CreateAction(serviceProvider, type);
+            var (type, _) = thing.ActionsTypeInfo[name];
+            var action = CreateAction(serviceProvider, type);
 
             action.Thing = thing;
             action.Name = name;
             action.HrefPrefix = thing.HrefPrefix;
             action.Input = input;
             action.Href = $"/actions/{name}/{action.Id}";
-            thing.Actions[name].AddLast(action);
+            thing.Actions.Add(action);
 
             return action;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Action CreateAction(IServiceProvider serviceProvider, Type implementationType)
         {
             var createFactory = _typeActivatorCache.GetOrAdd(implementationType, _createFactory);

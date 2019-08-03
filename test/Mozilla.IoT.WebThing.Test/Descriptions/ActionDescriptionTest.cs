@@ -12,12 +12,12 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
     {
         private readonly Fixture _fixture;
         private readonly Action _action;
-        private readonly ActionDescription _description;
+        private readonly ActionDescriptor _descriptor;
 
         public ActionDescriptionTest()
         {
             _fixture = new Fixture();
-            _description = new ActionDescription();
+            _descriptor = new ActionDescriptor();
             _action = Substitute.For<Action>();
         }
 
@@ -26,12 +26,12 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
         {
             string href = _fixture.Create<string>();
             string hrefPrefix = _fixture.Create<string>();
-            
+
             _action.HrefPrefix.Returns(hrefPrefix);
             _action.Href.Returns(href);
             _action.Status.Returns(Status.Created);
             _action.TimeRequested.Returns(DateTime.UtcNow);
-            
+
             var expected = new Dictionary<string, object>
             {
                 ["href"] = $"{_action.HrefPrefix.JoinUrl(_action.Href)}",
@@ -39,28 +39,24 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["status"] = "created"
             };
 
-            IDictionary<string, object> result = _description.CreateDescription(_action);
-            
-            result.Should().BeEquivalentTo(expected);    
+            var result = _descriptor.CreateDescription(_action);
+
+            result.Should().BeEquivalentTo(expected);
         }
-        
+
         [Fact]
         public void CreateDescription_Should_ReturnWitInput_When_ActionHaveAction()
         {
             string href = _fixture.Create<string>();
             string hrefPrefix = _fixture.Create<string>();
-            var input = new Dictionary<string, object>
-            {
-                ["level"] = 50,
-                ["duration"] = 2_000
-            };
-            
+            var input = new Dictionary<string, object> {["level"] = 50, ["duration"] = 2_000};
+
             _action.HrefPrefix.Returns(hrefPrefix);
             _action.Href.Returns(href);
             _action.Status.Returns(Status.Created);
             _action.TimeRequested.Returns(DateTime.UtcNow);
             _action.Input.Returns(input);
-            
+
             var expected = new Dictionary<string, object>
             {
                 ["href"] = $"{_action.HrefPrefix.JoinUrl(_action.Href)}",
@@ -69,23 +65,19 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["input"] = input
             };
 
-            IDictionary<string, object> result = _description.CreateDescription(_action);
-            
-            result.Should().BeEquivalentTo(expected);    
+            var result = _descriptor.CreateDescription(_action);
+
+            result.Should().BeEquivalentTo(expected);
         }
-        
-        
+
+
         [Fact]
         public void CreateDescription_Should_ChangeStatus_When_StatusChange()
         {
             string href = _fixture.Create<string>();
             string hrefPrefix = _fixture.Create<string>();
-            var input = new Dictionary<string, object>
-            {
-                ["level"] = 50,
-                ["duration"] = 2_000
-            };
-            
+            var input = new Dictionary<string, object> {["level"] = 50, ["duration"] = 2_000};
+
             _action.HrefPrefix.Returns(hrefPrefix);
             _action.Href.Returns(href);
             _action.TimeRequested.Returns(DateTime.UtcNow);
@@ -100,13 +92,13 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["input"] = input
             };
 
-            IDictionary<string, object> result = _description.CreateDescription(_action);
-            
+            var result = _descriptor.CreateDescription(_action);
+
             result.Should().BeEquivalentTo(expected);
 
             _action.TimeCompleted.Returns(DateTime.UtcNow);
             _action.Status.Returns(Status.Completed);
-            
+
             expected = new Dictionary<string, object>
             {
                 ["href"] = $"{_action.HrefPrefix.JoinUrl(_action.Href)}",
@@ -115,11 +107,10 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["status"] = "completed",
                 ["input"] = input
             };
-            
-            result = _description.CreateDescription(_action);
-            
-            result.Should().BeEquivalentTo(expected);
 
+            result = _descriptor.CreateDescription(_action);
+
+            result.Should().BeEquivalentTo(expected);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing.Background
                 var action = await _actions.ReceiveAsync(stoppingToken)
                     .ConfigureAwait(false);
 
-                ConfiguredTaskAwaitable task = action.StartAsync(_loggerFactory.CreateLogger(typeof(Action)), stoppingToken)
+                var task = action.StartAsync(_loggerFactory.CreateLogger(typeof(Action)), stoppingToken)
                     .ConfigureAwait(false);
 
                 _tasks.AddLast(task);
@@ -38,7 +38,7 @@ namespace Mozilla.IoT.WebThing.Background
                     .OnCompleted(() => _tasks.Remove(task));
             }
 
-            foreach (ConfiguredTaskAwaitable task in _tasks.ToImmutableArray())
+            foreach (var task in _tasks.ToImmutableArray())
             {
                 await task;
             }

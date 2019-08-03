@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
             var response = new Dictionary<string, object>();
-            var descriptor = services.GetService<IDescription<Action>>();
+            var descriptor = services.GetService<IDescriptor<Action>>();
             var target = services.GetService<ITargetBlock<Action>>();
             var activator = services.GetService<IActionActivator>();
 

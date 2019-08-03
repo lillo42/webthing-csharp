@@ -19,7 +19,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogInformation("Get Things is calling");
 
             var array = new LinkedList<IDictionary<string, object>>();
-            var descriptor = services.GetService<IDescription<Thing>>();
+            var descriptor = services.GetService<IDescriptor<Thing>>();
             var builder = services.GetService<IWsUrlBuilder>();
             var things = services.GetService<IThingActivator>();
             

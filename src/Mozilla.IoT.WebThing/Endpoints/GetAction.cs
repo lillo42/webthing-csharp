@@ -24,7 +24,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             if (thing != null && thing.Actions.Contains(name))
             {
-                var description = services.GetService<IDescription<Action>>();
+                var description = services.GetService<IDescriptor<Action>>();
                 var result = thing.Actions[name].ToDictionary(x => x.Name, x => description.CreateDescription(x));
                 await httpContext.WriteBodyAsync(HttpStatusCode.OK, result);
             }

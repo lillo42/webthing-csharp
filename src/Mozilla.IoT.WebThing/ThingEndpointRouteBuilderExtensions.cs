@@ -9,11 +9,17 @@ namespace Microsoft.AspNetCore.Routing
         public static ThingEndpointConventionBuilder MapThing<T>(this IEndpointRouteBuilder builder)
             where T : Thing
         {
-            var activator = builder.ServiceProvider.GetService<IThingActivator>();
-            activator.Register<T>(builder.ServiceProvider);
+
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
             
             ValidateServicesRegistered(builder.ServiceProvider);
             
+            var activator = builder.ServiceProvider.GetService<IThingActivator>();
+            activator.Register<T>(builder.ServiceProvider);
+
             var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
             var endpointConventionBuilders = serviceRouteBuilder.Build(builder);
 
@@ -23,10 +29,22 @@ namespace Microsoft.AspNetCore.Routing
         public static ThingEndpointConventionBuilder MapThing<T>(this IEndpointRouteBuilder builder, string thing)
             where T : Thing
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (thing == null)
+            {
+                throw new ArgumentNullException(nameof(thing));
+            }
+            
+            ValidateServicesRegistered(builder.ServiceProvider);
+            
             var activator = builder.ServiceProvider.GetService<IThingActivator>();
             activator.Register<T>(builder.ServiceProvider, thing);
             
-            ValidateServicesRegistered(builder.ServiceProvider);
+            
             
             var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
             var endpointConventionBuilders = serviceRouteBuilder.Build(builder);
@@ -37,10 +55,22 @@ namespace Microsoft.AspNetCore.Routing
         public static ThingEndpointConventionBuilder MapThing<T>(this IEndpointRouteBuilder builder, T thing)
             where T : Thing
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+            
+            if (thing == null)
+            {
+                throw new ArgumentNullException(nameof(thing));
+            }
+            
+            ValidateServicesRegistered(builder.ServiceProvider);
+            
             var activator = builder.ServiceProvider.GetService<IThingActivator>();
             activator.Register<T>(builder.ServiceProvider, thing);
             
-            ValidateServicesRegistered(builder.ServiceProvider);
+            
             
             var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
             var endpointConventionBuilders = serviceRouteBuilder.Build(builder);

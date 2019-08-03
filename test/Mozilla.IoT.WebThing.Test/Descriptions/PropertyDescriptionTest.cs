@@ -12,13 +12,13 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
     {
         private readonly Fixture _fixture;
         private readonly Property _property;
-        private readonly PropertyDescription _propertyDescription;
+        private readonly PropertyDescriptor _propertyDescriptor;
 
         public PropertyDescriptionTest()
         {
             _fixture = new Fixture();
             _property = new Property();
-            _propertyDescription = new PropertyDescription();
+            _propertyDescriptor = new PropertyDescriptor();
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 }
             };
 
-            var result = _propertyDescription.CreateDescription(_property);
+            var result = _propertyDescriptor.CreateDescription(_property);
 
             expected.Should().BeEquivalentTo(result);
         }
@@ -70,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 }
             };
 
-            var result = _propertyDescription.CreateDescription(_property);
+            var result = _propertyDescriptor.CreateDescription(_property);
 
             expected.Should().BeEquivalentTo(result);
         }
@@ -119,7 +119,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 }
             };
 
-            var result = _propertyDescription.CreateDescription(_property);
+            var result = _propertyDescriptor.CreateDescription(_property);
 
             expected.Should().BeEquivalentTo(result);
         }
@@ -141,7 +141,7 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 }
             };
             
-            Assert.Throws<DescriptionException>(() => _propertyDescription.CreateDescription(_property));
+            Assert.Throws<DescriptionException>(() => _propertyDescriptor.CreateDescription(_property));
         }
     }
 }

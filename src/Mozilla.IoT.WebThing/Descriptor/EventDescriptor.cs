@@ -3,7 +3,7 @@ using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing.Description
 {
-    public class EventDescription : IDescription<Event>
+    public class EventDescriptor : IDescriptor<Event>
     {
         public IDictionary<string, object> CreateDescription(Event value)
         {
