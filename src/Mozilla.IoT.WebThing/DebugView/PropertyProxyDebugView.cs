@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Mozilla.IoT.WebThing.DebugView
 {
+    [ExcludeFromCodeCoverage]
     internal sealed class PropertyProxyDebugView
     {
         private readonly PropertyProxy _propertyProxy;

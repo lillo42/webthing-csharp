@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Mozilla.IoT.WebThing.Collections;
 
 namespace Mozilla.IoT.WebThing.DebugView
 {
+    [ExcludeFromCodeCoverage]
     internal sealed class ICollectionDebugView<T>
     {
         private readonly ICollection<T> _collection;

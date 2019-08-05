@@ -8,11 +8,12 @@ using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing.Collections
 {
-    [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
+    [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     public class DefaultObservableCollection<T> : IObservableCollection<T>, IEquatable<DefaultObservableCollection<T>>
     {
         private readonly LinkedList<T> _events = new LinkedList<T>();
+        private readonly object locker = new object();
 
         public IEnumerator<T> GetEnumerator()
             => _events.GetEnumerator();
@@ -22,15 +23,23 @@ namespace Mozilla.IoT.WebThing.Collections
 
         public void Add(T item)
         {
-            _events.AddLast(item);
+            lock (locker)
+            {
+                _events.AddLast(item);
+            }
+
             Notify(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
         }
 
         public void Clear()
         {
-            _events.Clear();
+            lock (locker)
+            {
+                _events.Clear();
+            }
+
             Notify(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        } 
+        }
 
         public bool Contains(T item)
             => _events.Contains(item);
@@ -40,10 +49,18 @@ namespace Mozilla.IoT.WebThing.Collections
 
         public bool Remove(T item)
         {
-            var result = _events.Remove(item);
-            
-            Notify(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
-            
+            bool result = false;
+
+            lock (locker)
+            {
+                result = _events.Remove(item);
+            }
+
+            if (result)
+            {
+                Notify(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            }
+
             return result;
         }
 
@@ -85,10 +102,10 @@ namespace Mozilla.IoT.WebThing.Collections
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((DefaultObservableCollection<T>) obj);
+            return obj.GetType() == GetType() && Equals((DefaultObservableCollection<T>)obj);
         }
 
-        public override int GetHashCode() 
+        public override int GetHashCode()
             => (_events != null ? _events.GetHashCode() : 0);
     }
 }

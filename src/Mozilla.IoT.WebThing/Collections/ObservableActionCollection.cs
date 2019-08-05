@@ -20,8 +20,9 @@ namespace Mozilla.IoT.WebThing.Collections
             lock (_locker)
             {
                 actions.AddLast(item);
-                Notify(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
             }
+            
+            Notify(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
         }
 
         public bool Contains(string actionName)
