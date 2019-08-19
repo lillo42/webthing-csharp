@@ -11,7 +11,7 @@ using Mozilla.IoT.WebThing.Activator;
 using Mozilla.IoT.WebThing.Background;
 using Mozilla.IoT.WebThing.Builder;
 using Mozilla.IoT.WebThing.Collections;
-using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Descriptor;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
 using Action = Mozilla.IoT.WebThing.Action;

@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Descriptor;
 using Mozilla.IoT.WebThing.Json;
 using static Mozilla.IoT.WebThing.Const;
 

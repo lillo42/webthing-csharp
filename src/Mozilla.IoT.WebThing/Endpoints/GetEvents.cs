@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Activator;
-using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Descriptor;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {

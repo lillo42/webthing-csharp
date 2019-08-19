@@ -4,7 +4,7 @@ using System.Linq;
 using Mozilla.IoT.WebThing.Exceptions;
 using static Mozilla.IoT.WebThing.Const;
 
-namespace Mozilla.IoT.WebThing.Description
+namespace Mozilla.IoT.WebThing.Descriptor
 {
     public class PropertyDescriptor : IDescriptor<Property>
     {

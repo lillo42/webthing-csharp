@@ -6,13 +6,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Mozilla.IoT.WebThing.Activator;
 using Mozilla.IoT.WebThing.Collections;
-using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Descriptor;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.Notify;
 
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Activator
 {
     internal sealed class ThingActivator : IThingActivator
     {

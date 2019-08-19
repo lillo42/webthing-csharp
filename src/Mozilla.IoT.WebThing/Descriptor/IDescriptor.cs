@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mozilla.IoT.WebThing.Description
+namespace Mozilla.IoT.WebThing.Descriptor
 {
     public interface IDescriptor<T>
     {

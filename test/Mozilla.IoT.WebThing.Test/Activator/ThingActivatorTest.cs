@@ -1,3 +1,6 @@
+
+using System.Collections.Generic;
+using Mozilla.IoT.WebThing.Activator;
 #if DEBUG
 using System.Linq;
 using System;
@@ -204,7 +207,7 @@ namespace Mozilla.IoT.WebThing.Test.Activator
         }
         
         [Fact]
-        public void CreateInstance_Should_Throw_When_ThingNameIsNullAndHaveMoreThenype()
+        public void CreateInstance_Should_Throw_When_ThingNameIsNullAndHaveMoreThenType()
         {
             _activator._thingType.Add(_fixture.Create<string>(), null);
             _activator._thingType.Add(_fixture.Create<string>(), null);
@@ -245,6 +248,53 @@ namespace Mozilla.IoT.WebThing.Test.Activator
             result.Should().NotBeNull();
         }
         
+        [Fact]
+        public void CreateInstance_Should_ReturnInstance_When_InstanceIsCacheAndHaveOnly1AndNameIsNull()
+        {
+            _service.GetService(Arg.Any<Type>())
+                .Returns(called =>
+                {
+                    var type = called.Args()[0] as Type;
+
+                    return type == typeof(IObservableCollection<Event>) ? 
+                        new DefaultObservableCollection<Event>() : null;
+                });
+            
+            string name = _fixture.Create<string>();
+            
+            _activator._thingType.Add(name, typeof(SampleThing));
+            
+            var result = _activator.CreateInstance(_service, name);
+            result.Should().NotBeNull();
+            
+            result = _activator.CreateInstance(_service, null);
+            result.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void GetEnumerator_Should_ReturnAllInstance()
+        {
+            _service.GetService(Arg.Any<Type>())
+                .Returns(called =>
+                {
+                    var type = called.Args()[0] as Type;
+
+                    return type == typeof(IObservableCollection<Event>) ? 
+                        new DefaultObservableCollection<Event>() : null;
+                });
+            
+            string name = _fixture.Create<string>();
+            
+            _activator._thingType.Add(name, typeof(SampleThing));
+            
+            _activator.CreateInstance(_service, name);
+
+            foreach (Thing thing in _activator)
+            {
+                thing.Should().NotBeNull();
+            }
+        }
+
         private class SampleThing : Thing
         {
             

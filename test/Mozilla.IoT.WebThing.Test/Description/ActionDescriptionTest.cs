@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
-using Mozilla.IoT.WebThing.Description;
+using Mozilla.IoT.WebThing.Descriptor;
 using NSubstitute;
 using Xunit;
 

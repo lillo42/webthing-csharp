@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing;
-using Mozilla.IoT.WebThing.Description;
 using Mozilla.IoT.WebThing.Json;
 using Action = Mozilla.IoT.WebThing.Action;
 

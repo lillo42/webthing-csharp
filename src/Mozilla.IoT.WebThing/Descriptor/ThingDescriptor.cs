@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using static Mozilla.IoT.WebThing.Const;
 
-namespace Mozilla.IoT.WebThing.Description
+namespace Mozilla.IoT.WebThing.Descriptor
 {
     public class ThingDescriptor : IDescriptor<Thing>
     {
@@ -21,7 +20,10 @@ namespace Mozilla.IoT.WebThing.Description
             
             value.ActionsTypeInfo.ForEach(action =>
             {
-                var metadata = action.Value.metadata.ToDictionary(x => x.Key, x => x.Value);
+                var metadata = action.Value
+                                    .metadata?.ToDictionary(x => x.Key, x => x.Value) 
+                               ?? new Dictionary<string, object>();
+                
                 metadata.Add(LINKS, new Dictionary<string, object>
                 {
                     [REL] = RelType.Action.ToString().ToLower(),
