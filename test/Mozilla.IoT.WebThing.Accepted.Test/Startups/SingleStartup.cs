@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
 {
@@ -25,7 +26,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -44,7 +45,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
     public sealed class LightThing : Thing
     {
         public override string Name { get; set; } = "My Lamp";
-        public override object Type { get; set; } = new Dictionary<string, object> {["OnOffSwitch"] = "Light"};
+        public override object Type { get; set; } = new [] {"OnOffSwitch", "Light"};
         public override string Description { get; set; } = "A web connected lamp";
 
         public LightThing()
@@ -74,7 +75,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
                     ["unit"] = "percent"
                 }));
             
-            AddAction<FakeAction>();
+            AddAction<FakeAction>("fake");
         }
     }
 

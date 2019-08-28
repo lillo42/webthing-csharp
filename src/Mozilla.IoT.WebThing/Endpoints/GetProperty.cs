@@ -14,7 +14,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
         internal static async Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILogger>();
+            var logger = services.GetRequiredService<ILogger>();
             
             logger.LogInformation("Get Property is calling");
             var thingId = httpContext.GetValueFromRoute<string>("thing");

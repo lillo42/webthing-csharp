@@ -8,7 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Accepted.Test.Startups;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -26,7 +29,14 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         public SingleTest()
         {
             _fixture = new Fixture();
-            _server = new TestServer(WebHostBuilder.Create<SingleStartup>());
+            _server = new TestServer(WebHostBuilder.Create<SingleStartup>()
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    //logging.AddConfiguration(hostingContext.Configuration.GetSection(""))
+                    logging.AddConsole();
+                    logging.AddDebug();
+                    logging.AddEventSourceLogger();
+                }));
             _httpClient = _server.CreateClient();
             _webSocketClient = _server.CreateWebSocketClient();
         }
@@ -93,7 +103,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
                     ""href"": ""/events""
                 },{
                     ""rel"": ""alternate"",
-                    ""href"": """"
+                    ""href"": ""ws://localhost/""
                 }]
             }");
 
@@ -112,30 +122,8 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             string json = await responseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
             var expected = JObject.Parse(@"{
-                ""on"": {
-                    ""@type"": ""OnOffProperty"",
-                    ""type"": ""OnOffProperty"",
-                    ""title"": ""On/Off"",
-                    ""type"": ""boolean"",
-                    ""description"": ""Whether the lamp is turned on"",
-                    ""links"":[{
-                        ""rel"": ""property"",
-                        ""href"": ""/properties/on""
-                    }]
-                },
-                ""level"": { 
-                    ""@type"": ""BrightnessProperty"",
-                    ""title"": ""Brightness"",
-                    ""type"": ""number"",
-                    ""description"": ""The level of light from 0-100"",
-                    ""minimum"": 0,
-                    ""maximum"": 100,
-                    ""unit"": ""percent"",
-                    ""links"": [{
-                        ""rel"": ""property"",
-                        ""href"": ""/properties/level""
-                    }]
-                }
+                ""on"": true,
+                ""level"": 0
             }");
 
             JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
@@ -242,7 +230,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             string json = await getResponseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
             
-            JArray array = JArray.Parse(json);
+            var array = JArray.Parse(json);
             array.Should().HaveCount(1);
             array[0]["status"].Value<string>().Should().Be("pending");
         }
