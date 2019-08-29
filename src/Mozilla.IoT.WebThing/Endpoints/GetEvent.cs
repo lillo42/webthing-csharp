@@ -9,12 +9,12 @@ using Mozilla.IoT.WebThing.Descriptor;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal static class GetEvent
+    internal sealed class GetEvent
     {
         internal static async Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILogger>();
+            var logger = services.GetRequiredService<ILogger<GetEvent>>();
             
             logger.LogInformation("Get Event is calling");
             var thingId = httpContext.GetValueFromRoute<string>("thing");

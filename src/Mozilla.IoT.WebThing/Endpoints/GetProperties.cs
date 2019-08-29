@@ -8,12 +8,12 @@ using Mozilla.IoT.WebThing.Activator;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal static class GetProperties
+    internal sealed class GetProperties
     {
         internal static async Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILogger>();
+            var logger = services.GetRequiredService<ILogger<GetProperties>>();
             
             logger.LogInformation("Get Properties is calling");
             var thingId = httpContext.GetValueFromRoute<string>("thing");

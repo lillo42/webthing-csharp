@@ -8,8 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Accepted.Test.Startups;
@@ -29,10 +31,11 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         public SingleTest()
         {
             _fixture = new Fixture();
-            _server = new TestServer(WebHostBuilder.Create<SingleStartup>()
+            _server = new TestServer(WebHost.CreateDefaultBuilder<SingleStartup>(new string[0])
+                .ConfigureServices(service => service.AddLogging())
                 .ConfigureLogging((hostingContext, logging) =>
                 {
-                    //logging.AddConfiguration(hostingContext.Configuration.GetSection(""))
+                    logging.ClearProviders();
                     logging.AddConsole();
                     logging.AddDebug();
                     logging.AddEventSourceLogger();
@@ -131,7 +134,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
 
         [Theory]
         [InlineData("on", @"{ ""on"": true }")]
-        [InlineData("level", @"{ ""level"": 0.0 }")]
+        [InlineData("level", @"{ ""level"": 0 }")]
         public async Task GetProperty(string property, string expectedJson)
         {
             var responseMessage = await _httpClient.GetAsync($"/properties/{property}");
