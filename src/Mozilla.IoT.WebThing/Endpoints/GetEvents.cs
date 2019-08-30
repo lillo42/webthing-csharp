@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -32,9 +33,12 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var descriptor = services.GetService<IDescriptor<Event>>();
             
-            var result = thing.Events
-                .ToDictionary<Event, string, object>(@event => @event.Name, 
-                    @event => descriptor.CreateDescription(@event));
+            var result = new LinkedList<Dictionary<string, object>>();
+
+            foreach (var @event in thing.Events)
+            {
+                result.AddLast(new Dictionary<string, object> {[@event.Name] = descriptor.CreateDescription(@event)});
+            }
 
             await httpContext.WriteBodyAsync(HttpStatusCode.OK,result);
         }

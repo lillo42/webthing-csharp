@@ -47,11 +47,13 @@ namespace Mozilla.IoT.WebThing
                 result.AddLast(endpointRouteBuilder.MapPost($"{prefix}/actions",
                     PostActions.Invoke));
 
+                
                 result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/actions/{{name}}",
                     GetAction.Invoke));
 
-                result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/actions/{{name}}",
+                result.AddLast(endpointRouteBuilder.MapPost($"{prefix}/actions/{{name}}",
                     PostAction.Invoke));
+                
 
                 result.AddLast(endpointRouteBuilder.MapGet($"{prefix}/actions/{{name}}/{{id}}",
                     GetActionById.Invoke));

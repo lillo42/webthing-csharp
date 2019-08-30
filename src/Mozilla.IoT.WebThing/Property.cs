@@ -34,7 +34,9 @@ namespace Mozilla.IoT.WebThing
             }
             set => base.Value = value;
         }
-        
+
+        internal override Type Type => typeof(T);
+
         public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
         
         protected override void OnValueChanged()
@@ -87,6 +89,7 @@ namespace Mozilla.IoT.WebThing
             }
         }
         public virtual IDictionary<string, object> Metadata { get; set; }
+        internal virtual Type Type => typeof(object);
         public event EventHandler<ValueChangedEventArgs> ValuedChanged;
         
         protected virtual void OnValueChanged()

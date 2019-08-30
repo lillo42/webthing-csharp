@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -21,12 +22,22 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var name = httpContext.GetValueFromRoute<string>("name");
 
             logger.LogInformation($"Get Action: [[thing: {thingId}][actionName: {name}]]");
-            var thing = services.GetService<IThingActivator>().CreateInstance(services, thingId);;
-            
+            var thing = services.GetService<IThingActivator>().CreateInstance(services, thingId);
+
             if (thing != null && thing.Actions.Contains(name))
             {
                 var description = services.GetService<IDescriptor<Action>>();
-                var result = thing.Actions[name].ToDictionary(x => x.Name, x => description.CreateDescription(x));
+
+                var result = new LinkedList<Dictionary<string, object>>();
+
+                foreach (var action in thing.Actions[name])
+                {
+                    result.AddLast(new Dictionary<string, object>
+                    {
+                        [action.Name] = description.CreateDescription(action)
+                    });
+                }
+
                 await httpContext.WriteBodyAsync(HttpStatusCode.OK, result);
             }
             else

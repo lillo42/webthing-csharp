@@ -39,7 +39,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 foreach (var action in actions)
                 {
-                    result.AddFirst(new Dictionary<string, object>
+                    result.AddLast(new Dictionary<string, object>
                     {
                         [name] = description.CreateDescription(action)
                     });

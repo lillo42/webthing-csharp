@@ -48,7 +48,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
             var response = new Dictionary<string, object>();
-            var name = httpContext.GetValueFromRoute<string>("actionName");
+            var name = httpContext.GetValueFromRoute<string>("name");
             if (thing.ActionsTypeInfo.ContainsKey(name) && json.TryGetValue(name, out var token))
             {
                 var input = GetInput(token);

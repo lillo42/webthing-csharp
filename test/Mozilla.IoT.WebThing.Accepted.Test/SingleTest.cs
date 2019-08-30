@@ -182,7 +182,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
 
         [Theory]
         [InlineData("on", @"{ ""on"": true }")]
-        [InlineData("level", @"{ ""level"": 0.0 }")]
+        [InlineData("level", @"{ ""level"": 0 }")]
         public async Task SetProperty(string property, string expectedJson)
         {
             var ws = await _webSocketClient.ConnectAsync(
@@ -235,7 +235,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             
             var array = JArray.Parse(json);
             array.Should().HaveCount(1);
-            array[0]["status"].Value<string>().Should().Be("pending");
+            array[0]["fake"]["status"].Value<string>().Should().Be("pending");
         }
         
         [Fact]
@@ -332,7 +332,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
 
             JArray array = JArray.Parse(getJson);
             array.Should().HaveCount(1);
-            array[0]["status"].Value<string>().Should().Be("pending");
+            array[0]["fake"]["status"].Value<string>().Should().Be("pending");
         }
         
         [Fact]
@@ -370,7 +370,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             
             JArray array = JArray.Parse(getJson);
             array.Should().HaveCount(1);
-            array[0]["status"].Value<string>().Should().Be("completed");
+            array[0]["fake"]["status"].Value<string>().Should().Be("completed");
         }
 
         [Fact]

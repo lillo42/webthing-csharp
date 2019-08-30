@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing.Json
                         if (element.ValueKind == JsonValueKind.Number)
                         {
                             string text = element.GetRawText();
-                            object number = GetNumber(text);
+                            var number = GetNumber(text);
 
                             if (number != null)
                             {

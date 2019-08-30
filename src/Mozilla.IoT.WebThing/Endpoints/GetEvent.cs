@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
         {
             var services = httpContext.RequestServices;
             var logger = services.GetRequiredService<ILogger<GetEvent>>();
-            
+
             logger.LogInformation("Get Event is calling");
             var thingId = httpContext.GetValueFromRoute<string>("thing");
             var eventName = httpContext.GetValueFromRoute<string>("name");
@@ -23,20 +24,22 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogInformation($"Get Event: [[thing: {thingId}][event: {eventName}]]");
             var thing = services.GetService<IThingActivator>()
                 .CreateInstance(services, thingId);
-            
+
             if (thing == null)
             {
                 logger.LogInformation($"Get Event: Thing not found [[thing: {thingId}][event: {eventName}]]");
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-            
+
             var descriptor = services.GetService<IDescriptor<Event>>();
-            var result = thing.Events
-                .Where(x => x.Name == eventName)
-                .ToDictionary<Event, string, object>(@event => @event.Name,
-                    @event => descriptor.CreateDescription(@event));
-            
+            var result = new LinkedList<Dictionary<string, object>>();
+
+            foreach (var @event in thing.Events.Where(x => x.Name == eventName))
+            {
+                result.AddLast(new Dictionary<string, object> {[@event.Name] = descriptor.CreateDescription(@event)});
+            }
+
             await httpContext.WriteBodyAsync(HttpStatusCode.OK, result);
         }
     }
