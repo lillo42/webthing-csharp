@@ -29,7 +29,6 @@ namespace Mozilla.IoT.WebThing.Activator
             action.HrefPrefix = thing.HrefPrefix;
             action.Input = input;
             action.Href = $"/actions/{name}/{action.Id}";
-            thing.Actions.Add(action);
 
             return action;
         }

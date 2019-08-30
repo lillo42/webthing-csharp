@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -9,12 +10,12 @@ using Mozilla.IoT.WebThing.Descriptor;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal static class GetEvents
+    internal sealed class GetEvents
     {
         internal static async Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILogger>();
+            var logger = services.GetRequiredService<ILogger<GetEvents>>();
             
             logger.LogInformation("Get Events is calling");
             var thingId = httpContext.GetValueFromRoute<string>("thing");
@@ -32,9 +33,12 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var descriptor = services.GetService<IDescriptor<Event>>();
             
-            var result = thing.Events
-                .ToDictionary<Event, string, object>(@event => @event.Name, 
-                    @event => descriptor.CreateDescription(@event));
+            var result = new LinkedList<Dictionary<string, object>>();
+
+            foreach (var @event in thing.Events)
+            {
+                result.AddLast(new Dictionary<string, object> {[@event.Name] = descriptor.CreateDescription(@event)});
+            }
 
             await httpContext.WriteBodyAsync(HttpStatusCode.OK,result);
         }

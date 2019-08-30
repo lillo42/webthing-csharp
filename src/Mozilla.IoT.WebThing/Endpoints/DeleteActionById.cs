@@ -8,12 +8,12 @@ using Mozilla.IoT.WebThing.Activator;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal static class DeleteActionById
+    internal sealed class DeleteActionById
     {
         internal static  Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILogger>();
+            var logger = services.GetRequiredService<ILogger<DeleteActionById>>();
             logger.LogInformation("Delete is calling action");
             
             string thingId =httpContext.GetValueFromRoute<string>("thing"); 

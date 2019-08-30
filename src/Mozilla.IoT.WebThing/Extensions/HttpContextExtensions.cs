@@ -14,10 +14,9 @@ namespace Microsoft.AspNetCore.Http
         public static async Task<T> ReadBodyAsync<T>(this HttpContext context)
         {
             var convert =  context.RequestServices.GetService<IJsonConvert>();
-
-            var buffer = new Memory<byte>(new byte[context.Request.Body.Length]);
-            await context.Request.Body.ReadAsync(buffer);
-            return convert.Deserialize<T>(buffer.Span);
+            return await convert.DeserializeAsync<T>(context.Request.BodyReader,
+                context.RequestServices.GetService<IJsonSerializerSettings>(),
+                context.RequestAborted);
         }
 
         public static async Task WriteBodyAsync<T>(this HttpContext context, HttpStatusCode statusCode, T value)
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Http
 
         public static T GetValueFromRoute<T>(this HttpContext context, string key)
         {
-            if (context.GetRouteData().Values.TryGetValue(key, out object value))
+            if (context.GetRouteData().Values.TryGetValue(key, out var value))
             {
                 return (T)value;
             }

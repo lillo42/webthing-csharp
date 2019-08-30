@@ -14,12 +14,12 @@ using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThing
+    internal sealed class GetThing
     {
         internal static async Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILoggerFactory>().CreateLogger<GetThing>();
+            var logger = services.GetRequiredService<ILogger<GetThing>>();
 
             string thingId = httpContext.GetValueFromRoute<string>("thing");
             logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");

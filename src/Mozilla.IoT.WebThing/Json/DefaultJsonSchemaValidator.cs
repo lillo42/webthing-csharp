@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Json
 {
@@ -11,6 +12,7 @@ namespace Mozilla.IoT.WebThing.Json
         private const string MINIMUM = "minimum";
         private const string MAXIMUM = "maximum";
         private const string MULTIPLE_OF = "multipleOf";
+
         public bool IsValid(object value, IDictionary<string, object> schema)
         {
             var validator = new Dictionary<string, object>(schema, StringComparer.OrdinalIgnoreCase);
@@ -19,40 +21,97 @@ namespace Mozilla.IoT.WebThing.Json
                 return false;
             }
 
+
             if (validator.ContainsKey(TYPE) && Enum.TryParse<JsonType>(validator[TYPE].ToString(), true, out var type))
             {
+                var element = ((JsonElement)value);
+
                 switch (type)
                 {
                     case JsonType.Array:
-                        return value is IEnumerable;
+                        return element.ValueKind == JsonValueKind.Array;
                     case JsonType.Boolean:
-                        return value is bool;
+                        return element.ValueKind == JsonValueKind.False
+                               || element.ValueKind == JsonValueKind.True;
                     case JsonType.Object:
-                        return value.GetType().IsClass;
+                        return element.ValueKind == JsonValueKind.Object;
                     case JsonType.String:
-                        return value is string;
+                        return element.ValueKind == JsonValueKind.String;
                     case JsonType.Integer:
                     case JsonType.Number:
-                        bool isValid = value is int
-                                       || value is long
-                                       || value is double
-                                       || value is float
-                                       || value is decimal
-                                       || value is uint
-                                       || value is ulong;
-                        if (isValid)
+                        if (element.ValueKind == JsonValueKind.Number)
                         {
-                            validator.TryGetValue(MINIMUM, out object minimum);
-                            isValid = IsMinimumIsValid(value, minimum);
-                            validator.TryGetValue(MAXIMUM, out object maximum);
-                            isValid = isValid && IsMaximumIsValid(value, maximum);
-                            validator.TryGetValue(MULTIPLE_OF, out object mutipleOf);
-                            isValid = isValid && IsMultipleOf(value, mutipleOf);
+                            string text = element.GetRawText();
+                            var number = GetNumber(text);
+
+                            if (number != null)
+                            {
+                                validator.TryGetValue(MINIMUM, out var minimum);
+                                var isValid = IsMinimumIsValid(number, minimum);
+                                validator.TryGetValue(MAXIMUM, out var maximum);
+                                isValid = isValid && IsMaximumIsValid(number, maximum);
+                                validator.TryGetValue(MULTIPLE_OF, out var mutipleOf);
+                                isValid = isValid && IsMultipleOf(number, mutipleOf);
+
+                                return isValid;
+                            }
                         }
-                        return isValid;
+
+                        return false;
                 }
             }
+
             return true;
+        }
+
+        private static object GetNumber(string text)
+        {
+            if (short.TryParse(text, out var @short))
+            {
+                return @short;
+            }
+
+            else if (int.TryParse(text, out var @int))
+            {
+               return  @int;
+            }
+
+            else if (long.TryParse(text, out var @long))
+            {
+               return  @long;
+            }
+
+            else if (double.TryParse(text, out var @double))
+            {
+               return  @double;
+            }
+
+            else if (float.TryParse(text, out var @float))
+            {
+               return  @float;
+            }
+
+            else if (decimal.TryParse(text, out var @decimal))
+            {
+               return  @decimal;
+            }
+
+            else if (ushort.TryParse(text, out var @ushort))
+            {
+               return  @ushort;
+            }
+
+            else if (uint.TryParse(text, out var @uint))
+            {
+               return  @uint;
+            }
+
+            else if (ulong.TryParse(text, out var @ulong))
+            {
+               return  @ulong;
+            }
+
+            return null;
         }
 
         private static bool IsMinimumIsValid(object value, object minimum)
@@ -61,7 +120,7 @@ namespace Mozilla.IoT.WebThing.Json
             {
                 return true;
             }
-            
+
             switch (value)
             {
                 case int @int:
@@ -82,14 +141,14 @@ namespace Mozilla.IoT.WebThing.Json
                     return false;
             }
         }
-        
+
         private static bool IsMaximumIsValid(object value, object maximum)
         {
             if (maximum is null)
             {
                 return true;
             }
-            
+
             switch (value)
             {
                 case int @int:
@@ -110,14 +169,14 @@ namespace Mozilla.IoT.WebThing.Json
                     return false;
             }
         }
-        
+
         private static bool IsMultipleOf(object value, object multipleOf)
         {
             if (multipleOf is null)
             {
                 return true;
             }
-            
+
             switch (value)
             {
                 case int @int:
@@ -150,4 +209,3 @@ namespace Mozilla.IoT.WebThing.Json
         }
     }
 }
-

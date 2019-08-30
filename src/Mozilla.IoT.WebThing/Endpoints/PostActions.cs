@@ -11,12 +11,12 @@ using Mozilla.IoT.WebThing.Descriptor;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal static  class PostActions
+    internal sealed class PostActions
     {
         internal static async Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
-            var logger = services.GetService<ILogger>();
+            var logger = services.GetRequiredService<ILogger<PostActions>>();
             
             var thingId = httpContext.GetValueFromRoute<string>("thing");
             logger.LogInformation($"Post Actions is calling: [[thing: {thingId}]");
