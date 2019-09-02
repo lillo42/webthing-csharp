@@ -53,9 +53,9 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         public virtual Thing Thing { get; set; }
 
-        protected abstract Task ExecuteAsync(CancellationToken cancellation);
+        protected abstract ValueTask ExecuteAsync(CancellationToken cancellation);
 
-        public async Task StartAsync(ILogger logger, CancellationToken cancellation)
+        public async ValueTask StartAsync(ILogger logger, CancellationToken cancellation)
         {
             Status = Status.Pending;
 

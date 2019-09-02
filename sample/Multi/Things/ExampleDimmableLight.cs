@@ -106,7 +106,7 @@ namespace Multi.Things
         {
             public override string Name => "fade";
             
-            protected override async Task ExecuteAsync(CancellationToken cancellation)
+            protected override async ValueTask ExecuteAsync(CancellationToken cancellation)
             {
                 int value = Input["input"] as int? ?? 0;
                 await Task.Delay(value, cancellation);

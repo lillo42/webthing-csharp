@@ -25,7 +25,7 @@ namespace Mozilla.IoT.WebThing.Test
             _action.Status.Should().Be(Status.Created);
             _action.TimeCompleted.Should().BeNull();
 
-            Task action =  _action.StartAsync(_logger, CancellationToken.None);
+            var action =  _action.StartAsync(_logger, CancellationToken.None);
             
             _action.Status.Should().Be(Status.Pending);
             _action.TimeCompleted.Should().BeNull();
@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing.Test
             internal volatile bool Wait = true;
             public override string Name => "test";
 
-            protected override async Task ExecuteAsync(CancellationToken cancellation)
+            protected override async ValueTask ExecuteAsync(CancellationToken cancellation)
             {
                 while (Wait)
                 {

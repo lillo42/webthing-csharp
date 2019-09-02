@@ -83,6 +83,7 @@ namespace Mozilla.IoT.WebThing
             => _actionsTypeInfo.Add(name, (typeof(T), metadata));
 
         public virtual void AddEvent<T>(IDictionary<string, object> metadata = null)
+            where T : Event
         {
             string name = typeof(T).Name.Remove(typeof(T).Name.Length - 5);
             AvailableEvent.TryAdd(name, new AvailableEvent(name, metadata));

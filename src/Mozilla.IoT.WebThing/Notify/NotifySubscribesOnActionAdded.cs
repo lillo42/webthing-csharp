@@ -46,10 +46,10 @@ namespace Mozilla.IoT.WebThing.Notify
 
         private async Task NotifySubscribersAsync(IEnumerable<WebSocket> subscribers, IDictionary<string, object> message, CancellationToken cancellation)
         {
-            byte[] json = _jsonConvert.Serialize(message, _jsonSettings);
+            var json = _jsonConvert.Serialize(message, _jsonSettings);
 
             var buffer = new ArraySegment<byte>(json);
-            foreach (WebSocket socket in subscribers)
+            foreach (var socket in subscribers)
             {
                 await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation)
                     .ConfigureAwait(false);

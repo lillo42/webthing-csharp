@@ -89,7 +89,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
 
     public class FakeAction : Action
     {
-        protected override async Task ExecuteAsync(CancellationToken cancellation)
-            => await Task.Delay(3_000, cancellation);
+        protected override ValueTask ExecuteAsync(CancellationToken cancellation)
+            => new ValueTask(Task.Delay(3_000, cancellation));
     }
 }

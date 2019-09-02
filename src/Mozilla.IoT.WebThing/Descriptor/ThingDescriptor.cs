@@ -46,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Descriptor
                         new Dictionary<string, object>
                         {
                             [REL] = RelType.Event.ToString().ToLower(),
-                            [HREF] = value.HrefPrefix.JoinUrl($"/event/{@event.Name}")
+                            [HREF] = value.HrefPrefix.JoinUrl($"/events/{@event.Name}")
                         }
                     });
 

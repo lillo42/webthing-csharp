@@ -29,6 +29,11 @@ namespace Mozilla.IoT.WebThing.Collections
 
         public void Add(Property item)
         {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+            
             if (item.Thing == null)
             {
                 item.Thing = _thing;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,11 @@ namespace Mozilla.IoT.WebThing.Background
     public class ActionExecutorHostedService : BackgroundService
     {
         private readonly ISourceBlock<Action> _actions;
-        private readonly LinkedList<ConfiguredTaskAwaitable> _tasks = new LinkedList<ConfiguredTaskAwaitable>();
+        private static readonly object locker = new object();
+
+        private readonly LinkedList<ConfiguredValueTaskAwaitable> _tasks =
+            new LinkedList<ConfiguredValueTaskAwaitable>();
+
         private readonly ILoggerFactory _loggerFactory;
 
         public ActionExecutorHostedService(ISourceBlock<Action> actions, ILoggerFactory loggerFactory)
@@ -32,17 +37,33 @@ namespace Mozilla.IoT.WebThing.Background
                 var task = action.StartAsync(_loggerFactory.CreateLogger(typeof(Action)), stoppingToken)
                     .ConfigureAwait(false);
 
-                _tasks.AddLast(task);
-                
+                lock (locker)
+                {
+                    _tasks.AddLast(task);
+                }
+
                 task.GetAwaiter()
-                    .OnCompleted(() => _tasks.Remove(task));
+                    .OnCompleted(() =>
+                    {
+                        lock (locker)
+                        {
+                            _tasks.Remove(task);
+                        }
+                    });
             }
 
-            foreach (var task in _tasks.ToImmutableArray())
+            ImmutableArray<ConfiguredValueTaskAwaitable> immutable;
+
+            lock (locker)
+            {
+                immutable = _tasks.ToImmutableArray();
+            }
+
+            foreach (var task in immutable)
             {
                 await task;
             }
-            
+
             _tasks.Clear();
         }
     }

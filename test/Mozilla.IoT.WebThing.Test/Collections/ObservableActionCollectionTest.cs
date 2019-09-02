@@ -38,5 +38,39 @@ namespace Mozilla.IoT.WebThing.Test.Collections
             collection.Should().HaveCount(1);
             collection.Contains(actionName).Should().BeTrue();
         }
+        
+        [Fact]
+        public void Add_Should_EmitRemove_When_ItemRemoved()
+        {
+            var collection = new ObservableActionCollection();
+
+            var actionName = _fixture.Create<string>();
+            
+            var value = Substitute.For<Action>();
+            value.Name.Returns(actionName);
+
+            collection.CollectionChanged += (sender, @event) =>
+            {
+                sender.Should().Be(collection);
+                if (@event.Action == NotifyCollectionChangedAction.Add)
+                {
+                    @event.NewItems.Should().HaveCount(1);
+                    @event.NewItems[0].Should().Be(value);
+                }
+                else if (@event.Action == NotifyCollectionChangedAction.Remove)
+                {
+                    @event.OldItems.Should().HaveCount(1);
+                    @event.OldItems[0].Should().Be(value);
+                }
+                else
+                {
+                    Assert.False(true);
+                }
+                
+            };
+            
+            collection.Add(value);
+            collection.Remove(value).Should().BeTrue();
+        }
     }
 }

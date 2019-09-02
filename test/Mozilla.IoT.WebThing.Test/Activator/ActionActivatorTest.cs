@@ -49,14 +49,13 @@ namespace Mozilla.IoT.WebThing.Test.Activator
             action.HrefPrefix.Should().Be(hrefPrefix);
             action.Href.Should().Be($"/actions/{actionName}/{action.Id}");
             action.Input.Should().BeNull();
-            _thing.Actions.Contains(actionName).Should().BeTrue();
         }
         
         private class TestAction : Action
         {
             
-            protected override Task ExecuteAsync(CancellationToken cancellation) 
-                => Task.CompletedTask;
+            protected override ValueTask ExecuteAsync(CancellationToken cancellation) 
+                => new ValueTask();
         }
     }
 }
