@@ -74,7 +74,7 @@ namespace Mozilla.IoT.WebThing.Activator
                 thingName = _thingType.First().Key;
             }
 
-            Type implementationType = _thingType[thingName];
+            var implementationType = _thingType[thingName];
 
             if (!_typeActivatorCache.ContainsKey(implementationType))
             {

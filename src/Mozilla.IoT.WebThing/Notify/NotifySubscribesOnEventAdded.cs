@@ -30,7 +30,8 @@ namespace Mozilla.IoT.WebThing.Notify
 
         public async void Notify(object sender, NotifyCollectionChangedEventArgs eventArgs)
         {
-            if (eventArgs.Action == NotifyCollectionChangedAction.Add && eventArgs.NewItems[0] is Event @event)
+            if (eventArgs.Action == NotifyCollectionChangedAction.Add 
+                && eventArgs.NewItems[0] is Event @event)
             {
                 @event.Thing = _thing;
                 @event.Metadata = _descriptor.CreateDescription(@event);

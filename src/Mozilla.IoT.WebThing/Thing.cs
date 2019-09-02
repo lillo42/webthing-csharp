@@ -56,7 +56,7 @@ namespace Mozilla.IoT.WebThing
         public IReadOnlyDictionary<string, (Type type, IDictionary<string, object> metadata)> ActionsTypeInfo =>
             _actionsTypeInfo;
 
-        internal ConcurrentDictionary<string, AvailableEvent> AvailableEvent { get; } =
+        internal virtual ConcurrentDictionary<string, AvailableEvent> AvailableEvent { get; } =
             new ConcurrentDictionary<string, AvailableEvent>();
 
         public virtual ConcurrentDictionary<Guid, WebSocket> Subscribers { get; } =
