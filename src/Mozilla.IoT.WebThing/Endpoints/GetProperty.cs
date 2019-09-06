@@ -40,10 +40,11 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object>
+            var writer = services.GetRequiredService<IHttpBodyWriter>();
+            await writer.WriteAsync(new Dictionary<string, object>
             {
                 [propertyName] =  property.Value
-            });
+            }, HttpStatusCode.OK, httpContext.RequestAborted);
         }
     }
 }

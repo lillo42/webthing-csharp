@@ -93,7 +93,7 @@ namespace Mozilla.IoT.WebThing.Activator
         private void BindingThingNotify(Thing thing, IServiceProvider serviceProvider, string thingName)
         {
             var eventDescription = serviceProvider.GetService<IDescriptor<Event>>();
-            var jsonConvert = serviceProvider.GetService<IJsonConvert>();
+            var jsonConvert = serviceProvider.GetService<IJsonSerializer>();
             var jsonSettings = serviceProvider.GetService<IJsonSerializerSettings>();
             var jsonSchemaValidator = serviceProvider.GetService<IJsonSchemaValidator>();
 

@@ -40,7 +40,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 result.AddLast(new Dictionary<string, object> {[@event.Name] = descriptor.CreateDescription(@event)});
             }
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK,result);
+            var writer = services.GetRequiredService<IHttpBodyWriter>();
+            await writer.WriteAsync(result, HttpStatusCode.OK, httpContext.RequestAborted);
         }
     }
 }

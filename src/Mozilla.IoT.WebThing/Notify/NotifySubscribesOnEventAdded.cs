@@ -15,16 +15,16 @@ namespace Mozilla.IoT.WebThing.Notify
     {
         private readonly Thing _thing;
         private readonly IDescriptor<Event> _descriptor;
-        private readonly IJsonConvert _jsonConvert;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IJsonSerializerSettings _jsonSettings;
 
         public NotifySubscribesOnEventAdded(Thing thing, IDescriptor<Event> descriptor,
-            IJsonConvert jsonConvert,
+            IJsonSerializer jsonSerializer,
             IJsonSerializerSettings jsonSettings)
         {
             _thing = thing;
             _descriptor = descriptor;
-            _jsonConvert = jsonConvert;
+            _jsonSerializer = jsonSerializer;
             _jsonSettings = jsonSettings;
         }
 
@@ -54,7 +54,7 @@ namespace Mozilla.IoT.WebThing.Notify
 
         private async Task NotifySubscribersAsync(IEnumerable<WebSocket> sockets, IDictionary<string, object> message, CancellationToken cancellation)
         {
-            var json = _jsonConvert.Serialize(message, _jsonSettings);
+            var json = _jsonSerializer.Serialize(message, _jsonSettings);
 
             var buffer = new ArraySegment<byte>(json);
             foreach (var socket in sockets)

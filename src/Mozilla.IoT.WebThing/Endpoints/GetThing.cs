@@ -56,7 +56,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
             
             var builder = services.GetService<IWsUrlBuilder>();
-            string ws = string.Empty;
 
             var link = new Dictionary<string, object>
             {
@@ -80,7 +79,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 description.Add("links", new List<IDictionary<string, object>> {link});
             }
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, description);
+            var writer = services.GetRequiredService<IHttpBodyWriter>();
+            await writer.WriteAsync(description, HttpStatusCode.OK, httpContext.RequestAborted);
         }
     }
 }

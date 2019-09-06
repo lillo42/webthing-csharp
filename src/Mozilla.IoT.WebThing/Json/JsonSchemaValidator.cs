@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Json
 {
-    public class DefaultJsonSchemaValidator : IJsonSchemaValidator
+    public class JsonSchemaValidator : IJsonSchemaValidator
     {
         private const string IS_READ_ONLY = "readOnly";
         private const string TYPE = "type";

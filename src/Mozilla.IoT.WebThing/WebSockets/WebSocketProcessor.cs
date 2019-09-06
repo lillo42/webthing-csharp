@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
         public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, CancellationToken cancellation)
         {
-            Guid id = Guid.NewGuid();
+            var id = Guid.NewGuid();
             thing.Subscribers.TryAdd(id, webSocket);
 
             var executors = _service.GetService<IEnumerable<IWebSocketAction>>();
@@ -40,12 +40,12 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
             try
             {
-                WebSocketReceiveResult result = await webSocket
+                var result = await webSocket
                     .ReceiveAsync(new ArraySegment<byte>(buffer), cancellation)
                     .ConfigureAwait(false);
 
                 var jsonSetting = _service.GetService<IJsonSerializerSettings>();
-                var jsonConvert = _service.GetService<IJsonConvert>();
+                var jsonConvert = _service.GetService<IJsonSerializer>();
 
                 while (!result.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
@@ -62,10 +62,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         continue;
                     }
 
-                    object type = json["messageType"];
-                    object data = json["data"];
+                    var type = json["messageType"];
+                    var data = json["data"];
 
-                    IWebSocketAction action = executors.FirstOrDefault(x => x.Action == type.ToString());
+                    var action = executors?.FirstOrDefault(x => x.Action == type.ToString());
 
                     if (action != null)
                     {

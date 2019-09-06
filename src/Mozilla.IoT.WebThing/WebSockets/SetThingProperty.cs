@@ -12,11 +12,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
 {
     public class SetThingProperty : IWebSocketAction
     {
-        private readonly IJsonConvert _convert;
+        private readonly IJsonSerializer _serializer;
+        private readonly IJsonSerializerSettings _settings;
 
-        public SetThingProperty(IJsonConvert convert)
+        public SetThingProperty(IJsonSerializer serializer, IJsonSerializerSettings settings)
         {
-            _convert = convert;
+            _serializer = serializer;
+            _settings = settings;
         }
 
         public string Action => "setProperty";
@@ -35,7 +37,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 }
                 catch (Exception exception)
                 {
-                    await webSocket.SendAsync(new ArraySegment<byte>(_convert.Serialize(new Dictionary<string, object>
+                    await webSocket.SendAsync(new ArraySegment<byte>(_serializer.Serialize(new Dictionary<string, object>
                     {
                         ["messageType"] = MessageType.Error.ToString().ToLower(), 
                         ["data"] =  new Dictionary<string, object>
@@ -43,7 +45,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                             ["status"] = "400 Bad Request",
                             ["message"] = exception.Message
                         }
-                    })), WebSocketMessageType.Text, true, cancellation);
+                    }, _settings)), WebSocketMessageType.Text, true, cancellation);
                 }
             }
         }

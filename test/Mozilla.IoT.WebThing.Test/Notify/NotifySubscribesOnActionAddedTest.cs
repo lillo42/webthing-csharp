@@ -18,17 +18,17 @@ namespace Mozilla.IoT.WebThing.Test.Notify
     {
         private readonly Fixture _fixture;
         private readonly NotifySubscribesOnActionAdded _notify;
-        private readonly IJsonConvert _convert;
+        private readonly IJsonSerializer _serializer;
         private readonly IJsonSerializerSettings _serializerSettings;
         private readonly IDescriptor<Action> _descriptor;
 
         public NotifySubscribesOnActionAddedTest()
         {
             _fixture = new Fixture();
-            _convert = Substitute.For<IJsonConvert>();
+            _serializer = Substitute.For<IJsonSerializer>();
             _serializerSettings = Substitute.For<IJsonSerializerSettings>();
             _descriptor = Substitute.For<IDescriptor<Action>>();
-            _notify = new NotifySubscribesOnActionAdded(_descriptor, _convert, _serializerSettings);
+            _notify = new NotifySubscribesOnActionAdded(_descriptor, _serializer, _serializerSettings);
         }
 
         [Theory]
@@ -48,7 +48,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             _notify.Notify(_fixture.Create<object>(), @event);
             
-            _convert
+            _serializer
                 .DidNotReceive()
                 .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
         }
@@ -59,7 +59,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             _notify.Notify(_fixture.Create<object>(),
                 new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new object()));
             
-            _convert
+            _serializer
                 .DidNotReceive()
                 .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
         }
@@ -78,7 +78,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             _notify.Notify(_fixture.Create<object>(),
                 new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, action));
 
-            _convert
+            _serializer
                 .DidNotReceive()
                 .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
         }
@@ -101,7 +101,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             action.Thing.Returns(thing);
 
             var buffer = _fixture.Create<byte[]>();
-            _convert
+            _serializer
                 .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings))
                 .Returns(buffer);
 
@@ -111,7 +111,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             _notify.Notify(_fixture.Create<object>(),
                 new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, action));
 
-            _convert
+            _serializer
                 .Received(1)
                 .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
 

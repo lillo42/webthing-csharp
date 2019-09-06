@@ -13,6 +13,7 @@ using Mozilla.IoT.WebThing.Descriptor;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
 using Action = Mozilla.IoT.WebThing.Action;
+using JsonSerializer = Mozilla.IoT.WebThing.Json.JsonSerializer;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -51,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IThingActivator, ThingActivator>();
             services.TryAddSingleton<IActionActivator, ActionActivator>();
 
-            services.TryAddSingleton<IJsonSerializerSettings>(service => new DefaultJsonSerializerSettings(
+            services.TryAddSingleton<IJsonSerializerSettings>(service => new JsonSerializerSettings(
                 new JsonSerializerOptions
                 {
                     WriteIndented = false,
@@ -59,8 +60,11 @@ namespace Microsoft.Extensions.DependencyInjection
                     DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
                 }));
 
-            services.TryAddSingleton<IJsonConvert, DefaultJsonConvert>();
-            services.TryAddSingleton<IJsonSchemaValidator, DefaultJsonSchemaValidator>();
+            services.TryAddSingleton<IJsonSerializer, JsonSerializer>();
+            services.TryAddSingleton<IJsonSchemaValidator, JsonSchemaValidator>();
+            services.TryAddScoped<IHttpRouteValue, HttpRouteValue>();
+            services.TryAddScoped<IHttpBodyWriter, HttpPipeWriter>();
+            services.TryAddScoped<IHttpBodyReader, HttpPipeReader>();
             services.TryAddSingleton<IWsUrlBuilder, WsUrlBuilder>();
 
             services.TryAddSingleton<IDescriptor<Action>, ActionDescriptor>();

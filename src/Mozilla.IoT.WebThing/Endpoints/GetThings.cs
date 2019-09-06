@@ -38,7 +38,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 array.AddLast(description);
             }
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.OK, array);
+            var writer = services.GetRequiredService<IHttpBodyWriter>();
+            await writer.WriteAsync(array, HttpStatusCode.OK, httpContext.RequestAborted);
         }
     }
 }

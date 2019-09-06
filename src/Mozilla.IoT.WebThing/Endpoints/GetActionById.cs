@@ -18,9 +18,10 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var logger = services.GetRequiredService<ILogger<GetActionById>>();
             logger.LogInformation("Get Action by Id is calling");
 
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
-            var name = httpContext.GetValueFromRoute<string>("name");
-            var id = httpContext.GetValueFromRoute<string>("id");
+            var route = services.GetRequiredService<IHttpRouteValue>();
+            var thingId = route.GetValue<string>("thing");
+            var name = route.GetValue<string>("name");
+            var id = route.GetValue<string>("id");
 
             var thing = services.GetService<IThingActivator>().CreateInstance(services, thingId);
 
@@ -34,12 +35,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 var action = thing.Actions[name].FirstOrDefault(x => x.Id == id);
                 if (action != null)
                 {
-                    var description = httpContext.RequestServices.GetService<IDescriptor<Action>>();
-                    await httpContext.WriteBodyAsync(HttpStatusCode.OK,
-                        new Dictionary<string, object>
+                    var description = httpContext.RequestServices.GetRequiredService<IDescriptor<Action>>();
+                    var writer = services.GetRequiredService<IHttpBodyWriter>();
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+                    
+                    await writer.WriteAsync(new Dictionary<string, object>
                         {
                             [name] = description.CreateDescription(action)
-                        });
+                        }, httpContext.RequestAborted);
                     return;
                 }
             }

@@ -2,9 +2,9 @@ using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Json
 {
-    public class DefaultJsonSerializerSettings : IJsonSerializerSettings
+    public class JsonSerializerSettings : IJsonSerializerSettings
     {
-        public DefaultJsonSerializerSettings(JsonSerializerOptions options)
+        public JsonSerializerSettings(JsonSerializerOptions options)
         {
             Options = options;
         }

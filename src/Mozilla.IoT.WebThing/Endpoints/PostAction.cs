@@ -31,7 +31,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            var json = await httpContext.ReadBodyAsync<IDictionary<string, object>>();
+            var reader = services.GetRequiredService<IHttpBodyReader>();
+            var json = await reader.ReadAsync<IDictionary<string, object>>();
 
             if (json == null)
             {
@@ -47,7 +48,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            var response = new Dictionary<string, object>();
+            var result = new Dictionary<string, object>();
             var name = httpContext.GetValueFromRoute<string>("name");
             if (thing.ActionsTypeInfo.ContainsKey(name) && json.TryGetValue(name, out var token))
             {
@@ -61,13 +62,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 {
                     thing.Actions.Add(action);
                     var descriptor = services.GetService<IDescriptor<Action>>();
-                    response.Add(name, descriptor.CreateDescription(action));
+                    result.Add(name, descriptor.CreateDescription(action));
                     var block = services.GetService<ITargetBlock<Action>>();
                     await block.SendAsync(action);
                 }
             }
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.Created, response);
+            var writer = services.GetRequiredService<IHttpBodyWriter>();
+            await writer.WriteAsync(result, HttpStatusCode.OK, httpContext.RequestAborted);
         }
 
         private static object GetInput(object token)

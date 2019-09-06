@@ -29,8 +29,9 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-
-            var json = await httpContext.ReadBodyAsync<IDictionary<string, object>>();
+            
+            var reader = services.GetRequiredService<IHttpBodyReader>();
+            var json = await reader.ReadAsync<IDictionary<string, object>>();
             if (json == null)
             {
                 logger.LogInformation($"Put Property: Body not found [[thing: {thingId}][property: {propertyName}]]");
@@ -54,12 +55,13 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
             property.Value = json[propertyName];
+            
 
-            await httpContext.WriteBodyAsync(HttpStatusCode.Created, 
-                new Dictionary<string, object>
-                {
-                    [propertyName] = property.Value
-                });
+            var writer = services.GetRequiredService<IHttpBodyWriter>();
+            await writer.WriteAsync(new Dictionary<string, object>
+            {
+                [propertyName] = property.Value
+            }, HttpStatusCode.OK, httpContext.RequestAborted);
         }
     }
 }

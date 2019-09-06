@@ -62,7 +62,7 @@ namespace Mozilla.IoT.WebThing
         public virtual ConcurrentDictionary<Guid, WebSocket> Subscribers { get; } =
             new ConcurrentDictionary<Guid, WebSocket>();
 
-        internal virtual ObservableActionCollection Actions { get; } = new ObservableActionCollection();
+         internal virtual ObservableActionCollection Actions { get; } = new ObservableActionCollection();
 
         private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypeInfo =
             new Dictionary<string, (Type type, IDictionary<string, object> metadata)>();

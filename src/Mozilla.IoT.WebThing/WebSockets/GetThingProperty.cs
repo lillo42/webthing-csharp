@@ -16,13 +16,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
         private static readonly ArraySegment<byte> s_error = new ArraySegment<byte>(
             Encoding.UTF8.GetBytes(
                 @"{""messageType"": ""notFound"", ""data"": {""status"": ""404 Not Found"",""message"": ""Invalid property""}}"));
-        private readonly IJsonConvert _jsonConvert;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IJsonSerializerSettings _jsonSettings;
 
-        public GetThingProperty(IJsonSerializerSettings jsonSettings, IJsonConvert jsonConvert)
+        public GetThingProperty(IJsonSerializerSettings jsonSettings, IJsonSerializer jsonSerializer)
         {
             _jsonSettings = jsonSettings;
-            _jsonConvert = jsonConvert;
+            _jsonSerializer = jsonSerializer;
         }
         
         public string Action => "propertyStatus";
@@ -50,7 +50,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 };
 
                 await webSocket.SendAsync(
-                    new ArraySegment<byte>(_jsonConvert.Serialize(result)),
+                    new ArraySegment<byte>(_jsonSerializer.Serialize(result, _jsonSettings)),
                     WebSocketMessageType.Text, true, cancellation);
             }
         }

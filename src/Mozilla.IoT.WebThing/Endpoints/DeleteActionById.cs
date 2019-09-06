@@ -10,28 +10,29 @@ namespace Mozilla.IoT.WebThing.Endpoints
 {
     internal sealed class DeleteActionById
     {
-        internal static  Task Invoke(HttpContext httpContext)
+        internal static Task Invoke(HttpContext httpContext)
         {
             var services = httpContext.RequestServices;
             var logger = services.GetRequiredService<ILogger<DeleteActionById>>();
+            var route = services.GetRequiredService<IHttpRouteValue>();
             logger.LogInformation("Delete is calling action");
-            
-            string thingId =httpContext.GetValueFromRoute<string>("thing"); 
-            string name = httpContext.GetValueFromRoute<string>("name");
-            string id = httpContext.GetValueFromRoute<string>("id");
-            
+
+            string thingId = route.GetValue<string>("thing");
+            string name = route.GetValue<string>("name");
+            string id = route.GetValue<string>("id");
             
             logger.LogInformation("Delete action: [" +
                                   $"[thing: {thingId}]" +
                                   $"[actionId: {id}]" +
                                   $"[actionName: {name}]]");
 
-            var thing = services.GetService<IThingActivator>().CreateInstance(services, thingId);
+            var thing = services.GetRequiredService<IThingActivator>()
+                .CreateInstance(services, thingId);
 
             if (thing == null)
             {
                 logger.LogInformation($"Thing not found. [thing: {thingId}]");
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
 
