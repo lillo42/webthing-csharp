@@ -16,7 +16,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var logger = services.GetRequiredService<ILogger<GetProperties>>();
             
             logger.LogInformation("Get Properties is calling");
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
+            var route = services.GetRequiredService<IHttpRouteValue>();
+            var thingId = route.GetValue<string>("thing");
 
             logger.LogInformation($"Get Properties: [[thing: {thingId}]]");
             var thing = services.GetService<IThingActivator>()
@@ -33,7 +34,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 property => property.Value);
 
             var writer = services.GetRequiredService<IHttpBodyWriter>();
-            await writer.WriteAsync(result, HttpStatusCode.OK, httpContext.RequestAborted);
+            await writer.WriteAsync(result, httpContext.RequestAborted);
+            httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
         }
     }
 }

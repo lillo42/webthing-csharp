@@ -70,9 +70,6 @@ namespace Mozilla.IoT.WebThing.Test.Endpoints
 
             _routeValue.GetValue<string>("thing")
                 .Returns(thing);
-            
-            _routeValue.GetValue<string>("name")
-                .Returns(eventName);
 
             await Invoke(_httpContext);
             code.Should().Be((int)HttpStatusCode.NotFound);
@@ -83,7 +80,7 @@ namespace Mozilla.IoT.WebThing.Test.Endpoints
         }
         
         [Fact]
-        public async Task Invoke_Should_Return200_When_ActionContainsAction()
+        public async Task Invoke_Should_Return200_When_HaveEvent()
         {
             int code = default;
             _response.StatusCode = Arg.Do<int>(args => code = args);
