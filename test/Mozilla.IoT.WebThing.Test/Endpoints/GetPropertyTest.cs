@@ -8,7 +8,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Activator;
-using Mozilla.IoT.WebThing.Descriptor;
 using Mozilla.IoT.WebThing.Endpoints;
 using NSubstitute;
 using Xunit;
