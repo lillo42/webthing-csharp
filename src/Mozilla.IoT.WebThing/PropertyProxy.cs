@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using Mozilla.IoT.WebThing.Collections;
 using Mozilla.IoT.WebThing.DebugView;
 using Mozilla.IoT.WebThing.Json;
 
@@ -11,6 +10,8 @@ namespace Mozilla.IoT.WebThing
     internal sealed class PropertyProxy : Property
     {
         internal IJsonSchemaValidator SchemaValidator { get; set; }
+
+        internal IJsonValue JsonValue { get; set; }
 
         internal Property Property {get; }
 
@@ -47,7 +48,7 @@ namespace Mozilla.IoT.WebThing
             {
                 if (SchemaValidator.IsValid(value, Property.Metadata))
                 {
-                    Property.Value = value;
+                    Property.Value =  JsonValue.GetValue(value, Type);
                 }
             }
         }

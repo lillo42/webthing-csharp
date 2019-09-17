@@ -63,6 +63,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IJsonSerializer, JsonSerializer>();
             services.TryAddSingleton<IJsonSchemaValidator, JsonSchemaValidator>();
+            services.TryAddSingleton<IJsonValue, JsonValue>();
+            
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddScoped<IHttpRouteValue, HttpRouteValue>();
             services.TryAddScoped<IHttpBodyWriter, HttpPipeWriter>();

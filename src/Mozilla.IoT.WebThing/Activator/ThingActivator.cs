@@ -96,6 +96,7 @@ namespace Mozilla.IoT.WebThing.Activator
             var jsonConvert = serviceProvider.GetService<IJsonSerializer>();
             var jsonSettings = serviceProvider.GetService<IJsonSerializerSettings>();
             var jsonSchemaValidator = serviceProvider.GetService<IJsonSchemaValidator>();
+            var jsonValue = serviceProvider.GetService<IJsonValue>();
 
             var eventNotify = new NotifySubscribesOnEventAdded(thing,
                 eventDescription,
@@ -122,6 +123,7 @@ namespace Mozilla.IoT.WebThing.Activator
             thing.Properties.Cast<PropertyProxy>().ForEach(property =>
             {
                 property.SchemaValidator = jsonSchemaValidator;
+                property.JsonValue = jsonValue;
                 property.ValuedChanged += propertyNotify.Notify;
             });
 
