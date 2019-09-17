@@ -42,12 +42,11 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
             var writer = services.GetRequiredService<IHttpBodyWriter>();
+            httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
             await writer.WriteAsync(new Dictionary<string, object>
             {
                 [propertyName] =  property.Value
             }, httpContext.RequestAborted);
-
-            httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
         }
     }
 }

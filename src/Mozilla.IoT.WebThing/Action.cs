@@ -135,4 +135,9 @@ namespace Mozilla.IoT.WebThing
             }
         }
     }
+
+//    public abstract class Action<TInput> : Action
+//    {
+//        public TInput Input { get; internal set; }
+//    }
 }

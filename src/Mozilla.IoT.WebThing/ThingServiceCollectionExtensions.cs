@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing;
@@ -62,6 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IJsonSerializer, JsonSerializer>();
             services.TryAddSingleton<IJsonSchemaValidator, JsonSchemaValidator>();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddScoped<IHttpRouteValue, HttpRouteValue>();
             services.TryAddScoped<IHttpBodyWriter, HttpPipeWriter>();
             services.TryAddScoped<IHttpBodyReader, HttpPipeReader>();

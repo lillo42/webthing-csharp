@@ -2,7 +2,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing
@@ -13,7 +12,7 @@ namespace Mozilla.IoT.WebThing
         private readonly IJsonSerializerSettings _settings;
         private readonly IHttpContextAccessor _httpContextAccessor;
         
-        public HttpPipeWriter(IJsonSerializer serializer, IJsonSerializerSettings settings, IHttpContextAccessor httpContextAccessor, IServiceCollection service)
+        public HttpPipeWriter(IJsonSerializer serializer, IJsonSerializerSettings settings, IHttpContextAccessor httpContextAccessor)
         {
             _serializer = serializer;
             _settings = settings;

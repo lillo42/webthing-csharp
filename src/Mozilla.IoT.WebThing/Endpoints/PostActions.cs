@@ -18,8 +18,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var services = httpContext.RequestServices;
             var logger = services.GetRequiredService<ILogger<PostActions>>();
 
-            
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
+            var route = services.GetRequiredService<IHttpRouteValue>();
+            var thingId = route.GetValue<string>("thing");
             logger.LogInformation($"Post Actions is calling: [[thing: {thingId}]");
             
             var thing = services.GetService<IThingActivator>()
@@ -71,7 +71,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
             
             var writer = services.GetRequiredService<IHttpBodyWriter>();
-            await writer.WriteAsync(result, HttpStatusCode.OK, httpContext.RequestAborted);
+            httpContext.Response.StatusCode = (int)HttpStatusCode.Created;
+            await writer.WriteAsync(result, httpContext.RequestAborted);
         }
 
         private static object GetInput(object token)

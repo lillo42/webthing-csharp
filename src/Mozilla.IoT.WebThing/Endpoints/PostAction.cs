@@ -18,7 +18,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var services = httpContext.RequestServices;
             var logger = services.GetRequiredService<ILogger<PostAction>>();
 
-            var thingId = httpContext.GetValueFromRoute<string>("thing");
+            var route = services.GetRequiredService<IHttpRouteValue>();
+            var thingId = route.GetValue<string>("thing");
             logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
 
             var thing = services.GetService<IThingActivator>()
@@ -49,7 +50,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
             var result = new Dictionary<string, object>();
-            var name = httpContext.GetValueFromRoute<string>("name");
+            var name = route.GetValue<string>("name");
             if (thing.ActionsTypeInfo.ContainsKey(name) && json.TryGetValue(name, out var token))
             {
                 var input = GetInput(token);
@@ -69,7 +70,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
             var writer = services.GetRequiredService<IHttpBodyWriter>();
-            await writer.WriteAsync(result, HttpStatusCode.OK, httpContext.RequestAborted);
+            httpContext.Response.StatusCode = (int)HttpStatusCode.Created;
+            await writer.WriteAsync(result, httpContext.RequestAborted);
         }
 
         private static object GetInput(object token)

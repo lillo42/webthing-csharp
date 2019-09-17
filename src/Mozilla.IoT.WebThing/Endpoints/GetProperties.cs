@@ -34,8 +34,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 property => property.Value);
 
             var writer = services.GetRequiredService<IHttpBodyWriter>();
-            await writer.WriteAsync(result, httpContext.RequestAborted);
             httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
+            await writer.WriteAsync(result, httpContext.RequestAborted);
         }
     }
 }
