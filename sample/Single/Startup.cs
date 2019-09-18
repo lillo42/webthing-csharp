@@ -50,7 +50,7 @@ namespace Single
                 ["description"] = "Whether the lamp is turned on"
             };
 
-            var property = new Property<bool>(light, "on", true, onDescription);
+            var property = new Property<bool>(light, "on", false, onDescription);
             property.ValuedChanged += (sender, value) =>
             {
                 Console.WriteLine($"On-State is now {value}");

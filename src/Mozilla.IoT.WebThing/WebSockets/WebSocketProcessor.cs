@@ -44,12 +44,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     .ReceiveAsync(new ArraySegment<byte>(buffer), cancellation)
                     .ConfigureAwait(false);
 
-                var jsonSetting = _service.GetService<IJsonSerializerSettings>();
-                var jsonConvert = _service.GetService<IJsonSerializer>();
+                var jsonSetting = _service.GetRequiredService<IJsonSerializerSettings>();
+                var jsonConvert = _service.GetRequiredService<IJsonSerializer>();
+                var jsonValue = _service.GetRequiredService<IJsonValue>();
 
                 while (!result.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
-                    var json = jsonConvert.Deserialize<IDictionary<string, object>>(buffer, jsonSetting);
+                    var json = jsonConvert.Deserialize<IDictionary<string, object>>(buffer.AsSpan(0, result.Count), jsonSetting);
 
                     if (!json.ContainsKey("messageType") || !json.ContainsKey("data"))
                     {
@@ -67,13 +68,20 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                     var action = executors?.FirstOrDefault(x => x.Action == type.ToString());
 
-                    if (action != null)
+                    try
                     {
-                        await action.ExecuteAsync(thing, webSocket, data as IDictionary<string, object>, cancellation);
+                        if (action != null)
+                        {
+                            await action.ExecuteAsync(thing, webSocket, jsonValue.GetValue(data, typeof(IDictionary<string, object>)) as IDictionary<string, object>, cancellation);
+                        }
+                        else
+                        {
+                            await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation);
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation);
+                        Console.WriteLine(e.ToString());
                     }
 
                     result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);

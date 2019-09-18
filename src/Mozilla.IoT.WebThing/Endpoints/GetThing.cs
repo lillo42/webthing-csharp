@@ -30,21 +30,18 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             if (httpContext.WebSockets.IsWebSocketRequest)
             {
-                var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync()
-                    .ConfigureAwait(false);
+                var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync();
                 try
                 {
-                    var process = httpContext.RequestServices.GetService<WebSocketProcessor>();
+                    var process = httpContext.RequestServices.GetRequiredService<WebSocketProcessor>();
 
                     await process.ExecuteAsync(thing, webSocket, httpContext.RequestAborted);
 
-                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close sent",
-                        CancellationToken.None);
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close sent",CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
-                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(),
-                        CancellationToken.None);
+                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(),CancellationToken.None);
                 }
 
                 return;

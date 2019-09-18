@@ -25,11 +25,16 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
         public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
         {
+            if (data == null)
+            {
+                return;
+            }
+
             foreach ((string key, object token) in data)
             {
                 try
                 {
-                    Property property = thing.Properties.FirstOrDefault(x => x.Name == key);
+                    var property = thing.Properties.FirstOrDefault(x => x.Name == key);
                     if (property != null)
                     {
                         property.Value = token;

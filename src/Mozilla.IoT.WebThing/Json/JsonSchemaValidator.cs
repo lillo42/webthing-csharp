@@ -21,7 +21,6 @@ namespace Mozilla.IoT.WebThing.Json
                 return false;
             }
 
-
             if (validator.ContainsKey(TYPE) && Enum.TryParse<JsonType>(validator[TYPE].ToString(), true, out var type))
             {
                 var element = ((JsonElement)value);
@@ -124,19 +123,19 @@ namespace Mozilla.IoT.WebThing.Json
             switch (value)
             {
                 case int @int:
-                    return @int > (int)minimum;
+                    return @int > Convert.ToInt32(minimum);
                 case long @long:
-                    return @long > (long)minimum;
+                    return @long > Convert.ToInt64(minimum);
                 case double @double:
-                    return @double > (double)minimum;
+                    return @double > Convert.ToDouble(minimum);
                 case float @float:
-                    return @float > (float)minimum;
+                    return @float > Convert.ToSingle(minimum);
                 case decimal @decimal:
-                    return @decimal > (decimal)minimum;
+                    return @decimal > Convert.ToDecimal(minimum);
                 case uint @uint:
-                    return @uint > (uint)minimum;
+                    return @uint > Convert.ToUInt32(minimum);
                 case ulong @ulong:
-                    return @ulong > (ulong)minimum;
+                    return @ulong > Convert.ToUInt64(minimum);
                 default:
                     return false;
             }
@@ -152,19 +151,19 @@ namespace Mozilla.IoT.WebThing.Json
             switch (value)
             {
                 case int @int:
-                    return @int < (int)maximum;
+                    return @int < Convert.ToInt32(maximum);
                 case long @long:
-                    return @long < (long)maximum;
+                    return @long < Convert.ToInt64(maximum);
                 case double @double:
-                    return @double < (double)maximum;
+                    return @double < Convert.ToDouble(maximum);
                 case float @float:
-                    return @float < (float)maximum;
+                    return @float < Convert.ToSingle(maximum);
                 case decimal @decimal:
-                    return @decimal < (decimal)maximum;
+                    return @decimal < Convert.ToDecimal(maximum);
                 case uint @uint:
-                    return @uint < (uint)maximum;
+                    return @uint < Convert.ToUInt32(maximum);
                 case ulong @ulong:
-                    return @ulong < (ulong)maximum;
+                    return @ulong < Convert.ToUInt64(maximum);
                 default:
                     return false;
             }
@@ -180,19 +179,19 @@ namespace Mozilla.IoT.WebThing.Json
             switch (value)
             {
                 case int @int:
-                    return @int % (int)multipleOf == 0;
+                    return @int % Convert.ToInt32(multipleOf) == 0;
                 case long @long:
-                    return @long % (long)multipleOf == 0;
+                    return @long % Convert.ToInt64(multipleOf) == 0;
                 case double @double:
-                    return @double % (double)multipleOf == 0;
+                    return @double % Convert.ToDouble(multipleOf) == 0;
                 case float @float:
-                    return @float % (float)multipleOf == 0;
+                    return @float % Convert.ToSingle(multipleOf) == 0;
                 case decimal @decimal:
-                    return @decimal % (decimal)multipleOf == 0;
+                    return @decimal % Convert.ToDecimal(multipleOf) == 0;
                 case uint @uint:
-                    return @uint % (uint)multipleOf == 0;
+                    return @uint % Convert.ToUInt32(multipleOf) == 0;
                 case ulong @ulong:
-                    return @ulong % (ulong)multipleOf == 0;
+                    return @ulong % Convert.ToUInt64(multipleOf) == 0;
                 default:
                     return false;
             }
