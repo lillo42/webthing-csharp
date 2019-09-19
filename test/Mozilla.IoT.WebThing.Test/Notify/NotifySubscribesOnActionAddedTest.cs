@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             _serializer = Substitute.For<IJsonSerializer>();
             _serializerSettings = Substitute.For<IJsonSerializerSettings>();
             _descriptor = Substitute.For<IDescriptor<Action>>();
-            _notify = new NotifySubscribesOnActionAdded(_descriptor, _serializer, _serializerSettings);
+            _notify = new NotifySubscribesOnActionAdded(_descriptor, _serializer);
         }
 
         [Theory]
@@ -50,7 +50,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
         }
         
         [Fact]
@@ -80,7 +80,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
         }
         
         
@@ -102,7 +102,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             var buffer = _fixture.Create<byte[]>();
             _serializer
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings))
+                .Serialize(Arg.Any<IDictionary<string, object>>())
                 .Returns(buffer);
 
             webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, Arg.Any<CancellationToken>())
@@ -113,7 +113,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             _serializer
                 .Received(1)
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
 
             webSocket
                 .Received(1)

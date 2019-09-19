@@ -100,16 +100,14 @@ namespace Mozilla.IoT.WebThing.Activator
 
             var eventNotify = new NotifySubscribesOnEventAdded(thing,
                 eventDescription,
-                jsonConvert,
-                jsonSettings
+                jsonConvert
             );
 
             var actionNotify = new NotifySubscribesOnActionAdded(serviceProvider.GetService<IDescriptor<Action>>(),
-                jsonConvert,
-                jsonSettings
+                jsonConvert
             );
-
-            var propertyNotify = new NotifySubscribesOnPropertyChanged(jsonConvert, jsonSettings);
+            
+            var propertyNotify = new NotifySubscribesOnPropertyChanged(jsonConvert);
 
             if (thing.Events == null)
             {

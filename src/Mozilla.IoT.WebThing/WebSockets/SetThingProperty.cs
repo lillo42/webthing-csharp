@@ -13,22 +13,22 @@ namespace Mozilla.IoT.WebThing.WebSockets
     public class SetThingProperty : IWebSocketAction
     {
         private readonly IJsonSerializer _serializer;
-        private readonly IJsonSerializerSettings _settings;
 
-        public SetThingProperty(IJsonSerializer serializer, IJsonSerializerSettings settings)
+        public SetThingProperty(IJsonSerializer serializer)
         {
             _serializer = serializer;
-            _settings = settings;
         }
 
         public string Action => "setProperty";
 
-        public async ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
+        public ValueTask ExecuteAsync(Thing thing, WebSocket webSocket, IDictionary<string, object> data, CancellationToken cancellation)
         {
             if (data == null)
             {
-                return;
+                return new ValueTask();
             }
+            
+            var tasks = new LinkedList<Task>();
 
             foreach ((string key, object token) in data)
             {
@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 }
                 catch (Exception exception)
                 {
-                    await webSocket.SendAsync(new ArraySegment<byte>(_serializer.Serialize(new Dictionary<string, object>
+                    tasks.AddLast(webSocket.SendAsync(new ArraySegment<byte>(_serializer.Serialize(new Dictionary<string, object>
                     {
                         ["messageType"] = MessageType.Error.ToString().ToLower(), 
                         ["data"] =  new Dictionary<string, object>
@@ -50,9 +50,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
                             ["status"] = "400 Bad Request",
                             ["message"] = exception.Message
                         }
-                    }, _settings)), WebSocketMessageType.Text, true, cancellation);
+                    })), WebSocketMessageType.Text, true, cancellation));
                 }
             }
+
+            return tasks.Count == 0 ? new ValueTask() : new ValueTask(Task.WhenAll(tasks));
         }
     }
 }

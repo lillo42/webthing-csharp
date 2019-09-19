@@ -16,16 +16,12 @@ namespace Mozilla.IoT.WebThing.Notify
         private readonly Thing _thing;
         private readonly IDescriptor<Event> _descriptor;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IJsonSerializerSettings _jsonSettings;
 
-        public NotifySubscribesOnEventAdded(Thing thing, IDescriptor<Event> descriptor,
-            IJsonSerializer jsonSerializer,
-            IJsonSerializerSettings jsonSettings)
+        public NotifySubscribesOnEventAdded(Thing thing, IDescriptor<Event> descriptor, IJsonSerializer jsonSerializer)
         {
             _thing = thing;
             _descriptor = descriptor;
             _jsonSerializer = jsonSerializer;
-            _jsonSettings = jsonSettings;
         }
 
         public async void Notify(object sender, NotifyCollectionChangedEventArgs eventArgs)
@@ -36,10 +32,10 @@ namespace Mozilla.IoT.WebThing.Notify
                 @event.Thing = _thing;
                 @event.Metadata = _descriptor.CreateDescription(@event);
 
-                IEnumerable<WebSocket> webSockets = _thing.AvailableEvent.ContainsKey(@event.Name)
+                var webSockets = _thing.AvailableEvent.ContainsKey(@event.Name)
                     ? _thing.AvailableEvent[@event.Name].Subscribers
                     : null;
-                
+
                 if (webSockets != null && webSockets.Any())
                 {
                     var message = new Dictionary<string, object>
@@ -52,16 +48,16 @@ namespace Mozilla.IoT.WebThing.Notify
             }
         }
 
-        private async Task NotifySubscribersAsync(IEnumerable<WebSocket> sockets, IDictionary<string, object> message, CancellationToken cancellation)
+        private async Task NotifySubscribersAsync(ISet<WebSocket> sockets, IDictionary<string, object> message, CancellationToken cancellation)
         {
-            var json = _jsonSerializer.Serialize(message, _jsonSettings);
-
-            var buffer = new ArraySegment<byte>(json);
+            var buffer = new ArraySegment<byte>(_jsonSerializer.Serialize(message));
+            var tasks = new List<Task>(sockets.Count);
             foreach (var socket in sockets)
             {
-                await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation)
-                    .ConfigureAwait(false);
+                tasks.Add(socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation));
             }
+
+            await Task.WhenAll(tasks);
         }
     }
 }

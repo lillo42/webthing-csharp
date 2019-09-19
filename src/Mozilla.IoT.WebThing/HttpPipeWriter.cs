@@ -26,7 +26,7 @@ namespace Mozilla.IoT.WebThing
 
         public async ValueTask WriteAsync<T>(T value, CancellationToken cancellationToken = default)
         {
-            var buffer = _serializer.Serialize(value, _settings);
+            var buffer = _serializer.Serialize(value);
             
             var response = _httpContextAccessor.HttpContext.Response;
             response.ContentType = "application/json";

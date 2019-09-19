@@ -22,7 +22,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             _fixture = new Fixture();
             _serializer = Substitute.For<IJsonSerializer>();
             _serializerSettings = Substitute.For<IJsonSerializerSettings>();
-            _notify = new NotifySubscribesOnPropertyChanged(_serializer, _serializerSettings);
+            _notify = new NotifySubscribesOnPropertyChanged(_serializer);
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Any<IJsonSerializerSettings>());
+                .Serialize(Arg.Any<IDictionary<string, object>>());
         }
         
         
@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Any<IJsonSerializerSettings>());
+                .Serialize(Arg.Any<IDictionary<string, object>>());
         }
         
         
@@ -63,14 +63,14 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             thing.Subscribers.TryAdd(_fixture.Create<Guid>(), socket);
             
             var buffer = _fixture.Create<byte[]>();
-            _serializer.Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings))
+            _serializer.Serialize(Arg.Any<IDictionary<string, object>>())
                 .Returns(buffer);
             
             _notify.Notify(property, new ValueChangedEventArgs(_fixture.Create<object>()));
 
             _serializer
                 .Received(1)
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
             
             socket
                 .Received(1)

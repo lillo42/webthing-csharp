@@ -1,8 +1,5 @@
 using System;
-using System.IO.Pipelines;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Mozilla.IoT.WebThing.Json
 {
@@ -15,18 +12,11 @@ namespace Mozilla.IoT.WebThing.Json
             _settings = settings;
         }
 
-        public async ValueTask<T> DeserializeAsync<T>(PipeReader reader, IJsonSerializerSettings settings,
-            CancellationToken cancellation = default)
-        {
-            var result = await reader.ReadAsync(cancellation);
-            return System.Text.Json.JsonSerializer.Deserialize<T>(result.Buffer.FirstSpan, ToJsonSerializerOptions(_settings));
-        }
-
-        public T Deserialize<T>(ReadOnlySpan<byte> value, IJsonSerializerSettings settings)
+        public T Deserialize<T>(ReadOnlySpan<byte> value)
             => System.Text.Json.JsonSerializer.Deserialize<T>(value, ToJsonSerializerOptions(_settings));
         
-        public byte[] Serialize<T>(T value, IJsonSerializerSettings settings) 
-            => System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, ToJsonSerializerOptions(settings));
+        public byte[] Serialize<T>(T value) 
+            => System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value, ToJsonSerializerOptions(_settings));
         
         private static JsonSerializerOptions ToJsonSerializerOptions(IJsonSerializerSettings settings)
         {

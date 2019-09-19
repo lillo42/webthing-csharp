@@ -11,16 +11,11 @@ namespace Mozilla.IoT.WebThing.Notify
     internal sealed class NotifySubscribesOnPropertyChanged
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IJsonSerializerSettings _jsonSettings;
 
-        public NotifySubscribesOnPropertyChanged(
-            IJsonSerializer jsonSerializer,
-            IJsonSerializerSettings jsonSettings)
+        public NotifySubscribesOnPropertyChanged(IJsonSerializer jsonSerializer)
         {
-            _jsonSettings = jsonSettings;
             _jsonSerializer = jsonSerializer;
         }
-
 
         public async void Notify(object sender, ValueChangedEventArgs eventArgs)
         {
@@ -39,16 +34,16 @@ namespace Mozilla.IoT.WebThing.Notify
             }
         }
         
-        private async Task NotifySubscribersAsync(IEnumerable<WebSocket> subscribers, IDictionary<string, object> message, CancellationToken cancellation)
+        private async Task NotifySubscribersAsync(ICollection<WebSocket> subscribers, IDictionary<string, object> message, CancellationToken cancellation)
         {
-            var json = _jsonSerializer.Serialize(message, _jsonSettings);
-
-            var buffer = new ArraySegment<byte>(json);
+            var tasks = new List<Task>(subscribers.Count);
+            var buffer = new ArraySegment<byte>(_jsonSerializer.Serialize(message));
             foreach (var socket in subscribers)
             {
-                await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation)
-                    .ConfigureAwait(false);
+                tasks.Add(socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation));
             }
+
+            await Task.WhenAll(tasks);
         }
     }
 }

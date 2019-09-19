@@ -14,15 +14,11 @@ namespace Mozilla.IoT.WebThing.Notify
     {
         private readonly IDescriptor<Action> _descriptor;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IJsonSerializerSettings _jsonSettings;
 
-        public NotifySubscribesOnActionAdded(IDescriptor<Action> descriptor, 
-            IJsonSerializer jsonSerializer,
-            IJsonSerializerSettings jsonSettings)
+        public NotifySubscribesOnActionAdded(IDescriptor<Action> descriptor, IJsonSerializer jsonSerializer)
         {
             _descriptor = descriptor;
             _jsonSerializer = jsonSerializer;
-            _jsonSettings = jsonSettings;
         }
 
         public async void Notify(object sender, NotifyCollectionChangedEventArgs eventArgs)
@@ -44,16 +40,17 @@ namespace Mozilla.IoT.WebThing.Notify
             }
         }
 
-        private async Task NotifySubscribersAsync(IEnumerable<WebSocket> subscribers, IDictionary<string, object> message, CancellationToken cancellation)
+        private async Task NotifySubscribersAsync(ICollection<WebSocket> subscribers, IDictionary<string, object> message, CancellationToken cancellation)
         {
-            var json = _jsonSerializer.Serialize(message, _jsonSettings);
-
-            var buffer = new ArraySegment<byte>(json);
+            var buffer = new ArraySegment<byte>(_jsonSerializer.Serialize(message));
+            var tasks = new List<Task>(subscribers.Count);
+            
             foreach (var socket in subscribers)
             {
-                await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation)
-                    .ConfigureAwait(false);
+                tasks.Add(socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation));
             }
+
+            await Task.WhenAll(tasks);
         }
     }
 }

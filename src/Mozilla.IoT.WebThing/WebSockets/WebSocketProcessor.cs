@@ -50,7 +50,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                 while (!result.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
-                    var json = jsonConvert.Deserialize<IDictionary<string, object>>(buffer.AsSpan(0, result.Count), jsonSetting);
+                    var json = jsonConvert.Deserialize<IDictionary<string, object>>(buffer.AsSpan(0, result.Count));
 
                     if (!json.ContainsKey("messageType") || !json.ContainsKey("data"))
                     {

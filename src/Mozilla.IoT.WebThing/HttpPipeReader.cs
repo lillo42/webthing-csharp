@@ -25,7 +25,7 @@ namespace Mozilla.IoT.WebThing
         {
             var pipe = _httpContextAccessor.HttpContext.Request.BodyReader;
             var buffer = await pipe.ReadAsync(cancellationToken);
-            return _serializer.Deserialize<T>(buffer.Buffer.FirstSpan, _settings);
+            return _serializer.Deserialize<T>(buffer.Buffer.FirstSpan);
         }
     }
 }

@@ -18,7 +18,6 @@ namespace Mozilla.IoT.WebThing.Test.Notify
         private readonly Fixture _fixture;
         private readonly IDescriptor<Event> _descriptor;
         private readonly IJsonSerializer _serializer;
-        private readonly IJsonSerializerSettings _serializerSettings;
         private readonly NotifySubscribesOnEventAdded _notify;
 
         public NotifySubscribesOnEventAddedTest()
@@ -27,8 +26,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             _thing = _fixture.Create<Thing>();
             _descriptor = Substitute.For<IDescriptor<Event>>();
             _serializer = Substitute.For<IJsonSerializer>();
-            _serializerSettings = Substitute.For<IJsonSerializerSettings>();
-            _notify = new NotifySubscribesOnEventAdded(_thing, _descriptor, _serializer, _serializerSettings);
+            _notify = new NotifySubscribesOnEventAdded(_thing, _descriptor, _serializer);
         }
         
         [Theory]
@@ -50,7 +48,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
         }
         
         [Fact]
@@ -61,7 +59,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
         }
         
         [Fact]
@@ -77,7 +75,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
 
             _descriptor
                 .Received(1)
@@ -102,7 +100,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
 
             _serializer
                 .DidNotReceive()
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
 
             _descriptor
                 .Received(1)
@@ -126,7 +124,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
                 .Returns(new Dictionary<string, object>());
 
             var buffer = _fixture.Create<byte[]>();
-            _serializer.Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings))
+            _serializer.Serialize(Arg.Any<IDictionary<string, object>>())
                 .Returns(buffer);
             
             socket
@@ -142,7 +140,7 @@ namespace Mozilla.IoT.WebThing.Test.Notify
             
             _serializer
                 .Received(1)
-                .Serialize(Arg.Any<IDictionary<string, object>>(), Arg.Is(_serializerSettings));
+                .Serialize(Arg.Any<IDictionary<string, object>>());
 
             socket
                 .Received(1)

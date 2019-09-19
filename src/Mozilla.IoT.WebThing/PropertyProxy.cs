@@ -49,6 +49,7 @@ namespace Mozilla.IoT.WebThing
                 if (SchemaValidator.IsValid(value, Property.Metadata))
                 {
                     Property.Value =  JsonValue.GetValue(value, Type);
+                    OnValueChanged();
                 }
             }
         }

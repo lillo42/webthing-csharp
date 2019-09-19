@@ -8,11 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
+using FluentAssertions.Json;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Accepted.Test.Startups;
 using Newtonsoft.Json;
@@ -48,13 +48,13 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         #region Thing
         
         [Fact]
-        public async Task Get()
+        public async Task GetThing_Should_Ok_When_HaveThing()
         {
             var responseMessage = await _httpClient.GetAsync("/");
             responseMessage.IsSuccessStatusCode.Should().BeTrue();
             string json = await responseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
-            var expected = JObject.Parse(@"{
+            JObject.Parse(json).Should().BeEquivalentTo(JObject.Parse(@"{
                 ""name"": ""My Lamp"",
                 ""href"": ""/"",
                 ""@context"": ""https://iot.mozilla.org/schemas"",
@@ -108,9 +108,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
                     ""rel"": ""alternate"",
                     ""href"": ""ws://localhost/""
                 }]
-            }");
-
-            JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
+            }"));
         }
 
         #endregion
@@ -118,44 +116,41 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         #region Property
 
         [Fact]
-        public async Task GetProperties()
+        public async Task GetProperties_Should_Return200_When_PropertyExist()
         {
             var responseMessage = await _httpClient.GetAsync("/properties");
             responseMessage.IsSuccessStatusCode.Should().BeTrue();
             string json = await responseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
-            var expected = JObject.Parse(@"{
+            JObject.Parse(json).Should().BeEquivalentTo( JObject.Parse(@"{
                 ""on"": true,
                 ""level"": 0
-            }");
-
-            JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
+            }"));
         }
 
         [Theory]
         [InlineData("on", @"{ ""on"": true }")]
         [InlineData("level", @"{ ""level"": 0 }")]
-        public async Task GetProperty(string property, string expectedJson)
+        public async Task GetProperty_Should_ReturnValue_When_PropertyExist(string property, string expectedJson)
         {
             var responseMessage = await _httpClient.GetAsync($"/properties/{property}");
             responseMessage.IsSuccessStatusCode.Should().BeTrue();
             string json = await responseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
-            var expected = JObject.Parse(expectedJson);
-            JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
+            JObject.Parse(json).Should().BeEquivalentTo(JObject.Parse(expectedJson));
         }
 
         [Fact]
-        public async Task GetProperty_NotFound()
+        public async Task GetProperty_Should_ReturnNotFound_When_PropertyNotExist()
         {
             var responseMessage = await _httpClient.GetAsync($"/properties/{_fixture.Create<string>()}");
             responseMessage.IsSuccessStatusCode.Should().BeFalse();
-            Assert.Equal(HttpStatusCode.NotFound, responseMessage.StatusCode);
+            responseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Theory]
         [InlineData("on", @"{ ""on"": false }")]
-        public async Task PutProperty(string property, string expectedJson)
+        public async Task PutProperty_Should_Return_When_PropertyExist(string property, string expectedJson)
         {
             var content = new StringContent(expectedJson);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -164,12 +159,11 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             responseMessage.IsSuccessStatusCode.Should().BeTrue();
             string json = await responseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
-            var expected = JObject.Parse(expectedJson);
-            JToken.DeepEquals(JObject.Parse(json), expected).Should().BeTrue();
+            JObject.Parse(json).Should().BeEquivalentTo(JObject.Parse(expectedJson));
         }
 
         [Fact]
-        public async Task PutProperty_NotFound()
+        public async Task PutProperty_Should_ReturnNotFound_When_PropertyNotExist()
         {
             string property = _fixture.Create<string>();
             var content = new StringContent($@"{{ ""{property}"": {_fixture.Create<int>()} }}");
@@ -183,7 +177,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         [Theory]
         [InlineData("on", @"{ ""on"": true }")]
         [InlineData("level", @"{ ""level"": 30.0 }")]
-        public async Task SetProperty(string property, string expectedJson)
+        public async Task SetProperty_Should_ChangeProperty_When_PropertyExists(string property, string expectedJson)
         {
             var ws = await _webSocketClient.ConnectAsync(
                 new Uri($"ws://{_server.BaseAddress.Host}:{_server.BaseAddress.Port}"), CancellationToken.None);
@@ -193,10 +187,34 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             }}").ToString(Formatting.None));
             await ws.SendAsync(new ArraySegment<byte>(json), WebSocketMessageType.Text, true, CancellationToken.None);
             await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye bye", CancellationToken.None);
-            await GetProperty(property, expectedJson);
+            await GetProperty_Should_ReturnValue_When_PropertyExist(property, expectedJson);
         }
 
         #endregion
+
+        [Theory]
+        [InlineData(@"{ ""on"": true }")]
+        [InlineData(@"{ ""level"": 30.0 }")]
+        public async Task PropertyStatus_Should_Notify_When_PropertyChange(string expectedJson)
+        {
+            var ws = await _webSocketClient.ConnectAsync(
+                new Uri($"ws://{_server.BaseAddress.Host}:{_server.BaseAddress.Port}"), CancellationToken.None);
+            var json = Encoding.UTF8.GetBytes(JObject.Parse($@"{{
+                ""messageType"": ""setProperty"",
+                ""data"": {expectedJson} 
+            }}").ToString(Formatting.None));
+            await ws.SendAsync(new ArraySegment<byte>(json), WebSocketMessageType.Text, true, CancellationToken.None);
+
+            var buffer = new ArraySegment<byte>(new byte[4096]);
+            await ws.ReceiveAsync(buffer, CancellationToken.None);
+
+            var actual = JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, buffer.Count)));
+
+            actual.Should().BeEquivalentTo(JToken.Parse($@"{{
+                ""messageType"": ""propertyStatus"",
+                ""data"": {expectedJson}
+            }}"));
+        }
 
         #region Action
 
