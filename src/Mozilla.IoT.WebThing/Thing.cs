@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using System.Text;
 using Mozilla.IoT.WebThing.Collections;
 using static Mozilla.IoT.WebThing.Const;
 
@@ -85,7 +86,13 @@ namespace Mozilla.IoT.WebThing
         public virtual void AddEvent<T>(IDictionary<string, object> metadata = null)
             where T : Event
         {
-            string name = typeof(T).Name.Remove(typeof(T).Name.Length - 5);
+            string name = typeof(T).Name;
+
+            name = new StringBuilder()
+                .Append(char.ToLower(name[0]))
+                .Append(name.EndsWith("Event") ? name.AsSpan(1, name.Length - 6) : name.AsSpan(1))
+                .ToString();
+            
             AvailableEvent.TryAdd(name, new AvailableEvent(name, metadata));
         }
 

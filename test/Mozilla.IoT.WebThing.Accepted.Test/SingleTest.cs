@@ -189,9 +189,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye bye", CancellationToken.None);
             await GetProperty_Should_ReturnValue_When_PropertyExist(property, expectedJson);
         }
-
-        #endregion
-
+        
         [Theory]
         [InlineData(@"{ ""on"": true }")]
         [InlineData(@"{ ""level"": 30.0 }")]
@@ -215,6 +213,8 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
                 ""data"": {expectedJson}
             }}"));
         }
+
+        #endregion
 
         #region Action
 
@@ -404,7 +404,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         #region Event
 
         [Fact]
-        public async Task GetEmptyEvents()
+        public async Task GetEmptyEvents_Should_BeEmpty_When_NoEventOccur()
         {
             var responseMessage = await _httpClient.GetAsync("/events");
             responseMessage.IsSuccessStatusCode.Should().BeTrue();
@@ -414,26 +414,45 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         }
         
         [Fact]
-        public async Task GetEvents()
+        public async Task GetEvents_Should_ReturnOne_When_AnyEventOccur()
         {
             await _httpClient.PostAsync($"/actions", new StringContent(@"{
                 ""fake"": {}
             }", Encoding.UTF8));
 
-            await Task.Delay(3_000)
-                .ConfigureAwait(false);
+            await Task.Delay(100);
             
             var responseMessage = await _httpClient.GetAsync("/events");
             responseMessage.IsSuccessStatusCode.Should().BeTrue();
             string json = await responseMessage.Content.ReadAsStringAsync();
             json.Should().NotBeNullOrEmpty();
-//            json.Should().NotBe("[]");
-//            
-//            JArray array = JArray.Parse(json);
-//            array.Should().NotBeNullOrEmpty();
-//            array.Should().HaveCount(1);
-
+            JArray.Parse(json).Count.Should().BeGreaterThan(0);
         }
+        
+        
+        [Fact]
+        public async Task AddEventSubscription_Should_BeNotify_When_AnyEvent_AnyEventOCcur()
+        {
+            var ws = await _webSocketClient.ConnectAsync(
+                new Uri($"ws://{_server.BaseAddress.Host}:{_server.BaseAddress.Port}"), CancellationToken.None);
+            var json = Encoding.UTF8.GetBytes(JObject.Parse(@"{
+                ""messageType"": ""addEventSubscription"",
+                ""data"": {
+                    ""fake"": {}
+                } 
+            }").ToString(Formatting.None));
+            await ws.SendAsync(new ArraySegment<byte>(json), WebSocketMessageType.Text, true, CancellationToken.None);
+
+            await _httpClient.PostAsync($"/actions", new StringContent(@"{
+                ""fake"": {}
+            }", Encoding.UTF8));
+            
+            await Task.Delay(100);
+
+            var buffer = new ArraySegment<byte>(new byte[4096]);
+            var result =  await ws.ReceiveAsync(buffer, CancellationToken.None);
+            JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count)));
+        }   
 
         #endregion
     }

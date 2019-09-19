@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -76,13 +77,14 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
                 }));
             
             AddAction<FakeAction>("fake");
+            AddEvent<FakeEvent>();
         }
     }
 
     public class FakeEvent : Event
     {
-        public FakeEvent(Thing thing, string name, object data) 
-            : base(thing, name, data)
+        public FakeEvent(Thing thing, object data) 
+            : base(thing, "fake", data)
         {
         }
     }
@@ -90,6 +92,9 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
     public class FakeAction : Action
     {
         protected override ValueTask ExecuteAsync(CancellationToken cancellation)
-            => new ValueTask(Task.Delay(3_000, cancellation));
+        {
+            Thing.Events.Add(new FakeEvent(Thing, null));
+            return new ValueTask(Task.Delay(3_000, cancellation));
+        }
     }
 }
