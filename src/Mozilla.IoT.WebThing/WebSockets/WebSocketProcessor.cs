@@ -43,8 +43,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 var result = await webSocket
                     .ReceiveAsync(new ArraySegment<byte>(buffer), cancellation)
                     .ConfigureAwait(false);
-
-                var jsonSetting = _service.GetRequiredService<IJsonSerializerSettings>();
+                
                 var jsonConvert = _service.GetRequiredService<IJsonSerializer>();
                 var jsonValue = _service.GetRequiredService<IJsonValue>();
 
@@ -54,11 +53,9 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                     if (!json.ContainsKey("messageType") || !json.ContainsKey("data"))
                     {
-                        await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
-                            .ConfigureAwait(false);
+                        await webSocket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation);
 
-                        result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None)
-                            .ConfigureAwait(false);
+                        result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
                         continue;
                     }

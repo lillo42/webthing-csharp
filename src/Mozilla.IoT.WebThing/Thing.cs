@@ -63,7 +63,7 @@ namespace Mozilla.IoT.WebThing
         public virtual ConcurrentDictionary<Guid, WebSocket> Subscribers { get; } =
             new ConcurrentDictionary<Guid, WebSocket>();
 
-         internal virtual ObservableActionCollection Actions { get; } = new ObservableActionCollection();
+        internal virtual ObservableActionCollection Actions { get; } = new ObservableActionCollection();
 
         private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypeInfo =
             new Dictionary<string, (Type type, IDictionary<string, object> metadata)>();
@@ -74,10 +74,19 @@ namespace Mozilla.IoT.WebThing
         }
 
         #region Actions
-        
+
         public virtual void AddAction<T>(IDictionary<string, object> metadata = null)
-            where T : Action 
-            => AddAction<T>(typeof(T).Name.Replace("Action", ""), metadata);
+            where T : Action
+        {
+            string name = typeof(T).Name;
+
+            name = new StringBuilder()
+                .Append(char.ToLower(name[0]))
+                .Append(name.EndsWith("Action") ? name.AsSpan(1, name.Length - 7) : name.AsSpan(1))
+                .ToString();
+            
+            AddAction<T>(name, metadata);
+        }
 
         public virtual void AddAction<T>(string name, IDictionary<string, object> metadata = null)
             where T : Action 

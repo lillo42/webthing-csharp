@@ -40,7 +40,11 @@ namespace Mozilla.IoT.WebThing.Notify
                 {
                     var message = new Dictionary<string, object>
                     {
-                        [MESSAGE_TYPE] = MessageType.Event.ToString().ToLower(), [DATA] = @event.Metadata
+                        [MESSAGE_TYPE] = MessageType.Event.ToString().ToLower(), 
+                        [DATA] = new Dictionary<string, object>
+                        {
+                            [@event.Name] = @event.Metadata 
+                        }
                     };
 
                     await NotifySubscribersAsync(webSockets, message, CancellationToken.None);

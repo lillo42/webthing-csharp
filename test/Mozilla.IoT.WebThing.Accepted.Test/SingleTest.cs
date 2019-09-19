@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -428,8 +429,8 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             json.Should().NotBeNullOrEmpty();
             JArray.Parse(json).Count.Should().BeGreaterThan(0);
         }
-        
-        
+
+
         [Fact]
         public async Task AddEventSubscription_Should_BeNotify_When_AnyEvent_AnyEventOCcur()
         {
@@ -446,12 +447,29 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             await _httpClient.PostAsync($"/actions", new StringContent(@"{
                 ""fake"": {}
             }", Encoding.UTF8));
-            
+
             await Task.Delay(100);
 
             var buffer = new ArraySegment<byte>(new byte[4096]);
-            var result =  await ws.ReceiveAsync(buffer, CancellationToken.None);
-            JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count)));
+            var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+            string jsonResult = Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count));
+            jsonResult.Should().NotBeNullOrEmpty();
+            var token = JToken.Parse(jsonResult);
+
+            token["messageType"].Should().NotBeNull();
+
+            if (token["messageType"].Value<string>() != "event")
+            {
+                buffer = new ArraySegment<byte>(new byte[4096]);
+                result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+                jsonResult = Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count));
+                jsonResult.Should().NotBeNullOrEmpty();
+                token = JToken.Parse(jsonResult);
+            }
+
+            token["messageType"].Value<string>().Should().Be("event");
+            token["data"].Should().NotBeNull();
+            token["data"]["fake"].Should().NotBeNull();
         }   
 
         #endregion
