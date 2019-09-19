@@ -27,9 +27,12 @@ Imagine you have a dimmable light that you want to expose via the web of things 
 First we create a new Thing:
 
 ```csharp
-var light = new Thing("My Lamp",
-                        new JArray("OnOffSwitch", "Light"),
-                        "A web connected lamp");
+var light = new Thing
+{
+    Name = "My Lamp",
+    Type = new [] { "OnOffSwitch", "Light" },
+    Description = "A web connected lamp"
+};
 ```
 
 Now we can add the required properties.
@@ -37,12 +40,12 @@ Now we can add the required properties.
 The **`on`** property reports and sets the on/off state of the light. For this, we need to have a `Property` object which holds the actual state and also a method to turn the light on/off. For our purposes, we just want to log the new state if the light is switched on/off.
 
 ```csharp
-var onDescription = new JObject
+var onDescription = new Dictionary<string, object>
 {
-    {"@type", "OnOffProperty"},
-    {"title", "On/Off"},
-    {"type", "boolean"},
-    {"description", "Whether the lamp is turned on"}
+    ["@type"] = "OnOffProperty",
+    ["title"] = "On/Off",
+    ["type"] = "boolean",
+    ["description"] = "Whether the lamp is turned on"
 };
 
 var property = new Property<bool>(light, "on", true, onDescription);
@@ -57,15 +60,15 @@ light.AddProperty(property);
 The **`brightness`** property reports the brightness level of the light and sets the level. Like before, instead of actually setting the level of a light, we just log the level.
 
 ```csharp
-var brightnessDescription = new JObject
+var brightnessDescription = new Dictionary<string, object>
 {
-    {"@type", "BrightnessProperty"},
-    {"title", "Brightness"},
-    {"type", "integer"},
-    {"description", "The level of light from 0-100"},
-    {"minimum", 0},
-    {"maximum", 100},
-    {"unit", "percent"}
+    ["@type"] = "BrightnessProperty",
+    ["title"] = "Brightness",
+    ["type"] = "integer",
+    ["description"] = "The level of light from 0-100",
+    ["minimum"] = 0,
+    ["maximum"] = 100,
+    ["unit"] = "percent"
 };
 
 var level = new Property<double>(light, "level", true, onDescription);
@@ -83,12 +86,14 @@ Now we can add our newly created thing and add Thing middleware to Asp Net Core:
 // This method gets called by the runtime. Use this method to add services to the container.
 public void ConfigureServices(IServiceCollection services)
 {
-   services.AddThing();
+   services.AddThing(option => option.IsSingleThing = true);
 }
 
-public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-   app.UseSingleThing(light);
+    app.UseEndpoints(config => {
+        config.MapThing(light);
+    });
 }
 ```
 
@@ -103,9 +108,12 @@ A [`MultiLevelSensor`](https://iot.mozilla.org/schemas/#MultiLevelSensor) (a sen
 First we create a new Thing:
 
 ```csharp
-var sensor = new Thing("My Humidity Sensor",
-                         new JArray("MultiLevelSensor"),
-                         "A web connected humidity sensor");
+var sensor = new Thing
+{
+    Name = "My Humidity Sensor",
+    Type = new [] { "MultiLevelSensor" },
+    Description = "A web connected humidity sensor"
+};
 ```
 
 Then we create and add the appropriate property:
@@ -113,25 +121,25 @@ Then we create and add the appropriate property:
     * Contrary to the light, the value cannot be set via an API call, as it wouldn't make much sense, to SET what a sensor is reading. Therefore, we are creating a *readOnly* property.
 
     ```csharp
-   var levelDescription = new JObject
+   var levelDescription = new Dictionary<string, object>
    {
-       {"@type", "LevelProperty"},
-      {"title", "Humidity"},
-      {"type", "number"},
-      {"description", "The current humidity in %"},
-      {"minimum", 0},
-      {"maximum", 100},
-      {"unit", "percent"},
-      {"readOnly", true}
+      ["@type"] = "LevelProperty",
+      ["title"] = "Humidity",
+      ["type"] = "number",
+      ["description"] = "The current humidity in %",
+      ["minimum"] = 0,
+      ["maximum"] = 100,
+      ["unit"] = "percent",
+      ["readOnly"] = true
    };
 
    sensor.AddProperty(new Property<double>(sensor, "level", 0, levelDescription));
     ```
 
-Now we have a sensor that constantly reports 0%. To make it usable, we need a thread or some kind of inAdd when the sensor has a new reading available. For this purpose we start a thread that queries the physical sensor every few seconds. For our purposes, it just calls a fake method.
+Now we have a sensor that constantly reports 0%. To make it usable, we need a thread or some kind of inAdd when the sensor has a new reading available. For this purpose we start a task that queries the physical sensor every few seconds. For our purposes, it just calls a fake method.
 
 ```csharp
-// Start a thread that polls the sensor reading every 3 seconds
+// Start a task that polls the sensor reading every 3 seconds
 
 Task.Factory.StartNew(async () => {
    await Task.Delay(3_000);

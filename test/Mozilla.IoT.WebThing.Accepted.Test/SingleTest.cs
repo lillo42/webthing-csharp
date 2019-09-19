@@ -94,7 +94,14 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
                         }]
                     }
                 },
-                ""events"": {},
+                ""events"": {
+                    ""fake"": {
+                        ""links"": [{
+                            ""rel"": ""event"",
+                            ""href"": ""/events/fake""
+                        }]
+                    }
+                },
                 ""description"": ""A web connected lamp"",
                 ""links"":[{
                     ""rel"": ""properties"",
