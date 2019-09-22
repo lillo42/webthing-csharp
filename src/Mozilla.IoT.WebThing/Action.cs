@@ -1,134 +1,154 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Mozilla.IoT.WebThing.Extensions;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
 
-[assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
 {
-    /// <summary>
-    /// An Action represents an individual action on a thing.
-    /// </summary>
-    public abstract class Action
+    public abstract class Action : IEquatable<Action>
     {
-        private const string HREF = "href";
-        private const string TIME_REQUESTED = "timeRequested";
-        private const string STATUS = "status";
-        private const string INPUT = "input";
-        private const string TIME_COMPLETED = "timeCompleted";
-
         /// <summary>
         /// Action's ID.
         /// </summary>
-        public abstract string Id { get; }
-
-        /// <summary>
-        /// The thing associated with this action.
-        /// </summary>
-        public Thing Thing { get; }
-
+        public virtual string Id { get; } = Guid.NewGuid().ToString();
+        
         /// <summary>
         /// Action's name.
         /// </summary>
-        public abstract string Name { get; }
-
-        /// <summary>
-        /// The prefix of any hrefs associated with this action.
-        /// </summary>
-        public string HrefPrefix { get; set; }
+        public virtual string Name { get; set; }
 
         /// <summary>
         /// Action's href.
         /// </summary>
-        public string Href { get; }
+        public virtual string Href { get; set; }
 
+        /// <summary>
+        /// The prefix of any hrefs associated with this action.
+        /// </summary>
+        public virtual string HrefPrefix { get; set; } = string.Empty;
+
+        private Status _status = Status.Created;
         /// <summary>
         /// Action's status.
         /// </summary>
-        public Status Status { get; private set; }
-
+        public virtual Status Status
+        {
+            get => _status;
+            protected set
+            {
+                _status = value;
+                var @event = ActionStatusChanged;
+                @event?.Invoke(this, new ActionStatusChangedEventArgs(this));
+            } 
+        }
+        
         /// <summary>
         /// The time the action was requested.
         /// </summary>
-        public DateTime TimeRequested { get; }
+        public virtual DateTime TimeRequested { get; } = DateTime.UtcNow;
 
         /// <summary>
         /// The time the action was completed.
         /// </summary>
-        public DateTime? TimeCompleted { get; private set; }
-
+        public virtual DateTime? TimeCompleted { get; private set; }
+        
         /// <summary>
         /// The inputs for this action.
         /// </summary>
-        public JObject Input { get; }
-
-
+        public virtual IDictionary<string, object> Input { get; internal set; }
         
-        internal Action()
-            : this(null, null)
-        {
-        }
-
-        protected Action(Thing thing, JObject input)
-        {
-            Thing = thing;
-            Input = input;
-            HrefPrefix = string.Empty;
-            Href = $"/actions/{Name}/{Id}";
-            TimeRequested = DateTime.UtcNow;
-            Status = Status.Created;
-        }
-
         /// <summary>
-        /// Get the action description.
+        /// The thing associated with this action.
         /// </summary>
-        /// <returns>Description of the action as a JSONObject.</returns>
-        public JObject AsActionDescription()
-        {
-            var inner = new JObject(
-                new JProperty(HREF, HrefPrefix.JoinUrl(Href)),
-                new JProperty(TIME_REQUESTED, TimeRequested),
-                new JProperty(STATUS, Status.ToString().ToLower()));
+        public virtual Thing Thing { get; set; }
 
-            if (Input != null && Input.HasValues) 
-            {
-                inner.Add(INPUT, Input);
-            }
+        protected abstract ValueTask ExecuteAsync(CancellationToken cancellation);
 
-            if (TimeCompleted.HasValue)
-            {
-                inner.Add(TIME_COMPLETED, TimeCompleted);
-            }
-
-            return inner;
-        }
-
-        /// <summary>
-        /// Start performing the action
-        /// </summary>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
-        public async Task StartAsync(CancellationToken cancellation)
+        public async ValueTask StartAsync(ILogger logger, CancellationToken cancellation)
         {
             Status = Status.Pending;
-            await PerformActionAsync(cancellation)
-                .ConfigureAwait(false);
 
-            Finish();
-        }
+            try
+            {
+                await ExecuteAsync(cancellation)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, $"Error to executor action: {ToString()}");
+            }
 
-        protected abstract Task PerformActionAsync(CancellationToken cancellation);
-
-
-        /// <summary>
-        /// Finish performing the action.
-        /// </summary>
-        public void Finish()
-        {
             Status = Status.Completed;
             TimeCompleted = DateTime.UtcNow;
         }
+
+        public override string ToString()
+            => $"[{nameof(Id)}: {Id}]" +
+            $"[{nameof(Name)}: {Name}]" +
+            $"[{nameof(Href)}: {Href}]" +
+            $"[{nameof(HrefPrefix)}: {HrefPrefix}]" +
+            $"[{nameof(TimeRequested)}: {TimeRequested}]]";
+
+        public bool Equals(Action other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return string.Equals(Id, other.Id) 
+                   && string.Equals(Name, other.Name) 
+                   && string.Equals(Href, other.Href)
+                   && string.Equals(HrefPrefix, other.HrefPrefix) 
+                   && Status == other.Status 
+                   && TimeRequested.Equals(other.TimeRequested)
+                   && TimeCompleted.Equals(other.TimeCompleted) 
+                   && Equals(Input, other.Input)
+                   && Equals(Thing, other.Thing);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((Action) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Id != null ? Id.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Href != null ? Href.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (HrefPrefix != null ? HrefPrefix.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (int) Status;
+                hashCode = (hashCode * 397) ^ TimeRequested.GetHashCode();
+                hashCode = (hashCode * 397) ^ TimeCompleted.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Input != null ? Input.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Thing != null ? Thing.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
+        public event EventHandler<ActionStatusChangedEventArgs> ActionStatusChanged;
     }
+
+//    public abstract class Action<TInput> : Action
+//    {
+//        public TInput Input { get; internal set; }
+//    }
 }

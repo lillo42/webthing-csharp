@@ -1,85 +1,112 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 
 namespace Mozilla.IoT.WebThing
 {
-    /// <summary>
-    /// An Event represents an individual event from a thing.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class Event<T> : Event
+    public abstract class Event<T> : Event
     {
-        public new T Data => (T)base.Data;
+        public new virtual T Data => (T) base.Data;
 
-        public Event(Thing thing, string name)
-            : base(thing, name)
-        {
-        }
-
-        public Event(Thing thing, string name, T data)
+        protected Event(Thing thing, string name, T data) 
             : base(thing, name, data)
         {
         }
+
+        protected Event(string name, T data) 
+            : base(name, data)
+        {
+        }
     }
-
-    /// <summary>
-    /// An Event represents an individual event from a thing.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class Event
+    
+    public abstract class Event : IEquatable<Event>
     {
-        private const string TIMESTAMP = "timestamp";
-        private const string DATA = "data";
-
-
         /// <summary>
         /// The thing associated with this event.
         /// </summary>
-        public Thing Thing { get; }
-
+        public virtual Thing Thing { get; set; }
+        
         /// <summary>
         /// The event's name. 
         /// </summary>
-        public string Name { get; }
+        public virtual string Name { get; }
 
         /// <summary>
         /// The event's data.
         /// </summary>
-        public object Data { get; }
+        public virtual object Data { get; }
 
         /// <summary>
         /// The event's timestamp.
         /// </summary>
-        public DateTime Time { get; }
+        public virtual DateTime Time { get; }
 
-        public Event(Thing thing, string name)
-            : this(thing, name, null)
+        internal IDictionary<string, object> Metadata { get; set; }
+
+        protected internal Event()
+            : this(null, null, null)
         {
+            
         }
-
-        public Event(Thing thing, string name, object data)
+        
+        protected Event(Thing thing, string name, object data)
         {
             Thing = thing;
+            Name = name;
+            Data = data;
+        }
+
+        protected Event(string name, object data)
+        {
             Name = name;
             Data = data;
             Time = DateTime.UtcNow;
         }
 
-        /// <summary>
-        /// Get the event description. 
-        /// </summary>
-        /// <returns>Description of the event as a JObject.</returns>
-        public JObject AsEventDescription()
+        public bool Equals(Event other)
         {
-            var inner = new JObject(new JProperty(TIMESTAMP, Time));
-
-            if (Data != null)
+            if (ReferenceEquals(null, other))
             {
-                inner.Add(new JProperty(DATA, Data));
+                return false;
             }
 
-            return new JObject(new JProperty(Name, inner));
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Equals(Thing, other.Thing) 
+                   && string.Equals(Name, other.Name) 
+                   && Equals(Data, other.Data) 
+                   && Time.Equals(other.Time) 
+                   && Equals(Metadata, other.Metadata);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((Event) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Thing?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Data?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ Time.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Metadata?.GetHashCode() ?? 0);
+                return hashCode;
+            }
         }
     }
 }

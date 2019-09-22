@@ -1,64 +1,93 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Mozilla.IoT.WebThing;
+using Mozilla.IoT.WebThing.Activator;
 using Mozilla.IoT.WebThing.Background;
+using Mozilla.IoT.WebThing.Builder;
+using Mozilla.IoT.WebThing.Collections;
+using Mozilla.IoT.WebThing.Descriptor;
+using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
-using Newtonsoft.Json;
+using Action = Mozilla.IoT.WebThing.Action;
+using JsonSerializer = Mozilla.IoT.WebThing.Json.JsonSerializer;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ThingServiceCollectionExtensions
     {
         public static void AddThing(this IServiceCollection services)
-            => AddThing(services, option => { });
+        {
+            AddThing(services, option => { });
+        }
 
-        public static void AddThing(this IServiceCollection services, JsonSerializerSettings settings)
-            => AddThing(services, null, options => { });
-
-        public static void AddThing(this IServiceCollection services, Action<WebSocketOptions> webSocketConfigure)
-            => AddThing(services, null, options => { });
-
-        public static void AddThing(this IServiceCollection services, JsonSerializerSettings settings,
-            Action<WebSocketOptions> webSocketConfigure)
+        public static void AddThing(this IServiceCollection services, Action<ThingBindingOption> thingOptions)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
-
-            if (webSocketConfigure == null)
+            
+            if (thingOptions == null)
             {
-                throw new ArgumentNullException(nameof(webSocketConfigure));
+                throw new ArgumentNullException(nameof(thingOptions));
             }
 
+            var option = new ThingBindingOption();
+
+            thingOptions(option);
+
+            services.AddSingleton(option);
+            
             services.AddRouting();
-            services.AddWebSockets(webSocketConfigure);
+            services.AddWebSockets(options => { });
             services.AddCors();
 
-            if (settings != null)
-            {
-                services.TryAddSingleton(settings);
-            }
-            else
-            {
-                services.TryAddSingleton(service => new JsonSerializerSettings {Formatting = Formatting.None});
-            }
+            services.AddSingleton<ServiceRouteBuilder>();
+            
+            services.TryAddSingleton(typeof(ThingMarkService));
+            services.TryAddSingleton<IThingActivator, ThingActivator>();
+            services.TryAddSingleton<IActionActivator, ActionActivator>();
+
+            services.TryAddSingleton<IJsonSerializerSettings>(service => new JsonSerializerSettings(
+                new JsonSerializerOptions
+                {
+                    WriteIndented = false,
+                    IgnoreNullValues = true,
+                    DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+                }));
+
+            services.TryAddSingleton<IJsonSerializer, JsonSerializer>();
+            services.TryAddSingleton<IJsonSchemaValidator, JsonSchemaValidator>();
+            services.TryAddSingleton<IJsonValue, JsonValue>();
+            
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddScoped<IHttpRouteValue, HttpRouteValue>();
+            services.TryAddScoped<IHttpBodyWriter, HttpPipeWriter>();
+            services.TryAddScoped<IHttpBodyReader, HttpPipeReader>();
+            services.TryAddSingleton<IWsUrlBuilder, WsUrlBuilder>();
+
+            services.TryAddSingleton<IDescriptor<Action>, ActionDescriptor>();
+            services.TryAddSingleton<IDescriptor<Event>, EventDescriptor>();
+            services.TryAddSingleton<IDescriptor<Property>, PropertyDescriptor>();
+            services.TryAddSingleton<IDescriptor<Thing>, ThingDescriptor>();
+            services.TryAddTransient<IEventCollection, EventCollection>();
 
             services.AddHostedService<ActionExecutorHostedService>();
 
-            var block = new BufferBlock<Mozilla.IoT.WebThing.Action>();
-            services.AddSingleton<ISourceBlock<Mozilla.IoT.WebThing.Action>>(block);
-            services.AddSingleton<ITargetBlock<Mozilla.IoT.WebThing.Action>>(block);
+            var block = new BufferBlock<Action>();
+            services.AddSingleton<ISourceBlock<Action>>(block);
+            services.AddSingleton<ITargetBlock<Action>>(block);
 
             services.AddTransient<WebSocketProcessor>();
 
-            services.TryAddEnumerable(ServiceDescriptor
-                .Transient<IWebSocketActionExecutor, AddEventSubscriptionActionExecutor>());
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketActionExecutor, RequestActionExecutor>());
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IWebSocketActionExecutor, SetPropertyActionExecutor>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, AddEventSubscription>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, RequestAction>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IWebSocketAction, SetThingProperty>());
         }
     }
 }

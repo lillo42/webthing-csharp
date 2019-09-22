@@ -1,116 +1,92 @@
 using System;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
-using Mozilla.IoT.WebThing.AspNetCore.Extensions.Middlewares;
-using Mozilla.IoT.WebThing.Middleware;
+using Mozilla.IoT.WebThing.Activator;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Routing
 {
     public static class ThingEndpointRouteBuilderExtensions
     {
-        public static IApplicationBuilder UseMultiThing(this IApplicationBuilder app, string name, Action<ThingBindingOption> thingOptions)
+        public static ThingEndpointConventionBuilder MapThing<T>(this IEndpointRouteBuilder builder)
+            where T : Thing
         {
-            if (app == null)
+
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentNullException(nameof(builder));
             }
+            
+            ValidateServicesRegistered(builder.ServiceProvider);
+            
+            var activator = builder.ServiceProvider.GetService<IThingActivator>();
+            activator.Register<T>(builder.ServiceProvider);
 
-            if (thingOptions == null)
-            {
-                throw new ArgumentNullException(nameof(thingOptions));
-            }
-            var option = new ThingBindingOption();
+            var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
+            var endpointConventionBuilders = serviceRouteBuilder.Build(builder);
 
-            thingOptions(option);
-
-            app.UseCors();
-            app.UseWebSockets();
-            return AddRoute(app, new MultipleThings(option.Things, name), "/{thingId}");
+            return new ThingEndpointConventionBuilder(endpointConventionBuilders);
         }
-
-        public static IApplicationBuilder UseSingleThing(this IApplicationBuilder app, Thing thing)
+        
+        public static ThingEndpointConventionBuilder MapThing<T>(this IEndpointRouteBuilder builder, string thing)
+            where T : Thing
         {
-            if (app == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (thing == null)
             {
                 throw new ArgumentNullException(nameof(thing));
             }
+            
+            ValidateServicesRegistered(builder.ServiceProvider);
+            
+            var activator = builder.ServiceProvider.GetService<IThingActivator>();
+            activator.Register<T>(builder.ServiceProvider, thing);
+            
+            
+            
+            var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
+            var endpointConventionBuilders = serviceRouteBuilder.Build(builder);
 
-            app.UseCors();
-            app.UseWebSockets();
-            return AddRoute(app, new SingleThing(thing), string.Empty);
+            return new ThingEndpointConventionBuilder(endpointConventionBuilders);
         }
-
-        private static IApplicationBuilder AddRoute(IApplicationBuilder app, IThingType thingType, string prefix)
+        
+        public static ThingEndpointConventionBuilder MapThing<T>(this IEndpointRouteBuilder builder, T thing)
+            where T : Thing
         {
-            var router = new RouteBuilder(app);
-
-            #region Property
-            router.MapMiddlewareGet($"{prefix}/properties",
-                builder => builder.UseMiddleware<GetPropertiesMiddleware>(thingType));
-
-            router.MapMiddlewareGet($"{prefix}/properties/{{propertyName}}", 
-                builder => builder.UseMiddleware<GetPropertyThingMiddleware>(thingType));
-            
-            router.MapMiddlewarePut($"{prefix}/properties/{{propertyName}}", 
-                builder => builder.UseMiddleware<PutSetPropertyMiddleware>(thingType));
-            #endregion
-
-            #region Actions
-
-            router.MapMiddlewareGet($"{prefix}/actions/{{actionName}}/{{actionId}}", 
-                builder => builder.UseMiddleware<GetActionByIdMiddleware>(thingType));
-            
-            router.MapMiddlewareDelete($"{prefix}/actions/{{actionName}}/{{actionId}}", 
-                builder => builder.UseMiddleware<DeleteActionByIdMiddleware>(thingType));
-            
-            
-            router.MapMiddlewareGet($"{prefix}/actions/{{actionName}}", 
-                builder => builder.UseMiddleware<GetActionMiddleware>(thingType));
-            
-            router.MapMiddlewarePost($"{prefix}/actions/{{actionName}}", 
-                builder => builder.UseMiddleware<PostActionMiddleware>(thingType));
-            
-            router.MapMiddlewareGet($"{prefix}/actions", 
-                builder => builder.UseMiddleware<GetActionsMiddleware>(thingType));
-            
-            router.MapMiddlewarePost($"{prefix}/actions", 
-                builder => builder.UseMiddleware<PostActionsMiddleware>(thingType));
-
-            #endregion
-
-            #region Events
-
-            router.MapMiddlewareGet($"{prefix}/events/{{eventName}}", 
-                builder => builder.UseMiddleware<GetEventMiddleware>(thingType));
-            
-            router.MapMiddlewareGet($"{prefix}/events", 
-                builder => builder.UseMiddleware<GetEventsMiddleware>(thingType));
-
-            #endregion
-            
-            #region Thing
-
-            if (thingType is SingleThing)
+            if (builder == null)
             {
-                router.MapMiddlewareGet("/", 
-                    builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
+                throw new ArgumentNullException(nameof(builder));
             }
-            else
-            {
-                router.MapMiddlewareGet(prefix, 
-                    builder => builder.UseMiddleware<GetThingMiddleware>(thingType));
-                
-                router.MapMiddlewareGet("/", 
-                    builder => builder.UseMiddleware<GetThingsMiddleware>(thingType));
-            }
-            #endregion
             
-            return app.UseRouter(router.Build());;
+            if (thing == null)
+            {
+                throw new ArgumentNullException(nameof(thing));
+            }
+            
+            ValidateServicesRegistered(builder.ServiceProvider);
+            
+            var activator = builder.ServiceProvider.GetService<IThingActivator>();
+            activator.Register<T>(builder.ServiceProvider, thing);
+            
+            
+            
+            var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
+            var endpointConventionBuilders = serviceRouteBuilder.Build(builder);
+
+            return new ThingEndpointConventionBuilder(endpointConventionBuilders);
+        }
+        
+        private static void ValidateServicesRegistered(IServiceProvider serviceProvider)
+        {
+            var marker = serviceProvider.GetService(typeof(ThingMarkService));
+            if (marker == null)
+            {
+                throw new InvalidOperationException("Unable to find the required services. Please add all the required services by calling " +
+                                                    "'IServiceCollection.AddThing' inside the call to 'ConfigureServices(...)' in the application startup code.");
+            }
         }
     }
 }

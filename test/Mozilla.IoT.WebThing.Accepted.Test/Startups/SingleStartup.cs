@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Hosting;
 
 namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
 {
@@ -21,81 +23,78 @@ namespace Mozilla.IoT.WebThing.Accepted.Test.Startups
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddThing();
+            services.AddThing(options => options.IsSingleThing = true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+            
+            app.UseRouting();
 
-            app.UseSingleThing(new LightThing());
+            app.UseEndpoints(config =>
+            {
+                config.MapThing(new LightThing());
+            });
         }
     }
 
     public sealed class LightThing : Thing
     {
+        public override string Name { get; set; } = "My Lamp";
+        public override object Type { get; set; } = new [] {"OnOffSwitch", "Light"};
+        public override string Description { get; set; } = "A web connected lamp";
+
         public LightThing()
-            : base("My Lamp", new JArray("OnOffSwitch", "Light"), "A web connected lamp")
         {
-            AddProperty(new Property<bool>(this,
+            Properties.Add(new Property<bool>(this,
                 "on",
                 true,
-                new JObject
+                new Dictionary<string, object>()
                 {
-                    {"@type", "OnOffProperty"},
-                    {"title", "On/Off"},
-                    {"type", "boolean"},
-                    {"description", "Whether the lamp is turned on"}
+                    ["@type"] = "OnOffProperty",
+                    ["title"] = "On/Off",
+                    ["type"] = "boolean",
+                    ["description"] = "Whether the lamp is turned on"
                 }));
 
-            AddProperty(new Property<double>(this,
+            Properties.Add(new Property<double>(this,
                 "level",
                 0,
-                new JObject
+                new Dictionary<string, object>()
                 {
-                    {"@type", "BrightnessProperty"},
-                    {"title", "Brightness"},
-                    {"type", "number"},
-                    {"description", "The level of light from 0-100"},
-                    {"minimum", 0},
-                    {"maximum", 100},
-                    {"unit", "percent"}
+                    ["@type"] = "BrightnessProperty",
+                    ["title"] = "Brightness",
+                    ["type"] = "number",
+                    ["description"] = "The level of light from 0-100",
+                    ["minimum"] = 0,
+                    ["maximum"] = 100,
+                    ["unit"] = "percent"
                 }));
             
-            AddAvailableAction<FakeAction>("fake");
+            AddAction<FakeAction>("fake");
+            AddEvent<FakeEvent>();
         }
     }
 
     public class FakeEvent : Event
     {
-        public FakeEvent(Thing thing, string name, object data) 
-            : base(thing, name, data)
+        public FakeEvent(Thing thing, object data) 
+            : base(thing, "fake", data)
         {
         }
     }
 
     public class FakeAction : Action
     {
-        public FakeAction(Thing thing, JObject input)
-            : base(thing, input)
+        protected override ValueTask ExecuteAsync(CancellationToken cancellation)
         {
-            
+            Thing.Events.Add(new FakeEvent(Thing, null));
+            return new ValueTask(Task.Delay(3_000, cancellation));
         }
-        
-        public override string Id { get; } = Guid.NewGuid().ToString();
-        public override string Name { get; } = "fake";
-
-        protected override async Task PerformActionAsync(CancellationToken cancellation) 
-            => await Task.Delay(3_000, cancellation);
     }
-
 }

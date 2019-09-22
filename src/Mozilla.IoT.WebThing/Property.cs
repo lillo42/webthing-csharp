@@ -1,184 +1,147 @@
 using System;
-using Mozilla.IoT.WebThing.Exceptions;
-using Mozilla.IoT.WebThing.Extensions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mozilla.IoT.WebThing
 {
-    /// <summary>
-    /// A Property represents an individual state value of a thing.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class Property<T> : Property
+    public class Property<T> : Property,  IEquatable<Property<T>>
     {
-        public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
-
-        public new T Value
-        {
-            get => (T)base.Value;
-            set => base.Value = value;
-        }
-
-        public Property(Thing thing, string name, T value)
-            : base(thing, name, value)
+        public Property()
         {
         }
 
-
-        public Property(Thing thing, string name, T value, JObject metadata)
+        public Property(Thing thing, string name, object value, IDictionary<string, object> metadata) 
             : base(thing, name, value, metadata)
         {
         }
 
+        public Property(string name, object value, IDictionary<string, object> metadata) 
+            : base(name, value, metadata)
+        {
+        }
+
+        public new virtual T Value
+        {
+            get
+            {
+                if (base.Value == null)
+                {
+                    return default;
+                }
+
+                return (T)base.Value;
+            }
+            set => base.Value = value;
+        }
+
+        internal override Type Type => typeof(T);
+
+        public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
+        
         protected override void OnValueChanged()
         {
-            ValuedChanged?.Invoke(this, new ValueChangedEventArgs<T>(Value));
+            var @event = ValuedChanged;
+            @event?.Invoke(this, new ValueChangedEventArgs<T>(Value, this));
+            base.OnValueChanged();
         }
+
+        public bool Equals(Property<T> other) 
+            => base.Equals(other);
     }
-
-    public class Property
+    
+    [DebuggerDisplay("Value = {Value}")]
+    public class Property : IEquatable<Property>
     {
-        private const string REL = "rel";
-        private const string PROPERTY = "property";
-        private const string HREF = "href";
-        private const string LINKS = "links";
-        private const string DEFAULT_PREFIX = "/";
-
-        /// <summary>
-        /// The href of this property
-        /// </summary>
-        public Thing Thing { get; }
-
-        /// <summary>
-        /// The name of this property
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        /// The href of this property
-        /// </summary>
-        public string Href { get; }
-
-        private string _hrefPreix;
-
-        /// <summary>
-        /// The prefix of any hrefs associated with this property.
-        /// </summary>
-        public string HrefPrefix
+        public Property()
         {
-            get => string.IsNullOrEmpty(_hrefPreix) ? DEFAULT_PREFIX : _hrefPreix;
-            set => _hrefPreix = value;
+            
+        }
+
+        public Property(Thing thing, string name, object value, IDictionary<string, object> metadata)
+        {
+            Thing = thing;
+            Name = name;
+            _value = value;
+            Metadata = metadata;
+        }
+        
+        public Property(string name, object value, IDictionary<string, object> metadata)
+        {
+            _value = value;
+            Name = name;
+            Metadata = metadata;
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public JObject Metadata { get; }
-
-        protected JSchema Schema { get; }
-
+        public virtual Thing Thing { get;  set; }
+        public virtual string Name { get; set; }
+        public virtual string Href => $"/properties/{Name}";
+        public virtual string HrefPrefix { get; set; }
         private object _value;
-
-        public object Value
+        public virtual object Value
         {
             get => _value;
             set
             {
-                ValidateValue(value);
-                _value = value switch
-                {
-                    JValue jValue => jValue.Value,
-                    _ => value
-                };
-                
+                _value = value;
                 OnValueChanged();
             }
         }
-
-
+        public virtual IDictionary<string, object> Metadata { get; set; }
+        internal virtual Type Type => typeof(object);
         public event EventHandler<ValueChangedEventArgs> ValuedChanged;
-
-        public Property(Thing thing, string name, object value)
-            : this(thing, name, value, null)
-        {
-        }
-
-        public Property(Thing thing, string name, object value, JObject metadata)
-        {
-            Thing = thing;
-            Name = name;
-            HrefPrefix = string.Empty;
-            Href = $"properties/{name}";
-            Metadata = metadata ?? new JObject();
-            _value = value;
-            Schema = JSchema.Load(Metadata.CreateReader());
-        }
-
-        /// <summary>
-        /// Get the property description.
-        /// </summary>
-        /// <returns>Description of the property as an object</returns>
-        public JObject AsPropertyDescription()
-        {
-            var description = new JObject(Metadata);
-            var link = new JObject(
-                new JProperty(REL, PROPERTY),
-                new JProperty(HREF, HrefPrefix.JoinUrl(Href)));
-
-            if (description.TryGetValue(LINKS, out JToken token))
-            {
-                if (token is JArray array)
-                {
-                    array.Add(link);
-                }
-                else
-                {
-                    throw new JsonException();
-                }
-            }
-            else
-            {
-                description.Add(LINKS, new JArray(link));
-            }
-
-            return description;
-        }
-
-        protected virtual void ValidateValue(object value)
-        {
-            if (Schema.ReadOnly.HasValue && Schema.ReadOnly.Value)
-            {
-                throw new PropertyException($"readonly property {Name}");
-            }
-
-            if (!Schema.IsValid(value))
-            {
-                throw new PropertyException("Invalid property value");
-            }
-        }
-
+        
         protected virtual void OnValueChanged()
         {
-            ValuedChanged?.Invoke(this, new ValueChangedEventArgs(Value));
+            var @event = ValuedChanged; 
+            @event?.Invoke(this, new ValueChangedEventArgs(Value, this));
         }
-    }
 
-    public class ValueChangedEventArgs : EventArgs
-    {
-        public object Value { get; }
+        public bool Equals(Property other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
 
-        public ValueChangedEventArgs(object value)
-            => Value = value;
-    }
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
 
-    public class ValueChangedEventArgs<T> : EventArgs
-    {
-        public T Value { get; }
+            return Equals(_value, other._value) 
+                   && Equals(Thing, other.Thing) 
+                   && string.Equals(Name, other.Name) 
+                   && string.Equals(HrefPrefix, other.HrefPrefix) 
+                   && Equals(Metadata, other.Metadata);
+        }
 
-        public ValueChangedEventArgs(T value)
-            => Value = value;
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((Property) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (_value?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Thing?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (HrefPrefix?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Metadata?.GetHashCode() ?? 0);
+                return hashCode;
+            }
+        }
     }
 }

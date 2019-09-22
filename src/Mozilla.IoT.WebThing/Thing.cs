@@ -1,606 +1,174 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Mozilla.IoT.WebThing.Extensions;
-using Newtonsoft.Json.Linq;
+using Mozilla.IoT.WebThing.Collections;
+using static Mozilla.IoT.WebThing.Const;
 
-[assembly: InternalsVisibleTo("Mozilla.IoT.WebThing.Test")]
 namespace Mozilla.IoT.WebThing
 {
-    public partial class Thing
-    {   
-        private const string DEFAULT_CONTEXT = "https://iot.mozilla.org/schemas";
-        private const string DEFAULT_HREF_PREFIX = "/";
-
-        private readonly IDictionary<string, Property> _properties = new Dictionary<string, Property>();
-
-        private readonly IDictionary<string, AvailableAction> _availableActions =
-            new Dictionary<string, AvailableAction>();
-
-        private readonly IDictionary<string, AvailableEvent>
-            _availableEvents = new Dictionary<string, AvailableEvent>();
-
-        private readonly IDictionary<string, ICollection<Action>> _actions =
-            new Dictionary<string, ICollection<Action>>();
-
-        private readonly ICollection<Event> _events = new LinkedList<Event>();
-
-        private readonly ISet<WebSocket> _subscribers = new HashSet<WebSocket>();
-
+    public class Thing : IEquatable<Thing>
+    {
         /// <summary>
         /// The type context of the thing.
         /// </summary>
-        public virtual string Context { get; }
-        
+        public virtual string Context => DEFAULT_CONTEXT;
+
         /// <summary>
         /// The name of the thing.
         /// </summary>
-        public virtual string Name { get; }
-        
+        public virtual string Name { get; set; }
+
         /// <summary>
         /// The description of the thing.
         /// </summary>
-        public virtual string Description { get; }
-        
-        /// <summary>
-        /// The type(s) of the thing.
-        /// </summary>
-        public virtual JArray Type { get; }
-        
-        /// <summary>
-        /// The href of this thing's custom UI.
-        /// </summary>
-        public virtual string UiHref { get; set; }
-        
+        public virtual string Description { get; set; }
+
         private string _hrefPrefix;
 
         /// <summary>
         /// This thing's href.
         /// </summary>
-        public virtual  string HrefPrefix
+        public virtual string HrefPrefix
         {
             get => string.IsNullOrEmpty(_hrefPrefix) ? DEFAULT_HREF_PREFIX : _hrefPrefix;
             set
             {
                 _hrefPrefix = value;
-                if (!_hrefPrefix.EndsWith(DEFAULT_HREF_PREFIX))
-                {
-                    _hrefPrefix += DEFAULT_HREF_PREFIX;
-                }
-                _properties.ForEach(x => x.Value.HrefPrefix = value);
-                _actions.ForEach(x => x.Value.ForEach(y => y.HrefPrefix = value));
-            }
-        }
-
-        protected internal Thing()
-         : this(Guid.NewGuid().ToString())
-        {
-            
-        }
-        public Thing(string name)
-            : this(name, null)
-        {
-        }
-
-        public Thing(string name, JArray type)
-            : this(name, type, null)
-        {
-        }
-
-        public Thing(string name, JArray type, string description)
-        {
-            Name = name;
-            Context = DEFAULT_CONTEXT;
-            Type = type;
-            Description = description;
-            HrefPrefix = string.Empty;
-            UiHref = null;
-        }
-
-
-        public virtual JObject AsThingDescription()
-        {
-            var actions = new JObject();
-            
-            _availableActions.ForEach(action =>
-            {
-                var link = new JObject(
-                    new JProperty("rel", "action"),
-                    new JProperty("href", $"{HrefPrefix}actions/{action.Key}"));
-
-                JObject metadata = action.Value.Metadata;
-                metadata .Add("links", new JArray(link));
-                actions.Add(action.Key, metadata);
-            });
-            
-            var events = new JObject();
-            
-            _availableEvents.ForEach(@event =>
-            {
-                var link = new JObject(
-                    new JProperty("rel", "event"),
-                    new JProperty("href", $"{HrefPrefix}event/{@event.Key}"));
-                
-                JObject metadata = @event.Value.Metadata;
-                metadata.Add("links", new JArray(link));
-                @events.Add(@event.Key, metadata );
-            });
-            
-            var obj = new JObject(
-                new JProperty("name", Name),
-                new JProperty("href", HrefPrefix),
-                new JProperty("@context", Context),
-                new JProperty("@type", Type),
-                new JProperty("properties", GetPropertyDescriptions()),
-                new JProperty("actions", actions),
-                new JProperty("events", events));
-
-            if (Description != null)
-            {
-                obj.Add("description", Description);
-            }
-            
-            var propertiesLink = new JObject(
-                new JProperty("rel", "properties"),
-                new JProperty("href", $"{HrefPrefix}properties"));
-
-            var actionsLink = new JObject(
-                new JProperty("rel", "actions"),
-                new JProperty("href", $"{HrefPrefix}actions"));
-            
-            var eventsLink = new JObject(
-                new JProperty("rel", "events"),
-                new JProperty("href", $"{HrefPrefix}events"));
-            
-            var links = new JArray(propertiesLink, actionsLink, eventsLink);
-
-            if (UiHref != null)
-            {
-                var uiLink = new JObject(
-                    new JProperty("rel", "alternate"),
-                    new JProperty("mediaType", "text/html"),
-                    new JProperty("href", UiHref));
-                
-                links.Add(uiLink);
-            }
-            
-            obj.Add("links", links);
-
-            return obj;
-        }
-
-
-        #region Property
-
-        /// <summary>
-        /// Get the thing's properties as a <see cref="Newtonsoft.Json.Linq.JObject"/>
-        /// </summary>
-        /// <returns></returns>
-        public virtual JObject GetPropertyDescriptions()
-        {
-            var obj = new JObject();
-            _properties.ForEach(p => obj.Add(p.Key, p.Value.AsPropertyDescription()));
-            return obj;
-        }
-
-        /// <summary>
-        /// Add a property to this thing.
-        /// </summary>
-        /// <param name="property">Property to add.</param>
-        public virtual void AddProperty(Property property)
-        {
-            property.HrefPrefix = HrefPrefix;
-            _properties.Add(property.Name, property);
-        }
-
-        /// <summary>
-        /// Remove a property from this thing.
-        /// </summary>
-        /// <param name="property">Property to remove.</param>
-        public virtual void RemoveProperty(Property property)
-        {
-            if (_properties.ContainsKey(property.Name))
-            {
-                _properties.Remove(property.Name);
+                Properties.ForEach(property => property.HrefPrefix = value);
+                Actions.ForEach(x => x.Value.ForEach(action => action.HrefPrefix = value));
             }
         }
 
         /// <summary>
-        /// Find a property by name.
+        /// The href of this thing's custom UI.
         /// </summary>
-        /// <param name="propertyName">Name of the property to find</param>
-        /// <returns>Property if found, else null.</returns>
-        public virtual Property FindProperty(string propertyName)
+        public virtual string UiHref { get; set; }
+
+        public IPropertyCollection Properties { get; }
+        public IEventCollection Events { get; internal set; }
+
+        /// <summary>
+        /// The type(s) of the thing.
+        /// </summary>
+        public virtual object Type { get; set; }
+
+        public IReadOnlyDictionary<string, (Type type, IDictionary<string, object> metadata)> ActionsTypeInfo =>
+            _actionsTypeInfo;
+
+        internal virtual ConcurrentDictionary<string, AvailableEvent> AvailableEvent { get; } =
+            new ConcurrentDictionary<string, AvailableEvent>();
+
+        public virtual ConcurrentDictionary<Guid, WebSocket> Subscribers { get; } =
+            new ConcurrentDictionary<Guid, WebSocket>();
+
+        internal virtual ActionCollection Actions { get; } = new ActionCollection();
+
+        private readonly Dictionary<string, (Type type, IDictionary<string, object> metadata)> _actionsTypeInfo =
+            new Dictionary<string, (Type type, IDictionary<string, object> metadata)>();
+
+        public Thing()
         {
-            if (_properties.ContainsKey(propertyName))
-            {
-                return _properties[propertyName];
-            }
-
-            return null;
+            Properties = new PropertyCollection(this);
         }
-
-        /// <summary>
-        /// Find a property by name.
-        /// </summary>
-        /// <param name="propertyName">Name of the property to find</param>
-        /// <returns>Property if found, else null.</returns>
-        /// <typeparam name="T">Type of the property value</typeparam>
-        public virtual Property<T> FindProperty<T>(string propertyName)
-        {
-            if (_properties.ContainsKey(propertyName))
-            {
-                return _properties[propertyName] as Property<T>;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Get a property's value.
-        /// </summary>
-        /// <param name="propertyName">Name of the property to get the value of</param>
-        /// <returns>Current property value if found, else null.</returns>
-        public virtual object GetProperty(string propertyName)
-            => FindProperty(propertyName)?.Value;
-
-        /// <summary>
-        /// Get a property's value.
-        /// </summary>
-        /// <param name="propertyName">Name of the property to get the value of</param>
-        /// <returns>Current property value if found, else default.</returns>
-        /// <typeparam name="T">Type of the property value</typeparam>
-        public virtual T GetProperty<T>(string propertyName)
-        {
-            var property = FindProperty<T>(propertyName);
-            return property != null ? property.Value : default;
-        }
-
-        /// <summary>
-        /// Determine whether or not this thing has a given property.
-        /// </summary>
-        /// <param name="propertyName">The property to look for</param>
-        /// <returns>Indication of property presence.</returns>
-        public virtual bool ContainsProperty(string propertyName)
-            => !string.IsNullOrEmpty(propertyName) &&  _properties.ContainsKey(propertyName);
-
-        
-        /// <summary>
-        /// Set a property value.
-        /// </summary>
-        /// <param name="propertyName">Name of the property to set</param>
-        /// <param name="value">Value to set</param>
-        /// <typeparam name="T">Type of the property value</typeparam>
-        public virtual void SetProperty(string propertyName, object value)
-        {
-            Property property = FindProperty(propertyName);
-            if (property != null)
-            {
-                property.Value = value;
-            }
-        }
-        
-        /// <summary>
-        /// Set a property value.
-        /// </summary>
-        /// <param name="propertyName">Name of the property to set</param>
-        /// <param name="value">Value to set</param>
-        /// <typeparam name="T">Type of the property value</typeparam>
-        public virtual  void SetProperty<T>(string propertyName, T value)
-        {
-            Property<T> property = FindProperty<T>(propertyName);
-            if (property != null)
-            {
-                property.Value = value;
-            }
-        }
-
-        /// <summary>
-        /// Notify all subscribers of a property change.
-        /// </summary>
-        /// <param name="property">The property that changed</param>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
-        public virtual async Task PropertyNotifyAsync(Property property, CancellationToken cancellation)
-        {
-            var json = new JObject(
-                new JProperty("messageType", "propertyStatus"));
-            var inner = new JObject(
-                new JProperty(property.Name, property.Value));
-
-            json.Add("data", inner);
-
-            await NotifyAllAsync(_subscribers, json.ToString(), cancellation);
-        }
-
-        #endregion
 
         #region Actions
 
-        /// <summary>
-        /// Get the thing's actions as a <see cref="Newtonsoft.Json.Linq.JArray"/>
-        /// </summary>
-        /// <param name="name">Optional action name to get descriptions for</param>
-        /// <returns>Action descriptions.</returns>
-        public virtual JArray GetActionDescriptions(string name = null)
+        public virtual void AddAction<T>(IDictionary<string, object> metadata = null)
+            where T : Action
         {
-            var array = new JArray();
+            string name = typeof(T).Name;
 
-            if (name == null)
-            {
-                _actions.ForEach(list =>
-                {
-                    list.Value.ForEach(action =>
-                    {
-                        array.Add(action.AsActionDescription());
-                    });
-                });
-            }
-            else if (_actions.ContainsKey(name))
-            {
-                _actions[name].ForEach(action =>
-                {
-                    array.Add(action.AsActionDescription());
-                });
-            }
-
-            return array;
-        }
-
-        /// <summary>
-        /// Get an action.
-        /// </summary>
-        /// <param name="name">Name of the action</param>
-        /// <param name="id">ID of the action</param>
-        /// <returns>The requested action if found, else null.</returns>
-        public virtual Action GetAction(string name, string id)
-        {
-            if (!_actions.ContainsKey(name))
-            {
-                return null;
-            }
-
-            return _actions[name].FirstOrDefault(x => x.Id == id);
-        }
-
-        /// <summary>
-        /// Perform an action on the thing.
-        /// </summary>
-        /// <param name="actionName">name of the action</param>
-        /// <param name="input">Any action inputs</param>
-        /// <param name="cancellation"></param>
-        /// <returns>The action that was created.</returns>
-        public virtual async Task<Action> PerformActionAsync(string actionName, JObject input, CancellationToken cancellation)
-        {
-            if (!_availableActions.ContainsKey(actionName))
-            {
-                return null;
-            }
-
-            AvailableAction availableAction = _availableActions[actionName];
-            if (!availableAction.ValidateActionInput(input))
-            {
-                return null;
-            }
-
-            try
-            {
-                Action action = (Action)Activator.CreateInstance(availableAction.Type, this, input);
-
-                action.HrefPrefix = HrefPrefix;
-                await ActionNotifyAsync(action, cancellation)
-                    .ConfigureAwait(false);
-
-                _actions[actionName].Add(action);
-                return action;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Notify all subscribers of an action status change.
-        /// </summary>
-        /// <param name="action">The action whose status changed</param>
-        /// <param name="cancellation"></param>
-        public virtual async Task ActionNotifyAsync(Action action, CancellationToken cancellation)
-        {
-            if (!_subscribers.Any())
-            {
-                return;
-            }
+            name = new StringBuilder()
+                .Append(char.ToLower(name[0]))
+                .Append(name.EndsWith("Action") ? name.AsSpan(1, name.Length - 7) : name.AsSpan(1))
+                .ToString();
             
-            var json = new JObject(
-                new JProperty("messageType", "actionStatus"),
-                new JProperty("data", action.AsActionDescription()));
-
-            await NotifyAllAsync(_subscribers, json.ToString(), cancellation)
-                .ConfigureAwait(false);
+            AddAction<T>(name, metadata);
         }
 
-        /// <summary>
-        /// Remove an existing action. 
-        /// </summary>
-        /// <param name="name">name of the action</param>
-        /// <param name="id">ID of the action</param>
-        /// <returns>indicating the presence of the action.</returns>
-        public virtual  bool RemoveAction(string name, string id)
+        public virtual void AddAction<T>(string name, IDictionary<string, object> metadata = null)
+            where T : Action 
+            => _actionsTypeInfo.Add(name, (typeof(T), metadata));
+
+        public virtual void AddEvent<T>(IDictionary<string, object> metadata = null)
+            where T : Event
         {
-            Action action = GetAction(name, id);
-            if (action == null)
+            string name = typeof(T).Name;
+
+            name = new StringBuilder()
+                .Append(char.ToLower(name[0]))
+                .Append(name.EndsWith("Event") ? name.AsSpan(1, name.Length - 6) : name.AsSpan(1))
+                .ToString();
+            
+            AvailableEvent.TryAdd(name, new AvailableEvent(name, metadata));
+        }
+
+        public virtual void AddEvent(string name, IDictionary<string, object> metadata = null)
+            => AvailableEvent.TryAdd(name, new AvailableEvent(name, metadata));
+
+        #endregion
+
+        public bool Equals(Thing other)
+        {
+            if (ReferenceEquals(null, other))
             {
                 return false;
             }
 
-            _actions[name].Remove(action);
-            return true;
-        }
-
-        /// <summary>
-        /// Add an available action.
-        /// </summary>
-        /// <param name="name">Name of the action</param>
-        /// <param name="metadata">Action metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/></param>
-        /// <param name="type">Type to instantiate for this action</param>
-        public virtual void AddAvailableAction<T>(string name, JObject metadata = null)
-            where T : Action
-        {
-            if (metadata == null)
+            if (ReferenceEquals(this, other))
             {
-                metadata = new JObject();
+                return true;
             }
 
-            _availableActions.Add(name, new AvailableAction(metadata, typeof(T)));
-            _actions.Add(name, new LinkedList<Action>());
+            return string.Equals(_hrefPrefix, other._hrefPrefix)
+                   && Equals(_actionsTypeInfo, other._actionsTypeInfo)
+                   && string.Equals(Context, other.Context)
+                   && string.Equals(Name, other.Name)
+                   && string.Equals(Description, other.Description)
+                   && string.Equals(UiHref, other.UiHref)
+                   && Equals(Properties, other.Properties)
+                   && Equals(Events, other.Events)
+                   && Equals(Type, other.Type)
+                   && Equals(Subscribers, other.Subscribers)
+                   && Equals(AvailableEvent, other.AvailableEvent)
+                   && Equals(Actions, other.Actions);
         }
 
-        #endregion
-
-        #region Event
-
-        /// <summary>
-        /// Get the thing's events as a <see cref="Newtonsoft.Json.Linq.JArray"/>
-        /// </summary>
-        /// <param name="name">Optional event name to get descriptions for</param>
-        /// <returns>Event descriptions.</returns>
-        public virtual JArray GetEventDescriptions(string name = null)
+        public override bool Equals(object obj)
         {
-            var array = new JArray();
-
-            if (name == null)
+            if (ReferenceEquals(null, obj))
             {
-                _events.ForEach(@event => array.Add(@event.AsEventDescription()));
-            }
-            else
-            {
-                _events.ForEach(@event =>
-                {
-                    if (@event.Name == name)
-                    {
-                        array.Add(@event.AsEventDescription());
-                    }
-                });
+                return false;
             }
 
-            return array;
-        }
-
-        public async Task AddEventAsync(Event @event, CancellationToken cancellation)
-        {
-            _events.Add(@event);
-            await EventNotifyAsync(@event, cancellation);
-        }
-
-        /// <summary>
-        /// Notify all subscribers of an event.
-        /// </summary>
-        /// <param name="event">The event that occurred.</param>
-        /// <param name="cancellation"></param>
-        public virtual  async Task EventNotifyAsync(Event @event, CancellationToken cancellation)
-        {
-            if (!_availableEvents.ContainsKey(@event.Name))
+            if (ReferenceEquals(this, obj))
             {
-                return;
+                return true;
             }
 
-            var json = new JObject(
-                new JProperty("messageType", "event"),
-                new JProperty("data", @event.AsEventDescription()));
-
-            await NotifyAllAsync(_availableEvents[@event.Name]
-                .Subscribers, json.ToString(), cancellation);
+            return obj.GetType() == GetType() && Equals((Thing)obj);
         }
 
-        /// <summary>
-        /// Add an available event.
-        /// </summary>
-        /// <param name="name">Name of the event</param>
-        /// <param name="metadata">Event metadata, i.e. type, description, etc., as a <see cref="Newtonsoft.Json.Linq.JObject"/>></param>
-        public virtual  void AddAvailableEvent(string name, JObject metadata = null)
+        public override int GetHashCode()
         {
-            if (metadata == null)
+            unchecked
             {
-                metadata = new JObject();
+                var hashCode = (_hrefPrefix?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (_actionsTypeInfo?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Context?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Description?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (UiHref?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Properties?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Events?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Type?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Subscribers?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (AvailableEvent?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (Actions?.GetHashCode() ?? 0);
+                return hashCode;
             }
-
-            _availableEvents.Add(name, new AvailableEvent(metadata));
-        }
-
-        /// <summary>
-        /// Add a new websocket subscriber to an event.
-        /// </summary>
-        /// <param name="name">Name of the event</param>
-        /// <param name="ws">The websocket</param>
-        public virtual void AddEventSubscriber(string name, WebSocket ws)
-        {
-            if (_availableEvents.ContainsKey(name))
-            {
-                _availableEvents[name].AddSubscriber(ws);
-            }
-        }
-
-        /// <summary>
-        /// Remove a websocket subscriber from an event.
-        /// </summary>
-        /// <param name="name">Name of the event</param>
-        /// <param name="ws">The websocket</param>
-        public virtual  void RemoveEventSubscriber(string name, WebSocket ws)
-        {
-            if (_availableEvents.ContainsKey(name))
-            {
-                _availableEvents[name].RemoveSubscriber(ws);
-            }
-        }
-
-        #endregion
-
-        #region Subscribe
-
-        /// <summary>
-        /// Add a new websocket subscriber.
-        /// </summary>
-        /// <param name="ws">The websocket</param>
-        public virtual void AddSubscriber(WebSocket ws)
-            => _subscribers.Add(ws);
-
-        /// <summary>
-        /// Remove a websocket subscriber 
-        /// </summary>
-        /// <param name="ws">The websocket</param>
-        public virtual void RemoveSubscriber(WebSocket ws)
-        {
-            if (_subscribers.Contains(ws))
-            {
-                _subscribers.Remove(ws);
-            }
-
-            _availableEvents.ForEach(@event =>
-            {
-                RemoveEventSubscriber(@event.Key, ws);
-            });
-        }
-
-        #endregion
-
-        private static async Task NotifyAllAsync(IEnumerable<WebSocket> subscribers, string message,
-            CancellationToken cancellation)
-        {
-            var write = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
-
-            await subscribers
-                .ForEachAsync(async subscriber =>
-                {
-                    await subscriber.SendAsync(write, WebSocketMessageType.Text, true, cancellation)
-                        .ConfigureAwait(false);
-                })
-                .ConfigureAwait(false);
         }
     }
 }

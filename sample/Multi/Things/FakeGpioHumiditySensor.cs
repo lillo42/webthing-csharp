@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing;
-using Newtonsoft.Json.Linq;
 
 namespace Multi.Things
 {
@@ -10,25 +10,26 @@ namespace Multi.Things
         private readonly Property<double> _level;  
         private static Random s_random = new Random();
         public FakeGpioHumiditySensor()
-            : base("My Humidity Sensor",
-                new JArray("MultiLevelSensor"),
-                "A web connected humidity sensor")
         {
-            var levelDescription = new JObject
+            Name = "My Humidity Sensor";
+            Type = new[] {"MultiLevelSensor"};
+            Description = "A web connected humidity sensor";
+                
+            var levelDescription = new Dictionary<string, object>
             {
-                {"@type", "LevelProperty"},
-                {"title", "Humidity"},
-                {"type", "number"},
-                {"description", "The current humidity in %"},
-                {"minimum", 0},
-                {"maximum", 100},
-                {"unit", "percent"},
-                {"readOnly", true}
+                ["@type"] = "LevelProperty",
+                ["title"] = "Humidity",
+                ["type"] = "number",
+                ["description"] = "The current humidity in %",
+                ["minimum"] = 0,
+                ["maximum"] = 100,
+                ["unit"] = "percent",
+                ["readOnly"] = true
             };
 
             _level = new Property<double>(this, "level", 0, levelDescription);
 
-            AddProperty(_level);
+            Properties.Add(_level);
             
             Task.Factory.StartNew(async () =>
             {
