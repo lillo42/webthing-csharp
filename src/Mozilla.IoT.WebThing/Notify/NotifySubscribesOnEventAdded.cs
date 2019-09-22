@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
@@ -24,27 +23,24 @@ namespace Mozilla.IoT.WebThing.Notify
             _jsonSerializer = jsonSerializer;
         }
 
-        public async void Notify(object sender, NotifyCollectionChangedEventArgs eventArgs)
+        public async void Notify(object sender, EventAddedEventArgs args)
         {
-            if (eventArgs.Action == NotifyCollectionChangedAction.Add 
-                && eventArgs.NewItems[0] is Event @event)
+            var @event = args.Event;
+            @event.Thing = _thing;
+            @event.Metadata = _descriptor.CreateDescription(@event);
+
+            var webSockets = _thing.AvailableEvent.ContainsKey(@event.Name)
+                ? _thing.AvailableEvent[@event.Name].Subscribers
+                : null;
+
+            if (webSockets != null && webSockets.Any())
             {
-                @event.Thing = _thing;
-                @event.Metadata = _descriptor.CreateDescription(@event);
-
-                var webSockets = _thing.AvailableEvent.ContainsKey(@event.Name)
-                    ? _thing.AvailableEvent[@event.Name].Subscribers
-                    : null;
-
-                if (webSockets != null && webSockets.Any())
+                var message = new Dictionary<string, object>
                 {
-                    var message = new Dictionary<string, object>
-                    {
-                        [MESSAGE_TYPE] = MessageType.Event.ToString().ToLower(), [DATA] = @event.Metadata
-                    };
+                    [MESSAGE_TYPE] = MessageType.Event.ToString().ToLower(), [DATA] = @event.Metadata
+                };
 
-                    await NotifySubscribersAsync(webSockets, message, CancellationToken.None);
-                }
+                await NotifySubscribersAsync(webSockets, message, CancellationToken.None);
             }
         }
 

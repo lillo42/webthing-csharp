@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -41,7 +40,8 @@ namespace Mozilla.IoT.WebThing
         
         protected override void OnValueChanged()
         {
-            ValuedChanged?.Invoke(this, new ValueChangedEventArgs<T>(Value));
+            var @event = ValuedChanged;
+            @event?.Invoke(this, new ValueChangedEventArgs<T>(Value, this));
             base.OnValueChanged();
         }
 
@@ -49,7 +49,6 @@ namespace Mozilla.IoT.WebThing
             => base.Equals(other);
     }
     
-    [DebuggerTypeProxy(typeof(PropertyProxyDebugView))]
     [DebuggerDisplay("Value = {Value}")]
     public class Property : IEquatable<Property>
     {
@@ -94,7 +93,8 @@ namespace Mozilla.IoT.WebThing
         
         protected virtual void OnValueChanged()
         {
-            ValuedChanged?.Invoke(this, new ValueChangedEventArgs(Value));
+            var @event = ValuedChanged; 
+            @event?.Invoke(this, new ValueChangedEventArgs(Value, this));
         }
 
         public bool Equals(Property other)
@@ -143,21 +143,5 @@ namespace Mozilla.IoT.WebThing
                 return hashCode;
             }
         }
-    }
-    
-    public class ValueChangedEventArgs : EventArgs
-    {
-        public object Value { get; }
-
-        public ValueChangedEventArgs(object value)
-            => Value = value;
-    }
-
-    public class ValueChangedEventArgs<T> : EventArgs
-    {
-        public T Value { get; }
-
-        public ValueChangedEventArgs(T value)
-            => Value = value;
     }
 }

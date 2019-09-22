@@ -108,13 +108,13 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["actions"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "action", ["href"] = "/actions/Custom"
+                                    ["rel"] = "action", ["href"] = "/actions/custom"
                                 }
                             }
                         }
@@ -156,14 +156,14 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["actions"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             [key] = value,
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "action", ["href"] = "/actions/Custom"
+                                    ["rel"] = "action", ["href"] = "/actions/custom"
                                 }
                             }
                         }
@@ -202,13 +202,13 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["actions"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "action", ["href"] = "/actions/Custom"
+                                    ["rel"] = "action", ["href"] = "/actions/custom"
                                 }
                             }
                         }
@@ -216,13 +216,13 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["events"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "event", ["href"] = "/events/Custom"
+                                    ["rel"] = "event", ["href"] = "/events/custom"
                                 }
                             }
                         }
@@ -265,14 +265,14 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["actions"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             [key] = value,
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "action", ["href"] = "/actions/Custom"
+                                    ["rel"] = "action", ["href"] = "/actions/custom"
                                 }
                             }
                         }
@@ -280,14 +280,14 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["events"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             [key] = value,
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "event", ["href"] = "/events/Custom"
+                                    ["rel"] = "event", ["href"] = "/events/custom"
                                 }
                             }
                         }
@@ -334,13 +334,13 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["actions"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "action", ["href"] = "/actions/Custom"
+                                    ["rel"] = "action", ["href"] = "/actions/custom"
                                 }
                             }
                         }
@@ -349,13 +349,13 @@ namespace Mozilla.IoT.WebThing.Test.Descriptions
                 ["events"] =
                     new Dictionary<string, object>
                     {
-                        ["Custom"] = new Dictionary<string, object>
+                        ["custom"] = new Dictionary<string, object>
                         {
                             ["links"] = new List<Dictionary<string, object>>
                             {
                                 new Dictionary<string, object>
                                 {
-                                    ["rel"] = "event", ["href"] = "/events/Custom"
+                                    ["rel"] = "event", ["href"] = "/events/custom"
                                 }
                             }
                         }

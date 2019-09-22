@@ -87,7 +87,7 @@ namespace Mozilla.IoT.WebThing.Test.Endpoints
 
             var thingId = _fixture.Create<string>();
             var thing = _fixture.Create<Thing>();
-            thing.Events = new DefaultObservableCollection<Event>();
+            thing.Events = new EventCollection();
             var eventName = _fixture.Create<string>();
 
             _thingActivator.CreateInstance(_service, thingId)

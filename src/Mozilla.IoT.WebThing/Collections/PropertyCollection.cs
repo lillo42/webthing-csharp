@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Mozilla.IoT.WebThing.DebugView;
 using Mozilla.IoT.WebThing.Json;
 
@@ -9,12 +10,13 @@ namespace Mozilla.IoT.WebThing.Collections
 {
     [DebuggerTypeProxy(typeof (ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class PropertyCollection : ICollection<Property>, IEquatable<PropertyCollection>
+    internal sealed class PropertyCollection : IPropertyCollection, IEquatable<PropertyCollection>
     {
         private readonly LinkedList<Property> _properties = new LinkedList<Property>();
         private readonly Thing _thing;
         
         public IJsonSchemaValidator JsonSchemaValidator { get; set; }
+        public IJsonValue JsonValue { get; set; }
 
         public PropertyCollection(Thing thing)
         {
@@ -40,7 +42,13 @@ namespace Mozilla.IoT.WebThing.Collections
             }
 
             item.HrefPrefix = _thing.HrefPrefix;
-            _properties.AddLast(new PropertyProxy(item, JsonSchemaValidator));
+            item.ValuedChanged += (sender, args) =>
+            {
+                var @event = ValueChanged;
+                @event?.Invoke(this, args);
+            };
+            
+            _properties.AddLast(item);
         }
 
         public void Clear() 
@@ -55,8 +63,19 @@ namespace Mozilla.IoT.WebThing.Collections
         public bool Remove(Property item) 
             => _properties.Remove(item);
 
+        public void SetProperty(string propertyName, object value)
+        {
+            var property = _properties.FirstOrDefault(x => x.Name == propertyName);
+            if (property != null && JsonSchemaValidator.IsValid(value, property.Metadata))
+            {
+                property.Value = JsonValue.GetValue(value, property.Type);
+            }
+        }
+        
         public int Count => _properties.Count;
         public bool IsReadOnly => false;
+
+        public event EventHandler<ValueChangedEventArgs> ValueChanged;
 
         public bool Equals(PropertyCollection other)
         {

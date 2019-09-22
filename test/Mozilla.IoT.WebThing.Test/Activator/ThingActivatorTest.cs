@@ -1,5 +1,3 @@
-
-using System.Collections.Generic;
 using Mozilla.IoT.WebThing.Activator;
 #if DEBUG
 using System.Linq;
@@ -41,8 +39,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
 
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
 
             _option.IsSingleThing = true;
@@ -69,8 +67,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
 
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
 
             _option.IsSingleThing = false;
@@ -96,8 +94,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
 
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
 
             string name = _fixture.Create<string>();
@@ -121,8 +119,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
                     
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
 
             _option.IsSingleThing = false;
@@ -149,8 +147,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
 
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
 
             _option.IsSingleThing = true;
@@ -172,9 +170,9 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
                     
-                    if (type == typeof(IObservableCollection<Event>))
+                    if (type == typeof(IEventCollection))
                     {
-                        return new DefaultObservableCollection<Event>();
+                        return new EventCollection();
                     }
 
                     return null;
@@ -236,8 +234,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
 
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
             
             string name = _fixture.Create<string>();
@@ -256,8 +254,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
 
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
             
             string name = _fixture.Create<string>();
@@ -279,8 +277,8 @@ namespace Mozilla.IoT.WebThing.Test.Activator
                 {
                     var type = called.Args()[0] as Type;
 
-                    return type == typeof(IObservableCollection<Event>) ? 
-                        new DefaultObservableCollection<Event>() : null;
+                    return type == typeof(IEventCollection) ? 
+                        new EventCollection() : null;
                 });
             
             string name = _fixture.Create<string>();

@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
@@ -34,11 +31,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             {
                 try
                 {
-                    var property = thing.Properties.FirstOrDefault(x => x.Name == key);
-                    if (property != null)
-                    {
-                        property.Value = token;
-                    }
+                    thing.Properties.SetProperty(key, token);
                 }
                 catch (Exception exception)
                 {

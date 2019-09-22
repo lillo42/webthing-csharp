@@ -50,7 +50,6 @@ namespace Mozilla.IoT.WebThing.Test.Background
         {
             var source = new CancellationTokenSource();
             _executor.StartAsync(source.Token);
-//                .ConfigureAwait(false);
 
             _buffer.Post(new CustomAction{ Delay = 3_000});
             _buffer.Post(new CustomAction{ Delay = 3_000});
@@ -61,7 +60,6 @@ namespace Mozilla.IoT.WebThing.Test.Background
             source.Cancel();
             await Task.Delay(1_000);
             await _executor.StopAsync(source.Token);
-//                .ConfigureAwait(false);
             await Task.Delay(5_000);
         }
         

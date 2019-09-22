@@ -28,10 +28,20 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         public virtual string HrefPrefix { get; set; } = string.Empty;
 
+        private Status _status = Status.Created;
         /// <summary>
         /// Action's status.
         /// </summary>
-        public virtual Status Status { get; protected set; } = Status.Created;
+        public virtual Status Status
+        {
+            get => _status;
+            protected set
+            {
+                _status = value;
+                var @event = ActionStatusChanged;
+                @event?.Invoke(this, new ActionStatusChangedEventArgs(this));
+            } 
+        }
         
         /// <summary>
         /// The time the action was requested.
@@ -134,6 +144,7 @@ namespace Mozilla.IoT.WebThing
                 return hashCode;
             }
         }
+        public event EventHandler<ActionStatusChangedEventArgs> ActionStatusChanged;
     }
 
 //    public abstract class Action<TInput> : Action

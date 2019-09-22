@@ -93,7 +93,14 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
                         }]
                     }
                 },
-                ""events"": {},
+                ""events"": {
+                    ""fake"": {
+                        ""links"": [{
+                            ""rel"": ""event"",
+                            ""href"": ""/events/fake""
+                        }]
+                    }
+                },
                 ""description"": ""A web connected lamp"",
                 ""links"":[{
                     ""rel"": ""properties"",
@@ -176,7 +183,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
 
         [Theory]
         [InlineData("on", @"{ ""on"": true }")]
-        [InlineData("level", @"{ ""level"": 30.0 }")]
+        [InlineData("level", @"{ ""level"": 30 }")]
         public async Task SetProperty_Should_ChangeProperty_When_PropertyExists(string property, string expectedJson)
         {
             var ws = await _webSocketClient.ConnectAsync(
@@ -185,14 +192,17 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
                 ""messageType"": ""setProperty"",
                 ""data"": {expectedJson} 
             }}").ToString(Formatting.None));
-            await ws.SendAsync(new ArraySegment<byte>(json), WebSocketMessageType.Text, true, CancellationToken.None);
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(TimeSpan.FromSeconds(5));
+            await ws.SendAsync(new ArraySegment<byte>(json), WebSocketMessageType.Text, true, source.Token);
             await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye bye", CancellationToken.None);
             await GetProperty_Should_ReturnValue_When_PropertyExist(property, expectedJson);
         }
         
         [Theory]
         [InlineData(@"{ ""on"": true }")]
-        [InlineData(@"{ ""level"": 30.0 }")]
+        [InlineData(@"{ ""level"": 30 }")]
         public async Task PropertyStatus_Should_Notify_When_PropertyChange(string expectedJson)
         {
             var ws = await _webSocketClient.ConnectAsync(
@@ -204,14 +214,19 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             await ws.SendAsync(new ArraySegment<byte>(json), WebSocketMessageType.Text, true, CancellationToken.None);
 
             var buffer = new ArraySegment<byte>(new byte[4096]);
-            await ws.ReceiveAsync(buffer, CancellationToken.None);
-
+            var source = new CancellationTokenSource();
+            
+            source.CancelAfter(TimeSpan.FromSeconds(5));
+            await ws.ReceiveAsync(buffer, source.Token);
+            
             var actual = JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, buffer.Count)));
 
             actual.Should().BeEquivalentTo(JToken.Parse($@"{{
                 ""messageType"": ""propertyStatus"",
                 ""data"": {expectedJson}
             }}"));
+
+            await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", CancellationToken.None);
         }
 
         #endregion
@@ -219,7 +234,7 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
         #region Action
 
         [Fact]
-        public async Task GetActions()
+        public async Task GetActions_Should_ReturnAllAction_When_Request()
         {
             await _httpClient.PostAsync($"/actions/fake", new StringContent(@"{
                 ""fake"": {}
@@ -396,9 +411,81 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             getJson.Should().Be("[]");
 
         }
+
+        [Theory]
+        [InlineData("fake", "{}")]
+        public async Task ActionStatus_Should_BeNotify_When_ActionStatusChange(string action, string sendJson)
+        {
+            var ws = await _webSocketClient.ConnectAsync(
+                new Uri($"ws://{_server.BaseAddress.Host}:{_server.BaseAddress.Port}"), CancellationToken.None);
+            
+            await _httpClient.PostAsync($"/actions/{action}", new StringContent($@"{{
+                ""{action}"": {sendJson}
+            }}", Encoding.UTF8));
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(TimeSpan.FromSeconds(5));
+            var buffer = new ArraySegment<byte>(new byte[4096]);
+            var result =  await ws.ReceiveAsync(buffer, CancellationToken.None);
+            var token = JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count)));
+
+            token["messageType"].Should().NotBeNull();
+            token["messageType"].Value<string>().Should().Be("actionStatus");
+            token["data"].Should().NotBeNull();
+            token["data"]["fake"].Should().NotBeNull();
+
+            await Task.Delay(3_000);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(TimeSpan.FromSeconds(5));
+            buffer = new ArraySegment<byte>(new byte[4096]);
+            result =  await ws.ReceiveAsync(buffer, CancellationToken.None);
+            token = JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count)));
+
+            token["messageType"].Should().NotBeNull();
+            token["messageType"].Value<string>().Should().Be("actionStatus");
+            token["data"].Should().NotBeNull();
+            token["data"]["fake"].Should().NotBeNull();
+        }
         
-        //TODO: WebSocket
-        
+        [Theory]
+        [InlineData("fake", "{}")]
+        public async Task RequestAction_Should_StartAction_When_IsRequest(string action, string sendJson)
+        {
+            var ws = await _webSocketClient.ConnectAsync(
+                new Uri($"ws://{_server.BaseAddress.Host}:{_server.BaseAddress.Port}"), CancellationToken.None);
+
+            await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes($@"{{
+                ""messageType"": ""requestAction"",
+                ""data"": {{
+                    ""{action}"": {sendJson}
+                }}
+            }}")), WebSocketMessageType.Text, true, CancellationToken.None);
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(TimeSpan.FromSeconds(5));
+            var buffer = new ArraySegment<byte>(new byte[4096]);
+            var result =  await ws.ReceiveAsync(buffer, CancellationToken.None);
+            var token = JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count)));
+
+            token["messageType"].Should().NotBeNull();
+            token["messageType"].Value<string>().Should().Be("actionStatus");
+            token["data"].Should().NotBeNull();
+            token["data"]["fake"].Should().NotBeNull();
+
+            await Task.Delay(3_000);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(TimeSpan.FromSeconds(5));
+            buffer = new ArraySegment<byte>(new byte[4096]);
+            result =  await ws.ReceiveAsync(buffer, CancellationToken.None);
+            token = JToken.Parse(Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count)));
+
+            token["messageType"].Should().NotBeNull();
+            token["messageType"].Value<string>().Should().Be("actionStatus");
+            token["data"].Should().NotBeNull();
+            token["data"]["fake"].Should().NotBeNull();
+        }
         #endregion
 
         #region Event
@@ -429,9 +516,8 @@ namespace Mozilla.IoT.WebThing.Accepted.Test
             JArray.Parse(json).Count.Should().BeGreaterThan(0);
         }
         
-        
         [Fact]
-        public async Task AddEventSubscription_Should_BeNotify_When_AnyEvent_AnyEventOCcur()
+        public async Task AddEventSubscription_Should_BeNotify_When_AnyEvent_AnyEventOccur()
         {
             var ws = await _webSocketClient.ConnectAsync(
                 new Uri($"ws://{_server.BaseAddress.Host}:{_server.BaseAddress.Port}"), CancellationToken.None);

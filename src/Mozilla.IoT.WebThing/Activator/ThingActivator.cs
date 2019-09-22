@@ -94,7 +94,6 @@ namespace Mozilla.IoT.WebThing.Activator
         {
             var eventDescription = serviceProvider.GetService<IDescriptor<Event>>();
             var jsonConvert = serviceProvider.GetService<IJsonSerializer>();
-            var jsonSettings = serviceProvider.GetService<IJsonSerializerSettings>();
             var jsonSchemaValidator = serviceProvider.GetService<IJsonSchemaValidator>();
             var jsonValue = serviceProvider.GetService<IJsonValue>();
 
@@ -103,7 +102,7 @@ namespace Mozilla.IoT.WebThing.Activator
                 jsonConvert
             );
 
-            var actionNotify = new NotifySubscribesOnActionAdded(serviceProvider.GetService<IDescriptor<Action>>(),
+            var actionNotify = new NotifySubscribesOnActionStatusChange(serviceProvider.GetService<IDescriptor<Action>>(),
                 jsonConvert
             );
             
@@ -111,19 +110,14 @@ namespace Mozilla.IoT.WebThing.Activator
 
             if (thing.Events == null)
             {
-                thing.Events = serviceProvider.GetService<IObservableCollection<Event>>();
+                thing.Events = serviceProvider.GetService<IEventCollection>();
             }
 
-            ((PropertyCollection) thing.Properties).JsonSchemaValidator = jsonSchemaValidator;
-
-            thing.Events.CollectionChanged += eventNotify.Notify;
-            thing.Actions.CollectionChanged += actionNotify.Notify;
-            thing.Properties.Cast<PropertyProxy>().ForEach(property =>
-            {
-                property.SchemaValidator = jsonSchemaValidator;
-                property.JsonValue = jsonValue;
-                property.ValuedChanged += propertyNotify.Notify;
-            });
+            thing.Events.EventAdded += eventNotify.Notify;
+            thing.Actions.ActionStatusChanged += actionNotify.Notify;
+            thing.Properties.ValueChanged += propertyNotify.Notify;
+            thing.Properties.JsonSchemaValidator = jsonSchemaValidator;
+            thing.Properties.JsonValue = jsonValue;
 
 
             if (!_option.IsSingleThing)

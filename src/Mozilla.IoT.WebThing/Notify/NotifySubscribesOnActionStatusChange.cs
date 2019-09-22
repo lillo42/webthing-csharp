@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,22 +9,21 @@ using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing.Notify
 {
-    internal sealed class NotifySubscribesOnActionAdded
+    internal sealed class NotifySubscribesOnActionStatusChange
     {
         private readonly IDescriptor<Action> _descriptor;
         private readonly IJsonSerializer _jsonSerializer;
 
-        public NotifySubscribesOnActionAdded(IDescriptor<Action> descriptor, IJsonSerializer jsonSerializer)
+        public NotifySubscribesOnActionStatusChange(IDescriptor<Action> descriptor, IJsonSerializer jsonSerializer)
         {
             _descriptor = descriptor;
             _jsonSerializer = jsonSerializer;
         }
 
-        public async void Notify(object sender, NotifyCollectionChangedEventArgs eventArgs)
+        public async void Notify(object sender, ActionStatusChangedEventArgs eventArgs)
         {
-            if (eventArgs.Action == NotifyCollectionChangedAction.Add 
-                && eventArgs.NewItems[0] is Action action 
-                && !action.Thing.Subscribers.IsEmpty)
+            var action = eventArgs.Action;
+            if (!action.Thing.Subscribers.IsEmpty)
             {
                 var message = new Dictionary<string, object>
                 {

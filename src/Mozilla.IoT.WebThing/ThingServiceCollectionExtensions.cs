@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IDescriptor<Event>, EventDescriptor>();
             services.TryAddSingleton<IDescriptor<Property>, PropertyDescriptor>();
             services.TryAddSingleton<IDescriptor<Thing>, ThingDescriptor>();
-            services.TryAddTransient(typeof(IObservableCollection<>), typeof(DefaultObservableCollection<>));
+            services.TryAddTransient<IEventCollection, EventCollection>();
 
             services.AddHostedService<ActionExecutorHostedService>();
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -122,8 +121,10 @@ namespace Mozilla.IoT.WebThing.Json
 
             switch (value)
             {
+                case short @short:
+                    return @short > Convert.ToInt64(minimum);
                 case int @int:
-                    return @int > Convert.ToInt32(minimum);
+                    return @int > Convert.ToInt64(minimum);
                 case long @long:
                     return @long > Convert.ToInt64(minimum);
                 case double @double:
@@ -132,8 +133,10 @@ namespace Mozilla.IoT.WebThing.Json
                     return @float > Convert.ToSingle(minimum);
                 case decimal @decimal:
                     return @decimal > Convert.ToDecimal(minimum);
+                case ushort @ushort:
+                    return @ushort > Convert.ToUInt64(minimum);
                 case uint @uint:
-                    return @uint > Convert.ToUInt32(minimum);
+                    return @uint > Convert.ToUInt64(minimum);
                 case ulong @ulong:
                     return @ulong > Convert.ToUInt64(minimum);
                 default:
@@ -150,8 +153,10 @@ namespace Mozilla.IoT.WebThing.Json
 
             switch (value)
             {
+                case short @short:
+                    return @short < Convert.ToInt64(maximum);
                 case int @int:
-                    return @int < Convert.ToInt32(maximum);
+                    return @int < Convert.ToInt64(maximum);
                 case long @long:
                     return @long < Convert.ToInt64(maximum);
                 case double @double:
@@ -161,9 +166,11 @@ namespace Mozilla.IoT.WebThing.Json
                 case decimal @decimal:
                     return @decimal < Convert.ToDecimal(maximum);
                 case uint @uint:
-                    return @uint < Convert.ToUInt32(maximum);
+                    return @uint < Convert.ToUInt64(maximum);
                 case ulong @ulong:
                     return @ulong < Convert.ToUInt64(maximum);
+                case ushort @short:
+                    return @short < Convert.ToUInt64(maximum);
                 default:
                     return false;
             }
@@ -178,8 +185,10 @@ namespace Mozilla.IoT.WebThing.Json
 
             switch (value)
             {
+                case short @short:
+                    return @short % Convert.ToInt64(multipleOf) == 0;
                 case int @int:
-                    return @int % Convert.ToInt32(multipleOf) == 0;
+                    return @int % Convert.ToInt64(multipleOf) == 0;
                 case long @long:
                     return @long % Convert.ToInt64(multipleOf) == 0;
                 case double @double:
@@ -189,9 +198,11 @@ namespace Mozilla.IoT.WebThing.Json
                 case decimal @decimal:
                     return @decimal % Convert.ToDecimal(multipleOf) == 0;
                 case uint @uint:
-                    return @uint % Convert.ToUInt32(multipleOf) == 0;
+                    return @uint % Convert.ToUInt64(multipleOf) == 0;
                 case ulong @ulong:
                     return @ulong % Convert.ToUInt64(multipleOf) == 0;
+                case ushort @ushort:
+                    return @ushort % Convert.ToUInt16(multipleOf) == 0;
                 default:
                     return false;
             }

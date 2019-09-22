@@ -17,16 +17,17 @@ namespace Mozilla.IoT.WebThing.Notify
             _jsonSerializer = jsonSerializer;
         }
 
-        public async void Notify(object sender, ValueChangedEventArgs eventArgs)
+        public async void Notify(object sender, ValueChangedEventArgs args)
         {
-            if (sender is Property property && !property.Thing.Subscribers.IsEmpty)
+            var property = args.Property;
+            if (!property.Thing.Subscribers.IsEmpty)
             {
                 var message = new Dictionary<string, object>
                 {
                     [MESSAGE_TYPE] = "propertyStatus", 
                     [DATA] = new Dictionary<string, object>
                     {
-                        [property.Name] = eventArgs.Value
+                        [property.Name] = args.Value
                     }
                 };
 

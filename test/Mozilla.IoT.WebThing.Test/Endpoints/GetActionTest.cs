@@ -94,7 +94,7 @@ namespace Mozilla.IoT.WebThing.Test.Endpoints
                 .Returns(thing);
 
             thing.Actions
-                .Returns(new ObservableActionCollection());
+                .Returns(new ActionCollection());
 
             _routeValue.GetValue<string>("thing")
                 .Returns(thingId);
