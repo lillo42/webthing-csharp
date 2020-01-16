@@ -1,73 +1,51 @@
 using System;
-using System.Collections.Generic;
 
 namespace Mozilla.IoT.WebThing
 {
-    public abstract class Event<T> : Event
-    {
-        public new virtual T Data => (T) base.Data;
-
-        protected Event(Thing thing, string name, T data) 
-            : base(thing, name, data)
-        {
-        }
-
-        protected Event(string name, T data) 
-            : base(name, data)
-        {
-        }
-    }
-
     public abstract class Event : IEquatable<Event>
     {
+        #region Properties
         /// <summary>
-        /// The Event Id
-        /// </summary>
-        public virtual string Id { get; } = Guid.NewGuid().ToString();
-        
-        /// <summary>
-        /// The thing associated with this event.
-        /// </summary>
-        public virtual Thing Thing { get; set; }
-        
-        /// <summary>
-        /// The event's name. 
+        /// The name of event
         /// </summary>
         public virtual string Name { get; }
 
         /// <summary>
-        /// The event's data.
+        /// The event data.
         /// </summary>
-        public virtual object Data { get; }
+        public virtual object? Data { get; }
 
         /// <summary>
-        /// The event's timestamp.
+        /// The event timestamp
         /// </summary>
-        public virtual DateTime Time { get; }
+        public virtual DateTime Timestamp { get; }
+        #endregion
 
-        internal IDictionary<string, object> Metadata { get; set; }
+        #region Constructor
 
-        protected internal Event()
-            : this(null, null, null)
+        protected Event()
         {
             
         }
         
-        protected Event(Thing thing, string name, object data)
+        protected Event(string name, object? data)
         {
-            Thing = thing;
-            Name = name;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             Data = data;
+            Timestamp = DateTime.UtcNow;
         }
 
-        protected Event(string name, object data)
+        protected Event(string name, object? data, DateTime timestamp)
         {
-            Name = name;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             Data = data;
-            Time = DateTime.UtcNow;
+            Timestamp = timestamp;
         }
 
-        public bool Equals(Event other)
+        #endregion
+
+        #region IEquatable
+        public bool Equals(Event? other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -79,14 +57,12 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            return Equals(Thing, other.Thing) 
-                   && string.Equals(Name, other.Name) 
+            return Name == other.Name 
                    && Equals(Data, other.Data) 
-                   && Time.Equals(other.Time) 
-                   && Equals(Metadata, other.Metadata);
+                   && Timestamp.Equals(other.Timestamp);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -106,17 +82,73 @@ namespace Mozilla.IoT.WebThing
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            unchecked
+        public override int GetHashCode() 
+            => HashCode.Combine(Name, Data, Timestamp);
+
+        #endregion
+        
+        #region Operator
+        public static bool operator ==(Event obj1, Event obj2) =>
+            obj1 switch
             {
-                var hashCode = (Thing?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Data?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ Time.GetHashCode();
-                hashCode = (hashCode * 397) ^ (Metadata?.GetHashCode() ?? 0);
-                return hashCode;
+                null when obj2 is null => true,
+                null => false,
+                _ => obj1.Equals(obj2)
+            };
+
+        public static bool operator !=(Event obj1, Event obj2) 
+            => !(obj1 == obj2);
+
+        #endregion
+    }
+
+    public abstract class Event<T> : Event
+    {
+        /// <summary>
+        /// The event data.
+        /// </summary>
+        public new virtual T Data
+        {
+            get
+            {
+                var result = base.Data;
+                if (result == null)
+                {
+                    return default;
+                }
+
+                return (T)result;
             }
         }
+        
+        #region Constructor
+
+        protected Event(string name, T data)
+            : base(name, data)
+        {
+            
+        }
+
+        protected Event(string name, T data, DateTime timestamp)
+            : base(name, data, timestamp)
+        {
+          
+        }
+
+        #endregion
+        
+        #region Operator
+        public static bool operator ==(Event<T> obj1, Event<T> obj2) =>
+            obj1 switch
+            {
+                null when obj2 is null => true,
+                null => false,
+                _ => obj1.Equals(obj2)
+            };
+
+        public static bool operator !=(Event<T> obj1, Event<T> obj2) 
+            => !(obj1 == obj2);
+
+        #endregion
     }
 }

@@ -1,84 +1,36 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Mozilla.IoT.WebThing.EventArgs;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class Property<T> : Property,  IEquatable<Property<T>>
-    {
-        public Property()
-        {
-        }
-
-        public Property(Thing thing, string name, object value, IDictionary<string, object> metadata) 
-            : base(thing, name, value, metadata)
-        {
-        }
-
-        public Property(string name, object value, IDictionary<string, object> metadata) 
-            : base(name, value, metadata)
-        {
-        }
-
-        public new virtual T Value
-        {
-            get
-            {
-                if (base.Value == null)
-                {
-                    return default;
-                }
-
-                return (T)base.Value;
-            }
-            set => base.Value = value;
-        }
-
-        internal override Type Type => typeof(T);
-
-        public new event EventHandler<ValueChangedEventArgs<T>> ValuedChanged;
-        
-        protected override void OnValueChanged()
-        {
-            var @event = ValuedChanged;
-            @event?.Invoke(this, new ValueChangedEventArgs<T>(Value, this));
-            base.OnValueChanged();
-        }
-
-        public bool Equals(Property<T> other) 
-            => base.Equals(other);
-    }
-    
-    [DebuggerDisplay("Value = {Value}")]
+    /// <summary>
+    /// Describes an attribute of a <see cref="Thing"/>
+    /// </summary>
+    [DebuggerDisplay("Title = {Title}, Value = {Value}")]
     public class Property : IEquatable<Property>
     {
-        public Property()
-        {
-            
-        }
-
-        public Property(Thing thing, string name, object value, IDictionary<string, object> metadata)
-        {
-            Thing = thing;
-            Name = name;
-            _value = value;
-            Metadata = metadata;
-        }
-        
-        public Property(string name, object value, IDictionary<string, object> metadata)
-        {
-            _value = value;
-            Name = name;
-            Metadata = metadata;
-        }
-
-
-        public virtual Thing Thing { get;  set; }
-        public virtual string Name { get; set; }
-        public virtual string Href => $"/properties/{Name}";
-        public virtual string HrefPrefix { get; set; }
         private object _value;
-        public virtual object Value
+
+        public event EventHandler<ValueChangedEventArgs> ValueChanged;
+        
+        #region Properties
+
+        /// <summary>
+        /// The name of property
+        /// </summary>
+        public string Name { get; }
+        
+        /// <summary>
+        /// Description of property
+        /// </summary>
+        public PropertyDescription Description { get; }
+        
+        /// <summary>
+        /// The value of property
+        /// </summary>
+        public object? Value
         {
             get => _value;
             set
@@ -87,17 +39,50 @@ namespace Mozilla.IoT.WebThing
                 OnValueChanged();
             }
         }
-        public virtual IDictionary<string, object> Metadata { get; set; }
-        internal virtual Type Type => typeof(object);
-        public event EventHandler<ValueChangedEventArgs> ValuedChanged;
         
-        protected virtual void OnValueChanged()
+        #endregion
+
+        #region Constructor
+        
+        public Property(string name)
         {
-            var @event = ValuedChanged; 
-            @event?.Invoke(this, new ValueChangedEventArgs(Value, this));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Description = new PropertyDescription(name);
+        }
+        
+        public Property(string name, PropertyDescription description)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Description = description ?? throw new ArgumentNullException(nameof(description));
         }
 
-        public bool Equals(Property other)
+        public Property(string name, PropertyDescription description, object? value)
+        {
+            _value = value;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Description = description ?? throw new ArgumentNullException(nameof(description));
+        }
+
+        #endregion
+        
+        #region Operator
+
+        public static bool operator ==(Property obj1, Property obj2) =>
+            obj1 switch
+            {
+                null when obj2 is null => true,
+                null => false,
+                _ => obj1.Equals(obj2)
+            };
+
+        public static bool operator !=(Property obj1, Property obj2) 
+            => !(obj1 == obj2);
+
+        #endregion
+
+        #region IEquatable
+
+        public bool Equals(Property? other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -109,14 +94,10 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            return Equals(_value, other._value) 
-                   && Equals(Thing, other.Thing) 
-                   && string.Equals(Name, other.Name) 
-                   && string.Equals(HrefPrefix, other.HrefPrefix) 
-                   && Equals(Metadata, other.Metadata);
+            return _value.Equals(other._value) && Name == other.Name && Description.Equals(other.Description);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -128,20 +109,95 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((Property) obj);
+            if (obj is Property property)
+            {
+                return Equals(property);
+            }
+
+            return false;
         }
 
-        public override int GetHashCode()
+        public override int GetHashCode() 
+            => HashCode.Combine(_value, Name, Description);
+
+        #endregion
+        
+        protected virtual void OnValueChanged()
         {
-            unchecked
+            var @event = ValueChanged;
+            @event?.Invoke(this, new ValueChangedEventArgs(_value, this));
+        }
+    }
+
+    /// <summary>
+    /// Describes an attribute of a <see cref="Thing"/>
+    /// </summary>
+    [DebuggerDisplay("Title = {Title}, Value = {Value}")]
+    public class Property<T> : Property
+    {
+        public new event EventHandler<ValueChangedEventArgs<T>> ValueChanged;
+        
+        #region Properties
+
+        /// <summary>
+        /// The value of property
+        /// </summary>
+        [MaybeNull]
+        public new T Value
+        {
+            get
             {
-                var hashCode = (_value?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Thing?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Name?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (HrefPrefix?.GetHashCode() ?? 0);
-                hashCode = (hashCode * 397) ^ (Metadata?.GetHashCode() ?? 0);
-                return hashCode;
+                var value = base.Value;
+                if (value == null)
+                {
+                    return default;
+                }
+                return (T)value;
             }
+            
+            set => base.Value = value;
+        }
+
+        #endregion
+        
+        #region Constructor
+        
+        public Property(string name) 
+            : base(name)
+        {
+        }
+
+        public Property(string name, PropertyDescription description)
+            : base(name, description)
+        {
+        }
+
+        public Property(string name, PropertyDescription description, T value) 
+            : base(name, description, value)
+        {
+        }
+        
+        #endregion
+
+        #region Operator
+        public static bool operator ==(Property<T> obj1, Property<T> obj2) =>
+            obj1 switch
+            {
+                null when obj2 is null => true,
+                null => false,
+                _ => obj1.Equals(obj2)
+            };
+
+        public static bool operator !=(Property<T> obj1, Property<T> obj2) 
+            => !(obj1 == obj2);
+
+        #endregion
+
+        protected override void OnValueChanged()
+        {
+            var @event = ValueChanged;
+            @event?.Invoke(this, new ValueChangedEventArgs<T>(Value, this));
+            base.OnValueChanged();
         }
     }
 }
