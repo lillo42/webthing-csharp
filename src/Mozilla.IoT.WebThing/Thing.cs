@@ -148,7 +148,12 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((Thing)obj);
+            if (obj is Thing thing)
+            {
+                return Equals(thing);
+            }
+
+            return false;
         }
 
         public override int GetHashCode()

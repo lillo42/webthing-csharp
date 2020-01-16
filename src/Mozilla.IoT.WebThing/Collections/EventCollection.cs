@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Mozilla.IoT.WebThing.DebugView;
 
 namespace Mozilla.IoT.WebThing.Collections
@@ -10,51 +12,33 @@ namespace Mozilla.IoT.WebThing.Collections
     [DebuggerDisplay("Count = {Count}")]
     public class EventCollection : IEventCollection, IEquatable<EventCollection>
     {
-        private readonly LinkedList<Event> _events = new LinkedList<Event>();
+        private readonly ConcurrentDictionary<string, Event> _events = new ConcurrentDictionary<string, Event>();
         private readonly object _locker = new object();
 
         public IEnumerator<Event> GetEnumerator()
-            => _events.GetEnumerator();
+            => _events.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
         public void Add(Event item)
         {
-            lock (_locker)
-            {
-                _events.AddLast(item);
-            }
-
+            _events.TryAdd(item.Id, item);
             var @event = EventAdded;
             @event?.Invoke(this, new EventAddedEventArgs(item));
         }
 
-        public void Clear()
-        {
-            lock (_locker)
-            {
-                _events.Clear();
-            }
-        }
+        public void Clear() 
+            => _events.Clear();
 
-        public bool Contains(Event item)
-            => _events.Contains(item);
+        public bool Contains(Event item) 
+            => _events.ContainsKey(item.Id);
 
         public void CopyTo(Event[] array, int arrayIndex)
-            => _events.CopyTo(array, arrayIndex);
+            => _events.Values.CopyTo(array, arrayIndex);
 
-        public bool Remove(Event item)
-        {
-            bool result = false;
-
-            lock (_locker)
-            {
-                result = _events.Remove(item);
-            }
-            
-            return result;
-        }
+        public bool Remove(Event item) 
+            => _events.TryRemove(item.Id, out _);
 
         public int Count => _events.Count;
         public bool IsReadOnly => false;

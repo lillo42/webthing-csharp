@@ -51,7 +51,7 @@ namespace Single
             };
 
             var property = new Property<bool>(light, "on", false, onDescription);
-            property.ValuedChanged += (sender, value) =>
+            property.ValuedChanged +=  (sender, value) =>
             {
                 Console.WriteLine($"On-State is now {value}");
             };

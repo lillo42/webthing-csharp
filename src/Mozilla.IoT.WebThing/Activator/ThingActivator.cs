@@ -18,25 +18,19 @@ namespace Mozilla.IoT.WebThing.Activator
         private readonly ThingBindingOption _option;
         private readonly Func<Type, ObjectFactory> _createFactory = type =>
             ActivatorUtilities.CreateFactory(type, Type.EmptyTypes);
-#if DEBUG
-        internal readonly Dictionary<string, Type> _thingType = new Dictionary<string, Type>();
         
-        internal readonly ConcurrentDictionary<Type, Thing>
-            _typeActivatorCache = new ConcurrentDictionary<Type, Thing>();
-#else
         private readonly Dictionary<string, Type> _thingType = new Dictionary<string, Type>();
+        private readonly ConcurrentDictionary<Type, Thing> _typeActivatorCache = new ConcurrentDictionary<Type, Thing>();
         
-        private readonly ConcurrentDictionary<Type, Thing>
-            _typeActivatorCache = new ConcurrentDictionary<Type, Thing>();
-#endif
         public ThingActivator(ThingBindingOption option)
         {
             _option = option;
         }
 
-        public void Register<T>(IServiceProvider service) where T : Thing
+        public void Register<T>(IServiceProvider service) 
+            where T : Thing
         {
-            string name = typeof(T).Name;
+            var name = typeof(T).Name;
             Register<T>(service, name.Replace("Thing", ""));
         }
 
@@ -76,14 +70,16 @@ namespace Mozilla.IoT.WebThing.Activator
 
             var implementationType = _thingType[thingName];
 
-            if (!_typeActivatorCache.ContainsKey(implementationType))
+            if (_typeActivatorCache.TryGetValue(implementationType, out var result))
             {
-                var factory = _createFactory(implementationType);
-                var instance = (Thing)factory(serviceProvider, null);
-                if (_typeActivatorCache.TryAdd(implementationType, instance))
-                {
-                    BindingThingNotify(_typeActivatorCache[implementationType], serviceProvider, thingName);
-                }
+                return result;
+            }
+
+            var factory = _createFactory(implementationType);
+            var instance = (Thing)factory(serviceProvider, null);
+            if (_typeActivatorCache.TryAdd(implementationType, instance))
+            {
+                BindingThingNotify(_typeActivatorCache[implementationType], serviceProvider, thingName);
             }
 
             return _typeActivatorCache[implementationType];

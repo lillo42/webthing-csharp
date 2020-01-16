@@ -17,9 +17,14 @@ namespace Mozilla.IoT.WebThing
         {
         }
     }
-    
+
     public abstract class Event : IEquatable<Event>
     {
+        /// <summary>
+        /// The Event Id
+        /// </summary>
+        public virtual string Id { get; } = Guid.NewGuid().ToString();
+        
         /// <summary>
         /// The thing associated with this event.
         /// </summary>
@@ -93,7 +98,12 @@ namespace Mozilla.IoT.WebThing
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((Event) obj);
+            if (obj is Event @event)
+            {
+                return Equals(@event);
+            }
+
+            return false;
         }
 
         public override int GetHashCode()

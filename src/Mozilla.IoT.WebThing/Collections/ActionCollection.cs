@@ -16,15 +16,17 @@ namespace Mozilla.IoT.WebThing.Collections
         public void Add(Action item)
         {
             var actions = _actions.GetOrAdd(item.Name, name => new LinkedList<Action>());
+            
             lock (_locker)
             {
                 actions.AddLast(item);
-                item.ActionStatusChanged += (sender, args) =>
-                {
-                    var @event = ActionStatusChanged;
-                    @event?.Invoke(this, args);
-                };
             }
+
+            item.ActionStatusChanged += (sender, args) =>
+            { 
+                var @event = ActionStatusChanged; 
+                @event?.Invoke(this, args);
+            };
         }
 
         public bool Contains(string actionName)
@@ -50,7 +52,7 @@ namespace Mozilla.IoT.WebThing.Collections
         }
 
         public override bool Equals(object obj) 
-            => ReferenceEquals(this, obj) || obj is ActionCollection other && Equals(other);
+            => ReferenceEquals(this, obj) || (obj is ActionCollection other && Equals(other));
 
         public override int GetHashCode()
             => (_actions != null ? _actions.GetHashCode() : 0);

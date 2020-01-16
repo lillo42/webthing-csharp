@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="System.Buffers" Version="4.5.0" />
-    <PackageReference Include="System.Text.Json" Version="4.6.0-rc1.19456.4" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.10.0-preview8.19405.3" />
+    <PackageReference Include="System.Text.Json" Version="4.7.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
   </ItemGroup>
 
 </Project>

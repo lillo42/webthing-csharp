@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -12,58 +9,24 @@ namespace Mozilla.IoT.WebThing.Background
 {
     public class ActionExecutorHostedService : BackgroundService
     {
-        private readonly ISourceBlock<Action> _actions;
-        private static readonly object locker = new object();
-
-        private readonly LinkedList<ConfiguredValueTaskAwaitable> _tasks =
-            new LinkedList<ConfiguredValueTaskAwaitable>();
-
+        private readonly ChannelReader<Action> _reader;
         private readonly ILoggerFactory _loggerFactory;
 
-        public ActionExecutorHostedService(ISourceBlock<Action> actions, ILoggerFactory loggerFactory)
+        public ActionExecutorHostedService(ChannelReader<Action> reader, ILoggerFactory loggerFactory)
         {
-            _actions = actions ?? throw new ArgumentNullException(nameof(actions));
+            _reader = reader ?? throw new ArgumentNullException(nameof(reader));
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            await foreach (var action in _reader.ReadAllAsync(stoppingToken))
             {
-                var action = await _actions.ReceiveAsync(stoppingToken)
+#pragma warning disable 4014
+                action.StartAsync(_loggerFactory.CreateLogger(typeof(Action)), stoppingToken)
                     .ConfigureAwait(false);
-
-                var task = action.StartAsync(_loggerFactory.CreateLogger(typeof(Action)), stoppingToken)
-                    .ConfigureAwait(false);
-
-                lock (locker)
-                {
-                    _tasks.AddLast(task);
-                }
-
-                task.GetAwaiter()
-                    .OnCompleted(() =>
-                    {
-                        lock (locker)
-                        {
-                            _tasks.Remove(task);
-                        }
-                    });
+#pragma warning restore 4014
             }
-
-            ImmutableArray<ConfiguredValueTaskAwaitable> immutable;
-
-            lock (locker)
-            {
-                immutable = _tasks.ToImmutableArray();
-            }
-
-            foreach (var task in immutable)
-            {
-                await task;
-            }
-
-            _tasks.Clear();
         }
     }
 }
