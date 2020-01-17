@@ -7,13 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Buffers" Version="4.5.0" />
-    <PackageReference Include="System.Text.Json" Version="4.7.0" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
+    <Compile Remove="Extensions\**" />
+    <Content Remove="Extensions\**" />
+    <EmbeddedResource Remove="Extensions\**" />
+    <None Remove="Extensions\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Extensions" />
+    <PackageReference Include="System.Buffers" Version="4.5.0" />
+    <PackageReference Include="System.Text.Json" Version="4.7.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
   </ItemGroup>
 
 </Project>
