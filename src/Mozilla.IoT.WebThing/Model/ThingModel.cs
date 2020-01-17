@@ -10,7 +10,6 @@ namespace Mozilla.IoT.WebThing.Model
         public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
         public Dictionary<string, object> Actions { get; set; } = new Dictionary<string, object>();
         public Dictionary<string, object> Events { get; set; } = new Dictionary<string, object>();
-        
-        
+        public LinkedList<LinkModel> Links { get; set; }
     }
 }

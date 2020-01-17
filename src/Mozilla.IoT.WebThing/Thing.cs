@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using static Mozilla.IoT.WebThing.Const;
 
@@ -30,7 +31,7 @@ namespace Mozilla.IoT.WebThing
         /// The title member is a human friendly string which describes the device.
         /// This can be set to any value by the device creator and may include a brand name or model number.
         /// </summary>
-        public virtual string Title { get; set; }
+        public virtual string? Title { get; set; }
 
         /// <summary>
         /// The description member is a human friendly string which describes the device and its functions.
