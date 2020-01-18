@@ -1,9 +1,10 @@
-﻿using Mozilla.IoT.WebThing.Converts;
+﻿using System.Text.Json;
+using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Factories
 {
     public interface IThingConverterFactory
     {
-        IThingConverter Create(Thing thing);
+        IThingConverter Create(Thing thing, JsonSerializerOptions options);
     }
 }

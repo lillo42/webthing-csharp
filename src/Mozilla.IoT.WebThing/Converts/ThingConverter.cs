@@ -29,12 +29,12 @@ namespace Mozilla.IoT.WebThing.Converts
         public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            
+
             writer.WriteString("@context", value.Context);
-            WriteType(writer, value.Type);
-            writer.WriteString("Id", $"{_prefix}{value.Name}");
-            WriteTitle(writer, value.Title);
-            WriteDescription(writer, value.Description);
+            WriteType(writer, value.Type, options);
+            WriteProperty(writer, "Id", $"{_prefix}{value.Name}", options);
+            WriteProperty(writer, nameof(Thing.Title), value.Title, options);
+            WriteProperty(writer, nameof(Thing.Description), value.Description, options);
             _thingConverts[value.Name].Write(writer, value, options);
             
             writer.WriteEndObject();
@@ -42,21 +42,48 @@ namespace Mozilla.IoT.WebThing.Converts
 
         #region Writer
 
-        private static void WriteType(Utf8JsonWriter writer, string[]? types)
+        private static string GetName(string name, JsonNamingPolicy policy)
         {
-            writer.WritePropertyName("@type");
-
-            if (types == null)
+            if (policy != null)
             {
-                writer.WriteNullValue();
+                return policy.ConvertName(name);
             }
-            else if (types.Length == 1)
+
+            return name;
+        }
+
+        private static void WriteProperty(Utf8JsonWriter writer, string name, string? value, JsonSerializerOptions options)
+        {
+            var propertyName = GetName(name, options.PropertyNamingPolicy);
+            if (value == null)
             {
-                writer.WriteStringValue(types[0]);
+                if (!options.IgnoreNullValues)
+                {
+                    writer.WriteNull(propertyName);
+                }
             }
             else
             {
-                writer.WriteStartArray();
+                writer.WriteString(propertyName, value);
+            }
+        }
+
+        private static void WriteType(Utf8JsonWriter writer, string[]? types, JsonSerializerOptions options)
+        {
+            if (types == null)
+            {
+                if (!options.IgnoreNullValues)
+                {
+                    writer.WriteNull("@type");
+                }
+            }
+            else if (types.Length == 1)
+            {
+                writer.WriteString("@type", types[0]);
+            }
+            else
+            {
+                writer.WriteStartArray("@type");
 
                 foreach (var type in types)
                 {
@@ -67,27 +94,24 @@ namespace Mozilla.IoT.WebThing.Converts
             }
         }
 
-        private static void WriteTitle(Utf8JsonWriter writer, string? title)
+        private static void WriteTitle(Utf8JsonWriter writer, string? title, JsonSerializerOptions options)
         {
-            if (title == null)
-            {
-                writer.WriteNull(nameof(Thing.Title));
-            }
-            else
-            {
-                writer.WriteString(nameof(Thing.Title), title);
-            }
+            
         }
 
-        private static void WriteDescription(Utf8JsonWriter writer, string? description)
+        private static void WriteDescription(Utf8JsonWriter writer, string? description, JsonSerializerOptions options)
         {
+            var propertyName = options.PropertyNamingPolicy.ConvertName(nameof(Thing.Description));
             if (description == null)
             {
-                writer.WriteNull(nameof(Thing.Description));
+                if (!options.IgnoreNullValues)
+                {
+                    writer.WriteNull(propertyName);
+                }
             }
             else
             {
-                writer.WriteString(nameof(Thing.Description), description);
+                writer.WriteString(propertyName, description);
             }
         }
 

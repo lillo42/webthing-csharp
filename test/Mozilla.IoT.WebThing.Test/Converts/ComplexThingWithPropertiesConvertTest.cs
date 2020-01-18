@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Attributes;
@@ -15,61 +14,66 @@ namespace Mozilla.IoT.WebThing.Test.Converts
     {
         private readonly Fixture _fixture;
         private readonly ThingConverterFactory _generate;
+        private readonly JsonSerializerOptions _option;
 
         public ComplexThingConvertTest()
         {
             _fixture = new Fixture();
             _generate = new ThingConverterFactory();
+            _option = new JsonSerializerOptions 
+            {
+                IgnoreNullValues =  true,
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
         }
 
         [Fact]
-        public void ThingWithProperty()
+        public void ThingWithProperty_Convert()
         {
             var id = _fixture.Create<string>();
             var thing = new ThingWithProperty();
             var convert = new ThingConverter(id,
                 new Dictionary<string, IThingConverter>
                 {
-                    ["ThingWithProperty"] = _generate.Create(thing)
+                    ["ThingWithProperty"] = _generate.Create(thing, _option)
                 });
 
-            var result = JsonSerializer.Serialize(thing,
-                new JsonSerializerOptions {IgnoreNullValues = true, WriteIndented = true, Converters = {convert}});
+            _option.Converters.Clear();
+            _option.Converters.Add(convert);
+            var result = JsonSerializer.Serialize(thing, _option);
 
             var actual = JToken.Parse(result);
 
             actual.Should().BeEquivalentTo(JToken.Parse($@"{{
                 ""@context"": ""https://iot.mozilla.org/schemas"",
-                ""@type"": null,
-                ""Id"": ""{id}ThingWithProperty"",
-                ""Title"": null,
-                ""Description"": null,
-                ""Properties"": {{
-                    ""Text"": {{
-                        ""ReadOnly"": false,
-                        ""Type"": ""string"",
-                        ""Links"": [{{
+                ""id"": ""{id}ThingWithProperty"",
+                ""properties"": {{
+                    ""text"": {{
+                        ""readOnly"": false,
+                        ""type"": ""string"",
+                        ""links"": [{{
                             ""href"": ""/things/ThingWithProperty/properties/Text""
                         }}]
                     }},
-                    ""IsValid"": {{
-                        ""ReadOnly"": false,
-                        ""Type"": ""boolean"",
-                        ""Links"": [{{
+                    ""isValid"": {{
+                        ""readOnly"": false,
+                        ""type"": ""boolean"",
+                        ""links"": [{{
                             ""href"": ""/things/ThingWithProperty/properties/IsValid""
                         }}]
                     }},
-                    ""Number"": {{
-                        ""ReadOnly"": false,
-                        ""Type"": ""integer"",
-                        ""Links"": [{{
+                    ""number"": {{
+                        ""readOnly"": false,
+                        ""type"": ""integer"",
+                        ""links"": [{{
                             ""href"": ""/things/ThingWithProperty/properties/Number""
                         }}]
                     }},
-                    ""Percent"": {{
-                        ""ReadOnly"": true,
-                        ""Type"": ""number"",
-                        ""Links"": [{{
+                    ""percent"": {{
+                        ""readOnly"": true,
+                        ""type"": ""number"",
+                        ""links"": [{{
                             ""href"": ""/things/ThingWithProperty/properties/Percent""
                         }}]
                     }}
@@ -79,16 +83,19 @@ namespace Mozilla.IoT.WebThing.Test.Converts
         
         
         [Fact]
-        public void ThingWithAttribute()
+        public void ThingWithAttribute_Convert()
         {
             var id = _fixture.Create<string>();
-            var thing = new ThingWithAttribute();
+            var thing = new ThingWithPropertiesAttribute();
             var convert = new ThingConverter(id,
                 new Dictionary<string, IThingConverter>
                 {
-                    ["ThingWithAttribute"] = _generate.Create(thing)
+                    ["ThingWithAttribute"] = _generate.Create(thing, _option)
                 });
 
+            _option.Converters.Clear();
+            _option.Converters.Add(convert);
+            
             var result = JsonSerializer.Serialize(thing,
                 new JsonSerializerOptions {IgnoreNullValues = true, WriteIndented = true, Converters = {convert}});
 
@@ -96,44 +103,37 @@ namespace Mozilla.IoT.WebThing.Test.Converts
 
             actual.Should().BeEquivalentTo(JToken.Parse($@"{{
                 ""@context"": ""https://iot.mozilla.org/schemas"",
-                ""@type"": null,
-                ""Id"": ""{id}ThingWithProperty"",
-                ""Title"": null,
-                ""Description"": null,
-                ""Properties"": {{
-                    ""Test"": {{
-                        ""ReadOnly"": false,
-                        ""Type"": ""number"",
-                        ""Links"": [{{
-                            ""href"": ""/things/ThingWithProperty/properties/Test""
+                ""id"": ""{id}ThingWithAttribute"",
+                ""properties"": {{
+                    ""test"": {{
+                        ""readOnly"": false,
+                        ""type"": ""number"",
+                        ""links"": [{{
+                            ""href"": ""/things/ThingWithProperty/properties/test""
                         }}]
                     }},
-                    ""Foo"": {{
-                        ""ReadOnly"": false,
-                        ""Title"": ""Some Title"",
-                        ""Description"": ""Some description"",
+                    ""foo"": {{
+                        ""readOnly"": false,
+                        ""title"": ""Some Title"",
+                        ""description"": ""Some description"",
                         ""@type"": ""Light"",
                         ""@enum"": [ ""Test1"", ""Test2""],
-                        ""Type"": ""string"",
-                        ""Links"": [{{
-                            ""href"": ""/things/ThingWithProperty/properties/IsValid""
+                        ""type"": ""string"",
+                        ""links"": [{{
+                            ""href"": ""/things/ThingWithProperty/properties/foo""
                         }}]
                     }},
-                    ""Bar"": {{
-                        ""Title"": null,
-                        ""Description"": null,
+                    ""bar"": {{
                         ""@type"": [ ""Light"", ""OnOffSwitch""],
-                        ""@enum"": null,
-                        ""ReadOnly"": true,
-                        ""Type"": ""boolean"",
-                        ""Links"": [{{
-                            ""href"": ""/things/ThingWithProperty/properties/Bar""
+                        ""readOnly"": true,
+                        ""type"": ""boolean"",
+                        ""links"": [{{
+                            ""href"": ""/things/ThingWithProperty/properties/bar""
                         }}]
                     }}
                 }}
             }}"));
         }
-    }
 
     public class ThingWithProperty : Thing
     {
@@ -145,21 +145,22 @@ namespace Mozilla.IoT.WebThing.Test.Converts
         public int Number { get; set; }
     }
 
-    public class ThingWithAttribute : Thing
+    public class ThingWithPropertiesAttribute : Thing
     {
         public override string Name => "ThingWithAttribute";
 
-        [JsonIgnore] 
+        [ThingPropertyInformation(Ignore = true)] 
         public string Information { get; set; }
 
-        [JsonPropertyName("Test")] 
+        [ThingPropertyInformation(Name = "Test")] 
         public double Lights { get; set; }
 
-        [JsonPropertyInformation(Title = "Some Title", Description = "Some description", Type = new[] { "Light"}, Enum = new object[]{ "Test1", "Test2"})]
+        [ThingPropertyInformation(Title = "Some Title", Description = "Some description", Type = new[] { "Light"}, Enum = new object[]{ "Test1", "Test2"})]
         public string Foo { get; set; }
 
-        [JsonPropertyInformation(IsReadOnly = true, Type = new[]{"Light", "OnOffSwitch"})]
+        [ThingPropertyInformation(IsReadOnly = true, Type = new[]{"Light", "OnOffSwitch"})]
         public bool Bar { get; set; }
+    }
     }
     
 }

@@ -1,19 +1,26 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json.Serialization;
 using Mozilla.IoT.WebThing.Attributes;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator
 {
     internal sealed partial class ThingConverterGenerator
     {
-        private void GenerateProperties(Thing thing, Type type, bool shouldInsertLink)
+        private void GenerateProperties(Thing thing, Type thingType)
         {
+            var properties = thingType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(x => !IsThingProperty(x.Name)).ToArray();
+
+            if (properties.Length == 0)
+            {
+                PropertyWithNullValue("Properties");
+                return;
+            }
+            
             StartObject("Properties");
 
-            foreach (var propertyInfo in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(x => !IsThingProperty(x.Name)))
+            foreach (var propertyInfo in properties)
             {
                 var propertyType = propertyInfo.PropertyType;
                 var jsonType = GetJsonType(propertyType);
@@ -22,23 +29,20 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                     continue;
                 }
                 
-                var ignore = propertyInfo.GetCustomAttribute<JsonIgnoreAttribute>();
+                var propertyInformation = propertyInfo.GetCustomAttribute<ThingPropertyInformationAttribute>();
 
-                if (ignore != null)
+                if (propertyInformation != null && propertyInformation.Ignore)
                 {
                     continue;
                 }
-
-                var propertyNameAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
-                var propertyName = propertyNameAttribute?.Name ?? propertyInfo.Name;
-                StartObject(propertyName);
                 
-                var propertyInformation = propertyInfo.GetCustomAttribute<JsonPropertyInformationAttribute>();
+                var propertyName =  propertyInformation?.Name ?? propertyInfo.Name;
+                StartObject(propertyName);
 
                 if (propertyInformation != null)
                 {
-                    PropertyWithNullableValue(nameof(JsonPropertyInformationAttribute.Title), propertyInformation.Title);
-                    PropertyWithNullableValue(nameof(JsonPropertyInformationAttribute.Description), propertyInformation.Description);
+                    PropertyWithNullableValue(nameof(ThingPropertyInformationAttribute.Title), propertyInformation.Title);
+                    PropertyWithNullableValue(nameof(ThingPropertyInformationAttribute.Description), propertyInformation.Description);
                     var isReadOnly = propertyInformation?.IsReadOnly ?? !propertyInfo.CanWrite;
                     PropertyWithNullableValue("ReadOnly", isReadOnly);
                     PropertyEnum("@enum", propertyType, propertyInformation.Enum);
@@ -46,62 +50,29 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                     
                     if (jsonType == "number" || jsonType == "integer")
                     {
-                        PropertyNumber(nameof(JsonPropertyInformationAttribute.Minimum), propertyType, propertyInformation.Minimum);
-                        PropertyNumber(nameof(JsonPropertyInformationAttribute.Maximum), propertyType, propertyInformation.Maximum);
-                        PropertyWithNullableValue(nameof(JsonPropertyInformationAttribute.MultipleOf), propertyInformation.MultipleOf);
+                        PropertyNumber(nameof(ThingPropertyInformationAttribute.Minimum), propertyType, propertyInformation.Minimum);
+                        PropertyNumber(nameof(ThingPropertyInformationAttribute.Maximum), propertyType, propertyInformation.Maximum);
+                        PropertyWithNullableValue(nameof(ThingPropertyInformationAttribute.MultipleOf), propertyInformation.MultipleOf);
                     }
                 }
 
                 PropertyWithNullableValue("ReadOnly", !propertyInfo.CanWrite);
                 PropertyWithNullableValue("Type", jsonType);
-
-                if (shouldInsertLink)
-                {
-                    StartArray("Links");
-
-                    StartObject();
-                    
-                    PropertyWithValue( "href", $"/things/{thing.Name}/properties/{propertyName}");
-                    
-                    EndObject();
-                    EndArray();
-                }
                 
+                StartArray("Links");
+
+                StartObject();
+                
+                PropertyWithValue( "href", $"/things/{thing.Name}/properties/{GetPropertyName(propertyName)}");
+                
+                EndObject();
+                EndArray();
+
                 EndObject();
             }
             
             EndObject();
-
-            void PropertyType(string propertyName, string[]? types)
-            {
-                if (types == null)
-                {
-                    PropertyWithNullValue(propertyName);
-                }
-                else if (types.Length == 1)
-                {
-                    PropertyWithValue(propertyName, types[0]);
-                }
-                else
-                {
-                    StartArray(propertyName);
-
-                    foreach (var value in types)
-                    {
-                        if (value == null)
-                        {
-                            NullValue();
-                        }
-                        else
-                        {
-                            Value(value);
-                        }
-                    }
-                    
-                    EndArray();
-                }
-            }
-
+            
             void PropertyNumber(string propertyName, Type propertyType, float? value)
             {
                 if (value == null)
@@ -274,6 +245,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || name == nameof(Thing.Name)
                || name == nameof(Thing.Description)
                || name == nameof(Thing.Title)
-               || name == nameof(Thing.Title);
+               || name == nameof(Thing.Type);
     }
 }

@@ -58,7 +58,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void StartObject(string propertyName)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeStartObjectWithName, new[] { s_strType });
         }
         
@@ -81,7 +81,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void StartArray(string propertyName)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeStartArray, new[] { s_strType });
         }
 
@@ -97,15 +97,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
 
         private void PropertyWithNullValue(string propertyName)
         {
-            _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNull, new[] { s_strType });
+            if (!_options.IgnoreNullValues)
+            {
+                _ilGenerator.Emit(OpCodes.Ldarg_1);
+                _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
+                _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNull, new[] {s_strType});
+            }
         }
         
         private void PropertyWithValue(string propertyName, string value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr,_options.PropertyNamingPolicy.ConvertName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldstr, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeString, new[] { s_strType, s_strType });
         }
@@ -113,7 +116,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void PropertyWithValue(string propertyName, bool value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, _options.PropertyNamingPolicy.ConvertName(propertyName));
             _ilGenerator.Emit(value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeBool, new[] { s_strType, s_boolType });
         }
@@ -123,7 +126,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void PropertyWithValue(string propertyName, int value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberInt, new[] { s_strType, s_intType });
         }
@@ -131,7 +134,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void PropertyWithValue(string propertyName, uint value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberUInt, new[] { s_strType, s_uintType });
         }
@@ -139,7 +142,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void PropertyWithValue(string propertyName, long value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberLong, new[] { s_strType, s_longType });
         }
@@ -147,7 +150,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void PropertyWithValue(string propertyName, ulong value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberULong, new[] { s_strType, s_ulongType });
         }
@@ -155,7 +158,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void PropertyWithValue(string propertyName, double value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberDouble, new[] { typeof(string), typeof(double) });
         }
@@ -163,7 +166,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private void PropertyWithValue(string propertyName, float value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit(OpCodes.Ldstr, propertyName);
+            _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberFloat, new[] { typeof(string), typeof(float) });
         }
@@ -278,9 +281,24 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         }
 
         #endregion
-        
-        private static string? GetJsonType(Type type)
+
+        private string GetPropertyName(string propertyName)
         {
+            if (_options.PropertyNamingPolicy != null)
+            {
+                return _options.PropertyNamingPolicy.ConvertName(propertyName);
+            }
+
+            return propertyName;
+        }
+        
+        private static string? GetJsonType(Type? type)
+        {
+            if (type == null)
+            {
+                return null;
+            }
+            
             if (type == typeof(string))
             {
                 return "string";
@@ -310,5 +328,36 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
 
             return null;
         }
+        
+        private void PropertyType(string propertyName, string[]? types)
+        {
+            if (types == null)
+            {
+                PropertyWithNullValue(propertyName);
+            }
+            else if (types.Length == 1)
+            {
+                PropertyWithValue(propertyName, types[0]);
+            }
+            else
+            {
+                StartArray(propertyName);
+
+                foreach (var value in types)
+                {
+                    if (value == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value(value);
+                    }
+                }
+                    
+                EndArray();
+            }
+        }
+
     }
 }

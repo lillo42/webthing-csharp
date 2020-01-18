@@ -9,7 +9,7 @@ namespace Mozilla.IoT.WebThing.Factories
 {
     public partial class ThingConverterFactory : IThingConverterFactory
     {
-        public IThingConverter Create(Thing thing)
+        public IThingConverter Create(Thing thing, JsonSerializerOptions options)
         {
             var thingType = thing.GetType();
             var typeName = $"{thingType.Name}Converter";
@@ -25,7 +25,7 @@ namespace Mozilla.IoT.WebThing.Factories
 
             var il = methodBuilder.GetILGenerator();
             
-            var generated = new ThingConverterGenerator(il);
+            var generated = new ThingConverterGenerator(il, options);
             
             generated.Generated(thing);
             
