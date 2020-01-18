@@ -16,6 +16,11 @@ namespace Mozilla.IoT.WebThing.Converts
             _thingConverts = thingConverts ?? throw new ArgumentNullException(nameof(thingConverts));
         }
 
+        public override bool CanConvert(Type typeToConvert)
+        {
+            return typeToConvert.IsSubclassOf(typeof(Thing));
+        }
+
         public override Thing Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
@@ -25,9 +30,9 @@ namespace Mozilla.IoT.WebThing.Converts
         {
             writer.WriteStartObject();
             
-            WriteContext(writer, value.Context);
+            writer.WriteString("@context", value.Context);
             WriteType(writer, value.Type);
-            WriteId(writer, $"{_prefix}{value.Name}");
+            writer.WriteString("Id", $"{_prefix}{value.Name}");
             WriteTitle(writer, value.Title);
             WriteDescription(writer, value.Description);
             _thingConverts[value.Name].Write(writer, value, options);
@@ -36,11 +41,6 @@ namespace Mozilla.IoT.WebThing.Converts
         }
 
         #region Writer
-        private static void WriteContext(Utf8JsonWriter writer, string context)
-        {
-            writer.WritePropertyName("@context");
-            writer.WriteStringValue(context);
-        }
 
         private static void WriteType(Utf8JsonWriter writer, string[]? types)
         {
@@ -67,35 +67,27 @@ namespace Mozilla.IoT.WebThing.Converts
             }
         }
 
-        private static void WriteId(Utf8JsonWriter writer, string id)
-        {
-            writer.WritePropertyName("id");
-            writer.WriteStringValue(id);
-        }
-
         private static void WriteTitle(Utf8JsonWriter writer, string? title)
         {
-            writer.WritePropertyName(nameof(Thing.Title));
             if (title == null)
             {
-                writer.WriteNullValue();
+                writer.WriteNull(nameof(Thing.Title));
             }
             else
             {
-                writer.WriteStringValue(title);
+                writer.WriteString(nameof(Thing.Title), title);
             }
         }
 
         private static void WriteDescription(Utf8JsonWriter writer, string? description)
         {
-            writer.WritePropertyName(nameof(Thing.Description));
             if (description == null)
             {
-                writer.WriteNullValue();
+                writer.WriteNull(nameof(Thing.Description));
             }
             else
             {
-                writer.WriteStringValue(description);
+                writer.WriteString(nameof(Thing.Description), description);
             }
         }
 

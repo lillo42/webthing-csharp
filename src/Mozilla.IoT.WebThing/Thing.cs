@@ -23,18 +23,19 @@ namespace Mozilla.IoT.WebThing
         /// The title member is a human friendly string which describes the device.
         /// This can be set to any value by the device creator and may include a brand name or model number.
         /// </summary>
-        public virtual string? Title { get; }
+        public virtual string? Title { get; } = null;
 
         /// <summary>
         /// The description member is a human friendly string which describes the device and its functions.
         /// This can be set to any value by the device creator.
         /// </summary>
-        public virtual string? Description { get; }
+        public virtual string? Description { get; } = null;
 
         /// <summary>
         /// The names of schemas for types of capabilities a device supports.
         /// </summary>
-        public virtual string[]? Type { get; }
+        public virtual string[]? Type { get; } = null;
+
         #endregion
     }
 }
