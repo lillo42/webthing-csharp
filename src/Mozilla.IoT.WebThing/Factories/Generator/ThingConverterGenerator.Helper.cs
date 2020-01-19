@@ -358,6 +358,172 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 EndArray();
             }
         }
+        
+        private void PropertyNumber(string propertyName, Type propertyType, float? value)
+            {
+                if (value == null)
+                {
+                    PropertyWithNullValue(propertyName);
+                    return;
+                }
+
+                if (propertyType == typeof(int)
+                    || propertyType == typeof(byte)
+                    || propertyType == typeof(short)
+                    || propertyType == typeof(ushort))
+                {
+                    PropertyWithValue(propertyName, (int)value);
+                }
+                else if (propertyType == typeof(uint))
+                {
+                    PropertyWithValue(propertyName, (uint)value);
+                }
+                else if (propertyType == typeof(long))
+                {
+                    PropertyWithValue(propertyName, (long)value);
+                }
+                else if (propertyType == typeof(ulong))
+                {
+                    PropertyWithValue(propertyName, (ulong)value);
+                }
+                else if (propertyType == typeof(double))
+                {
+                    PropertyWithValue(propertyName, (double)value);
+                }
+                else
+                {
+                    PropertyWithValue(propertyName, (float)value);
+                }
+            }
+
+        private void PropertyEnum(string propertyName, Type propertyType, object[]? @enums)
+        {
+            if (enums == null)
+            {
+                PropertyWithNullValue(propertyName);
+                return;
+            }
+            
+            StartArray(propertyName);
+
+            if (propertyType == typeof(string))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((string)@enum);
+                    }
+                }
+            }
+            else if (propertyType == typeof(bool))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((bool)@enum);
+                    }
+                }
+            }
+            else if (propertyType == typeof(int)
+                     || propertyType == typeof(byte)
+                     || propertyType == typeof(short)
+                     || propertyType == typeof(ushort))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((int)@enum);
+                    }
+                }
+            }
+            else if (propertyType == typeof(uint))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((uint)@enum);
+                    }
+                }
+            }
+            else if (propertyType == typeof(long))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((long)@enum);
+                    }
+                }
+            }
+            else if (propertyType == typeof(ulong))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((ulong)@enum);
+                    }
+                }
+            }
+            else if (propertyType == typeof(double))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((double)@enum);
+                    }
+                }
+            }
+            else if (propertyType == typeof(float))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value((float)@enum);
+                    }
+                }
+            }
+            
+            EndArray();
+        }
 
     }
 }

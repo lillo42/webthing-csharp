@@ -21,6 +21,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             var type = thing.GetType();
             GenerateProperties(thing, type);
             GenerateEvents(thing, type);
+            GenerateActions(thing, type);
         }
     }
 }

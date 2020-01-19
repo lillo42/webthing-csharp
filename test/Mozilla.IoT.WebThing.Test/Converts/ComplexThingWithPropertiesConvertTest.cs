@@ -149,18 +149,17 @@ namespace Mozilla.IoT.WebThing.Test.Converts
     {
         public override string Name => "ThingWithAttribute";
 
-        [ThingPropertyInformation(Ignore = true)] 
+        [ThingProperty(Ignore = true)] 
         public string Information { get; set; }
 
-        [ThingPropertyInformation(Name = "Test")] 
+        [ThingProperty(Name = "Test")] 
         public double Lights { get; set; }
 
-        [ThingPropertyInformation(Title = "Some Title", Description = "Some description", Type = new[] { "Light"}, Enum = new object[]{ "Test1", "Test2"})]
+        [ThingProperty(Title = "Some Title", Description = "Some description", Type = new[] { "Light"}, Enum = new object[]{ "Test1", "Test2"})]
         public string Foo { get; set; }
 
-        [ThingPropertyInformation(IsReadOnly = true, Type = new[]{"Light", "OnOffSwitch"})]
+        [ThingProperty(IsReadOnly = true, Type = new[]{"Light", "OnOffSwitch"})]
         public bool Bar { get; set; }
     }
     }
-    
 }
