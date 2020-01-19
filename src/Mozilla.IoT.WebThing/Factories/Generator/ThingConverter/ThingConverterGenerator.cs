@@ -1,7 +1,6 @@
 using System;
 using System.Reflection.Emit;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator
 {

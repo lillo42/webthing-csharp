@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using AutoFixture;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Factories;

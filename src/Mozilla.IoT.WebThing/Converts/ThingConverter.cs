@@ -7,11 +7,14 @@ namespace Mozilla.IoT.WebThing.Converts
 {
     public class ThingConverter : JsonConverter<Thing>
     {
-        private readonly Dictionary<string, IThingConverter> _thingConverts;
-
-        public ThingConverter( Dictionary<string, IThingConverter> thingConverts)
+        public ThingConverter(Dictionary<string, IThingConverter> thingConverts)
         {
-            _thingConverts = thingConverts ?? throw new ArgumentNullException(nameof(thingConverts));
+        }
+
+        public ThingConverter()
+        {
+            
+            
         }
 
         public override bool CanConvert(Type typeToConvert)
@@ -30,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Converts
             writer.WriteString("@context", value.Context);
             var builder = new UriBuilder(value.Context) {Path = $"/things/{value.Name}"};
             WriteProperty(writer, "Id", builder.Uri.ToString(), options);
-            _thingConverts[value.Name].Write(writer, value, options);
+            value.ThingContext.Converter.Write(writer, value, options);
             
             StartArray(writer, "Links", options);
             
