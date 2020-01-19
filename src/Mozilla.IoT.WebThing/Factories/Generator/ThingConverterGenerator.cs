@@ -19,9 +19,34 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void Generated(Thing thing)
         {
             var type = thing.GetType();
+            
+            PropertyWithNullableValue(nameof(Thing.Title), thing.Title);
+            PropertyWithNullableValue(nameof(Thing.Description), thing.Description);
+            PropertyType("@type", thing.Type);
+            
             GenerateProperties(thing, type);
             GenerateEvents(thing, type);
             GenerateActions(thing, type);
+            
+           /* StartArray("Links");
+            
+            StartObject();
+            PropertyWithValue("rel", "properties");
+            PropertyWithValue("href", $"/things/{thing.Name}/properties");
+            EndObject();
+            
+            StartObject();
+            PropertyWithValue("rel", "actions");
+            PropertyWithValue("href", $"/things/{thing.Name}/actions");
+            EndObject();
+            
+            StartObject();
+            PropertyWithValue("rel", "events");
+            PropertyWithValue("href", $"/things/{thing.Name}/events");
+            EndObject();
+            
+            
+            EndArray();*/
         }
     }
 }

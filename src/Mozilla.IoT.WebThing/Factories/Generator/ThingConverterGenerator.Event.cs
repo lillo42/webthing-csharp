@@ -18,7 +18,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
 
             foreach (var @event in events)
             {
-                var information = @event.GetCustomAttribute<ThingEventInformationAttribute>();
+                var information = @event.GetCustomAttribute<ThingEventAttribute>();
                 
                 if (information != null && information.Ignore)
                 {
@@ -30,9 +30,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
 
                 if (information != null)
                 {
-                    PropertyWithNullableValue(nameof(ThingEventInformationAttribute.Title), information.Title);
-                    PropertyWithNullableValue(nameof(ThingEventInformationAttribute.Description), information.Description);
-                    PropertyWithNullableValue(nameof(ThingEventInformationAttribute.Unit), information.Unit);
+                    PropertyWithNullableValue(nameof(ThingEventAttribute.Title), information.Title);
+                    PropertyWithNullableValue(nameof(ThingEventAttribute.Description), information.Description);
+                    PropertyWithNullableValue(nameof(ThingEventAttribute.Unit), information.Unit);
                     PropertyType("@type", information.Type);
                 }
                 

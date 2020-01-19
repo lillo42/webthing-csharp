@@ -19,6 +19,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             if (actionsTypes.Length == 0)
             {
                 PropertyWithNullValue("Actions");
+                return;
             }
             
             StartObject("Actions");

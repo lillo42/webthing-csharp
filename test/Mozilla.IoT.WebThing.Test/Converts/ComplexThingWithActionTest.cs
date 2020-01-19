@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using AutoFixture;
@@ -32,8 +33,11 @@ namespace Mozilla.IoT.WebThing.Test.Converts
         public void ThingWithEvent_Convert()
         {
             var id = _fixture.Create<string>();
-            var thing = new ThingWithAction();
-            var convert = new ThingConverter(id,
+            var thing = new ThingWithAction
+            {
+                Prefix = new Uri("https://mywebthingserver.com/")
+            };;
+            var convert = new ThingConverter(
                 new Dictionary<string, IThingConverter>
                 {
                     ["ThingWithAction"] =  _generate.Create(thing, _option)
@@ -45,36 +49,53 @@ namespace Mozilla.IoT.WebThing.Test.Converts
 
             var token = JToken.Parse(result);
             
-            token.Should().BeEquivalentTo(JToken.Parse($@"{{
+            token.Should().BeEquivalentTo(JToken.Parse(@"{
                 ""@context"": ""https://iot.mozilla.org/schemas"",
-                ""id"": ""{id}ThingWithAction"",
-                ""actions"": {{ 
-                    ""fade"": {{
-                        ""input"": {{
+                ""id"": ""https://mywebthingserver.com/things/ThingWithAction"",
+                ""actions"": { 
+                    ""fade"": {
+                        ""input"": {
                             ""type"": ""object"",
-                            ""properties"": {{
-                                ""level"": {{ 
+                            ""properties"": {
+                                ""level"": { 
                                     ""type"": ""integer""
-                                }},
-                                ""duration"": {{ 
+                                },
+                                ""duration"": { 
                                     ""type"": ""integer""
-                                }}
-                            }}
-                        }},
-                        ""links"": [{{
+                                }
+                            }
+                        },
+                        ""links"": [{
                             ""href"": ""/things/ThingWithAction/events/fade""
-                        }}]
-                    }}
-                }}
-            }}"));
+                        }]
+                    }
+                },
+                ""links"": [{
+                    ""rel"": ""properties"",
+                 ""href"": ""/things/ThingWithEvent/properties""
+                   }, {
+                    ""rel"": ""actions"",
+                    ""href"": ""/things/ThingWithEvent/actions""
+                },{
+                    ""rel"": ""events"",
+                    ""href"": ""/things/ThingWithEvent/events""
+                }, {
+                    ""rel"": ""alternate"",
+                    ""href"": ""wss://mywebthingserver.com/things/ThingWithEvent""
+                }
+              ]
+            }"));
         }
         
         [Fact]
         public void ThingWithActionAttribute_Convert()
         {
             var id = _fixture.Create<string>();
-            var thing = new ThingWithActionAttribute();
-            var convert = new ThingConverter(id,
+            var thing = new ThingWithActionAttribute
+            {
+                Prefix = new Uri("https://mywebthingserver.com/")
+            };
+            var convert = new ThingConverter(
                 new Dictionary<string, IThingConverter>
                 {
                     ["ThingWithActionAttribute"] =  _generate.Create(thing, _option)
@@ -86,35 +107,49 @@ namespace Mozilla.IoT.WebThing.Test.Converts
 
             var token = JToken.Parse(result);
             
-            token.Should().BeEquivalentTo(JToken.Parse($@"{{
+            token.Should().BeEquivalentTo(JToken.Parse(@"{
                 ""@context"": ""https://iot.mozilla.org/schemas"",
-                ""id"": ""{id}ThingWithActionAttribute"",
-                ""actions"": {{ 
-                    ""fade"": {{
+                ""id"": ""https://mywebthingserver.com/things/ThingWithActionAttribute"",
+                ""actions"": { 
+                    ""fade"": {
                         ""@type"": ""FadeAction"",
                         ""title"": ""Fade"",
                         ""description"": ""Fade the lamp to a given level"",
-                        ""input"": {{
+                        ""input"": {
                             ""type"": ""object"",
-                            ""properties"": {{
-                                ""level"": {{ 
+                            ""properties"": {
+                                ""level"": { 
                                     ""type"": ""integer"",
                                     ""minimum"": 0,
                                     ""maximum"": 100
-                                }},
-                                ""duration"": {{ 
+                                },
+                                ""duration"": { 
                                     ""type"": ""integer"",
                                     ""minimum"": 0,
                                     ""unit"": ""milliseconds"",
-                                }}
-                            }}
-                        }},
-                        ""links"": [{{
+                                }
+                            }
+                        },
+                        ""links"": [{
                             ""href"": ""/things/ThingWithActionAttribute/events/fade""
-                        }}]
-                    }}
-                }}
-            }}"));
+                        }]
+                    }
+                },
+                ""links"": [{
+                    ""rel"": ""properties"",
+                 ""href"": ""/things/ThingWithEvent/properties""
+                   }, {
+                    ""rel"": ""actions"",
+                    ""href"": ""/things/ThingWithEvent/actions""
+                },{
+                    ""rel"": ""events"",
+                    ""href"": ""/things/ThingWithEvent/events""
+                }, {
+                    ""rel"": ""alternate"",
+                    ""href"": ""wss://mywebthingserver.com/things/ThingWithEvent""
+                }
+              ]
+            }"));
         }
         
         public class ThingWithAction : Thing

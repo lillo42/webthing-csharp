@@ -32,9 +32,11 @@ namespace Mozilla.IoT.WebThing.Test.Converts
         [Fact]
         public void ThingWithEvent_Convert()
         {
-            var id = _fixture.Create<string>();
-            var thing = new ThingWithEvent();
-            var convert = new ThingConverter(id,
+            var thing = new ThingWithEvent
+            {
+                Prefix = new Uri("https://mywebthingserver.com/")
+            };
+            var convert = new ThingConverter(
                 new Dictionary<string, IThingConverter>
                 {
                     ["ThingWithEvent"] =  _generate.Create(thing, _option)
@@ -46,32 +48,48 @@ namespace Mozilla.IoT.WebThing.Test.Converts
 
             var token = JToken.Parse(result);
             
-            token.Should().BeEquivalentTo(JToken.Parse($@"{{
+            token.Should().BeEquivalentTo(JToken.Parse(@"{
                 ""@context"": ""https://iot.mozilla.org/schemas"",
-                ""id"": ""{id}ThingWithEvent"",
-                ""events"": {{ 
-                    ""overheated"": {{
+                ""id"": ""https://mywebthingserver.com/things/ThingWithEvent"",
+                ""events"": { 
+                    ""overheated"": {
                         ""type"": ""number"",
-                        ""links"": [{{
+                        ""links"": [{
                             ""href"": ""/things/ThingWithEvent/events/overheated""
-                        }}]
-                    }},
-                    ""Something"": {{
-                        ""links"": [{{
+                        }]
+                    },
+                    ""Something"": {
+                        ""links"": [{
                             ""href"": ""/things/ThingWithEvent/events/something""
-                        }}]
-                    }}
-                }}
-            }}"));
+                        }]
+                    }
+                },
+                ""links"": [{
+                    ""rel"": ""properties"",
+                 ""href"": ""/things/ThingWithEvent/properties""
+                   }, {
+                    ""rel"": ""actions"",
+                    ""href"": ""/things/ThingWithEvent/actions""
+                },{
+                    ""rel"": ""events"",
+                    ""href"": ""/things/ThingWithEvent/events""
+                }, {
+                    ""rel"": ""alternate"",
+                    ""href"": ""wss://mywebthingserver.com/things/ThingWithEvent""
+                }
+              ]
+            }"));
         }
         
         [Fact]
         public void ThingWithEventAttribute_Convert()
         {
-            var id = _fixture.Create<string>();
-            var thing = new ThingWithEventAttribute();
-            var convert = new ThingConverter(id,
-                new Dictionary<string, IThingConverter>
+            var thing = new ThingWithEventAttribute
+            {
+                Prefix = new Uri("https://mywebthingserver.com/")
+            };
+            var convert = new ThingConverter(
+            new Dictionary<string, IThingConverter>
                 {
                     ["ThingWithEventAttribute"] =  _generate.Create(thing, _option)
                 });
@@ -83,22 +101,35 @@ namespace Mozilla.IoT.WebThing.Test.Converts
 
             var token = JToken.Parse(result);
             
-            token.Should().BeEquivalentTo(JToken.Parse($@"{{
+            token.Should().BeEquivalentTo(JToken.Parse(@"{
                 ""@context"": ""https://iot.mozilla.org/schemas"",
-                ""id"": ""{id}ThingWithEventAttribute"",
-                ""events"": {{ 
-                    ""test"": {{
+                ""id"": ""https://mywebthingserver.com/things/ThingWithEventAttribute"",
+                ""events"": {
+                    ""test"": {
                         ""title"": ""Overheated"",
-                        ""description"": ""Title"",
-                        ""@type"": ""The lamp has exceeded its safe operating temperature"",
+                        ""description"": ""The lamp has exceeded its safe operating temperature"",
+                        ""@type"": ""OverheatedEvent"",
                         ""unit"": ""degree celsius"",
                         ""type"": ""number"",
-                        ""links"": [{{
-                            ""href"": ""/things/ThingWithEvent/events/test""
-                        }}]
-                    }}
-                }}
-            }}"));
+                        ""links"": [{
+                            ""href"": ""/things/ThingWithEventAttribute/events/test""
+                        }]
+                    }
+                },
+                ""links"": [{
+                    ""rel"": ""properties"",
+                    ""href"": ""/things/ThingWithEventAttribute/properties""
+                   }, {
+                    ""rel"": ""actions"",
+                    ""href"": ""/things/ThingWithEventAttribute/actions""
+                   },{
+                    ""rel"": ""events"",
+                    ""href"": ""/things/ThingWithEventAttribute/events""
+                   }, {
+                    ""rel"": ""alternate"",
+                    ""href"": ""wss://mywebthingserver.com/things/ThingWithEventAttribute""
+                }]
+            }"));
         }
         
         public class ThingWithEvent : Thing
@@ -114,11 +145,11 @@ namespace Mozilla.IoT.WebThing.Test.Converts
         {
             public override string Name => "ThingWithEventAttribute";
 
-            [ThingEventInformation(Name = "Test", Title = "Overheated", Description = "The lamp has exceeded its safe operating temperature", 
+            [ThingEvent(Name = "Test", Title = "Overheated", Description = "The lamp has exceeded its safe operating temperature", 
                 Type = new []{ "OverheatedEvent" }, Unit = "degree celsius")]
             public event EventHandler<double> Overheated;
             
-            [ThingEventInformation(Ignore = true)]
+            [ThingEvent(Ignore = true)]
             public event EventHandler Ignore;
         }
     }

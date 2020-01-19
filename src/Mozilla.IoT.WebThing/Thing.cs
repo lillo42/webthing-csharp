@@ -1,4 +1,6 @@
-﻿using static Mozilla.IoT.WebThing.Const;
+﻿using System;
+using Microsoft.AspNetCore.Http;
+using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -8,6 +10,9 @@ namespace Mozilla.IoT.WebThing
     public abstract class Thing
     {
         #region Properties
+
+        internal Uri Prefix { get; set; }
+        
         /// <summary>
         /// URI for a schema repository which defines standard schemas for common "types" of device capabilities.
         /// </summary>

@@ -3,7 +3,7 @@ using System;
 namespace Mozilla.IoT.WebThing.Attributes
 {
     [AttributeUsage(AttributeTargets.Event, AllowMultiple = false)]
-    public class ThingEventInformationAttribute : Attribute
+    public class ThingEventAttribute : Attribute
     {
         public bool Ignore { get; set; }
         public string? Name { get; set; }

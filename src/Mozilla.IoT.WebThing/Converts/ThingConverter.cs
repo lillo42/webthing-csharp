@@ -7,12 +7,10 @@ namespace Mozilla.IoT.WebThing.Converts
 {
     public class ThingConverter : JsonConverter<Thing>
     {
-        private readonly string _prefix;
         private readonly Dictionary<string, IThingConverter> _thingConverts;
 
-        public ThingConverter(string prefix, Dictionary<string, IThingConverter> thingConverts)
+        public ThingConverter( Dictionary<string, IThingConverter> thingConverts)
         {
-            _prefix = prefix ?? throw new ArgumentNullException(nameof(prefix));
             _thingConverts = thingConverts ?? throw new ArgumentNullException(nameof(thingConverts));
         }
 
@@ -29,13 +27,36 @@ namespace Mozilla.IoT.WebThing.Converts
         public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-
             writer.WriteString("@context", value.Context);
-            WriteType(writer, value.Type, options);
-            WriteProperty(writer, "Id", $"{_prefix}{value.Name}", options);
-            WriteProperty(writer, nameof(Thing.Title), value.Title, options);
-            WriteProperty(writer, nameof(Thing.Description), value.Description, options);
+            var builder = new UriBuilder(value.Context) {Path = $"/things/{value.Name}"};
+            WriteProperty(writer, "Id", builder.Uri.ToString(), options);
             _thingConverts[value.Name].Write(writer, value, options);
+            
+            StartArray(writer, "Links", options);
+            
+            writer.WriteStartObject();
+            WriteProperty(writer, "rel",  "properties", options);
+            WriteProperty(writer, "href",  $"/things/{value.Name}/properties", options);
+            writer.WriteEndObject();
+            
+            writer.WriteStartObject();
+            WriteProperty(writer, "rel",  "actions", options);
+            WriteProperty(writer, "href",  $"/things/{value.Name}/actions", options);
+            writer.WriteEndObject();
+            
+            writer.WriteStartObject();
+            WriteProperty(writer, "rel",  "events", options);
+            WriteProperty(writer, "href",  $"/things/{value.Name}/events", options);
+            writer.WriteEndObject();
+            
+            builder.Scheme = value.Prefix.Scheme == "http" ? "ws" : "wss";
+            builder.Path = $"/things/{value.Name}";
+            writer.WriteStartObject();
+            WriteProperty(writer, "rel",  "alternate", options);
+            WriteProperty(writer, "href",  builder.Uri.ToString(), options);
+            writer.WriteEndObject();
+
+            writer.WriteEndArray();
             
             writer.WriteEndObject();
         }
@@ -68,53 +89,12 @@ namespace Mozilla.IoT.WebThing.Converts
             }
         }
 
-        private static void WriteType(Utf8JsonWriter writer, string[]? types, JsonSerializerOptions options)
+        private static void StartArray(Utf8JsonWriter writer, string propertyName, JsonSerializerOptions options)
         {
-            if (types == null)
-            {
-                if (!options.IgnoreNullValues)
-                {
-                    writer.WriteNull("@type");
-                }
-            }
-            else if (types.Length == 1)
-            {
-                writer.WriteString("@type", types[0]);
-            }
-            else
-            {
-                writer.WriteStartArray("@type");
-
-                foreach (var type in types)
-                {
-                    writer.WriteStringValue(type);
-                }
-
-                writer.WriteEndArray();
-            }
+            var name = GetName(propertyName, options.PropertyNamingPolicy);
+            writer.WriteStartArray(name);
         }
-
-        private static void WriteTitle(Utf8JsonWriter writer, string? title, JsonSerializerOptions options)
-        {
-            
-        }
-
-        private static void WriteDescription(Utf8JsonWriter writer, string? description, JsonSerializerOptions options)
-        {
-            var propertyName = options.PropertyNamingPolicy.ConvertName(nameof(Thing.Description));
-            if (description == null)
-            {
-                if (!options.IgnoreNullValues)
-                {
-                    writer.WriteNull(propertyName);
-                }
-            }
-            else
-            {
-                writer.WriteString(propertyName, description);
-            }
-        }
-
+        
         #endregion
     }
 }

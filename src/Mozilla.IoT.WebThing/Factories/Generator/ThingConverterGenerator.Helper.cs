@@ -82,7 +82,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeStartArray, new[] { s_strType });
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeStartArray, new[] { typeof(string) });
         }
 
         private void EndArray()
@@ -101,7 +101,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             {
                 _ilGenerator.Emit(OpCodes.Ldarg_1);
                 _ilGenerator.Emit(OpCodes.Ldstr, GetPropertyName(propertyName));
-                _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNull, new[] {s_strType});
+                _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNull, new[] {typeof(string)});
             }
         }
         
@@ -110,7 +110,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr,_options.PropertyNamingPolicy.ConvertName(propertyName));
             _ilGenerator.Emit(OpCodes.Ldstr, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeString, new[] { s_strType, s_strType });
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeString, new[] { typeof(string), typeof(string) });
         }
         
         private void PropertyWithValue(string propertyName, bool value)
