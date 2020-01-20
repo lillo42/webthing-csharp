@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -27,10 +28,18 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
-            var option = service.GetRequiredService<JsonSerializerOptions>();
             
+            if (thing.Prefix == null)
+            {
+                logger.LogDebug("Thing without prefix. [Name: {name}]", thing.Name);
+                thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
+                    context.Request.Host));
+            }
+            
+            var option = service.GetRequiredService<JsonSerializerOptions>();
             logger.LogInformation("Found Thing. [Name: {name}]", thing.Name);
             context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.ContentType = Const.ContentType;
             return JsonSerializer.SerializeAsync(context.Response.Body, thing.ThingContext.Properties, option);
         }
     }

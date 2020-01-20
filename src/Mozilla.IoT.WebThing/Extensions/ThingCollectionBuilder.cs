@@ -43,6 +43,11 @@ namespace Mozilla.IoT.WebThing.Extensions
         public IThingCollectionBuilder AddThing<T>(T thing) 
             where T : Thing
         {
+            if (thing == null)
+            {
+                throw new ArgumentNullException(nameof(thing));
+            }
+
             _service.TryAddSingleton(thing);
             _service.TryAddSingleton<Thing>(provider =>
             {

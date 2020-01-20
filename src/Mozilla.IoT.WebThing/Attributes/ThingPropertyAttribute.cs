@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Attributes
         public string? Unit { get; set; }
         public string[]? Type { get; set; }
         public bool IsReadOnly { get; set; }
-        public object[] Enum { get; set; }
+        public object[]? Enum { get; set; }
         internal float? MinimumValue { get; set; }
 
         public float Minimum
