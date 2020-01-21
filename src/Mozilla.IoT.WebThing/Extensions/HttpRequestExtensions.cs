@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
 {
     internal static class HttpRequestExtensions
     {
+        [return: MaybeNull]
         public static T GetRouteData<T>(this HttpContext request, string key)
         {
             if (request == null)

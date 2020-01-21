@@ -9,11 +9,6 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IServiceExtensions
     {
-        private static readonly Action<JsonSerializerOptions> s_defaultOption = json =>
-        {
-            
-        };
-        
         public static IThingCollectionBuilder AddThings(this IServiceCollection service, Action<JsonSerializerOptions> options = null)
         {
             if (service == null)

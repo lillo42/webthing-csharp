@@ -13,7 +13,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
 {
     internal class GetAllThingEndpoint
     {
-        internal static async Task InvokeAsync(HttpContext context)
+        internal static Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<GetAllThingEndpoint>>();
@@ -34,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogTrace("Found {counter} things", things.Count());
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
-            await JsonSerializer.SerializeAsync(context.Response.Body, things, option);
+            return JsonSerializer.SerializeAsync(context.Response.Body, things, option, context.RequestAborted);
         }
     }
 }

@@ -13,13 +13,11 @@ namespace Mozilla.IoT.WebThing.Converts
 
         public ThingConverter()
         {
-            
-            
         }
 
         public override bool CanConvert(Type typeToConvert)
         {
-            return typeToConvert.IsSubclassOf(typeof(Thing));
+            return typeToConvert == typeof(Thing) || typeToConvert.IsSubclassOf(typeof(Thing));
         }
 
         public override Thing Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -29,6 +27,22 @@ namespace Mozilla.IoT.WebThing.Converts
 
         public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+
             writer.WriteStartObject();
             writer.WriteString("@context", value.Context);
             var builder = new UriBuilder(value.Context) {Path = $"/things/{value.Name}"};

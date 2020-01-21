@@ -13,7 +13,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
 {
     internal class GetThingEndpoint
     {
-        internal static async Task InvokeAsync(HttpContext context)
+        internal static Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<GetThingEndpoint>>();
@@ -26,7 +26,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 logger.LogInformation("Thing not found. [Name: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return;
+                return Task.CompletedTask;
             }
             
             if (thing.Prefix == null)
@@ -40,7 +40,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogInformation("Found 1 Thing. [Name: {name}]", thing.Name);
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
-            await JsonSerializer.SerializeAsync(context.Response.Body, thing, option);
+            return JsonSerializer.SerializeAsync(context.Response.Body, thing, option, context.RequestAborted);
         }
     }
 }
