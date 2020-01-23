@@ -3,9 +3,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json;
 
-namespace Mozilla.IoT.WebThing.Factories.Generator
+namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
-    internal sealed partial class ThingConverterGenerator
+    internal sealed partial class ConverterGenerator
     {
         #region Types Functions
 

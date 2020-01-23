@@ -11,12 +11,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThingProperty
+    internal class GetThingProperties
     {
         public static Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetThingProperty>>();
+            var logger = service.GetRequiredService<ILogger<GetThingProperties>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             var name = context.GetRouteData<string>("name");
             logger.LogInformation("Requesting Thing. [Name: {name}]", name);
@@ -35,28 +35,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
                     context.Request.Host));
             }
-            
+
             var properties = thing.ThingContext.Properties.GetProperties();
+            var option = service.GetRequiredService<JsonSerializerOptions>();
             logger.LogInformation("Found Thing with {counter} properties. [Name: {name}]", thing.Name, properties.Count);
             
-            
-            var property = context.GetRouteData<string>("property");
-            if (properties.TryGetValue(property, out var value))
-            {
-                logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", thing.Name, property);
-                var option = service.GetRequiredService<JsonSerializerOptions>();
-                context.Response.StatusCode = (int)HttpStatusCode.OK;
-                context.Response.ContentType = Const.ContentType;
-                return JsonSerializer.SerializeAsync(context.Response.Body, new Dictionary<string, object>
-                {
-                    [property] = value
-                }, option);
-            }
-
-            logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
-            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            return Task.CompletedTask;
-
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.ContentType = Const.ContentType;
+            return JsonSerializer.SerializeAsync(context.Response.Body, properties, option);
         }
     }
 }

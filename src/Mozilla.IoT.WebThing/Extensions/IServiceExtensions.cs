@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IServiceExtensions
     {
-        public static IThingCollectionBuilder AddThings(this IServiceCollection service, Action<JsonSerializerOptions> options = null)
+        public static IThingCollectionBuilder AddThings(this IServiceCollection service, Action<JsonSerializerOptions>? options = null)
         {
             if (service == null)
             {
@@ -18,9 +18,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var jsonOption = new JsonSerializerOptions
             {
-                IgnoreNullValues = true, 
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase, 
-                WriteIndented = false
+                IgnoreNullValues = true,
+                WriteIndented = false,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
             };
             
             jsonOption.Converters.Add(new ThingConverter());

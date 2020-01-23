@@ -4,6 +4,7 @@ using System.Reflection.Emit;
 using System.Text.Json;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Factories.Generator;
+using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 
 namespace Mozilla.IoT.WebThing.Factories
 {
@@ -25,7 +26,7 @@ namespace Mozilla.IoT.WebThing.Factories
 
             var il = methodBuilder.GetILGenerator();
             
-            var generated = new ThingConverterGenerator(il, options);
+            var generated = new ConverterGenerator(il, options);
             
             generated.Generated(thing);
             

@@ -80,15 +80,8 @@ namespace Mozilla.IoT.WebThing.Converts
 
         #region Writer
 
-        private static string GetName(string name, JsonNamingPolicy policy)
-        {
-            if (policy != null)
-            {
-                return policy.ConvertName(name);
-            }
-
-            return name;
-        }
+        private static string GetName(string name, JsonNamingPolicy policy) 
+            => policy != null ? policy.ConvertName(name) : name;
 
         private static void WriteProperty(Utf8JsonWriter writer, string name, string? value, JsonSerializerOptions options)
         {

@@ -2,9 +2,9 @@ using System;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Attributes;
 
-namespace Mozilla.IoT.WebThing.Factories.Generator
+namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
-    internal sealed partial class ThingConverterGenerator
+    internal sealed partial class ConverterGenerator
     {
         private void GenerateEvents(Thing thing, Type thingType)
         {

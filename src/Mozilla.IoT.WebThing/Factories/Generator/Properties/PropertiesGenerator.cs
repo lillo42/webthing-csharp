@@ -1,18 +1,25 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator
 {
     internal class PropertiesGenerator
     {
-        private readonly TypeBuilder _typeBuilder;
+        private readonly ILGenerator _ilGenerator;
+        private readonly JsonSerializerOptions _options;
 
-        public PropertiesGenerator(TypeBuilder typeBuilder)
+        private readonly MethodInfo _add = typeof(Dictionary<string, object>).GetMethod(
+            nameof(Dictionary<string, object>.Add), new []{ typeof(string), typeof(object)});
+            
+        public PropertiesGenerator(ILGenerator ilGenerator, JsonSerializerOptions options)
         {
-            _typeBuilder = typeBuilder ?? throw new ArgumentNullException(nameof(typeBuilder));
+            _ilGenerator = ilGenerator ?? throw new ArgumentNullException(nameof(ilGenerator));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public void Generate(Thing thing)
@@ -20,7 +27,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             var thingType = thing.GetType();
             var properties = thingType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(x => !IsThingProperty(x.Name)).ToArray();
-
+            
             foreach (var property in properties)
             {
                 var propertyType = property.PropertyType;
@@ -38,21 +45,52 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 }
                 
                 var propertyName =  information?.Name ?? property.Name;
-                var builder = _typeBuilder.DefineProperty(propertyName, PropertyAttributes.None,
-                    property.PropertyType, null);
+                if (property.PropertyType == typeof(string))
+                {
+                    AddStringValue(propertyName, property.GetMethod);
+                }
+                else if (property.PropertyType == typeof(bool))
+                {
+                    
+                }
                 
-                const MethodAttributes getAttr = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
-                // Define the "get" accessor method for CustomerName.
-                var getMethod = _typeBuilder.DefineMethod($"get_{propertyName}", getAttr, property.PropertyType, Type.EmptyTypes);
-                var getMethodBuild = getMethod.GetILGenerator();
-                
-                getMethodBuild.Emit(OpCodes.Ldarg_0);
-                //getMethodBuild.Emit(OpCodes.Ldfld, );
-                getMethodBuild.EmitCall(OpCodes.Callvirt, property.GetMethod, null);
-                getMethodBuild.Emit(OpCodes.Ret);
-                
-                builder.SetGetMethod(getMethod);
             }
+        }
+
+        private void CreateDictionary()
+        {
+            var constructor = typeof(Dictionary<string, object>).GetConstructor(null);
+            _ilGenerator.Emit(OpCodes.Newobj, constructor);
+            
+        }
+
+        private void AddStringValue(string propertyName, MethodInfo getProperty)
+        {
+            _ilGenerator.Emit(OpCodes.Dup);
+            _ilGenerator.Emit(OpCodes.Ldstr,  propertyName);
+            _ilGenerator.Emit(OpCodes.Ldloc_0);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, getProperty, null);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, _add, null);
+        }
+        
+        private void AddBoolValue(string propertyName, MethodInfo getProperty)
+        {
+            _ilGenerator.Emit(OpCodes.Dup);
+            _ilGenerator.Emit(OpCodes.Ldstr,  propertyName);
+            _ilGenerator.Emit(OpCodes.Ldloc_0);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, getProperty, null);
+            _ilGenerator.Emit(OpCodes.Box, typeof(bool));
+            _ilGenerator.EmitCall(OpCodes.Callvirt, _add, null);
+        }
+
+        private string GetPropertyName(string propertyName)
+        {
+            if (_options.PropertyNamingPolicy != null)
+            {
+                return _options.PropertyNamingPolicy.ConvertName(propertyName);
+            }
+
+            return propertyName;
         }
         
         private static string? GetJsonType(Type? type)

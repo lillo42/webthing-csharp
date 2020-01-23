@@ -2,14 +2,14 @@ using System;
 using System.Reflection.Emit;
 using System.Text.Json;
 
-namespace Mozilla.IoT.WebThing.Factories.Generator
+namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
-    internal sealed partial class ThingConverterGenerator
+    internal sealed partial class ConverterGenerator
     {
         private readonly ILGenerator _ilGenerator;
         private readonly JsonSerializerOptions _options;
 
-        public ThingConverterGenerator(ILGenerator ilGenerator, JsonSerializerOptions options)
+        public ConverterGenerator(ILGenerator ilGenerator, JsonSerializerOptions options)
         {
             _ilGenerator = ilGenerator ?? throw new ArgumentNullException(nameof(ilGenerator));
             _options = options ?? throw new ArgumentNullException(nameof(options));
