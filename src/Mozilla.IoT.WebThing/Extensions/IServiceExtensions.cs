@@ -3,7 +3,6 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Factories;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -27,7 +26,6 @@ namespace Microsoft.Extensions.DependencyInjection
             jsonOption.Converters.Add(new ThingConverter());
             options?.Invoke(jsonOption);
             service.TryAddSingleton(jsonOption);
-            service.TryAddSingleton<IThingConverterFactory, ThingConverterFactory>();
             var builder = new ThingCollectionBuilder(service);
             return builder;
         }

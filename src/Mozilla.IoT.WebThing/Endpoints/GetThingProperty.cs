@@ -36,26 +36,21 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     context.Request.Host));
             }
             
-            var properties = thing.ThingContext.Properties.GetProperties();
-            logger.LogInformation("Found Thing with {counter} properties. [Name: {name}]", thing.Name, properties.Count);
-            
-            
             var property = context.GetRouteData<string>("property");
-            if (properties.TryGetValue(property, out var value))
+            var properties = thing.ThingContext.Properties.GetProperties(property);
+
+            if (properties == null)
             {
-                logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", thing.Name, property);
-                var option = service.GetRequiredService<JsonSerializerOptions>();
-                context.Response.StatusCode = (int)HttpStatusCode.OK;
-                context.Response.ContentType = Const.ContentType;
-                return JsonSerializer.SerializeAsync(context.Response.Body, new Dictionary<string, object>
-                {
-                    [property] = value
-                }, option);
+                logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
             }
 
-            logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
-            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            return Task.CompletedTask;
+            logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", thing.Name, property);
+            var option = service.GetRequiredService<JsonSerializerOptions>();
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.ContentType = Const.ContentType;
+            return JsonSerializer.SerializeAsync(context.Response.Body, properties, option);
 
         }
     }

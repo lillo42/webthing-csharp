@@ -1,23 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
-using Mozilla.IoT.WebThing.Factories.Generator.Properties;
 using Mozilla.IoT.WebThing.Factories.Generator.Visitor;
 
 namespace Mozilla.IoT.WebThing.Factories
 {
-    public class ThingFactory
+    internal static class CodeGeneratorFactory
     {
-        public void Generate(Thing thing, JsonSerializerOptions options)
+        public static void Generate(Thing thing, JsonSerializerOptions options, IEnumerable<IInterceptorFactory> factories)
         {
-            var factories = new IInterceptorFactory[]
-            {
-                new ConverterInterceptorFactory(thing, options), 
-                new PropertiesInterceptFactory(thing, options)
-            };
-
             var thingVisitor = factories
                 .Select(x => x.CreateThingIntercept())
                 .ToArray();
@@ -36,8 +28,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 intercept.After(thing);
             }
         }
-
-
+        
         private static void VisitActions(Thing thing, IEnumerable<IInterceptorFactory> factories)
         {
             var intercepts = factories

@@ -5,7 +5,7 @@ using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
 {
-    internal class EventVisitor
+    internal static class EventVisitor
     {
         public static void Visit(IEnumerable<IEventIntercept> intercepts, Thing thing)
         {

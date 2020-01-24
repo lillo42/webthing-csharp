@@ -4,6 +4,6 @@ namespace Mozilla.IoT.WebThing
 {
     public interface IProperties
     {
-        Dictionary<string, object> GetProperties();
+        Dictionary<string, object>? GetProperties(string? propertyName = null);
     }
 }

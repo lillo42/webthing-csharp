@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Factories;
+using Mozilla.IoT.WebThing.Factories.Generator.Converter;
+using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
+using Mozilla.IoT.WebThing.Factories.Generator.Properties;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
@@ -23,19 +27,19 @@ namespace Mozilla.IoT.WebThing.Extensions
             _service.TryAddSingleton<Thing>(provider =>
             {
                 var thing = provider.GetRequiredService<T>();
-                var factory = provider.GetRequiredService<IThingConverterFactory>();
                 var options = provider.GetRequiredService<JsonSerializerOptions>();
-                var converter = factory.Create(thing, options);
+
+                var converter = new ConverterInterceptorFactory(thing, options);
+                var properties = new PropertiesInterceptFactory(thing, options);
                 
-                thing.ThingContext = new ThingContext(converter, null);
+                CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
+                {
+                    converter,
+                    properties
+                });
+
+                thing.ThingContext = new ThingContext(converter.Create(), properties.Create());
                 return thing;
-            });
-            
-            _service.TryAddSingleton(service =>
-            {
-                var factory = service.GetRequiredService<IThingConverterFactory>();
-                var options = service.GetRequiredService<JsonSerializerOptions>();
-                return factory.Create(service.GetRequiredService<T>(), options);
             });
             return this;
         }
@@ -51,11 +55,19 @@ namespace Mozilla.IoT.WebThing.Extensions
             _service.TryAddSingleton(thing);
             _service.TryAddSingleton<Thing>(provider =>
             {
-                var factory = provider.GetRequiredService<IThingConverterFactory>();
+                var thing = provider.GetRequiredService<T>();
                 var options = provider.GetRequiredService<JsonSerializerOptions>();
-                var converter = factory.Create(thing, options);
+
+                var converter = new ConverterInterceptorFactory(thing, options);
+                var properties = new PropertiesInterceptFactory(thing, options);
                 
-                thing.ThingContext = new ThingContext(converter, null);
+                CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
+                {
+                    converter,
+                    properties
+                });
+
+                thing.ThingContext = new ThingContext(converter.Create(), properties.Create());
                 return thing;
             });
 

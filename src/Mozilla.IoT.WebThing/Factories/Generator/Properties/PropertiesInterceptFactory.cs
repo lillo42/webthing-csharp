@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
@@ -10,53 +8,28 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
     internal class PropertiesInterceptFactory : IInterceptorFactory
     {
-        private readonly JsonSerializerOptions _options;
-        private readonly TypeBuilder _builder;
-        private readonly FieldBuilder _thingFiled;
-        private readonly ILGenerator _ilGenerator;
-        
+        private readonly Thing _thing;
+        private readonly PropertiesPropertyIntercept _intercept;
+
         public PropertiesInterceptFactory(Thing thing, JsonSerializerOptions options)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            
-            var thingType = thing.GetType();
-            _builder = Factory.CreateTypeBuilder($"{thingType.Name}Converter", thingType.Name, 
-                typeof(IProperties));
-            
-            var methodBuilder = _builder.DefineMethod(nameof(IProperties.GetProperties), 
-                MethodAttributes.Public  | MethodAttributes.Final | MethodAttributes.Virtual, 
-                typeof(Dictionary<string, object>), null);
-
-            _thingFiled = _builder.DefineField("_thing", thingType, FieldAttributes.Private | FieldAttributes.InitOnly);
-
-
-            var constructor =
-                _builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Any, new[] {thingType});
-
-            var il = constructor.GetILGenerator();
-            
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Ldfld, _thingFiled);
-            il.Emit(OpCodes.Ret);
-            
-            _ilGenerator = methodBuilder.GetILGenerator();
+            _thing = thing ?? throw new ArgumentNullException(nameof(thing));
+            _intercept = new PropertiesPropertyIntercept(options);
         }
-
 
         public IThingIntercept CreateThingIntercept() => new EmptyIntercept();
 
-        public IPropertyIntercept CreatePropertyIntercept() 
-            => new PropertiesPropertyIntercept(_ilGenerator, _options, _thingFiled);
+        public IPropertyIntercept CreatePropertyIntercept()
+            => _intercept;
 
-        public IActionIntercept CreatActionIntercept() 
+        public IActionIntercept CreatActionIntercept()
             => new EmptyIntercept();
 
         public IEventIntercept CreatEventIntercept()
             => new EmptyIntercept();
 
-        public Type CreateType() 
-            => _builder.CreateType();
+        public IProperties Create() 
+            => new ThingProperties(_thing, _intercept.Getters);
 
         private class EmptyIntercept : IThingIntercept, IActionIntercept, IEventIntercept
         {

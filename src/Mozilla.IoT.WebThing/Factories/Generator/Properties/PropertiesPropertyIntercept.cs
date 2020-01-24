@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
@@ -10,64 +10,70 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
     internal class PropertiesPropertyIntercept : IPropertyIntercept
     {
-        private readonly ILGenerator _ilGenerator;
         private readonly JsonSerializerOptions _options;
-        private readonly FieldBuilder _thingFiled;
-        private readonly MethodInfo _add = typeof(Dictionary<string, object>).GetMethod(
-            nameof(Dictionary<string, object>.Add), new []{ typeof(string), typeof(object)});
+        private readonly Dictionary<string, Func<object, object>> _getters = new Dictionary<string, Func<object, object>>();
+        private readonly Dictionary<string, Action<object, object>> _setters = new Dictionary<string, Action<object, object>>();
 
-        public PropertiesPropertyIntercept(ILGenerator ilGenerator, JsonSerializerOptions options, FieldBuilder thingFiled)
+        public Dictionary<string, Func<object, object>> Getters => _getters;
+
+        public PropertiesPropertyIntercept(JsonSerializerOptions options)
         {
-            _ilGenerator = ilGenerator ?? throw new ArgumentNullException(nameof(ilGenerator));
             _options = options ?? throw new ArgumentNullException(nameof(options));
-            _thingFiled = thingFiled ?? throw new ArgumentNullException(nameof(thingFiled));
         }
 
         public void BeforeVisit(Thing thing)
         {
-            _ilGenerator.DeclareLocal(thing.GetType());
-            _ilGenerator.Emit(OpCodes.Ldarg_0);
-            _ilGenerator.Emit(OpCodes.Ldfld, _thingFiled);
-            _ilGenerator.Emit(OpCodes.Stloc_0);
-            
-            var constructor = typeof(Dictionary<string, object>).GetConstructor(null);
-            _ilGenerator.Emit(OpCodes.Newobj, constructor);
+
         }
 
         public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
         {
-            var propertyName =  thingPropertyAttribute?.Name ?? propertyInfo.Name;
-            if (propertyInfo.PropertyType == typeof(string))
+            var propertyName =  thingPropertyAttribute?.Name ?? _options.GetPropertyName(propertyInfo.Name);
+            _getters.Add(propertyName, GetGetMethod(propertyInfo));
+            //_setters.Add(propertyName, GetSetMethod(propertyInfo));
+        }
+        
+        private static Func<object, object> GetGetMethod(PropertyInfo property)
+        {
+            var instance = Expression.Parameter(typeof (object), "instance");
+            var instanceCast = property.DeclaringType.IsValueType switch
             {
-                AddStringValue(propertyName, propertyInfo.GetMethod);
-            }
-            else
+                true => Expression.Convert(instance, property.DeclaringType),
+                false => Expression.TypeAs(instance, property.DeclaringType)
+            };
+            
+            var call = Expression.Call(instanceCast, property.GetGetMethod());
+            var typeAs = Expression.TypeAs(call, typeof (object));
+
+            return Expression.Lambda<Func<object, object>>(typeAs, instance).Compile();
+        }
+        
+        private static Action<object, object> GetSetMethod(PropertyInfo property)
+        {
+            var instance = Expression.Parameter(typeof (object), "instance");
+            var value = Expression.Parameter(typeof (object), "value");
+
+            // value as T is slightly faster than (T)value, so if it's not a value type, use that
+            var instanceCast = property.DeclaringType.IsValueType switch
             {
-                AddValue(propertyName, propertyInfo.GetMethod, propertyInfo.PropertyType);
-            }
+                true => Expression.Convert(instance, property.DeclaringType),
+                false => Expression.TypeAs(instance, property.DeclaringType)
+            };
+            
+            var valueCast = property.DeclaringType.IsValueType switch
+            {
+                true => Expression.Convert(instance, property.PropertyType),
+                false => Expression.TypeAs(instance, property.PropertyType)
+            };
+           
+
+            var call = Expression.Call(instanceCast, property.GetSetMethod(), valueCast);
+            return Expression.Lambda<Action<object, object>>(call, new[] {instance, value}).Compile();
         }
 
         public void AfterVisit(Thing thing)
         {
-            _ilGenerator.Emit(OpCodes.Ret);
         }
         
-        private void AddStringValue(string propertyName, MethodInfo getProperty)
-        {
-            _ilGenerator.Emit(OpCodes.Dup);
-            _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldloc_0);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, getProperty, null);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, _add, null);
-        }
-        private void AddValue(string propertyName, MethodInfo getProperty, Type boxType)
-        {
-            _ilGenerator.Emit(OpCodes.Dup);
-            _ilGenerator.Emit(OpCodes.Ldstr,  _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldloc_0);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, getProperty, null);
-            _ilGenerator.Emit(OpCodes.Box, boxType);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, _add, null);
-        }
     }
 }

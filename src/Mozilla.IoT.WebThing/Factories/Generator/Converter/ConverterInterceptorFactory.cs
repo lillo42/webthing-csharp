@@ -13,6 +13,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         private readonly JsonSerializerOptions _options;
         private readonly TypeBuilder _builder;
         private readonly Utf8JsonWriterILGenerator _jsonWriterIlGenerator;
+        private readonly ILGenerator _il;
 
         public ConverterInterceptorFactory(Thing thing, JsonSerializerOptions options)
         {
@@ -27,9 +28,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 typeof(void), 
                 new[] { typeof(Utf8JsonWriter), typeof(Thing), typeof(JsonSerializerOptions) });
 
-            var il = methodBuilder.GetILGenerator();
-            
-            _jsonWriterIlGenerator = new Utf8JsonWriterILGenerator(il, _options);
+            _il = methodBuilder.GetILGenerator();
+            _jsonWriterIlGenerator = new Utf8JsonWriterILGenerator(_il, _options);
         }
 
         public IThingIntercept CreateThingIntercept() 
@@ -44,7 +44,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         public IEventIntercept CreatEventIntercept() 
             => new ConvertEventIntercept(_jsonWriterIlGenerator, _options);
 
-        public Type CreateType() 
-            => _builder.CreateType();
+        public IThingConverter Create()
+        {
+            _il.Emit(OpCodes.Ret);
+            return (IThingConverter)Activator.CreateInstance(_builder.CreateType());
+        }
     }
 }
