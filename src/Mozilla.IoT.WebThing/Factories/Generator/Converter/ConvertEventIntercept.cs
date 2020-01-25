@@ -76,15 +76,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 return eventHandlerType.GenericTypeArguments[0];
             }
         }
-        
+
         private static string? GetJsonType(Type? type)
         {
             if (type == null)
             {
                 return null;
             }
-            
-            if (type == typeof(string))
+
+            if (type == typeof(string)
+                || type == typeof(DateTime))
             {
                 return "string";
             }
@@ -95,6 +96,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
             
             if (type == typeof(int)
+                || type == typeof(sbyte)
                 || type == typeof(byte)
                 || type == typeof(short)
                 || type == typeof(long)

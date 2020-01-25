@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             => new EmptyIntercept();
 
         public IProperties Create() 
-            => new ThingProperties(_thing, _intercept.Getters);
+            => new WebThing.Properties(_thing, _intercept.Properties);
 
         private class EmptyIntercept : IThingIntercept, IActionIntercept, IEventIntercept
         {
