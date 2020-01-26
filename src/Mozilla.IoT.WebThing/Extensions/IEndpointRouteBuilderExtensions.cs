@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Routing
             endpoint.MapGet("/things/{name}/properties",  GetThingProperties.InvokeAsync);
             endpoint.MapGet("/things/{name}/properties/{property}",  GetThingProperty.InvokeAsync);
             endpoint.MapPut("/things/{name}/properties/{property}",  PutThingProperty.InvokeAsync);
+            endpoint.MapGet("/things/{name}/events",  GetThingEvents.InvokeAsync);
         }
     }
 }

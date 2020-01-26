@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Attributes;
 
@@ -5,6 +7,26 @@ namespace SampleThing.Things
 {
     public class LampThing : Thing
     {
+        public LampThing()
+        {
+            // Task.Factory.StartNew(() =>
+            // {
+            //     while (true)
+            //     {
+            //         Task.Delay(3_000).GetAwaiter().GetResult();
+            //         var @event = Overheated;
+            //         try
+            //         {
+            //             @event?.Invoke(this, 10);
+            //         }
+            //         catch (Exception e)
+            //         {
+            //             Console.WriteLine(e);
+            //             throw;
+            //         }
+            //     }
+            // }, TaskCreationOptions.RunContinuationsAsynchronously);
+        }
         public override string Name => "Lamp";
         public override string? Title => "My Lamp";
         public override string? Description => "A web connected lamp";
@@ -16,5 +38,10 @@ namespace SampleThing.Things
         [ThingProperty(Type = new []{ "BrightnessProperty" },Title = "Brightness",
             Description = "The level of light from 0-100", Minimum = 0, Maximum = 100)]
         public int Brightness { get; set; }
+
+        [ThingEvent(Title = "Overheated", 
+            Type = new [] {"OverheatedEvent"},
+            Description = "The lamp has exceeded its safe operating temperature")]
+        public event EventHandler<double> Overheated;
     }
 }

@@ -18,12 +18,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        public void BeforeVisit(Thing thing)
+        public void Before(Thing thing)
         {
 
         }
 
-        public void AfterVisit(Thing thing)
+        public void After(Thing thing)
         {
             if (_isObjectStart)
             {

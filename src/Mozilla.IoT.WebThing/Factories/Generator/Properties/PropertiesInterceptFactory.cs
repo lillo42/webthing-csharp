@@ -30,28 +30,5 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 
         public IProperties Create() 
             => new WebThing.Properties(_thing, _intercept.Properties);
-
-        private class EmptyIntercept : IThingIntercept, IActionIntercept, IEventIntercept
-        {
-            public void Before(Thing thing)
-            {
-                
-            }
-
-            public void After(Thing thing)
-            {
-                
-            }
-
-            public void Visit(Thing thing, EventInfo @event, ThingEventAttribute? eventInfo)
-            {
-                
-            }
-
-            public void Intercept(Thing thing, MethodInfo action, ThingActionAttribute? actionInfo)
-            {
-                
-            }
-        }
     }
 }

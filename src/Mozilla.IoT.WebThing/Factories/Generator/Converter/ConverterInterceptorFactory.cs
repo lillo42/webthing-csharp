@@ -21,7 +21,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             
             var thingType = thing.GetType();
             _builder = Factory.CreateTypeBuilder($"{thingType.Name}Converter", thingType.Name, 
-                typeof(IThingConverter));
+                typeof(IThingConverter), TypeAttributes.AutoClass | TypeAttributes.Class | TypeAttributes.Public);
             
             var methodBuilder = _builder.DefineMethod(nameof(IThingConverter.Write), 
                 MethodAttributes.Public  | MethodAttributes.Final | MethodAttributes.Virtual, 

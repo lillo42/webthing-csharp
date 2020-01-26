@@ -17,7 +17,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
             
             foreach (var intercept in intercepts)
             {
-                intercept.BeforeVisit(thing);
+                intercept.Before(thing);
             }
             
             foreach (var property in properties)
@@ -44,7 +44,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
             
             foreach (var intercept in intercepts)
             {
-                intercept.AfterVisit(thing);
+                intercept.After(thing);
             }
         }
         

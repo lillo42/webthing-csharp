@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Converter;
+using Mozilla.IoT.WebThing.Factories.Generator.Events;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 using Mozilla.IoT.WebThing.Factories.Generator.Properties;
 
@@ -31,14 +32,15 @@ namespace Mozilla.IoT.WebThing.Extensions
 
                 var converter = new ConverterInterceptorFactory(thing, options);
                 var properties = new PropertiesInterceptFactory(thing, options);
-                
+                var events = new EventInterceptFactory(thing, options);
                 CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
                 {
                     converter,
-                    properties
+                    properties, 
+                    events
                 });
 
-                thing.ThingContext = new ThingContext(converter.Create(), properties.Create());
+                thing.ThingContext = new ThingContext(converter.Create(), properties.Create(), events.Events);
                 return thing;
             });
             return this;
@@ -60,14 +62,16 @@ namespace Mozilla.IoT.WebThing.Extensions
 
                 var converter = new ConverterInterceptorFactory(thing, options);
                 var properties = new PropertiesInterceptFactory(thing, options);
+                var events = new EventInterceptFactory(thing, options);
                 
                 CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
                 {
                     converter,
-                    properties
+                    properties, 
+                    events
                 });
 
-                thing.ThingContext = new ThingContext(converter.Create(), properties.Create());
+                thing.ThingContext = new ThingContext(converter.Create(), properties.Create(), events.Events);
                 return thing;
             });
 

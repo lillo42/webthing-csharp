@@ -1,4 +1,5 @@
 ﻿using System;
+using Mozilla.IoT.WebThing.Attributes;
 using static Mozilla.IoT.WebThing.Const;
 
 namespace Mozilla.IoT.WebThing
@@ -12,7 +13,8 @@ namespace Mozilla.IoT.WebThing
 
         internal Uri Prefix { get; set; }
 
-        internal ThingContext ThingContext { get; set; }
+        [ThingProperty(Ignore = true)]
+        public ThingContext ThingContext { get; set; }
         
         /// <summary>
         /// URI for a schema repository which defines standard schemas for common "types" of device capabilities.

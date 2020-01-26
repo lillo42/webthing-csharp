@@ -19,7 +19,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        public void BeforeVisit(Thing thing)
+        public void Before(Thing thing)
         {
 
         }
@@ -146,7 +146,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             return null;
         }
         
-        public void AfterVisit(Thing thing)
+        public void After(Thing thing)
         {
         }
     }
