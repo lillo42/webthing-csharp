@@ -9,23 +9,22 @@ namespace SampleThing.Things
     {
         public LampThing()
         {
-            // Task.Factory.StartNew(() =>
-            // {
-            //     while (true)
-            //     {
-            //         Task.Delay(3_000).GetAwaiter().GetResult();
-            //         var @event = Overheated;
-            //         try
-            //         {
-            //             @event?.Invoke(this, 10);
-            //         }
-            //         catch (Exception e)
-            //         {
-            //             Console.WriteLine(e);
-            //             throw;
-            //         }
-            //     }
-            // }, TaskCreationOptions.RunContinuationsAsynchronously);
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    Task.Delay(3_000).GetAwaiter().GetResult();
+                    var @event = Overheated;
+                    try
+                    {
+                        @event?.Invoke(this, 10);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+            });
         }
         public override string Name => "Lamp";
         public override string? Title => "My Lamp";
