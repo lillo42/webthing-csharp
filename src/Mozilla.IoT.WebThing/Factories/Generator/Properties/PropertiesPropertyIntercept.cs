@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
     internal class PropertiesPropertyIntercept : IPropertyIntercept
     {
         private readonly JsonSerializerOptions _options;
-        public Dictionary<string, Property> Properties { get; } = new Dictionary<string, Property>();
+        public Dictionary<string, ThingProperty> Properties { get; } = new Dictionary<string, ThingProperty>();
 
         public PropertiesPropertyIntercept(JsonSerializerOptions options)
         {
@@ -27,7 +27,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
         {
             var propertyName =  thingPropertyAttribute?.Name ?? _options.GetPropertyName(propertyInfo.Name);
-            Properties.Add(propertyName, new Property(GetGetMethod(propertyInfo),
+            Properties.Add(propertyName, new ThingProperty(GetGetMethod(propertyInfo),
                 GetSetMethod(propertyInfo),
                 CreateValidator(propertyInfo, thingPropertyAttribute),
                 CreateMapper(propertyInfo.PropertyType)));

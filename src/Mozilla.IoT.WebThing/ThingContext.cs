@@ -5,7 +5,7 @@ namespace Mozilla.IoT.WebThing
 {
     public class ThingContext
     {
-        public ThingContext(IThingConverter converter, IProperties properties, Dictionary<string, EventCollection> events)
+        public ThingContext(IThingConverter converter, IProperties properties, Dictionary<string, ThingEventCollection> events)
         {
             Converter = converter;
             Properties = properties;
@@ -16,6 +16,6 @@ namespace Mozilla.IoT.WebThing
         
         public IProperties Properties { get; }
         
-        public Dictionary<string, EventCollection> Events { get; }
+        public Dictionary<string, ThingEventCollection> Events { get; }
     }
 }

@@ -2,29 +2,29 @@ using System.Collections.Concurrent;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class EventCollection
+    public class ThingEventCollection
     {
-        private readonly ConcurrentBag<Event> _events;
+        private readonly ConcurrentBag<ThingEvent> _events;
         private readonly int _size;
         private readonly object _locker = new object();
 
-        public EventCollection(int size)
+        public ThingEventCollection(int size)
         {
             _size = size;
-            _events = new ConcurrentBag<Event>();
+            _events = new ConcurrentBag<ThingEvent>();
         }
 
-        public void Add(Event @event)
+        public void Add(ThingEvent thingEvent)
         {
             if (_events.Count == _size)
             {
                 _events.TryTake(out _);
             }
     
-            _events.Add(@event);
+            _events.Add(thingEvent);
         }
 
-        public Event[] ToArray()
+        public ThingEvent[] ToArray()
         {
             return _events.ToArray();
         }
