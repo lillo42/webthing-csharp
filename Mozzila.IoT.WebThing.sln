@@ -18,8 +18,6 @@ ProjectSection(SolutionItems) = preProject
 	Directory.Build.props = Directory.Build.props
 	.editorconfig = .editorconfig
 	azure-pipelines.yml = azure-pipelines.yml
-	build.ps1 = build.ps1
-	build.sh = build.sh
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleThing", "sample\SampleThing\SampleThing.csproj", "{6FB673AA-FD52-4509-97C8-28572549F609}"
