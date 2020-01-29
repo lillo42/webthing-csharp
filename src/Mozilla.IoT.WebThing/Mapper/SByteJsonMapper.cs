@@ -4,7 +4,7 @@ namespace Mozilla.IoT.WebThing.Mapper
 {
     public class SByteJsonMapper : IJsonMapper
     {
-        private static SByteJsonMapper s_instance;
+        private static SByteJsonMapper? s_instance;
         public static SByteJsonMapper Instance => s_instance ??= new SByteJsonMapper();
 
         public object Map(object value) 

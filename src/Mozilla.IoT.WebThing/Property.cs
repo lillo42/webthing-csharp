@@ -3,9 +3,9 @@ using Mozilla.IoT.WebThing.Mapper;
 
 namespace Mozilla.IoT.WebThing
 {
-    internal sealed class ThingProperty
+    internal sealed class Property
     {
-        public ThingProperty(Func<object, object> getter,
+        public Property(Func<object, object> getter,
             Action<object, object> setter,
             IPropertyValidator validator,
             IJsonMapper mapper)

@@ -36,7 +36,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     context.Request.Host));
             }
 
-            var properties = thing.ThingContext.Properties.GetProperties();
+            var properties = thing.ThingContext.Properties.GetProperties()!;
             var option = service.GetRequiredService<JsonSerializerOptions>();
             logger.LogInformation("Found Thing with {counter} properties. [Name: {name}]", thing.Name, properties.Count);
             

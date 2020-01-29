@@ -11,7 +11,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             var assemblyName = new AssemblyName($"{baseName}Assembly");
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule($"{typeName}Module");
-            Type[] interfaces = null;
+            Type[]? interfaces = null;
             if (@interface != null)
             {
                 interfaces = new[] { @interface };

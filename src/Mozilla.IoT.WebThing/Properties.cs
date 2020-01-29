@@ -4,13 +4,13 @@ using System.Linq;
 
 namespace Mozilla.IoT.WebThing
 {
-    internal class ThingProperties : IProperties
+    internal class Properties : IProperties
     {
         private readonly Thing _thing;
-        private readonly Dictionary<string, ThingProperty> _properties;
+        private readonly Dictionary<string, Property> _properties;
 
-        public ThingProperties(Thing thing,
-            Dictionary<string, ThingProperty> properties)
+        public Properties(Thing thing,
+            Dictionary<string, Property> properties)
         {
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
             _properties = properties ?? throw new ArgumentNullException(nameof(properties));

@@ -17,33 +17,33 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         }
         
         #region Types Functions 
-        private readonly MethodInfo s_writeStartObjectWithName = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStartObject), new [] { typeof(string)} );
-        private readonly MethodInfo s_writeStartObject = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStartObject), new Type[0]);
-        private readonly MethodInfo s_writeEndObject = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteEndObject), new Type[0]);
+        private readonly MethodInfo s_writeStartObjectWithName = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStartObject), new [] { typeof(string)} )!;
+        private readonly MethodInfo s_writeStartObject = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStartObject), new Type[0])!;
+        private readonly MethodInfo s_writeEndObject = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteEndObject), new Type[0])!;
         
-        private readonly MethodInfo s_writeStartArray = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStartArray), new [] { typeof(string)});
-        private readonly MethodInfo s_writeEndArray = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteEndArray), new Type[0]);
+        private readonly MethodInfo s_writeStartArray = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStartArray), new [] { typeof(string)})!;
+        private readonly MethodInfo s_writeEndArray = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteEndArray), new Type[0])!;
         
-        private readonly MethodInfo s_writeString = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteString), new []{ typeof(string), typeof(string) });
-        private readonly MethodInfo s_writeStringValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStringValue), new []{ typeof(string) });
-        private readonly MethodInfo s_writeBool = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteBoolean), new []{ typeof(string), typeof(bool) });
-        private readonly MethodInfo s_writeBoolValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteBooleanValue), new []{ typeof(bool) });
-        private readonly MethodInfo s_writeNull = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNull), new []{ typeof(string) });
-        private readonly MethodInfo s_writeNullValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNullValue), new Type[0]);
+        private readonly MethodInfo s_writeString = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteString), new []{ typeof(string), typeof(string) })!;
+        private readonly MethodInfo s_writeStringValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteStringValue), new []{ typeof(string) })!;
+        private readonly MethodInfo s_writeBool = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteBoolean), new []{ typeof(string), typeof(bool) })!;
+        private readonly MethodInfo s_writeBoolValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteBooleanValue), new []{ typeof(bool) })!;
+        private readonly MethodInfo s_writeNull = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNull), new []{ typeof(string) })!;
+        private readonly MethodInfo s_writeNullValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNullValue), new Type[0])!;
         
-        private readonly MethodInfo s_writeNumberInt = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new    [] { typeof(string), typeof(int) });
-        private readonly MethodInfo s_writeNumberUInt = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new   [] { typeof(string), typeof(uint) });
-        private readonly MethodInfo s_writeNumberLong = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new   [] { typeof(string), typeof(long) });
-        private readonly MethodInfo s_writeNumberULong = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new  [] { typeof(string), typeof(ulong) });
-        private readonly MethodInfo s_writeNumberDouble = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new [] { typeof(string), typeof(double) });
-        private readonly MethodInfo s_writeNumberFloat = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new  [] { typeof(string), typeof(float) });
+        private readonly MethodInfo s_writeNumberInt = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new    [] { typeof(string), typeof(int) })!;
+        private readonly MethodInfo s_writeNumberUInt = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new   [] { typeof(string), typeof(uint) })!;
+        private readonly MethodInfo s_writeNumberLong = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new   [] { typeof(string), typeof(long) })!;
+        private readonly MethodInfo s_writeNumberULong = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new  [] { typeof(string), typeof(ulong) })!;
+        private readonly MethodInfo s_writeNumberDouble = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new [] { typeof(string), typeof(double) })!;
+        private readonly MethodInfo s_writeNumberFloat = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumber), new  [] { typeof(string), typeof(float) })!;
         
-        private readonly MethodInfo s_writeNumberIntValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(int) });
-        private readonly MethodInfo s_writeNumberUIntValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(uint) });
-        private readonly MethodInfo s_writeNumberLongValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(long) });
-        private readonly MethodInfo s_writeNumberULongValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(ulong) });
-        private readonly MethodInfo s_writeNumberDoubleValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(double) });
-        private readonly MethodInfo s_writeNumberFloatValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(float) });
+        private readonly MethodInfo s_writeNumberIntValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(int) })!;
+        private readonly MethodInfo s_writeNumberUIntValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(uint) })!;
+        private readonly MethodInfo s_writeNumberLongValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(long) })!;
+        private readonly MethodInfo s_writeNumberULongValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(ulong) })!;
+        private readonly MethodInfo s_writeNumberDoubleValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(double) })!;
+        private readonly MethodInfo s_writeNumberFloatValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(float) })!;
         #endregion
 
         #region Object

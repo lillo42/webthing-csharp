@@ -18,9 +18,19 @@ ProjectSection(SolutionItems) = preProject
 	Directory.Build.props = Directory.Build.props
 	.editorconfig = .editorconfig
 	azure-pipelines.yml = azure-pipelines.yml
+	build.ps1 = build.ps1
+	build.sh = build.sh
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleThing", "sample\SampleThing\SampleThing.csproj", "{6FB673AA-FD52-4509-97C8-28572549F609}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{6CF61456-785E-495E-A5C5-0EDEC48AC1DE}"
+ProjectSection(SolutionItems) = preProject
+	build\build.cake = build\build.cake
+	build\main.cake = build\main.cake
+	build\test.cake = build\test.cake
+	build\variable.cake = build\variable.cake
+EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,5 +86,6 @@ Global
 		{4999C9EF-BCC2-4252-A404-0161E655AAD9} = {F6436C38-AB0A-4D3F-8BA7-E2C0FA30D052}
 		{63874B3F-6000-418D-BD19-C56A4D86B612} = {65C51E32-2901-4983-A238-0F931D9EB651}
 		{6FB673AA-FD52-4509-97C8-28572549F609} = {370B1F76-EFE0-44D4-A395-59F5EF266112}
+		{6CF61456-785E-495E-A5C5-0EDEC48AC1DE} = {E90FFA85-A210-450A-AA08-528D7F8962C2}
 	EndGlobalSection
 EndGlobal

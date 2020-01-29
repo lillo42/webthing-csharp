@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         public IThingConverter Create()
         {
             _il.Emit(OpCodes.Ret);
-            return (IThingConverter)Activator.CreateInstance(_builder.CreateType());
+            return (IThingConverter)Activator.CreateInstance(_builder.CreateType())!;
         }
     }
 }

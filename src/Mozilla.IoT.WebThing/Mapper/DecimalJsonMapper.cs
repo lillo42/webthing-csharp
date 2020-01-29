@@ -4,7 +4,7 @@ namespace Mozilla.IoT.WebThing.Mapper
 {
     public class DecimalJsonMapper : IJsonMapper
     {
-        private static DecimalJsonMapper s_instance;
+        private static DecimalJsonMapper? s_instance;
         public static DecimalJsonMapper Instance => s_instance ??= new DecimalJsonMapper();
 
         public object Map(object value) 

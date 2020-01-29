@@ -66,7 +66,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _jsonWriter.StartObject("Properties");
                 foreach (var parameter in parameters)
                 {
-                    _jsonWriter.StartObject(parameter.Name);
+                    _jsonWriter.StartObject(parameter.Name!);
                     var jsonType = GetJsonType(parameter.ParameterType);
 
                     if (jsonType == null)

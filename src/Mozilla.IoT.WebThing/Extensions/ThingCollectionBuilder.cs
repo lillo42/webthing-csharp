@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Factories;
+using Mozilla.IoT.WebThing.Factories.Generator.Actions;
 using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 using Mozilla.IoT.WebThing.Factories.Generator.Events;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
@@ -33,14 +34,19 @@ namespace Mozilla.IoT.WebThing.Extensions
                 var converter = new ConverterInterceptorFactory(thing, options);
                 var properties = new PropertiesInterceptFactory(thing, options);
                 var events = new EventInterceptFactory(thing, options);
+                var actions = new ActionInterceptFactory();
                 CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
                 {
                     converter,
                     properties, 
-                    events
+                    events,
+                    actions
                 });
 
-                thing.ThingContext = new ThingContext(converter.Create(), properties.Create(), events.Events);
+                thing.ThingContext = new Context(converter.Create(), 
+                    properties.Create(), 
+                    events.Events,
+                    actions.Actions);
                 return thing;
             });
             return this;
@@ -63,15 +69,20 @@ namespace Mozilla.IoT.WebThing.Extensions
                 var converter = new ConverterInterceptorFactory(thing, options);
                 var properties = new PropertiesInterceptFactory(thing, options);
                 var events = new EventInterceptFactory(thing, options);
+                var actions = new ActionInterceptFactory();
                 
                 CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
                 {
                     converter,
                     properties, 
-                    events
+                    events,
+                    actions
                 });
 
-                thing.ThingContext = new ThingContext(converter.Create(), properties.Create(), events.Events);
+                thing.ThingContext = new Context(converter.Create(), 
+                    properties.Create(), 
+                    events.Events,
+                    actions.Actions);
                 return thing;
             });
 

@@ -14,7 +14,7 @@ namespace Mozilla.IoT.WebThing
         internal Uri Prefix { get; set; }
 
         [ThingProperty(Ignore = true)]
-        public ThingContext ThingContext { get; set; }
+        public Context ThingContext { get; set; }
         
         /// <summary>
         /// URI for a schema repository which defines standard schemas for common "types" of device capabilities.

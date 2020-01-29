@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Attributes;
@@ -42,5 +43,15 @@ namespace SampleThing.Things
             Type = new [] {"OverheatedEvent"},
             Description = "The lamp has exceeded its safe operating temperature")]
         public event EventHandler<double> Overheated;
+
+
+        [ThingAction(Title = "Fade", Type = new []{"FadeAction"},
+            Description = "Fade the lamp to a given level")]
+        public void Fade(
+            [ThingParameter(Minimum = 0, Maximum = 100)]int level,
+            [ThingParameter(Minimum = 0, Unit = "milliseconds")]int duration)
+        {
+            Console.WriteLine("Fade executed....");
+        }
     }
 }

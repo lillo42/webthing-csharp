@@ -4,7 +4,7 @@ namespace Mozilla.IoT.WebThing.Mapper
 {
     public class DateTimeJsonMapper : IJsonMapper
     {
-        private static DateTimeJsonMapper s_instance;
+        private static DateTimeJsonMapper? s_instance;
         public static DateTimeJsonMapper Instance => s_instance ??= new DateTimeJsonMapper();
 
         public object Map(object value) 
