@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Mozilla.IoT.WebThing.Actions;
 
@@ -12,5 +13,6 @@ namespace Mozilla.IoT.WebThing
         }
 
         public Type ActionType { get; }
+        public ConcurrentBag<ActionInfo> Actions { get; } = new ConcurrentBag<ActionInfo>();
     }
 }
