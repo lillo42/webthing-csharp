@@ -18,15 +18,15 @@ namespace Mozilla.IoT.WebThing.Actions
 
 
         public abstract bool IsValid();
-        protected virtual ValueTask ExecuteAsync() => new ValueTask();
-        public virtual async Task ExecuteAsync(ILogger<ActionInfo> logger)
+        protected abstract ValueTask ExecuteAsync(Thing thing);
+        public virtual async Task ExecuteAsync(Thing thing, ILogger<ActionInfo> logger)
         {
             logger.LogInformation("Going to execute {actionName}", ActionName);
             Status = Status.Executing;
             
             try
             {
-                await ExecuteAsync()
+                await ExecuteAsync(thing)
                     .ConfigureAwait(false);
                 
                 logger.LogInformation("{actionName} to executed", ActionName);

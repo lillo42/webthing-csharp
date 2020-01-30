@@ -45,15 +45,29 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var option = service.GetRequiredService<JsonSerializerOptions>();
             var jsonString = await GetJsonString(context);
             var actions =  JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString, option);
-
+            
             foreach (var (actionName, json) in actions)
             {
-                var action = (ActionInfo)JsonSerializer.Deserialize(json.GetBytesFromBase64(),
-                    thing.ThingContext.Actions[actionName].ActionType, option);
+                if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
+                {
+                    logger.LogInformation("{actionName} Action not found in {thingName}", actions, thingName);
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
+                }
+                
+                logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
+                var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
+                    actionContext.ActionType, option);
+                
+                if (!action.IsValid())
+                {
+                    logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return;
+                }
 
                 action.Thing = thing;
-
-                action.ExecuteAsync(service.GetRequiredService<ILogger<ActionInfo>>())
+                action.ExecuteAsync(thing, service.GetRequiredService<ILogger<ActionInfo>>())
                     .ConfigureAwait(false);
             }
         }

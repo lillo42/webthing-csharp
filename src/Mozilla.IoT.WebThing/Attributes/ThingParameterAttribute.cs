@@ -8,17 +8,17 @@ namespace Mozilla.IoT.WebThing.Attributes
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? Unit { get; set; }
-        internal float? MinimumValue { get; set; }
+        internal int? MinimumValue { get; private set; }
 
-        public float Minimum
+        public int Minimum
         {
             get => MinimumValue ?? 0;
             set => MinimumValue = value;
         }
         
-        internal float? MaximumValue { get; set; }
+        internal int? MaximumValue { get; private set; }
 
-        public float Maximum
+        public int Maximum
         {
             get => MaximumValue ?? 0;
             set => MaximumValue = value;

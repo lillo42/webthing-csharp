@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
@@ -36,52 +37,40 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var thingType = thing.GetType();
             var inputBuilder = _moduleBuilder.DefineType($"{action.Name}Input",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass);
-
+            
+            var parameters = action.GetParameters();
+            foreach (var parameter in parameters)
+            {
+                CreateProperty(inputBuilder, parameter.Name, parameter.ParameterType);
+            }
+            
+            var inputType = inputBuilder.CreateType();
+            
             var actionBuilder = _moduleBuilder.DefineType($"{thingType.Name}{action.Name}ActionInfo",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
                 typeof(ActionInfo));
-
+            var input = CreateProperty(actionBuilder, "input", inputType);
             var name = actionInfo?.Name ?? action.Name;
             CreateActionName(actionBuilder, name);
-
-
-            var parameters = action.GetParameters();
-
+            
             var isValid = actionBuilder.DefineMethod("IsValid",
-                MethodAttributes.Private | MethodAttributes.Static,
-                CallingConventions.Any | CallingConventions.Standard, typeof(bool),
+                MethodAttributes.Private | MethodAttributes.Static, typeof(bool),
                 parameters.Select(x => x.ParameterType).ToArray());
             var isValidIl = isValid.GetILGenerator();
-
-            Label? nextValidation = null;
-            for (var index = 0; index < parameters.Length; index++)
-            {
-                var parameter = parameters[index];
-                CreateProperty(inputBuilder, parameter.Name, parameter.ParameterType);
-                AddParameterValidation(isValidIl, parameter,
-                    parameter.GetCustomAttribute<ThingParameterAttribute>(),
-                    index + 1, ref nextValidation);
-            }
-
-            if (nextValidation.HasValue)
-            {
-                isValidIl.MarkLabel(nextValidation.Value);
-                isValidIl.Emit(OpCodes.Ldc_I4_1);
-                isValidIl.Emit(OpCodes.Ret);
-            }
-
-            var inputType = inputBuilder.CreateType()!;
-            var input = CreateProperty(actionBuilder, "input", inputType);
+            
+            CreateParameterValidation(isValidIl, parameters);
             CreateInputValidation(actionBuilder, inputBuilder, isValid, input);
-
+            CreateExecuteAsync(actionBuilder, inputBuilder,input, action, thingType);
+            
             Actions.Add(name, new ActionContext(actionBuilder.CreateType()));
         }
-
+        
         private static PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)
         {
             var fieldBuilder = builder.DefineField($"_{fieldName}", type, FieldAttributes.Private);
             var parameterName = fieldName.FirstCharToUpper();
-            var propertyBuilder = builder.DefineProperty(parameterName, PropertyAttributes.HasDefault,
+            var propertyBuilder = builder.DefineProperty(parameterName, 
+                PropertyAttributes.HasDefault,
                 type, null);
 
             var getProperty = builder.DefineMethod($"get_{parameterName}", s_getSetAttributes,
@@ -144,67 +133,113 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             isInputValid.EmitCall(OpCodes.Call, isValid, null);
             isInputValid.Emit(OpCodes.Ret);
         }
-
-        private static void AddParameterValidation(ILGenerator il, ParameterInfo parameter, 
-            ThingParameterAttribute? validationParameter, int index, ref Label? next)
+        
+        private static void CreateParameterValidation(ILGenerator il, ParameterInfo[] parameters)
         {
-            if (validationParameter == null)
+            Label? next = null;
+            for (var i = 0; i < parameters.Length; i++)
             {
-                return;
-            }
-
-            if (IsNumber(parameter.ParameterType))
-            {
-                if (validationParameter.MinimumValue.HasValue)
+                var parameter = parameters[i];
+                var validationParameter = parameter.GetCustomAttribute<ThingParameterAttribute>();
+                
+                if (validationParameter == null)
                 {
-                    if (next != null)
-                    {
-                        il.MarkLabel(next.Value);
-                    }
-                    next = il.DefineLabel();
-                    
-                    il.Emit(OpCodes.Ldarg, index);
-                    il.Emit(OpCodes.Ldc_I4_S, validationParameter.MinimumValue.Value);
-                    il.Emit(OpCodes.Bge_S, next.Value);
-                    
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    il.Emit(OpCodes.Ret);
+                    continue;
                 }
                 
-                if (validationParameter.MinimumValue.HasValue)
+                if (IsNumber(parameter.ParameterType))
                 {
-                    if (next != null)
+                    if (validationParameter.MinimumValue.HasValue)
                     {
-                        il.MarkLabel(next.Value);
+                        if (next != null)
+                        {
+                            il.MarkLabel(next.Value);
+                        }
+                        next = il.DefineLabel();
+                    
+                        il.Emit(OpCodes.Ldarg_S, i);
+                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MinimumValue.Value);
+                        il.Emit(OpCodes.Bge_S, next.Value);
+                    
+                        il.Emit(OpCodes.Ldc_I4_0);
+                        il.Emit(OpCodes.Ret);
                     }
-                    
-                    next = il.DefineLabel();
-
-                    il.Emit(OpCodes.Ldarg, index);
-                    il.Emit(OpCodes.Ldc_I4_S, validationParameter.MinimumValue.Value);
-                    il.Emit(OpCodes.Ble_S, next.Value);
-                    
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    il.Emit(OpCodes.Ret);
-                }
                 
-                if (validationParameter.MultipleOfValue.HasValue)
-                {
-                    if (next != null)
+                    if (validationParameter.MaximumValue.HasValue)
                     {
-                        il.MarkLabel(next.Value);
-                    }
-                    next = il.DefineLabel();
-
-                    il.Emit(OpCodes.Ldarg, index);
-                    il.Emit(OpCodes.Ldc_I4_S, validationParameter.MultipleOfValue.Value);
-                    il.Emit(OpCodes.Rem);
+                        if (next != null)
+                        {
+                            il.MarkLabel(next.Value);
+                        }
                     
-                    il.Emit(OpCodes.Brtrue, next.Value);
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    il.Emit(OpCodes.Ret);
+                        next = il.DefineLabel();
+
+                        il.Emit(OpCodes.Ldarg_S, i);
+                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MaximumValue.Value);
+                        il.Emit(OpCodes.Ble_S, next.Value);
+                    
+                        il.Emit(OpCodes.Ldc_I4_0);
+                        il.Emit(OpCodes.Ret);
+                    }
+                
+                    if (validationParameter.MultipleOfValue.HasValue)
+                    {
+                        if (next != null)
+                        {
+                            il.MarkLabel(next.Value);
+                        }
+                        next = il.DefineLabel();
+                        il.Emit(OpCodes.Ldarg_S, i);
+                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MultipleOfValue.Value);
+                        il.Emit(OpCodes.Rem);
+                        il.Emit(OpCodes.Brtrue, next.Value);
+                        
+                        il.Emit(OpCodes.Ldc_I4_0);
+                        il.Emit(OpCodes.Ret);
+                    }
                 }
             }
+            
+            if (next.HasValue)
+            {
+                il.MarkLabel(next.Value);
+            }
+            
+            il.Emit(OpCodes.Ldc_I4_1);
+            il.Emit(OpCodes.Ret);
+        }
+
+        private static void CreateExecuteAsync(TypeBuilder builder, TypeBuilder inputBuilder, PropertyBuilder input, MethodInfo action, Type thingType)
+        {
+            var executeBuilder = builder.DefineMethod(nameof(ActionInfo.ExecuteAsync),
+                MethodAttributes.Family | MethodAttributes.ReuseSlot | MethodAttributes.Virtual | MethodAttributes.HideBySig,
+                typeof(ValueTask), new [] { typeof(Thing) });
+            
+            var il = executeBuilder.GetILGenerator();
+            il.DeclareLocal(typeof(ValueTask));
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Castclass, thingType);
+
+            foreach (var property in inputBuilder.GetProperties())
+            {
+                il.Emit(OpCodes.Ldarg_0);
+                il.EmitCall(OpCodes.Call, input.GetMethod, null);
+                il.EmitCall(OpCodes.Callvirt, property.GetMethod, null);
+            }
+            
+            il.EmitCall(OpCodes.Callvirt, action, null);
+            if (action.ReturnType == typeof(void))
+            {
+                il.Emit(OpCodes.Ldloca_S, 0);
+                il.Emit(OpCodes.Initobj, typeof(ValueTask));
+                il.Emit(OpCodes.Ldloc_0);
+            }
+            else if(action == typeof(Task))
+            {
+                
+            }
+            
+            il.Emit(OpCodes.Ret);
         }
         
         private static bool IsNumber(Type type)
@@ -219,6 +254,5 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                || type == typeof(decimal)
                || type == typeof(byte)
                || type == typeof(sbyte);
-
     }
 }
