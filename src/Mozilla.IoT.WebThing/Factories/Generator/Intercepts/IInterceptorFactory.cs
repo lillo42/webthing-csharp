@@ -1,5 +1,3 @@
-using System;
-
 namespace Mozilla.IoT.WebThing.Factories.Generator.Intercepts
 {
     public interface IInterceptorFactory

@@ -1,7 +1,5 @@
 using System;
-using System.Reflection;
 using System.Text.Json;
-using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Properties

@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Routing
             endpoint.MapPut("/things/{name}/properties/{property}",  PutThingProperty.InvokeAsync);
             endpoint.MapGet("/things/{name}/events",  GetThingEvents.InvokeAsync);
             endpoint.MapPost("/things/{name}/actions",  PostThingActions.InvokeAsync);
+            endpoint.MapPost("/things/{name}/actions/{action}",  PostThingAction.InvokeAsync);
+            endpoint.MapGet("/things/{name}/actions/{action}",  GetThingAction.InvokeAsync);
+            endpoint.MapGet("/things/{name}/actions/{action}/{id}",  GetThingActionById.InvokeAsync);
         }
     }
 }

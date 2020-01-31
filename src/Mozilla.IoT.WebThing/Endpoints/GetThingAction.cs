@@ -10,16 +10,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Actions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class PostThingAction
+    internal class GetThingAction
     {
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<PostThingAction>>();
+            var logger = service.GetRequiredService<ILogger<GetThingAction>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             var thingName = context.GetRouteData<string>("name");
             logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
@@ -42,63 +41,17 @@ namespace Mozilla.IoT.WebThing.Endpoints
             context.Request.EnableBuffering();
             var option = service.GetRequiredService<JsonSerializerOptions>();
             
-            var actions = await context.FromBodyAsync<Dictionary<string, JsonElement>>(option)
-                .ConfigureAwait(false);
-            
-            var actionName = context.GetRouteData<string>("actionName");
+            var actionName = context.GetRouteData<string>("action");
 
             if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
             {
-                logger.LogInformation("{actionName} Action not found in {thingName}", actions, thingName);
+                logger.LogInformation("{actionName} Action not found in {thingName}", actionName, thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
             
-            if (actions.Keys.Any(x => x != actionName))
-            {
-                logger.LogInformation("Payload has invalid action. [Name: {thingName}][Action Name: {actionName}]", thingName, actionName);
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                return;
-            }
-            
-            var actionsToExecute = new LinkedList<ActionInfo>();
-            
-            foreach (var (_, json) in actions)
-            {
-                logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
-                var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
-                    actionContext.ActionType, option);
-                
-                if (!action.IsValid())
-                {
-                    logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return;
-                }
-
-                action.Thing = thing;
-                actionsToExecute.AddLast(action);
-            }
-            
-            foreach (var actionInfo in actionsToExecute)
-            {
-                logger.LogInformation("Going to execute action {actionName}. [Name: {thingName}]", actionName, thingName);
-                actionInfo.ExecuteAsync(thing, service.GetRequiredService<ILogger<ActionInfo>>())
-                    .ConfigureAwait(false);
-                
-                actionContext.Actions.Add(actionInfo);
-            }
-            
-            if (actionsToExecute.Count == 1)
-            {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First, option)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, option)
-                    .ConfigureAwait(false);
-            }
+            await context.WriteBodyAsync(HttpStatusCode.OK, actionContext.Actions, option)
+                .ConfigureAwait(false);
         }
 
         private static async Task<string> GetJsonString(HttpContext context)
