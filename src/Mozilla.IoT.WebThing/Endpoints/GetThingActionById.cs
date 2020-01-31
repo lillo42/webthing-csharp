@@ -1,9 +1,7 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -60,33 +58,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
             await context.WriteBodyAsync(HttpStatusCode.OK, actionInfo, option)
                 .ConfigureAwait(false);
-        }
-
-        private static async Task<string> GetJsonString(HttpContext context)
-        {
-            // Build up the request body in a string builder.
-            var builder = new StringBuilder();
-
-            // Rent a shared buffer to write the request body into.
-            var buffer = ArrayPool<byte>.Shared.Rent(4096);
-
-            while (true)
-            {
-                var bytesRemaining = await context.Request.Body.ReadAsync(buffer, offset: 0, buffer.Length);
-                if (bytesRemaining == 0)
-                {
-                    break;
-                }
-
-                // Append the encoded string into the string builder.
-                var encodedString = Encoding.UTF8.GetString(buffer, 0, bytesRemaining);
-                builder.Append(encodedString);
-            }
-
-            ArrayPool<byte>.Shared.Return(buffer);
-
-            var jsonString = builder.ToString();
-            return jsonString;
         }
     }
 }
