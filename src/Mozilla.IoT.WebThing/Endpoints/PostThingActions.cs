@@ -41,8 +41,9 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             context.Request.EnableBuffering();
             var option = service.GetRequiredService<JsonSerializerOptions>();
-            var jsonString = await GetJsonString(context);
-            var actions =  JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString, option);
+            
+            var actions =  await context.FromBodyAsync<Dictionary<string, JsonElement>>(option)
+                .ConfigureAwait(false);
             
             var actionsToExecute = new LinkedList<ActionInfo>();
             foreach (var (actionName, json) in actions)
@@ -72,7 +73,19 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             foreach (var actionInfo in actionsToExecute)
             {
+                logger.LogInformation("Going to execute actions. [Name: {thingName}]", thingName);
                 actionInfo.ExecuteAsync(thing, service.GetRequiredService<ILogger<ActionInfo>>())
+                    .ConfigureAwait(false);
+            }
+            
+            if (actionsToExecute.Count == 1)
+            {
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First, option)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, option)
                     .ConfigureAwait(false);
             }
         }

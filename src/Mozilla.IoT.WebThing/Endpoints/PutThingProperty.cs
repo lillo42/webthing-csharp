@@ -44,10 +44,11 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             context.Request.EnableBuffering();
             var option = service.GetRequiredService<JsonSerializerOptions>();
-            var jsonString = await GetJsonString(context);
-            logger.LogTrace("Going to set property {propertyName} with JSON: {json}", property, jsonString);
-            var json = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString, option);
+            logger.LogTrace("Going to set property {propertyName}", property);
+            var json = await context.FromBodyAsync<Dictionary<string, object>>(option)
+                .ConfigureAwait(false); 
             var result = thing.ThingContext.Properties.SetProperty(property, json[property]);
+            
             if (result == SetPropertyResult.NotFound)
             {
                 logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]");
@@ -62,36 +63,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = Const.ContentType;
-            await JsonSerializer.SerializeAsync(context.Response.Body, thing.ThingContext.Properties.GetProperties(property), option);
-        }
-
-        private static async Task<string> GetJsonString(HttpContext context)
-        {
-            // Build up the request body in a string builder.
-            var builder = new StringBuilder();
-
-            // Rent a shared buffer to write the request body into.
-            var buffer = ArrayPool<byte>.Shared.Rent(4096);
-
-            while (true)
-            {
-                var bytesRemaining = await context.Request.Body.ReadAsync(buffer, offset: 0, buffer.Length);
-                if (bytesRemaining == 0)
-                {
-                    break;
-                }
-
-                // Append the encoded string into the string builder.
-                var encodedString = Encoding.UTF8.GetString(buffer, 0, bytesRemaining);
-                builder.Append(encodedString);
-            }
-
-            ArrayPool<byte>.Shared.Return(buffer);
-
-            var jsonString = builder.ToString();
-            return jsonString;
+            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), option)
+                .ConfigureAwait(false);
         }
     }
 }
