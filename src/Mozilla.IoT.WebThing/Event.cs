@@ -2,9 +2,9 @@ using System;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class ThingEvent
+    public class Event
     {
-        public ThingEvent(object data)
+        public Event(object data)
         {
             Data = data;
             Timestamp = DateTime.UtcNow;

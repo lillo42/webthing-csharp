@@ -66,7 +66,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 
             _jsonWriter.EndObject();
             
-            static Type? GetEventType(Type eventHandlerType)
+            static Type? GetEventType(Type? eventHandlerType)
             {
                 if (eventHandlerType == null 
                     || eventHandlerType.GenericTypeArguments.Length != 1)

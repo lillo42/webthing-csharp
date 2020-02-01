@@ -34,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 var properties = new PropertiesInterceptFactory(thing, options);
                 var events = new EventInterceptFactory(thing, options);
                 var actions = new ActionInterceptFactory();
-                CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
+                CodeGeneratorFactory.Generate(thing, new List<IInterceptorFactory>()
                 {
                     converter,
                     properties, 
@@ -70,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 var events = new EventInterceptFactory(thing, options);
                 var actions = new ActionInterceptFactory();
                 
-                CodeGeneratorFactory.Generate(thing, options, new List<IInterceptorFactory>()
+                CodeGeneratorFactory.Generate(thing, new List<IInterceptorFactory>()
                 {
                     converter,
                     properties, 

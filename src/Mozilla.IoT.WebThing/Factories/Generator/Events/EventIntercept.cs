@@ -10,18 +10,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
 {
     public class EventIntercept : IEventIntercept
     {
-        private readonly Dictionary<string, ThingEventCollection> _events;
+        private readonly Dictionary<string, EventCollection> _events;
         private readonly Queue<EventInfo> _eventToBind = new Queue<EventInfo>();
 
-        private readonly ConstructorInfo _createThing = typeof(ThingEvent).GetConstructors(BindingFlags.Public | BindingFlags.Instance)[0];
-        private readonly MethodInfo _getContext = typeof(Thing).GetProperty(nameof(Thing.ThingContext)).GetMethod!;
-        private readonly MethodInfo _getEvent = typeof(Context).GetProperty(nameof(Context.Events)).GetMethod!;
-        private readonly MethodInfo _getItem = typeof(Dictionary<string, ThingEventCollection>).GetMethod("get_Item")!;
-        private readonly MethodInfo _addItem = typeof(ThingEventCollection).GetMethod(nameof(ThingEventCollection.Add))!;
+        private readonly ConstructorInfo _createThing = typeof(Event).GetConstructors(BindingFlags.Public | BindingFlags.Instance)[0];
+        private readonly MethodInfo _getContext = typeof(Thing).GetProperty(nameof(Thing.ThingContext))?.GetMethod!;
+        private readonly MethodInfo _getEvent = typeof(Context).GetProperty(nameof(Context.Events))?.GetMethod!;
+        private readonly MethodInfo _getItem = typeof(Dictionary<string, EventCollection>).GetMethod("get_Item")!;
+        private readonly MethodInfo _addItem = typeof(EventCollection).GetMethod(nameof(EventCollection.Add))!;
         private readonly JsonSerializerOptions _options;
         private readonly TypeBuilder _builder;
 
-        public EventIntercept(JsonSerializerOptions options, TypeBuilder builder, Dictionary<string, ThingEventCollection> events)
+        public EventIntercept(JsonSerializerOptions options, TypeBuilder builder, Dictionary<string, EventCollection> events)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _builder = builder ?? throw new ArgumentNullException(nameof(builder));
@@ -35,10 +35,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
 
         public void After(Thing thing)
         {
-            var type = _builder.CreateType();
+            var type = _builder.CreateType()!;
             while (_eventToBind.TryDequeue(out var @event))
             {
-                var @delegate = Delegate.CreateDelegate(@event.EventHandlerType, type, $"{@event.Name}Handler");
+                var @delegate = Delegate.CreateDelegate(@event.EventHandlerType!, type, $"{@event.Name}Handler");
                 @event.AddEventHandler(thing, @delegate );
             }
         }
@@ -47,9 +47,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
         {
             _eventToBind.Enqueue(@event);
             var name = _options.GetPropertyName(eventInfo?.Name ?? @event.Name);
-            _events.Add(name, new ThingEventCollection(10));
+            _events.Add(name, new EventCollection(10));
 
-            var type = @event.EventHandlerType.GetGenericArguments()[0];
+            var type = @event.EventHandlerType?.GetGenericArguments()[0]!;
             var methodBuilder =_builder.DefineMethod($"{@event.Name}Handler",
                 MethodAttributes.Public | MethodAttributes.Static);
 

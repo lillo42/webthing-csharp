@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Http
 {
     internal static class HttpContextExtensions
     {
-        [return: MaybeNull]
         public static T GetRouteData<T>(this HttpContext request, string key)
         {
             if (request == null)
@@ -32,15 +31,15 @@ namespace Microsoft.AspNetCore.Http
             {
                 return (T)result;
             }
-
-            return default;
+            
+            throw new Exception();
         }
 
         public static async Task<T> FromBodyAsync<T>(this HttpContext context, JsonSerializerOptions options,
             CancellationToken cancellationToken = default)
         {
             var reader = context.Request.BodyReader;
-            T result = default;
+            T result = default!;
             while (!cancellationToken.IsCancellationRequested)
             {
                 var readResult = await reader.ReadAsync(cancellationToken)

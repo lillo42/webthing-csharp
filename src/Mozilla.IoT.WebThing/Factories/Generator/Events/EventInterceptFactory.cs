@@ -18,7 +18,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
             _intercept = new EventIntercept(options, builder, Events);
         }
 
-        public Dictionary<string, ThingEventCollection> Events { get; } = new Dictionary<string, ThingEventCollection>();
+        public Dictionary<string, EventCollection> Events { get; } = new Dictionary<string, EventCollection>();
 
         public IThingIntercept CreateThingIntercept()
             => new EmptyIntercept();

@@ -41,10 +41,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var parameters = action.GetParameters();
             foreach (var parameter in parameters)
             {
-                CreateProperty(inputBuilder, parameter.Name, parameter.ParameterType);
+                CreateProperty(inputBuilder, parameter.Name!, parameter.ParameterType);
             }
             
-            var inputType = inputBuilder.CreateType();
+            var inputType = inputBuilder.CreateType()!;
             
             var actionBuilder = _moduleBuilder.DefineType($"{thingType.Name}{action.Name}ActionInfo",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
@@ -62,7 +62,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             CreateInputValidation(actionBuilder, inputBuilder, isValid, input);
             CreateExecuteAsync(actionBuilder, inputBuilder,input, action, thingType);
             
-            Actions.Add(name, new ActionContext(actionBuilder.CreateType()));
+            Actions.Add(name, new ActionContext(actionBuilder.CreateType()!));
         }
         
         private static PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)
@@ -126,7 +126,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             foreach (var property in input.GetProperties())
             {
                 isInputValid.Emit(OpCodes.Ldarg_0);
-                isInputValid.EmitCall(OpCodes.Call, inputProperty.GetMethod, null);
+                isInputValid.EmitCall(OpCodes.Call, inputProperty.GetMethod!, null);
                 isInputValid.EmitCall(OpCodes.Callvirt, property.GetMethod!, null );
             }
             
@@ -223,8 +223,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             foreach (var property in inputBuilder.GetProperties())
             {
                 il.Emit(OpCodes.Ldarg_0);
-                il.EmitCall(OpCodes.Call, input.GetMethod, null);
-                il.EmitCall(OpCodes.Callvirt, property.GetMethod, null);
+                il.EmitCall(OpCodes.Call, input.GetMethod!, null);
+                il.EmitCall(OpCodes.Callvirt, property.GetMethod!, null);
             }
             
             il.EmitCall(OpCodes.Callvirt, action, null);

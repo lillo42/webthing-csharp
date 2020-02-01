@@ -71,7 +71,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 thingPropertyAttribute?.Enum);
         }
 
-        private static IJsonMapper? CreateMapper(Type type)
+        private static IJsonMapper CreateMapper(Type type)
         {
             if (type == typeof(string))
             {
@@ -143,7 +143,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 return DateTimeJsonMapper.Instance;
             }
             
-            return null;
+            throw new Exception();
         }
         
         public void After(Thing thing)

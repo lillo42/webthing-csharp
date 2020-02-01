@@ -7,7 +7,7 @@ namespace Mozilla.IoT.WebThing.Actions
     public abstract class ActionInfo
     {
         internal Guid Id { get; } = Guid.NewGuid();
-        internal Thing Thing { get; set; }
+        internal Thing Thing { get; set; } = default!;
         protected abstract string ActionName { get; }
         
         public string Href => $"/things/{Thing.Name}/actions/{ActionName}/{Id}";

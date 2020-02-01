@@ -5,11 +5,11 @@ using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test
 {
-    public class ThingEventCollectionTest
+    public class EventCollectionTest
     {
         private readonly Fixture _fixture;
 
-        public ThingEventCollectionTest()
+        public EventCollectionTest()
         {
             _fixture = new Fixture();
         }
@@ -20,12 +20,12 @@ namespace Mozilla.IoT.WebThing.Test
         [InlineData(100)]
         public void MaxSize(int size)
         {
-            var collection = new ThingEventCollection(size);
-            var data = new LinkedList<ThingEvent>();
+            var collection = new EventCollection(size);
+            var data = new LinkedList<Event>();
             
             for (var i = 0; i < size; i++)
             {
-                var @event = new ThingEvent(_fixture.Create<object>());
+                var @event = new Event(_fixture.Create<object>());
                 data.AddLast(@event);
                 collection.Add(@event);
             }
@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Test
             collection.ToArray().Length.Should().Be(size);
             collection.ToArray().Should().BeEquivalentTo(data);
 
-            var event2 = new ThingEvent(_fixture.Create<object>());
+            var event2 = new Event(_fixture.Create<object>());
             data.AddLast(@event2);
             data.RemoveFirst();
             collection.Add(@event2);
