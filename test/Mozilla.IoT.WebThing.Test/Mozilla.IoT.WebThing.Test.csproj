@@ -19,8 +19,4 @@
     <ProjectReference Include="..\..\src\Mozilla.IoT.WebThing\Mozilla.IoT.WebThing.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Genereation" />
-  </ItemGroup>
-
 </Project>
