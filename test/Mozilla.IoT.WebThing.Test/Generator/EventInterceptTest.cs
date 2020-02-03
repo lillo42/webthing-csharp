@@ -10,7 +10,7 @@ using Mozilla.IoT.WebThing.Factories.Generator.Events;
 using NSubstitute;
 using Xunit;
 
-namespace Mozilla.IoT.WebThing.Test.Genereation.Event
+namespace Mozilla.IoT.WebThing.Test.Generator
 {
     public class EventInterceptTest
     {
