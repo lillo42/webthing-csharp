@@ -234,9 +234,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 il.Emit(OpCodes.Initobj, typeof(ValueTask));
                 il.Emit(OpCodes.Ldloc_0);
             }
-            else if(action == typeof(Task))
+            else if(action.ReturnType == typeof(Task))
             {
-                
+                var constructor = typeof(ValueTask).GetConstructor(new[] {typeof(Task)});
+                il.Emit(OpCodes.Newobj, constructor);
             }
             
             il.Emit(OpCodes.Ret);
