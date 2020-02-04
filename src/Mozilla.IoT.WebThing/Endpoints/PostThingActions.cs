@@ -74,7 +74,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             foreach (var actionInfo in actionsToExecute)
             {
                 logger.LogInformation("Going to execute actions. [Name: {thingName}]", thingName);
-                actionInfo.ExecuteAsync(thing, service.GetRequiredService<ILogger<ActionInfo>>())
+                actionInfo.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
             }
             

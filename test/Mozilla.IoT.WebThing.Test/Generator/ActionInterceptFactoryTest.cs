@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
@@ -19,90 +20,104 @@ namespace Mozilla.IoT.WebThing.Test.Generator
     public class ActionInterceptFactoryTest
     {
         private readonly Fixture _fixture;
-        private readonly ILogger<ActionInfo> _logger;
+        private readonly LampThing _thing;
+        private readonly ActionInterceptFactory _factory;
+        private readonly IServiceProvider _provider;
+
 
         public ActionInterceptFactoryTest()
         {
             _fixture = new Fixture();
-            _logger = Substitute.For<ILogger<ActionInfo>>();
+            _thing = new LampThing();
+            _factory = new ActionInterceptFactory();
+            var logger = Substitute.For<ILogger<ActionInfo>>();
+            _provider = Substitute.For<IServiceProvider>();
+
+            _provider.GetService(typeof(ILogger<ActionInfo>))
+                .Returns(logger);
         }
 
         [Fact]
         public void Ignore()
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
+            CodeGeneratorFactory.Generate(_thing, new[] {_factory});
+            _factory.Actions.Should().NotContainKey(nameof(LampThing.Ignore));
+        }
+
+
+        private ActionInfo CreateAction(string actionName)
+        {
+            CodeGeneratorFactory.Generate(_thing, new[] {_factory});
+            _factory.Actions.Should().ContainKey(actionName);
+
+            _thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
+                Substitute.For<IProperties>(),
+                new Dictionary<string, EventCollection>(),
+                _factory.Actions);
+            var actionType = _thing.ThingContext.Actions[actionName].ActionType;
+            return (ActionInfo)Activator.CreateInstance(actionType);
+
+        }
+        
+        private ActionInfo CreateAction(string actionName, int inputValue)
+        {
+            CodeGeneratorFactory.Generate(_thing, new[] {_factory});
+            _factory.Actions.Should().ContainKey(actionName);
+
+            _thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
+                Substitute.For<IProperties>(),
+                new Dictionary<string, EventCollection>(),
+                _factory.Actions);
+            var actionType = _thing.ThingContext.Actions[actionName].ActionType;
+            var action = (ActionInfo)Activator.CreateInstance(actionType);
             
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            actionFactory.Actions.Should().NotContainKey(nameof(LampThing.Ignore));
+            var inputPropertyType = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
+            inputPropertyType.Should().NotBeNull();
+
+            var input = Activator.CreateInstance(inputPropertyType.PropertyType);
+            var valueProperty = inputPropertyType.PropertyType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+            valueProperty.Should().NotBeNull();
+            
+            valueProperty.SetValue(input, inputValue);
+            inputPropertyType.SetValue(action, input);
+            return action;
         }
 
         #region Void
+
         [Fact]
         public async Task VoidWithoutParameter()
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.WithoutParameter));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.WithoutParameter)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-            
-            action.Status.Should().Be(Status.Pending);
+            var action = CreateAction(nameof(LampThing.ReturnVoid));
             action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
+
+            action.Status.Should().Be(Status.Pending);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
             action.Status.Should().Be(Status.Completed);
-            
-            thing.Values.Should().HaveCount(1);
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.WithoutParameter));
+            action.TimeCompleted.Should().NotBeNull();
+
+            _thing.Values.Should().HaveCount(1);
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.ReturnVoid));
         }
-        
+
         [Fact]
         public async Task VoidWithParameter()
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
+            var value = _fixture.Create<int>();
+            var action = CreateAction(nameof(LampThing.ReturnVoidWithParameter), value);
             
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.WithParameter));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.WithParameter)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var idProperty = inputProperty.PropertyType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
-            idProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            var id = _fixture.Create<string>();
-            idProperty.SetValue(input, id);
-            
-            inputProperty.SetValue(action, input);
+            action.IsValid().Should().BeTrue();
             
             action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
             action.Status.Should().Be(Status.Completed);
+            action.TimeCompleted.Should().NotBeNull();
             
-            thing.Values.Should().HaveCount(2);
-            thing.Values.First.Value.Should().Be(id);
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.WithParameter));
+            _thing.Values.Should().HaveCount(2);
+            _thing.Values.First.Value.Should().Be(value.ToString());
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.ReturnVoidWithParameter));
         }
         
         [Theory]
@@ -111,40 +126,19 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         [InlineData(100)]
         public async Task VoidWithParameterValid(int value)
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
+            var action = CreateAction(nameof(LampThing.ReturnVoidWithParameterWithValidation), value);
             
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.ParameterWithValidation));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.ParameterWithValidation)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var valueProperty = inputProperty.PropertyType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-            valueProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            valueProperty.SetValue(input, value);
-            
-            inputProperty.SetValue(action, input);
+            action.IsValid().Should().BeTrue();
             
             action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
             action.Status.Should().Be(Status.Completed);
+            action.TimeCompleted.Should().NotBeNull();
             
-            thing.Values.Should().HaveCount(2);
-            thing.Values.First.Value.Should().Be(value.ToString());
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.ParameterWithValidation));
+            _thing.Values.Should().HaveCount(2);
+            _thing.Values.First.Value.Should().Be(value.ToString());
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.ReturnVoidWithParameterWithValidation));
         }
 
         [Theory]
@@ -152,433 +146,123 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         [InlineData(101)]
         public void VoidWithParameterInvalid(int value)
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
+            var action = CreateAction(nameof(LampThing.ReturnVoidWithParameterWithValidation), value);
             
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.ParameterWithValidation));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.ParameterWithValidation)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var valueProperty = inputProperty.PropertyType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-            valueProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            valueProperty.SetValue(input, value);
-            
-            inputProperty.SetValue(action, input);
+            action.IsValid().Should().BeFalse();
             
             action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeFalse();
-
-            thing.Values.Should().BeEmpty();
+            action.TimeCompleted.Should().BeNull();
+            _thing.Values.Should().BeEmpty();
         }
         
         [Fact]
         public async Task Throwable()
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.WithParameter));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.Throwable)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
+            var action = CreateAction(nameof(LampThing.Throwable));
+            action.IsValid().Should().BeTrue();
 
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
+            action.Status.Should().Be(Status.Pending);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
+            action.Status.Should().Be(Status.Completed);
+            action.TimeCompleted.Should().NotBeNull();
             
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-
-            inputProperty.SetValue(action, input);
+            _thing.Values.Should().HaveCount(1);
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.Throwable));
+        }
+        
+        [Fact]
+        public async Task FromService()
+        {
+            var value = 10;
+            var action = CreateAction(nameof(LampThing.ReturnParameterWithValidationAndParameterFromService), value);
             
             action.Status.Should().Be(Status.Pending);
             action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
-            action.Status.Should().Be(Status.Completed);
+            
+            var something = Substitute.For<ISomething>();
 
-            thing.Values.Should().BeEmpty();
+            _provider.GetService(typeof(ISomething))
+                .Returns(something);
+            
+            action.IsValid().Should().BeTrue();
+            
+            action.Status.Should().Be(Status.Pending);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
+            action.Status.Should().Be(Status.Completed);
+            action.TimeCompleted.Should().NotBeNull();
+            
+            _thing.Values.Should().HaveCount(2);
+            _thing.Values.First.Value.Should().Be(value.ToString());
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.ReturnParameterWithValidationAndParameterFromService));
+            
+            something
+                .Received(1)
+                .DoSomething();
         }
         #endregion
         
         #region Task
         [Fact]
-        public async Task TaskWithoutParameter()
+        public async Task TaskWithDelay()
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.TaskWithoutParameter));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.TaskWithoutParameter)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-            
-            action.Status.Should().Be(Status.Pending);
+            var action = CreateAction(nameof(LampThing.ReturnTaskWithDelay));
             action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
+
+            action.Status.Should().Be(Status.Pending);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
             action.Status.Should().Be(Status.Completed);
+            action.TimeCompleted.Should().NotBeNull();
+
+            _thing.Values.Should().HaveCount(1);
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.ReturnTaskWithDelay));
             
-            thing.Values.Should().HaveCount(1);
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.TaskWithoutParameter));
         }
         
         [Fact]
-        public async Task TaskWithParameter()
+        public async Task TaskAction()
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.TaskWithParameter));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.TaskWithParameter)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var idProperty = inputProperty.PropertyType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
-            idProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            var id = _fixture.Create<string>();
-            idProperty.SetValue(input, id);
-            
-            inputProperty.SetValue(action, input);
-            
-            action.Status.Should().Be(Status.Pending);
+            var action = CreateAction(nameof(LampThing.ReturnTask));
             action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
+
+            action.Status.Should().Be(Status.Pending);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
             action.Status.Should().Be(Status.Completed);
+            action.TimeCompleted.Should().NotBeNull();
+
+            _thing.Values.Should().HaveCount(1);
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.ReturnTask));
             
-            thing.Values.Should().HaveCount(2);
-            thing.Values.First.Value.Should().Be(id);
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.TaskWithParameter));
         }
         
-        [Theory]
-        [InlineData(0)]
-        [InlineData(50)]
-        [InlineData(100)]
-        public async Task TaskWithParameterValid(int value)
-        {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.TaskParameterWithValidation));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.TaskParameterWithValidation)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var valueProperty = inputProperty.PropertyType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-            valueProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            valueProperty.SetValue(input, value);
-            
-            inputProperty.SetValue(action, input);
-            
-            action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
-            action.Status.Should().Be(Status.Completed);
-            
-            thing.Values.Should().HaveCount(2);
-            thing.Values.First.Value.Should().Be(value.ToString());
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.TaskParameterWithValidation));
-        }
-
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(101)]
-        public void TaskWithParameterInvalid(int value)
-        {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.TaskParameterWithValidation));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.TaskParameterWithValidation)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var valueProperty = inputProperty.PropertyType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-            valueProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            valueProperty.SetValue(input, value);
-            
-            inputProperty.SetValue(action, input);
-            
-            action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeFalse();
-
-            thing.Values.Should().BeEmpty();
-        }
-        
-        [Fact]
-        public async Task TaskThrowable()
-        {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.TaskThrowable));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.TaskThrowable)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-            
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-
-            inputProperty.SetValue(action, input);
-            
-            action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
-            action.Status.Should().Be(Status.Completed);
-
-            thing.Values.Should().BeEmpty();
-        }
         #endregion
         
         #region ValueTask
         [Fact]
-        public async Task ValueTaskWithoutParameter()
+        public async Task ValueTaskAction()
         {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.ValueTaskWithoutParameter));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.ValueTaskWithoutParameter)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-            
-            action.Status.Should().Be(Status.Pending);
+            var action = CreateAction(nameof(LampThing.ReturnValueTask));
             action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
-            action.Status.Should().Be(Status.Completed);
-            
-            thing.Values.Should().HaveCount(1);
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.ValueTaskWithoutParameter));
-        }
-        
-        [Fact]
-        public async Task ValueTaskWithParameter()
-        {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.ValueTaskWithParameter));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.ValueTaskWithParameter)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
 
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var idProperty = inputProperty.PropertyType.GetProperty("Id", BindingFlags.Public | BindingFlags.Instance);
-            idProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            var id = _fixture.Create<string>();
-            idProperty.SetValue(input, id);
-            
-            inputProperty.SetValue(action, input);
-            
             action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
+            action.TimeCompleted.Should().BeNull();
+            await action.ExecuteAsync(_thing, _provider);
             action.Status.Should().Be(Status.Completed);
-            
-            thing.Values.Should().HaveCount(2);
-            thing.Values.First.Value.Should().Be(id);
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.ValueTaskWithParameter));
-        }
-        
-        [Theory]
-        [InlineData(0)]
-        [InlineData(50)]
-        [InlineData(100)]
-        public async Task ValueTaskWithParameterValid(int value)
-        {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.ValueTaskParameterWithValidation));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.ValueTaskParameterWithValidation)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
+            action.TimeCompleted.Should().NotBeNull();
 
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var valueProperty = inputProperty.PropertyType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-            valueProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            valueProperty.SetValue(input, value);
+            _thing.Values.Should().HaveCount(1);
+            _thing.Values.Last.Value.Should().Be(nameof(LampThing.ReturnValueTask));
             
-            inputProperty.SetValue(action, input);
-            
-            action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
-            action.Status.Should().Be(Status.Completed);
-            
-            thing.Values.Should().HaveCount(2);
-            thing.Values.First.Value.Should().Be(value.ToString());
-            thing.Values.Last.Value.Should().Be(nameof(LampThing.ValueTaskParameterWithValidation));
-        }
-
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(101)]
-        public void ValueTaskWithParameterInvalid(int value)
-        {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.ValueTaskParameterWithValidation));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.ValueTaskParameterWithValidation)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-
-            var valueProperty = inputProperty.PropertyType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
-            valueProperty.Should().NotBeNull();
-
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-            valueProperty.SetValue(input, value);
-            
-            inputProperty.SetValue(action, input);
-            
-            action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeFalse();
-
-            thing.Values.Should().BeEmpty();
-        }
-        
-        [Fact]
-        public async Task ValueTaskThrowable()
-        {
-            var thing = new LampThing();
-            var actionFactory = new ActionInterceptFactory();
-            
-            CodeGeneratorFactory.Generate(thing, new []{ actionFactory });
-            
-            actionFactory.Actions.Should().ContainKey(nameof(LampThing.ValueTaskThrowable));
-            
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
-                new Dictionary<string, EventCollection>(), 
-                actionFactory.Actions);
-            
-            var actionType = thing.ThingContext.Actions[nameof(LampThing.ValueTaskThrowable)].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
-
-            var inputProperty = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
-            inputProperty.Should().NotBeNull();
-            
-            var input = Activator.CreateInstance(inputProperty.PropertyType);
-
-            inputProperty.SetValue(action, input);
-            
-            action.Status.Should().Be(Status.Pending);
-            action.IsValid().Should().BeTrue();
-            await action.ExecuteAsync(thing, _logger);
-            action.Status.Should().Be(Status.Completed);
-
-            thing.Values.Should().BeEmpty();
         }
         #endregion
+        
+        public interface ISomething
+        {
+            void DoSomething();
+        }
         
         public class LampThing : Thing
         {
@@ -590,91 +274,60 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 => Values.AddLast(nameof(Ignore));
 
             #region Void
-            public void WithoutParameter()
-                => Values.AddLast(nameof(WithoutParameter));
+            public void ReturnVoid()
+                => Values.AddLast(nameof(ReturnVoid));
             
-            public void WithParameter(string id)
-            {
-                Values.AddLast(id);
-                Values.AddLast(nameof(WithParameter));
-            } 
-            
-            public void ParameterWithValidation([ThingParameter(Minimum =  0, Maximum = 100)]int value)
+            public void ReturnVoidWithParameter(int value)
             {
                 Values.AddLast(value.ToString());
-                Values.AddLast(nameof(ParameterWithValidation));
+                Values.AddLast(nameof(ReturnVoidWithParameter));
             } 
+            
+            public void ReturnVoidWithParameterWithValidation([ThingParameter(Minimum =  0, Maximum = 100)]int value)
+            {
+                Values.AddLast(value.ToString());
+                Values.AddLast(nameof(ReturnVoidWithParameterWithValidation));
+            }
+            
+            public void ReturnParameterWithValidationAndParameterFromService([ThingParameter(Minimum =  0, Maximum = 100)]int value, 
+                [FromServices]ISomething logger)
+            {
+                logger.DoSomething();
+                Values.AddLast(value.ToString());
+                Values.AddLast(nameof(ReturnParameterWithValidationAndParameterFromService));
+            }
             
             public void Throwable()
             {
+                Values.AddLast(nameof(Throwable));
                 throw new Exception();
             } 
             #endregion
 
             #region Task
 
-            public async Task TaskWithoutParameter()
+            public async Task ReturnTaskWithDelay()
             {
                 await Task.Delay(100);
-                Values.AddLast(nameof(TaskWithoutParameter));
+                Values.AddLast(nameof(ReturnTaskWithDelay));
             } 
             
-            public Task TaskWithParameter(string id)
+            public Task ReturnTask()
             {
                 return Task.Factory.StartNew(() =>
                 {
-                    Values.AddLast(id);
-                    Values.AddLast(nameof(TaskWithParameter));
+                    Values.AddLast(nameof(ReturnTask));
                 });
-            } 
-            
-            public async Task TaskParameterWithValidation([ThingParameter(Minimum =  0, Maximum = 100)]int value)
-            {
-                await Task.Delay(100)
-                    .ConfigureAwait(false);
-                
-                Values.AddLast(value.ToString());
-                Values.AddLast(nameof(TaskParameterWithValidation));
             }
-
-            public async Task TaskThrowable()
-            {
-                await Task.Delay(100)
-                    .ConfigureAwait(false);
-                throw new Exception();
-            }
-
             #endregion
             
             #region ValueTask
-
-            public ValueTask ValueTaskWithoutParameter()
-            {
-                Values.AddLast(nameof(ValueTaskWithoutParameter));
-                return new ValueTask();
-            } 
-            
-            public ValueTask ValueTaskWithParameter(string id)
+            public ValueTask ReturnValueTask()
             {
                 return new ValueTask(Task.Factory.StartNew(() =>
                 {
-                    Values.AddLast(id);
-                    Values.AddLast(nameof(ValueTaskWithParameter));
+                    Values.AddLast(nameof(ReturnValueTask));
                 }));
-            } 
-            
-            public async ValueTask ValueTaskParameterWithValidation([ThingParameter(Minimum =  0, Maximum = 100)]int value)
-            {
-                await Task.Delay(100)
-                    .ConfigureAwait(false);
-                
-                Values.AddLast(value.ToString());
-                Values.AddLast(nameof(ValueTaskParameterWithValidation));
-            }
-
-            public ValueTask ValueTaskThrowable()
-            {
-                throw new Exception();
             }
 
             #endregion

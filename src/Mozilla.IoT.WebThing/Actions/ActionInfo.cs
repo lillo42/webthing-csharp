@@ -14,20 +14,21 @@ namespace Mozilla.IoT.WebThing.Actions
         public string Href => $"/things/{Thing.Name}/actions/{ActionName}/{Id}";
         
         public DateTime TimeRequested { get; } = DateTime.UtcNow;
-        public DateTime? TimeCompleted { get; protected set; } = null;
-        public Status Status { get; protected set; } = Status.Pending;
+        public DateTime? TimeCompleted { get; private set; } = null;
+        public Status Status { get; private set; } = Status.Pending;
 
 
         public abstract bool IsValid();
-        protected abstract ValueTask ExecuteAsync(Thing thing);
-        public virtual async Task ExecuteAsync(Thing thing, ILogger<ActionInfo> logger)
+        protected abstract ValueTask InternalExecuteAsync(Thing thing, IServiceProvider provider);
+        public virtual async Task ExecuteAsync(Thing thing, IServiceProvider provider)
         {
+            var logger = provider.GetRequiredService<ILogger<ActionInfo>>();
             logger.LogInformation("Going to execute {actionName}", ActionName);
             Status = Status.Executing;
             
             try
             {
-                await ExecuteAsync(thing)
+                await InternalExecuteAsync(thing, provider)
                     .ConfigureAwait(false);
                 
                 logger.LogInformation("{actionName} to executed", ActionName);

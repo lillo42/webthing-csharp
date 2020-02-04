@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
@@ -41,7 +42,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var parameters = action.GetParameters();
             foreach (var parameter in parameters)
             {
-                CreateProperty(inputBuilder, parameter.Name!, parameter.ParameterType);
+                if (parameter.GetCustomAttribute<FromServicesAttribute>() == null)
+                {
+                    CreateProperty(inputBuilder, parameter.Name!, parameter.ParameterType);   
+                }
             }
             
             var inputType = inputBuilder.CreateType()!;
@@ -55,7 +59,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             
             var isValid = actionBuilder.DefineMethod("IsValid",
                 MethodAttributes.Private | MethodAttributes.Static, typeof(bool),
-                parameters.Select(x => x.ParameterType).ToArray());
+                parameters
+                    .Where(x => x.GetCustomAttribute<FromServicesAttribute>() == null)
+                    .Select(x => x.ParameterType)
+                    .ToArray());
             var isValidIl = isValid.GetILGenerator();
             
             CreateParameterValidation(isValidIl, parameters);
@@ -141,8 +148,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             {
                 var parameter = parameters[i];
                 var validationParameter = parameter.GetCustomAttribute<ThingParameterAttribute>();
-                
-                if (validationParameter == null)
+
+                if (parameter.GetCustomAttribute<FromServicesAttribute>() != null 
+                    || validationParameter == null)
                 {
                     continue;
                 }
@@ -211,22 +219,38 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
 
         private static void CreateExecuteAsync(TypeBuilder builder, TypeBuilder inputBuilder, PropertyBuilder input, MethodInfo action, Type thingType)
         {
-            var executeBuilder = builder.DefineMethod(nameof(ActionInfo.ExecuteAsync),
+            var executeBuilder = builder.DefineMethod("InternalExecuteAsync",
                 MethodAttributes.Family | MethodAttributes.ReuseSlot | MethodAttributes.Virtual | MethodAttributes.HideBySig,
-                typeof(ValueTask), new [] { typeof(Thing) });
-            
+                typeof(ValueTask), new [] { typeof(Thing), typeof(IServiceProvider) });
+            var getService = typeof(IServiceProvider).GetMethod(nameof(IServiceProvider.GetService));
+            var getTypeFromHandle = typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle));
             var il = executeBuilder.GetILGenerator();
             il.DeclareLocal(typeof(ValueTask));
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Castclass, thingType);
 
-            foreach (var property in inputBuilder.GetProperties())
+
+            var inputProperties = inputBuilder.GetProperties();
+            int counter = 0;
+            foreach (var parameter in action.GetParameters())
             {
-                il.Emit(OpCodes.Ldarg_0);
-                il.EmitCall(OpCodes.Call, input.GetMethod!, null);
-                il.EmitCall(OpCodes.Callvirt, property.GetMethod!, null);
+                if (parameter.GetCustomAttribute<FromServicesAttribute>() != null)
+                {
+                    il.Emit(OpCodes.Ldarg_2);
+                    il.Emit(OpCodes.Ldtoken, parameter.ParameterType);
+                    il.EmitCall(OpCodes.Call, getTypeFromHandle, null);
+                    il.EmitCall(OpCodes.Callvirt, getService, null);
+                    il.Emit(OpCodes.Castclass, parameter.ParameterType);
+                }
+                else
+                {
+                    var property = inputProperties[counter++];
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.EmitCall(OpCodes.Call, input.GetMethod!, null);
+                    il.EmitCall(OpCodes.Callvirt, property.GetMethod!, null);
+                }
             }
-            
+
             il.EmitCall(OpCodes.Callvirt, action, null);
             if (action.ReturnType == typeof(void))
             {
