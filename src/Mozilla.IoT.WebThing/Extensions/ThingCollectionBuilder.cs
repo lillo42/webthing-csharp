@@ -8,7 +8,7 @@ using Mozilla.IoT.WebThing.Factories.Generator.Actions;
 using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 using Mozilla.IoT.WebThing.Factories.Generator.Events;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
-using Mozilla.IoT.WebThing.Factories.Generator.PropertiesOld;
+using Mozilla.IoT.WebThing.Factories.Generator.Properties;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
@@ -31,7 +31,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 var options = provider.GetRequiredService<JsonSerializerOptions>();
 
                 var converter = new ConverterInterceptorFactory(thing, options);
-                var properties = new PropertiesInterceptFactory(thing, options);
+                var properties = new PropertiesInterceptFactory(thing);
                 var events = new EventInterceptFactory(thing, options);
                 var actions = new ActionInterceptFactory();
                 CodeGeneratorFactory.Generate(thing, new List<IInterceptorFactory>()
@@ -66,7 +66,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 var options = provider.GetRequiredService<JsonSerializerOptions>();
 
                 var converter = new ConverterInterceptorFactory(thing, options);
-                var properties = new PropertiesInterceptFactory(thing, options);
+                var properties = new PropertiesInterceptFactory(thing);
                 var events = new EventInterceptFactory(thing, options);
                 var actions = new ActionInterceptFactory();
                 

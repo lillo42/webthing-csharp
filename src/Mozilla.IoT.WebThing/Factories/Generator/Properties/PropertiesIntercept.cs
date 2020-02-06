@@ -2,22 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 using Mozilla.IoT.WebThing.Mapper;
 
-namespace Mozilla.IoT.WebThing.Factories.Generator.PropertiesOld
+namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
-    internal class PropertiesPropertyIntercept : IPropertyIntercept
+    internal class PropertiesIntercept : IPropertyIntercept
     {
-        private readonly JsonSerializerOptions _options;
         public Dictionary<string, Property> Properties { get; } = new Dictionary<string, Property>();
-
-        public PropertiesPropertyIntercept(JsonSerializerOptions options)
-        {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-        }
 
         public void Before(Thing thing)
         {
@@ -26,7 +19,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.PropertiesOld
 
         public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
         {
-            var propertyName =  thingPropertyAttribute?.Name ?? _options.GetPropertyName(propertyInfo.Name);
+            var propertyName =  thingPropertyAttribute?.Name ?? propertyInfo.Name;
             Properties.Add(propertyName, new Property(GetGetMethod(propertyInfo),
                 GetSetMethod(propertyInfo),
                 CreateValidator(propertyInfo, thingPropertyAttribute),

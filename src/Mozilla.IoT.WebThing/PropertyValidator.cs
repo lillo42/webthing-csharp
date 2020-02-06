@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace Mozilla.IoT.WebThing
@@ -8,9 +9,9 @@ namespace Mozilla.IoT.WebThing
         private readonly object[]? _enums;
         private readonly float? _minimum;
         private readonly float? _maximum;
-        private readonly int? _multipleOf;
+        private readonly float? _multipleOf;
 
-        public PropertyValidator(bool isReadOnly, float? minimum, float? maximum, int? multipleOf, object[]? enums)
+        public PropertyValidator(bool isReadOnly, float? minimum, float? maximum, float? multipleOf, object[]? enums)
         {
             _isReadOnly = isReadOnly;
             _minimum = minimum;
@@ -26,19 +27,25 @@ namespace Mozilla.IoT.WebThing
                 return false;
             }
 
-            if (_minimum.HasValue && (float)value < _minimum)
+            if (_minimum.HasValue
+                || _maximum.HasValue
+                || _multipleOf.HasValue)
             {
-                return false;
-            }
+                var comparer = Convert.ToSingle(value);
+                if (_minimum.HasValue && comparer < _minimum.Value)
+                {
+                    return false;
+                }
 
-            if (_maximum.HasValue && (float)value > _maximum)
-            {
-                return false;
-            }
+                if (_maximum.HasValue && comparer > _maximum.Value)
+                {
+                    return false;
+                }
 
-            if (_multipleOf.HasValue && (float)value % _multipleOf != 1)
-            {
-                return false;
+                if (_multipleOf.HasValue && comparer % _multipleOf.Value != 0)
+                {
+                    return false;
+                }
             }
 
             if (_enums != null && _enums.All(x => !x.Equals(value)))

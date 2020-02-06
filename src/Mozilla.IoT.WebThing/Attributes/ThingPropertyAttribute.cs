@@ -30,9 +30,9 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
 
 
-        internal int? MultipleOfValue { get; set; }
+        internal float? MultipleOfValue { get; set; }
 
-        public int MultipleOf
+        public float MultipleOf
         {
             get => MultipleOfValue ?? 0;
             set => MultipleOfValue = value;

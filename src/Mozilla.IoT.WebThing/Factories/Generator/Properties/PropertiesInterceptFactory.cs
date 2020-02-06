@@ -1,18 +1,17 @@
 using System;
-using System.Text.Json;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
-namespace Mozilla.IoT.WebThing.Factories.Generator.PropertiesOld
+namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
     internal class PropertiesInterceptFactory : IInterceptorFactory
     {
         private readonly Thing _thing;
-        private readonly PropertiesPropertyIntercept _intercept;
+        private readonly PropertiesIntercept _intercept;
 
-        public PropertiesInterceptFactory(Thing thing, JsonSerializerOptions options)
+        public PropertiesInterceptFactory(Thing thing)
         {
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
-            _intercept = new PropertiesPropertyIntercept(options);
+            _intercept = new PropertiesIntercept();
         }
 
         public IThingIntercept CreateThingIntercept() => new EmptyIntercept();

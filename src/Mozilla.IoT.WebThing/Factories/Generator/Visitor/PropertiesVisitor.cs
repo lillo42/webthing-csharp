@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
                     continue;
                 }
                 
-                var information = propertyType.GetCustomAttribute<ThingPropertyAttribute>();
+                var information = property.GetCustomAttribute<ThingPropertyAttribute>();
 
                 if (information != null && information.Ignore)
                 {
