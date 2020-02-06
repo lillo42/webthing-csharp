@@ -43,7 +43,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogTrace("Going to set property {propertyName}", property);
             var json = await context.FromBodyAsync<Dictionary<string, object>>(option)
                 .ConfigureAwait(false); 
-            var result = thing.ThingContext.PropertiesOld.SetProperty(property, json[property]);
+            var result = thing.ThingContext.Properties.SetProperty(property, json[property]);
             
             if (result == SetPropertyResult.NotFound)
             {
@@ -59,7 +59,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.PropertiesOld.GetProperties(property), option)
+            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), option)
                 .ConfigureAwait(false);
         }
     }
