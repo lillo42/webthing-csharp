@@ -11,12 +11,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThingEndpoint
+    internal class GetThing
     {
         internal static Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetThingEndpoint>>();
+            var logger = service.GetRequiredService<ILogger<GetThing>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             var name = context.GetRouteData<string>("name");
             logger.LogInformation("Requesting Thing. [Name: {name}]", name);

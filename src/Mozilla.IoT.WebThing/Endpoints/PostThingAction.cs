@@ -31,13 +31,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-            
-            if (thing.Prefix == null)
-            {
-                logger.LogDebug("Thing without prefix. [Name: {name}]", thingName);
-                thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
-                    context.Request.Host));
-            }
 
             context.Request.EnableBuffering();
             var option = service.GetRequiredService<JsonSerializerOptions>();

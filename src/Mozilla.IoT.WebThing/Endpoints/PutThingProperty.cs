@@ -29,13 +29,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            if (thing.Prefix == null)
-            {
-                logger.LogDebug("Thing without prefix. [Name: {name}]", thing.Name);
-                thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
-                    context.Request.Host));
-            }
-            
             var property = context.GetRouteData<string>("property");
             
             context.Request.EnableBuffering();
