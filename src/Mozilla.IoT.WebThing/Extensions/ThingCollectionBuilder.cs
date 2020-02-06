@@ -8,7 +8,7 @@ using Mozilla.IoT.WebThing.Factories.Generator.Actions;
 using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 using Mozilla.IoT.WebThing.Factories.Generator.Events;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
-using Mozilla.IoT.WebThing.Factories.Generator.Properties;
+using Mozilla.IoT.WebThing.Factories.Generator.PropertiesOld;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {

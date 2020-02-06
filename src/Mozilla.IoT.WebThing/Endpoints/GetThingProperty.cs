@@ -37,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
             
             var property = context.GetRouteData<string>("property");
-            var properties = thing.ThingContext.Properties.GetProperties(property);
+            var properties = thing.ThingContext.PropertiesOld.GetProperties(property);
 
             if (properties == null)
             {
