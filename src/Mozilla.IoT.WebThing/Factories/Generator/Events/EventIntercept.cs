@@ -17,7 +17,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
         private readonly MethodInfo _getContext = typeof(Thing).GetProperty(nameof(Thing.ThingContext))?.GetMethod!;
         private readonly MethodInfo _getEvent = typeof(Context).GetProperty(nameof(Context.Events))?.GetMethod!;
         private readonly MethodInfo _getItem = typeof(Dictionary<string, EventCollection>).GetMethod("get_Item")!;
-        private readonly MethodInfo _addItem = typeof(EventCollection).GetMethod(nameof(EventCollection.Add))!;
+        private readonly MethodInfo _addItem = typeof(EventCollection).GetMethod(nameof(EventCollection.Enqueue))!;
         private readonly JsonSerializerOptions _options;
         private readonly TypeBuilder _builder;
 

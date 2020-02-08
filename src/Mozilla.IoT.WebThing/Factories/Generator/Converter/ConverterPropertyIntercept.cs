@@ -70,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         thingPropertyAttribute.MinimumValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Maximum), propertyType,
                         thingPropertyAttribute.MaximumValue);
-                    _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.MultipleOf),
+                    _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MultipleOf), propertyType,
                         thingPropertyAttribute.MultipleOfValue);
                 }
             }

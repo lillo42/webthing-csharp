@@ -36,6 +36,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     context.Request.Host));
             }
             
+            
             var option = service.GetRequiredService<JsonSerializerOptions>();
             logger.LogInformation("Found 1 Thing. [Name: {name}]", thing.Name);
             context.Response.StatusCode = (int)HttpStatusCode.OK;

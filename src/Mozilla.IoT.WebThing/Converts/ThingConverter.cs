@@ -7,14 +7,6 @@ namespace Mozilla.IoT.WebThing.Converts
 {
     public class ThingConverter : JsonConverter<Thing>
     {
-        public ThingConverter(Dictionary<string, IThingConverter> thingConverts)
-        {
-        }
-
-        public ThingConverter()
-        {
-        }
-
         public override bool CanConvert(Type typeToConvert)
         {
             return typeToConvert == typeof(Thing) || typeToConvert.IsSubclassOf(typeof(Thing));
