@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Endpoints;
 
 namespace Microsoft.AspNetCore.Routing
@@ -13,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
-            endpoint.MapGet("/things", GetAllThingEndpoint.InvokeAsync);
+            endpoint.MapGet("/things", GetAllThings.InvokeAsync);
             endpoint.MapGet("/things/{name}",  GetThing.InvokeAsync);
             endpoint.MapGet("/things/{name}/properties",  GetThingProperties.InvokeAsync);
             endpoint.MapGet("/things/{name}/properties/{property}",  GetThingProperty.InvokeAsync);
@@ -23,6 +26,9 @@ namespace Microsoft.AspNetCore.Routing
             endpoint.MapPost("/things/{name}/actions/{action}",  PostThingAction.InvokeAsync);
             endpoint.MapGet("/things/{name}/actions/{action}",  GetThingAction.InvokeAsync);
             endpoint.MapGet("/things/{name}/actions/{action}/{id}",  GetThingActionById.InvokeAsync);
+
+            //To Force bind
+            endpoint.ServiceProvider.GetService<IEnumerable<Thing>>();
         }
     }
 }

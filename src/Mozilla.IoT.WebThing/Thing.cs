@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Mozilla.IoT.WebThing.Attributes;
 using static Mozilla.IoT.WebThing.Const;
 

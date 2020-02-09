@@ -60,6 +60,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Description),
                     thingPropertyAttribute.Description);
                 _jsonWriter.PropertyWithNullableValue("ReadOnly", thingPropertyAttribute.IsReadOnly);
+                _jsonWriter.PropertyWithNullableValue("Type", jsonType);
                 _jsonWriter.PropertyEnum("@enum", propertyType, thingPropertyAttribute.Enum);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Unit), thingPropertyAttribute.Unit);
                 _jsonWriter.PropertyType("@type", thingPropertyAttribute.Type);
@@ -74,9 +75,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         thingPropertyAttribute.MultipleOfValue);
                 }
             }
-
-            _jsonWriter.PropertyWithNullableValue("ReadOnly", !propertyInfo.CanWrite);
-            _jsonWriter.PropertyWithNullableValue("Type", jsonType);
+            
+            
 
             _jsonWriter.StartArray("Links");
 

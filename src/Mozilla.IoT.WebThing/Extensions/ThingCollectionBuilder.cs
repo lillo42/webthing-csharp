@@ -56,7 +56,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             };
 
             var converter = new ConverterInterceptorFactory(thing, optionsJson);
-            var properties = new PropertiesInterceptFactory(thing);
+            var properties = new PropertiesInterceptFactory(thing, option);
             var events = new EventInterceptFactory(thing, option);
             var actions = new ActionInterceptFactory(option);
                 

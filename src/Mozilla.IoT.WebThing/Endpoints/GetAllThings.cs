@@ -8,17 +8,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetAllThingEndpoint
+    internal class GetAllThings
     {
         internal static Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetAllThingEndpoint>>();
+            var logger = service.GetRequiredService<ILogger<GetAllThings>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
-            var option = service.GetRequiredService<JsonSerializerOptions>();
 
             logger.LogDebug("Verify if Things have prefix");
             foreach (var thing in things)
@@ -34,7 +34,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogTrace("Found {counter} things", things.Count());
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
-            return JsonSerializer.SerializeAsync(context.Response.Body, things, option, context.RequestAborted);
+            
+            return JsonSerializer.SerializeAsync(context.Response.Body, things, ThingConverter.Options, context.RequestAborted);
         }
     }
 }

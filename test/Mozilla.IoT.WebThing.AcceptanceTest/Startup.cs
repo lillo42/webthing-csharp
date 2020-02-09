@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SampleThing.Things;
+using Mozilla.IoT.WebThing.AcceptanceTest.Things;
 
-namespace SampleThing
+namespace Mozilla.IoT.WebThing.AcceptanceTest
 {
     public class Startup
     {

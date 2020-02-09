@@ -5,9 +5,10 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -18,7 +19,9 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<GetThingProperty>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
+            
             var name = context.GetRouteData<string>("name");
+            
             logger.LogInformation("Requesting Thing. [Name: {name}]", name);
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
@@ -39,11 +42,12 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", thing.Name, property);
-            var option = service.GetRequiredService<JsonSerializerOptions>();
+            logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", property, thing.Name);
+            
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
-            return JsonSerializer.SerializeAsync(context.Response.Body, properties, option);
+            
+            return JsonSerializer.SerializeAsync(context.Response.Body, properties, ThingConverter.Options);
         }
     }
 }

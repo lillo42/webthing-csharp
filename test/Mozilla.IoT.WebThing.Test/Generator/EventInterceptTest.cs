@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Attributes;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Attributes;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 using Mozilla.IoT.WebThing.Mapper;
 
@@ -10,7 +11,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
     internal class PropertiesIntercept : IPropertyIntercept
     {
-        public Dictionary<string, Property> Properties { get; } = new Dictionary<string, Property>();
+        public Dictionary<string, Property> Properties { get; }
+
+        public PropertiesIntercept(ThingOption option)
+        {
+            Properties = option.IgnoreCase ? new Dictionary<string, Property>(StringComparer.InvariantCultureIgnoreCase) 
+                : new Dictionary<string, Property>();   
+        }
 
         public void Before(Thing thing)
         {

@@ -23,7 +23,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
         public ActionIntercept(ModuleBuilder moduleBuilder, ThingOption option)
         {
             _moduleBuilder = moduleBuilder;
-            Actions = option.IgnoreCase ? new Dictionary<string, ActionContext>(StringComparer.OrdinalIgnoreCase) 
+            Actions = option.IgnoreCase ? new Dictionary<string, ActionContext>(StringComparer.InvariantCultureIgnoreCase) 
                 : new Dictionary<string, ActionContext>();
         }
 

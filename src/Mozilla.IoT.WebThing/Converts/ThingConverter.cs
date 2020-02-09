@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -7,6 +6,14 @@ namespace Mozilla.IoT.WebThing.Converts
 {
     public class ThingConverter : JsonConverter<Thing>
     {
+        public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+            Converters = { new ThingConverter()}
+        };
+        
         public override bool CanConvert(Type typeToConvert)
         {
             return typeToConvert == typeof(Thing) || typeToConvert.IsSubclassOf(typeof(Thing));

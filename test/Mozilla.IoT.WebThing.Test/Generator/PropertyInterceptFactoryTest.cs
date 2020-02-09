@@ -2,6 +2,7 @@ using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Attributes;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Properties;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         {
             _fixture = new Fixture();
             _thing = new LampThing();
-            _factory = new PropertiesInterceptFactory(_thing);
+            _factory = new PropertiesInterceptFactory(_thing, new ThingOption());
         }
 
         [Fact]
