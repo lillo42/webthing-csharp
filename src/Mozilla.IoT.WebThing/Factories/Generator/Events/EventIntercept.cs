@@ -10,7 +10,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
 {
     public class EventIntercept : IEventIntercept
     {
-        private Dictionary<string, EventCollection> Events { get; }
+        public Dictionary<string, EventCollection> Events { get; }
         private readonly Queue<EventInfo> _eventToBind = new Queue<EventInfo>();
 
         private readonly ConstructorInfo _createThing = typeof(Event).GetConstructors(BindingFlags.Public | BindingFlags.Instance)[0];
