@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Events
@@ -9,13 +10,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
     {
         private readonly EventIntercept _intercept;
 
-        public EventInterceptFactory(Thing thing, JsonSerializerOptions options)
+        public EventInterceptFactory(Thing thing, ThingOption options)
         {
             var thingType = thing.GetType();
             var builder = Factory.CreateTypeBuilder($"{thingType.Name}EventBinder", thingType.Name, 
                 null, TypeAttributes.AutoClass | TypeAttributes.Class | TypeAttributes.Public);
             
-            _intercept = new EventIntercept(options, builder, Events);
+            _intercept = new EventIntercept(builder, options);
         }
 
         public Dictionary<string, EventCollection> Events { get; } = new Dictionary<string, EventCollection>();

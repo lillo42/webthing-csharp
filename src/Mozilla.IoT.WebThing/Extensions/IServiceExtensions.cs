@@ -8,24 +8,18 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IServiceExtensions
     {
-        public static IThingCollectionBuilder AddThings(this IServiceCollection service, Action<JsonSerializerOptions>? options = null)
+        public static IThingCollectionBuilder AddThings(this IServiceCollection service, Action<ThingOption>? options = null)
         {
             if (service == null)
             {
                 throw new ArgumentNullException(nameof(service));
             }
 
-            var jsonOption = new JsonSerializerOptions
-            {
-                IgnoreNullValues = true,
-                WriteIndented = false,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-            };
+            var thingOption = new ThingOption();
+            options?.Invoke(thingOption);
+
+            service.AddSingleton(thingOption);
             
-            jsonOption.Converters.Add(new ThingConverter());
-            options?.Invoke(jsonOption);
-            service.TryAddSingleton(jsonOption);
             var builder = new ThingCollectionBuilder(service);
             return builder;
         }

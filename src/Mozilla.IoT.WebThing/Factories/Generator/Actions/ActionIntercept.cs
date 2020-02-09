@@ -18,11 +18,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
         private readonly ModuleBuilder _moduleBuilder;
-        public  Dictionary<string, ActionContext> Actions { get; } = new Dictionary<string, ActionContext>();
+        public  Dictionary<string, ActionContext> Actions { get; }
 
-        public ActionIntercept(ModuleBuilder moduleBuilder)
+        public ActionIntercept(ModuleBuilder moduleBuilder, ThingOption option)
         {
             _moduleBuilder = moduleBuilder;
+            Actions = option.IgnoreCase ? new Dictionary<string, ActionContext>(StringComparer.OrdinalIgnoreCase) 
+                : new Dictionary<string, ActionContext>();
         }
 
         public void Before(Thing thing)

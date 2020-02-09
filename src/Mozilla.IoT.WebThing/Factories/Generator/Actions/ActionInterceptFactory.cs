@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
@@ -10,12 +11,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
         private readonly ActionIntercept _intercept;
 
         public Dictionary<string, ActionContext> Actions => _intercept.Actions;
-        public ActionInterceptFactory()
+        public ActionInterceptFactory(ThingOption option)
         {
             var assemblyName = new AssemblyName("ActionAssembly");
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule("ActionModule");
-            _intercept = new ActionIntercept(moduleBuilder);
+            _intercept = new ActionIntercept(moduleBuilder, option);
         }
         
         public IThingIntercept CreateThingIntercept()

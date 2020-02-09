@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Actions;
 using NSubstitute;
@@ -29,7 +30,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         {
             _fixture = new Fixture();
             _thing = new LampThing();
-            _factory = new ActionInterceptFactory();
+            _factory = new ActionInterceptFactory(new ThingOption());
             var logger = Substitute.For<ILogger<ActionInfo>>();
             _provider = Substitute.For<IServiceProvider>();
 

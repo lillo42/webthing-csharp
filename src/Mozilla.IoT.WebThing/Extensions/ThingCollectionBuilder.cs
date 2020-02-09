@@ -25,29 +25,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             where T : Thing
         {
             _service.TryAddSingleton<T>();
-            _service.TryAddSingleton<Thing>(provider =>
-            {
-                var thing = provider.GetRequiredService<T>();
-                var options = provider.GetRequiredService<JsonSerializerOptions>();
-
-                var converter = new ConverterInterceptorFactory(thing, options);
-                var properties = new PropertiesInterceptFactory(thing);
-                var events = new EventInterceptFactory(thing, options);
-                var actions = new ActionInterceptFactory();
-                CodeGeneratorFactory.Generate(thing, new List<IInterceptorFactory>()
-                {
-                    converter,
-                    properties, 
-                    events,
-                    actions
-                });
-
-                thing.ThingContext = new Context(converter.Create(), 
-                    properties.Create(), 
-                    events.Events,
-                    actions.Actions);
-                return thing;
-            });
+            _service.TryAddSingleton(ConfigureThing<T>);
             return this;
         }
 
@@ -60,32 +38,42 @@ namespace Mozilla.IoT.WebThing.Extensions
             }
 
             _service.TryAddSingleton(thing);
-            _service.TryAddSingleton<Thing>(provider =>
-            {
-                var thing = provider.GetRequiredService<T>();
-                var options = provider.GetRequiredService<JsonSerializerOptions>();
-
-                var converter = new ConverterInterceptorFactory(thing, options);
-                var properties = new PropertiesInterceptFactory(thing);
-                var events = new EventInterceptFactory(thing, options);
-                var actions = new ActionInterceptFactory();
-                
-                CodeGeneratorFactory.Generate(thing, new List<IInterceptorFactory>()
-                {
-                    converter,
-                    properties, 
-                    events,
-                    actions
-                });
-
-                thing.ThingContext = new Context(converter.Create(), 
-                    properties.Create(), 
-                    events.Events,
-                    actions.Actions);
-                return thing;
-            });
+            _service.TryAddSingleton(ConfigureThing<T>);
 
             return this;
+        }
+
+        private static Thing ConfigureThing<T>(IServiceProvider provider)
+            where T : Thing
+        {
+            var thing = provider.GetRequiredService<T>();
+            var option = provider.GetRequiredService<ThingOption>();
+            var optionsJson = new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                IgnoreNullValues = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var converter = new ConverterInterceptorFactory(thing, optionsJson);
+            var properties = new PropertiesInterceptFactory(thing);
+            var events = new EventInterceptFactory(thing, option);
+            var actions = new ActionInterceptFactory(option);
+                
+            CodeGeneratorFactory.Generate(thing, new List<IInterceptorFactory>()
+            {
+                converter,
+                properties, 
+                events,
+                actions
+            });
+
+            thing.ThingContext = new Context(converter.Create(), 
+                properties.Create(), 
+                events.Events,
+                actions.Actions);
+            return thing;
+            
         }
     }
 }

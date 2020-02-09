@@ -4,13 +4,14 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Events
 {
     public class EventIntercept : IEventIntercept
     {
-        private readonly Dictionary<string, EventCollection> _events;
+        private Dictionary<string, EventCollection> Events { get; }
         private readonly Queue<EventInfo> _eventToBind = new Queue<EventInfo>();
 
         private readonly ConstructorInfo _createThing = typeof(Event).GetConstructors(BindingFlags.Public | BindingFlags.Instance)[0];
@@ -18,14 +19,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
         private readonly MethodInfo _getEvent = typeof(Context).GetProperty(nameof(Context.Events))?.GetMethod!;
         private readonly MethodInfo _getItem = typeof(Dictionary<string, EventCollection>).GetMethod("get_Item")!;
         private readonly MethodInfo _addItem = typeof(EventCollection).GetMethod(nameof(EventCollection.Enqueue))!;
-        private readonly JsonSerializerOptions _options;
+        private readonly ThingOption _options;
         private readonly TypeBuilder _builder;
 
-        public EventIntercept(JsonSerializerOptions options, TypeBuilder builder, Dictionary<string, EventCollection> events)
+        public EventIntercept(TypeBuilder builder, ThingOption options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _builder = builder ?? throw new ArgumentNullException(nameof(builder));
-            _events = events ?? throw new ArgumentNullException(nameof(events));
+            
+            Events = options.IgnoreCase ? new Dictionary<string, EventCollection>(StringComparer.OrdinalIgnoreCase) 
+                : new Dictionary<string, EventCollection>();
         }
 
         public void Before(Thing thing)
@@ -46,8 +49,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
         public void Visit(Thing thing, EventInfo @event, ThingEventAttribute? eventInfo)
         {
             _eventToBind.Enqueue(@event);
-            var name = _options.GetPropertyName(eventInfo?.Name ?? @event.Name);
-            _events.Add(name, new EventCollection(10));
+            var name = eventInfo?.Name ?? @event.Name;
+            Events.Add(name, new EventCollection(_options.MaxEventSize));
 
             var type = @event.EventHandlerType?.GetGenericArguments()[0]!;
             var methodBuilder =_builder.DefineMethod($"{@event.Name}Handler",

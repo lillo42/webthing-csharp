@@ -5,6 +5,7 @@ using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Events;
 using NSubstitute;
@@ -15,15 +16,12 @@ namespace Mozilla.IoT.WebThing.Test.Generator
     public class EventInterceptTest
     {
         private readonly Fixture _fixture;
-        private readonly JsonSerializerOptions _options;
+        private readonly ThingOption _options;
 
         public EventInterceptTest()
         {
             _fixture = new Fixture();
-            _options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
+            _options = new ThingOption();
         }
 
 
