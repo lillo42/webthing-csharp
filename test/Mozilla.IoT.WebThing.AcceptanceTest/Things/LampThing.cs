@@ -48,15 +48,19 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
         
         [ThingEvent(Title = "OtherEvent")]
         public event EventHandler<string> OtherEvent;
-
-
+        
         [ThingAction(Name = "fade", Title = "Fade", Type = new []{"FadeAction"},
             Description = "Fade the lamp to a given level")]
         public void Fade(
             [ThingParameter(Minimum = 0, Maximum = 100)]int level,
             [ThingParameter(Minimum = 0, Unit = "milliseconds")]int duration)
         {
-            Overheated.Invoke(this, level);
+            
+        }
+        
+        public Task LongRun()
+        {
+            return Task.Delay(5_000);
         }
     }
 }

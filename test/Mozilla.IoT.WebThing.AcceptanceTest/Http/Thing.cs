@@ -94,6 +94,13 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                         ""href"": ""/things/Lamp/actions/fade""
                     }
                 ]
+            },
+            ""longRun"":{
+                ""links"": [
+                    {
+                        ""href"": ""/things/Lamp/actions/longRun""
+                    }
+                ]
             }
         },
         ""events"": {
@@ -107,6 +114,13 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                         ""href"": ""/things/Lamp/events/overheated""
                     }
                 ]
+            },
+            ""otherEvent"": {
+                ""title"": ""OtherEvent"",
+                ""type"": ""string"",
+                ""links"": [{
+                    ""href"": ""/things/Lamp/events/otherEvent""
+                }]
             }
         },
         ""links"": [
@@ -212,6 +226,13 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     ""href"": ""/things/Lamp/actions/fade""
                 }
             ]
+        },
+       ""longRun"":{
+            ""links"": [
+                {
+                    ""href"": ""/things/Lamp/actions/longRun""
+                }
+            ]
         }
     },
     ""events"": {
@@ -225,6 +246,13 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     ""href"": ""/things/Lamp/events/overheated""
                 }
             ]
+        },
+        ""otherEvent"": {
+            ""title"": ""OtherEvent"",
+            ""type"": ""string"",
+            ""links"": [{
+                ""href"": ""/things/Lamp/events/otherEvent""
+            }]
         }
     },
     ""links"": [
