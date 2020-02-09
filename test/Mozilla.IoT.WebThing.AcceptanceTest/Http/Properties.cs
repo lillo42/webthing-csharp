@@ -82,7 +82,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         }
         #endregion
 
-        #region POST
+        #region PUT
 
         [Theory]
         [InlineData("on", true)]

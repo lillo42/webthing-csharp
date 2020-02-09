@@ -6,6 +6,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
 {
     public class LampThing : Thing
     {
+        private int _counter = 0;
         public LampThing()
         {
             Task.Factory.StartNew(() =>
@@ -14,14 +15,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
                 {
                     Task.Delay(3_000).GetAwaiter().GetResult();
                     var @event = Overheated;
-                    try
-                    {
-                        @event?.Invoke(this, 10);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                    @event?.Invoke(this, _counter++);
+                }
+            });
+            
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    Task.Delay(4_000).GetAwaiter().GetResult();
+                    var @event = OtherEvent;
+                    @event?.Invoke(this, _counter.ToString());
                 }
             });
         }
@@ -41,6 +45,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             Type = new [] {"OverheatedEvent"},
             Description = "The lamp has exceeded its safe operating temperature")]
         public event EventHandler<int> Overheated;
+        
+        [ThingEvent(Title = "OtherEvent")]
+        public event EventHandler<string> OtherEvent;
 
 
         [ThingAction(Name = "fade", Title = "Fade", Type = new []{"FadeAction"},
