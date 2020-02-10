@@ -91,10 +91,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var action = CreateAction(nameof(LampThing.ReturnVoid));
             action.IsValid().Should().BeTrue();
 
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
 
             _thing.Values.Should().HaveCount(1);
@@ -109,10 +109,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             action.IsValid().Should().BeTrue();
             
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
             
             _thing.Values.Should().HaveCount(2);
@@ -130,10 +130,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             action.IsValid().Should().BeTrue();
             
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
             
             _thing.Values.Should().HaveCount(2);
@@ -150,7 +150,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             action.IsValid().Should().BeFalse();
             
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             _thing.Values.Should().BeEmpty();
         }
@@ -161,10 +161,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var action = CreateAction(nameof(LampThing.Throwable));
             action.IsValid().Should().BeTrue();
 
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
             
             _thing.Values.Should().HaveCount(1);
@@ -177,7 +177,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var value = 10;
             var action = CreateAction(nameof(LampThing.ReturnParameterWithValidationAndParameterFromService), value);
             
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.IsValid().Should().BeTrue();
             
             var something = Substitute.For<ISomething>();
@@ -187,10 +187,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             action.IsValid().Should().BeTrue();
             
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
             
             _thing.Values.Should().HaveCount(2);
@@ -210,10 +210,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var action = CreateAction(nameof(LampThing.ReturnTaskWithDelay));
             action.IsValid().Should().BeTrue();
 
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
 
             _thing.Values.Should().HaveCount(1);
@@ -227,10 +227,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var action = CreateAction(nameof(LampThing.ReturnTask));
             action.IsValid().Should().BeTrue();
 
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
 
             _thing.Values.Should().HaveCount(1);
@@ -247,10 +247,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var action = CreateAction(nameof(LampThing.ReturnValueTask));
             action.IsValid().Should().BeTrue();
 
-            action.Status.Should().Be(Status.Pending);
+            action.Status.Should().Be(Status.Pending.ToString().ToLower());
             action.TimeCompleted.Should().BeNull();
             await action.ExecuteAsync(_thing, _provider);
-            action.Status.Should().Be(Status.Completed);
+            action.Status.Should().Be(Status.Completed.ToString().ToLower());
             action.TimeCompleted.Should().NotBeNull();
 
             _thing.Values.Should().HaveCount(1);

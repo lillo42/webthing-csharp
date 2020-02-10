@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (value != null)
             {
-                var buffer = JsonSerializer.SerializeToUtf8Bytes(value, options);
+                var buffer = JsonSerializer.SerializeToUtf8Bytes(value, value.GetType(), options);
 
                 await context.Response.BodyWriter.WriteAsync(buffer, cancellationToken)
                     .ConfigureAwait(false);

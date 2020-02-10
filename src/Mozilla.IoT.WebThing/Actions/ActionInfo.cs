@@ -15,7 +15,7 @@ namespace Mozilla.IoT.WebThing.Actions
         
         public DateTime TimeRequested { get; } = DateTime.UtcNow;
         public DateTime? TimeCompleted { get; private set; } = null;
-        public Status Status { get; private set; } = Status.Pending;
+        public string Status { get; private set; } = "pending";
 
 
         public abstract bool IsValid();
@@ -24,7 +24,7 @@ namespace Mozilla.IoT.WebThing.Actions
         {
             var logger = provider.GetRequiredService<ILogger<ActionInfo>>();
             logger.LogInformation("Going to execute {actionName}", ActionName);
-            Status = Status.Executing;
+            Status = "executing";
             
             try
             {
@@ -39,7 +39,7 @@ namespace Mozilla.IoT.WebThing.Actions
             }
             
             TimeCompleted = DateTime.UtcNow;
-            Status = Status.Completed;
+            Status = "completed";
         }
     }
 }
