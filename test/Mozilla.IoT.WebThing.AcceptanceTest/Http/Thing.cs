@@ -96,6 +96,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""longRun"":{
+                ""input"": {
+                    ""type"": ""object"",
+                    ""properties"": {}
+                },
                 ""links"": [
                     {
                         ""href"": ""/things/Lamp/actions/longRun""
@@ -228,6 +232,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ]
         },
        ""longRun"":{
+            ""input"": {
+                ""type"": ""object"",
+                ""properties"": {}
+            },
             ""links"": [
                 {
                     ""href"": ""/things/Lamp/actions/longRun""
