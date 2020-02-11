@@ -38,10 +38,3 @@ jobs:
       run: dotnet pack ./src/CastForm -c Release --include-source -o ./artifacts/pack -p:PackageVersion=${{env.RELEASE_VERSION}}
     - name: Publish to Nuget
       run: dotnet nuget push ./artifacts/pack/*.nupkg -k ${{secrets.NUGET_TOKEN}} -s https://api.nuget.org/v3/index.json
-    - name: Publish to Github
-      run: dotnet nuget push ./artifacts/pack/*.nupkg -k ${{secrets.NUGET_TOKEN}} -s "github"
-    - name: Archive Nuget pack
-      uses: actions/upload-artifact@v1
-      with:
-        name: CastForm v${{env.RELEASE_VERSION}}
-        path: ./artifacts/pack/CastForm ${{env.RELEASE_VERSION}}.nupkg
