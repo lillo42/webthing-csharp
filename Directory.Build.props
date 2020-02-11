@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <ThingAppTargetFrameworks Condition="$(ThingAppTargetFrameworks) == ''">netcoreapp3.0</ThingAppTargetFrameworks>
-    <ThingLibTargetFrameworks Condition="$(ThingLibTargetFrameworks) == ''">netcoreapp3.0</ThingLibTargetFrameworks>
+    <ThingAppTargetFrameworks Condition="$(ThingAppTargetFrameworks) == ''">netcoreapp3.1</ThingAppTargetFrameworks>
+    <ThingLibTargetFrameworks Condition="$(ThingLibTargetFrameworks) == ''">netcoreapp3.1</ThingLibTargetFrameworks>
 
     <Product>Mozilla.IoT.WebThings</Product>
     <NeutralLanguage>en-US</NeutralLanguage>

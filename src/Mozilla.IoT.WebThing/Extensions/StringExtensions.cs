@@ -1,63 +1,17 @@
-using System.Diagnostics.CodeAnalysis;
+using System;
 
-namespace System
+namespace Mozilla.IoT.WebThing.Extensions
 {
-    [ExcludeFromCodeCoverage]
     internal static class StringExtensions
     {
-        internal static string JoinUrl(this string left, string right)
+        public static string FirstCharToUpper(this string input)
         {
-            if (left == null)
+            switch (input)
             {
-                left = string.Empty;
+                case null: throw new ArgumentNullException(nameof(input));
+                case "": throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input));
+                default: return input[0].ToString().ToUpper() + input.Substring(1);
             }
-
-            if (right == null)
-            {
-                right = string.Empty;
-            }
-
-            var start = string.Empty;
-            
-
-            if (!left.StartsWith('/'))
-            {
-                start = "/";
-            }
-
-            if (string.IsNullOrEmpty(left))
-            {
-                if (right.StartsWith('/'))
-                {
-                    return right;
-                }
-
-                return string.Concat(start, right);
-            }
-            
-
-            if ((left.EndsWith('/') && !right.StartsWith('/'))
-                || (!left.EndsWith('/') && right.StartsWith('/')))
-            {
-                return $"{start}{left}{right}";
-            }
-
-            if (left.EndsWith('/') && right.StartsWith('/'))
-            {
-                if (left.Length == 1 && right.Length == 1)
-                {
-                    return $"{start}/";
-                }
-
-                if (left.Length == 1 && right.Length > 1)
-                {
-                    return $"{start}{left}{right.Remove(0, 1)}";
-                }
-
-                return $"{start}{left.Remove(left.Length - 2)}{right}";
-            }
-
-            return $"{start}{left}/{right}";
-        }
+        } 
     }
 }

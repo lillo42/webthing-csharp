@@ -1,54 +1,47 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Activator;
-using Mozilla.IoT.WebThing.Descriptor;
+using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal sealed class GetAction
+    internal class GetAction
     {
-        internal static async Task Invoke(HttpContext httpContext)
+        public static async Task InvokeAsync(HttpContext context)
         {
-            var services = httpContext.RequestServices;
-            var logger = services.GetRequiredService<ILogger<GetAction>>();
-            logger.LogInformation("Get Action is calling");
+            var service = context.RequestServices;
+            var logger = service.GetRequiredService<ILogger<GetAction>>();
+            var things = service.GetRequiredService<IEnumerable<Thing>>();
+            var thingName = context.GetRouteData<string>("name");
+            logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
+            var thing = things.FirstOrDefault(x => x.Name.Equals(thingName, StringComparison.OrdinalIgnoreCase));
 
-            var route = services.GetRequiredService<IHttpRouteValue>();
-            var thingId = route.GetValue<string>("thing");
-            var name = route.GetValue<string>("name");
-
-            logger.LogInformation($"Get Action: [[thing: {thingId}][actionName: {name}]]");
-            var thing = services.GetService<IThingActivator>().CreateInstance(services, thingId);
-
-            if (thing != null && thing.Actions.Contains(name))
+            if (thing == null)
             {
-                var description = services.GetService<IDescriptor<Action>>();
-
-                var result = new LinkedList<Dictionary<string, object>>();
-
-                foreach (var action in thing.Actions[name])
-                {
-                    result.AddLast(new Dictionary<string, object>
-                    {
-                        [action.Name] = description.CreateDescription(action)
-                    });
-                }
-
-                var writer = services.GetRequiredService<IHttpBodyWriter>();
-
-                httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
-                await writer.WriteAsync(result, httpContext.RequestAborted);
+                logger.LogInformation("Thing not found. [Name: {name}]", thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
-            else
+            
+            var option = ThingConverter.Options;
+            
+            var actionName = context.GetRouteData<string>("action");
+
+            if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
             {
-                logger.LogInformation(
-                    $"Get Action: Thing or action not found [[thing: {thingId}][actionName: {name}]]");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                logger.LogInformation("{actionName} Action not found in {thingName}", actionName, thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
+            
+            await context.WriteBodyAsync(HttpStatusCode.OK, actionContext.Actions, option)
+                .ConfigureAwait(false);
         }
     }
 }

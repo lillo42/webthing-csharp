@@ -1,49 +1,58 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Activator;
-using Mozilla.IoT.WebThing.Descriptor;
+using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal sealed class GetEvent
+    internal class GetEvent
     {
-        internal static async Task Invoke(HttpContext httpContext)
+        public static Task InvokeAsync(HttpContext context)
         {
-            var services = httpContext.RequestServices;
-            var logger = services.GetRequiredService<ILogger<GetEvent>>();
-
-            logger.LogInformation("Get Event is calling");
-            var route = services.GetRequiredService<IHttpRouteValue>();
-            var thingId = route.GetValue<string>("thing");
-            var eventName = route.GetValue<string>("name");
-
-            logger.LogInformation($"Get Event: [[thing: {thingId}][event: {eventName}]]");
-            var thing = services.GetService<IThingActivator>()
-                .CreateInstance(services, thingId);
+            var service = context.RequestServices;
+            var logger = service.GetRequiredService<ILogger<GetEvent>>();
+            var things = service.GetRequiredService<IEnumerable<Thing>>();
+            
+            var name = context.GetRouteData<string>("name");
+            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
+            
+            var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation($"Get Event: Thing not found [[thing: {thingId}][event: {eventName}]]");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return;
+                logger.LogInformation("Thing not found. [Name: {name}]", name);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
             }
 
-            var descriptor = services.GetService<IDescriptor<Event>>();
-            var result = new LinkedList<Dictionary<string, object>>();
+            var @event = context.GetRouteData<string>("event");
 
-            foreach (var @event in thing.Events.Where(x => x.Name == eventName))
+            if (!thing.ThingContext.Events.TryGetValue(@event, out var events))
             {
-                result.AddLast(new Dictionary<string, object> {[@event.Name] = descriptor.CreateDescription(@event)});
+                logger.LogInformation("Event not found.[Name: {thingName}][Event: {eventName}]", thing.Name, @event);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
+            }
+            
+            var result = new LinkedList<object>();
+
+            foreach (var e in events.ToArray())
+            {
+                result.AddLast(new Dictionary<string, object> {[@event] = e});
             }
 
-            var writer = services.GetRequiredService<IHttpBodyWriter>();
-            httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
-            await writer.WriteAsync(result, httpContext.RequestAborted);
+            logger.LogInformation("Found {counter} {eventName} events. [Name: {name}]", result.Count, @event, thing.Name);
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.ContentType = Const.ContentType;
+            
+            return JsonSerializer.SerializeAsync(context.Response.Body, result, ThingConverter.Options);
         }
     }
 }

@@ -1,85 +1,49 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using System.Net.WebSockets;
-using System.Threading;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Activator;
-using Mozilla.IoT.WebThing.Builder;
-using Mozilla.IoT.WebThing.Descriptor;
-using Mozilla.IoT.WebThing.WebSockets;
+using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal sealed class GetThing
+    internal class GetThing
     {
-        internal static async Task Invoke(HttpContext httpContext)
+        internal static Task InvokeAsync(HttpContext context)
         {
-            var services = httpContext.RequestServices;
-            var logger = services.GetRequiredService<ILogger<GetThing>>();
+            var service = context.RequestServices;
+            var logger = service.GetRequiredService<ILogger<GetThing>>();
+            var things = service.GetRequiredService<IEnumerable<Thing>>();
+            
+            var name = context.GetRouteData<string>("name");
+            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
 
-            var route = services.GetRequiredService<IHttpRouteValue>();
-            string thingId = route.GetValue<string>("thing");
-            logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
-
-            var thing = services.GetService<IThingActivator>()
-                .CreateInstance(services, thingId);
-
-            if (httpContext.WebSockets.IsWebSocketRequest)
-            {
-                var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync();
-                try
-                {
-                    var process = httpContext.RequestServices.GetRequiredService<WebSocketProcessor>();
-
-                    await process.ExecuteAsync(thing, webSocket, httpContext.RequestAborted);
-
-                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Close sent",CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    await webSocket.CloseOutputAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(),CancellationToken.None);
-                }
-
-                return;
-            }
+            var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return;
+                logger.LogInformation("Thing not found. [Name: {name}]", name);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
             }
             
-            var builder = services.GetService<IWsUrlBuilder>();
-
-            var link = new Dictionary<string, object>
+            if (thing.Prefix == null)
             {
-                ["rel"] = "alternate", 
-                ["href"] = builder.Build(httpContext.Request, thingId)
-            };
-
-            var descriptor = services.GetService<IDescriptor<Thing>>();
-
-            var description = descriptor.CreateDescription(thing);
-
-            if (description.TryGetValue("links", out var objLinks))
-            {
-                if (objLinks is ICollection<IDictionary<string, object>> links)
-                {
-                    links.Add(link);
-                }
+                logger.LogDebug("Thing without prefix. [Name: {name}]", thing.Name);
+                thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
+                    context.Request.Host));
             }
-            else
-            {
-                description.Add("links", new List<IDictionary<string, object>> {link});
-            }
-
-            var writer = services.GetRequiredService<IHttpBodyWriter>();
-            httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
-            await writer.WriteAsync(description, httpContext.RequestAborted);
+            
+            logger.LogInformation("Found 1 Thing. [Name: {name}]", thing.Name);
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.ContentType = Const.ContentType;
+            
+            return JsonSerializer.SerializeAsync(context.Response.Body, thing, ThingConverter.Options, context.RequestAborted);
         }
     }
 }

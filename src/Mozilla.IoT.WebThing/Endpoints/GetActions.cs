@@ -1,54 +1,49 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Activator;
-using Mozilla.IoT.WebThing.Descriptor;
+using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal sealed class GetActions
+    internal class GetActions
     {
-        internal static async Task Invoke(HttpContext httpContext)
+        public static async Task InvokeAsync(HttpContext context)
         {
-            var services = httpContext.RequestServices;
-            var logger = services.GetRequiredService<ILogger<GetActions>>();
+            var service = context.RequestServices;
+            var logger = service.GetRequiredService<ILogger<GetActions>>();
+            var things = service.GetRequiredService<IEnumerable<Thing>>();
+            var thingName = context.GetRouteData<string>("name");
             
-            logger.LogInformation("Get Actions is calling");
-
-            var route = services.GetRequiredService<IHttpRouteValue>();
-            var thingId = route.GetValue<string>("thing");
-            
-            logger.LogInformation($"Get Actions: [[thing: {thingId}]]");
-            var thing = services.GetService<IThingActivator>()
-                .CreateInstance(services, thingId);
+            logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
+            var thing = things.FirstOrDefault(x => x.Name.Equals(thingName, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation($"Get Action: Thing not found [[thing: {thingId}]]");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                logger.LogInformation("Thing not found. [Name: {name}]", thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
+            
+            var option = ThingConverter.Options;
+            
+            var result = new LinkedList<object>();
 
-            var description = services.GetService<IDescriptor<Action>>();
-            var result = new LinkedList<Dictionary<string,object>>();
-
-            foreach ((string name, ICollection<Action> actions) in thing.Actions)
+            foreach (var actions in thing.ThingContext.Actions)
             {
-                foreach (var action in actions)
+                foreach (var value in actions.Value.Actions)
                 {
-                    result.AddLast(new Dictionary<string, object>
-                    {
-                        [name] = description.CreateDescription(action)
-                    });
+                    result.AddLast(new Dictionary<string, object> {[actions.Key] = value});
                 }
             }
 
-            httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
-            var writer = services.GetRequiredService<IHttpBodyWriter>();
-            await writer.WriteAsync(result, httpContext.RequestAborted);
+            await context.WriteBodyAsync(HttpStatusCode.OK, result, option)
+                .ConfigureAwait(false);
         }
     }
 }

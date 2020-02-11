@@ -1,87 +1,95 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Activator;
-using Mozilla.IoT.WebThing.Descriptor;
+using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal sealed class PostAction
+    internal class PostAction
     {
-        internal static async Task Invoke(HttpContext httpContext)
+        public static async Task InvokeAsync(HttpContext context)
         {
-            var services = httpContext.RequestServices;
-            var logger = services.GetRequiredService<ILogger<PostAction>>();
-
-            var route = services.GetRequiredService<IHttpRouteValue>();
-            var thingId = route.GetValue<string>("thing");
-            logger.LogInformation($"Post Action is calling: [[thing: {thingId}]");
-
-            var thing = services.GetService<IThingActivator>()
-                .CreateInstance(services, thingId);
+            var service = context.RequestServices;
+            var logger = service.GetRequiredService<ILogger<PostAction>>();
+            var things = service.GetRequiredService<IEnumerable<Thing>>();
+            var thingName = context.GetRouteData<string>("name");
+            logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
+            var thing = things.FirstOrDefault(x => x.Name.Equals(thingName, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation($"Post Action: Thing not found [[thing: {thingId}]]");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                logger.LogInformation("Thing not found. [Name: {name}]", thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
 
-            var reader = services.GetRequiredService<IHttpBodyReader>();
-            var json = await reader.ReadAsync<IDictionary<string, object>>();
+            var option = ThingConverter.Options;
+            
+            var actions = await context.FromBodyAsync<Dictionary<string, JsonElement>>(option)
+                .ConfigureAwait(false);
+            
+            var actionName = context.GetRouteData<string>("action");
 
-            if (json == null)
+            if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
             {
-                logger.LogInformation("Post Action: Body not found");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                logger.LogInformation("{actionName} Action not found in {thingName}", actions, thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-
-            if (!json.Keys.Any())
+            
+            if (actions.Keys.Any(x => x != actionName))
             {
-                logger.LogInformation("Post Action: Body is empty");
-                httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                logger.LogInformation("Payload has invalid action. [Name: {thingName}][Action Name: {actionName}]", thingName, actionName);
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
-
-            var result = new Dictionary<string, object>();
-            var name = route.GetValue<string>("name");
-            if (thing.ActionsTypeInfo.ContainsKey(name) && json.TryGetValue(name, out var token))
+            
+            var actionsToExecute = new LinkedList<ActionInfo>();
+            
+            foreach (var (_, json) in actions)
             {
-                var input = GetInput(token);
-                var activator = services.GetService<IActionActivator>();
-
-                Action action = activator.CreateInstance(httpContext.RequestServices,
-                    thing, name, input as IDictionary<string, object>);
-
-                if (action != null)
+                logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
+                var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
+                    actionContext.ActionType, option);
+                
+                if (!action.IsValid())
                 {
-                    thing.Actions.Add(action);
-                    var descriptor = services.GetService<IDescriptor<Action>>();
-                    result.Add(name, descriptor.CreateDescription(action));
-                    var block = services.GetService<ITargetBlock<Action>>();
-                    await block.SendAsync(action);
+                    logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return;
                 }
+
+                action.Thing = thing;
+                actionsToExecute.AddLast(action);
             }
-
-            var writer = services.GetRequiredService<IHttpBodyWriter>();
-            httpContext.Response.StatusCode = (int)HttpStatusCode.Created;
-            await writer.WriteAsync(result, httpContext.RequestAborted);
-        }
-
-        private static object GetInput(object token)
-        {
-            if (token is IDictionary<string, object> dictionary && dictionary.ContainsKey("input"))
+            
+            foreach (var actionInfo in actionsToExecute)
             {
-                return dictionary["input"];
+                logger.LogInformation("Going to execute action {actionName}. [Name: {thingName}]", actionName, thingName);
+                
+                actionInfo.ExecuteAsync(thing, service)
+                    .ConfigureAwait(false);
+                
+                actionContext.Actions.TryAdd(actionInfo.Id, actionInfo);
             }
-
-            return new object();
+            
+            if (actionsToExecute.Count == 1)
+            {
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First.Value, option)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, option)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

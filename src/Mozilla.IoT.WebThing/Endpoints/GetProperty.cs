@@ -1,52 +1,53 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Activator;
+using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal sealed class GetProperty
+    internal class GetProperty
     {
-        internal static async Task Invoke(HttpContext httpContext)
+        public static Task InvokeAsync(HttpContext context)
         {
-            var services = httpContext.RequestServices;
-            var logger = services.GetRequiredService<ILogger<GetProperty>>();
+            var service = context.RequestServices;
+            var logger = service.GetRequiredService<ILogger<GetProperty>>();
+            var things = service.GetRequiredService<IEnumerable<Thing>>();
             
-            logger.LogInformation("Get Property is calling");
-            var route = services.GetRequiredService<IHttpRouteValue>();
-            var thingId = route.GetValue<string>("thing");
-            var propertyName = route.GetValue<string>("name");
-
-            logger.LogInformation($"Get Property: [[thing: {thingId}][property: {propertyName}]]");
-            var thing =  services.GetService<IThingActivator>()
-                .CreateInstance(services, thingId);
+            var name = context.GetRouteData<string>("name");
+            
+            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
+            var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation($"Get Property: Thing not found [[thing: {thingId}][property: {propertyName}]]");
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
-                return;
-            }
-            
-            var property = thing.Properties.FirstOrDefault(x => x.Name == propertyName);
-            
-            if (property == null)
-            {
-                logger.LogInformation($"Get Property: Property not found [[thing: {thingId}][property: {propertyName}]]");
-                httpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
-                return;
+                logger.LogInformation("Thing not found. [Name: {name}]", name);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
             }
 
-            var writer = services.GetRequiredService<IHttpBodyWriter>();
-            httpContext.Response.StatusCode = (int) HttpStatusCode.OK;
-            await writer.WriteAsync(new Dictionary<string, object>
+            var property = context.GetRouteData<string>("property");
+            var properties = thing.ThingContext.Properties.GetProperties(property);
+
+            if (properties == null)
             {
-                [propertyName] =  property.Value
-            }, httpContext.RequestAborted);
+                logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
+            }
+
+            logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", property, thing.Name);
+            
+            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.ContentType = Const.ContentType;
+            
+            return JsonSerializer.SerializeAsync(context.Response.Body, properties, ThingConverter.Options);
         }
     }
 }
