@@ -7,6 +7,7 @@
     <Description>Implementation of an HTTP Mozilla Web Thing.</Description>
     <RepositoryUrl>https://github.com/lillo42/webthing-csharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
