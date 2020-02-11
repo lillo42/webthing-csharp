@@ -12,6 +12,6 @@ namespace Mozilla.IoT.WebThing
         }
 
         public Type ActionType { get; }
-        public ConcurrentBag<ActionInfo> Actions { get; } = new ConcurrentBag<ActionInfo>();
+        public ConcurrentDictionary<Guid, ActionInfo> Actions { get; } = new ConcurrentDictionary<Guid, ActionInfo>();
     }
 }

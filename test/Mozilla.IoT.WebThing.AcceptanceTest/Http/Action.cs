@@ -162,6 +162,92 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ((JArray)json).Should().HaveCount(0);
         }
         
+        [Fact]
+        public async Task LongRunner()
+        {
+            var host = await Program.CreateHostBuilder(null)
+                .StartAsync();
+            var client = host.GetTestServer().CreateClient();
+            
+            var response = await client.PostAsync("/things/Lamp/actions", 
+                new StringContent($@"
+{{ 
+    ""LongRun"": {{
+    }} 
+}}"));
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            var message = await response.Content.ReadAsStringAsync();
+            var json = JsonConvert.DeserializeObject<LongRun>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Href.Should().StartWith("/things/Lamp/actions/LongRun/");
+            json.Status.Should().NotBeNullOrEmpty();
+            json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
+
+            await Task.Delay(3_000);
+
+            response = await client.GetAsync($"/things/Lamp/actions/LongRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            message = await response.Content.ReadAsStringAsync();
+            json = JsonConvert.DeserializeObject<LongRun>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Href.Should().StartWith("/things/Lamp/actions/LongRun/");
+            json.Status.Should().NotBeNullOrEmpty();
+            json.Status.Should().Be("completed");
+            json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
+            json.TimeCompleted.Should().NotBeNull();
+            json.TimeCompleted.Should().BeBefore(DateTime.UtcNow);
+        }
+        
+        [Fact]
+        public async Task CancelAction()
+        {
+            var host = await Program.CreateHostBuilder(null)
+                .StartAsync();
+            var client = host.GetTestServer().CreateClient();
+            
+            var response = await client.PostAsync("/things/Lamp/actions", 
+                new StringContent($@"
+{{ 
+    ""LongRun"": {{
+    }} 
+}}"));
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            var message = await response.Content.ReadAsStringAsync();
+            var json = JsonConvert.DeserializeObject<LongRun>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Href.Should().StartWith("/things/Lamp/actions/LongRun/");
+            json.Status.Should().NotBeNullOrEmpty();
+            json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
+
+            response = await client.DeleteAsync($"/things/Lamp/actions/LongRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            
+            response = await client.GetAsync($"/things/Lamp/actions/LongRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        
+        public class LongRun
+        {
+            public string Href { get; set; }
+            public string Status { get; set; }
+            public DateTime TimeRequested { get; set; }
+            public DateTime? TimeCompleted { get; set; }
+        }
+        
         public class Fade
         {
             public Input Input { get; set; }

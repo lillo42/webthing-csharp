@@ -12,12 +12,12 @@ using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class PostThingAction
+    internal class PostAction
     {
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<PostThingAction>>();
+            var logger = service.GetRequiredService<ILogger<PostAction>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             var thingName = context.GetRouteData<string>("name");
             logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
@@ -77,7 +77,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 actionInfo.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
                 
-                actionContext.Actions.Add(actionInfo);
+                actionContext.Actions.TryAdd(actionInfo.Id, actionInfo);
             }
             
             if (actionsToExecute.Count == 1)

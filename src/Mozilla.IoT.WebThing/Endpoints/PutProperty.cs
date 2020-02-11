@@ -11,12 +11,12 @@ using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class PutThingProperty
+    internal class PutProperty
     {
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<PutThingProperty>>();
+            var logger = service.GetRequiredService<ILogger<PutProperty>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             
             var name = context.GetRouteData<string>("name");

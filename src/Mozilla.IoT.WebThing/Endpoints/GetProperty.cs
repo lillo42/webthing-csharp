@@ -8,20 +8,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThingEvents
+    internal class GetProperty
     {
         public static Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetThingEvents>>();
+            var logger = service.GetRequiredService<ILogger<GetProperty>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             
             var name = context.GetRouteData<string>("name");
-            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
             
+            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
@@ -31,23 +32,22 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            var result = new LinkedList<object>();
-            
-            foreach (var (key, events) in thing.ThingContext.Events)
+            var property = context.GetRouteData<string>("property");
+            var properties = thing.ThingContext.Properties.GetProperties(property);
+
+            if (properties == null)
             {
-                var @eventsArray = events.ToArray();
-                foreach (var @event in eventsArray)
-                {
-                    result.AddLast(new Dictionary<string, object> {[key] = @event});
-                }
+                logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return Task.CompletedTask;
             }
 
-
-            logger.LogInformation("Found Thing with {counter} events. [Name: {name}]", result.Count, thing.Name);
+            logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", property, thing.Name);
+            
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, result, ThingConverter.Options);
+            return JsonSerializer.SerializeAsync(context.Response.Body, properties, ThingConverter.Options);
         }
     }
 }

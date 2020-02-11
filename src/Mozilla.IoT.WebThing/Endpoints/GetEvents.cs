@@ -5,19 +5,18 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThingEvent
+    internal class GetEvents
     {
         public static Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetThingEvent>>();
+            var logger = service.GetRequiredService<ILogger<GetEvents>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             
             var name = context.GetRouteData<string>("name");
@@ -32,23 +31,19 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            var @event = context.GetRouteData<string>("event");
-
-            if (!thing.ThingContext.Events.TryGetValue(@event, out var events))
-            {
-                logger.LogInformation("Event not found.[Name: {thingName}][Event: {eventName}]", thing.Name, @event);
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
-            }
-            
             var result = new LinkedList<object>();
-
-            foreach (var e in events.ToArray())
+            
+            foreach (var (key, events) in thing.ThingContext.Events)
             {
-                result.AddLast(new Dictionary<string, object> {[@event] = e});
+                var @eventsArray = events.ToArray();
+                foreach (var @event in eventsArray)
+                {
+                    result.AddLast(new Dictionary<string, object> {[key] = @event});
+                }
             }
 
-            logger.LogInformation("Found {counter} {eventName} events. [Name: {name}]", result.Count, @event, thing.Name);
+
+            logger.LogInformation("Found Thing with {counter} events. [Name: {name}]", result.Count, thing.Name);
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             

@@ -11,15 +11,14 @@ using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThingActions
+    internal class GetActionById
     {
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetThingActions>>();
+            var logger = service.GetRequiredService<ILogger<GetActionById>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             var thingName = context.GetRouteData<string>("name");
-            
             logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
             var thing = things.FirstOrDefault(x => x.Name.Equals(thingName, StringComparison.OrdinalIgnoreCase));
 
@@ -30,19 +29,26 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            var option = ThingConverter.Options;
+            var option = ThingConverter.Options;;
             
-            var result = new LinkedList<object>();
+            var actionName = context.GetRouteData<string>("action");
+            var id = Guid.Parse(context.GetRouteData<string>("id"));
 
-            foreach (var actions in thing.ThingContext.Actions)
+            if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
             {
-                foreach (var value in actions.Value.Actions)
-                {
-                    result.AddLast(new Dictionary<string, object> {[actions.Key] = value});
-                }
+                logger.LogInformation("{actionName} Action not found in {thingName}", actionName, thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
 
-            await context.WriteBodyAsync(HttpStatusCode.OK, result, option)
+            if (!actionContext.Actions.TryGetValue(id, out var actionInfo))
+            {
+                logger.LogInformation("{actionName} Action with {id} id not found in {thingName}", actionName, id, thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
+            
+            await context.WriteBodyAsync(HttpStatusCode.OK, actionInfo, option)
                 .ConfigureAwait(false);
         }
     }

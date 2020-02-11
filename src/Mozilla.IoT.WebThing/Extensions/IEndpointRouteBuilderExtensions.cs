@@ -18,16 +18,17 @@ namespace Microsoft.AspNetCore.Routing
 
             endpoint.MapGet("/things", GetAllThings.InvokeAsync);
             endpoint.MapGet("/things/{name}",  GetThing.InvokeAsync);
-            endpoint.MapGet("/things/{name}/properties",  GetThingProperties.InvokeAsync);
-            endpoint.MapGet("/things/{name}/properties/{property}",  GetThingProperty.InvokeAsync);
-            endpoint.MapPut("/things/{name}/properties/{property}",  PutThingProperty.InvokeAsync);
-            endpoint.MapGet("/things/{name}/events",  GetThingEvents.InvokeAsync);
-            endpoint.MapGet("/things/{name}/events/{event}",  GetThingEvent.InvokeAsync);
-            endpoint.MapPost("/things/{name}/actions",  PostThingActions.InvokeAsync);
-            endpoint.MapGet("/things/{name}/actions",  GetThingActions.InvokeAsync);
-            endpoint.MapPost("/things/{name}/actions/{action}",  PostThingAction.InvokeAsync);
-            endpoint.MapGet("/things/{name}/actions/{action}",  GetThingAction.InvokeAsync);
-            endpoint.MapGet("/things/{name}/actions/{action}/{id}",  GetThingActionById.InvokeAsync);
+            endpoint.MapGet("/things/{name}/properties",  GetProperties.InvokeAsync);
+            endpoint.MapGet("/things/{name}/properties/{property}",  GetProperty.InvokeAsync);
+            endpoint.MapPut("/things/{name}/properties/{property}",  PutProperty.InvokeAsync);
+            endpoint.MapGet("/things/{name}/events",  GetEvents.InvokeAsync);
+            endpoint.MapGet("/things/{name}/events/{event}",  GetEvent.InvokeAsync);
+            endpoint.MapPost("/things/{name}/actions",  PostActions.InvokeAsync);
+            endpoint.MapGet("/things/{name}/actions",  GetActions.InvokeAsync);
+            endpoint.MapPost("/things/{name}/actions/{action}",  PostAction.InvokeAsync);
+            endpoint.MapGet("/things/{name}/actions/{action}",  GetAction.InvokeAsync);
+            endpoint.MapGet("/things/{name}/actions/{action}/{id}",  GetActionById.InvokeAsync);
+            endpoint.MapDelete("/things/{name}/actions/{action}/{id}",  DeleteAction.InvokeAsync);
 
             //To Force bind
             endpoint.ServiceProvider.GetService<IEnumerable<Thing>>();

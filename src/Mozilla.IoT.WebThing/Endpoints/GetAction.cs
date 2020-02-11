@@ -11,12 +11,12 @@ using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThingActionById
+    internal class GetAction
     {
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetThingActionById>>();
+            var logger = service.GetRequiredService<ILogger<GetAction>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             var thingName = context.GetRouteData<string>("name");
             logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
@@ -29,10 +29,9 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            var option = ThingConverter.Options;;
+            var option = ThingConverter.Options;
             
             var actionName = context.GetRouteData<string>("action");
-            var id = context.GetRouteData<Guid>("id");
 
             if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
             {
@@ -40,15 +39,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-
-            var actionInfo = actionContext.Actions.FirstOrDefault(x => x.Id == id);
-            if (actionInfo == null)
-            {
-                logger.LogInformation("{actionName} Action with {id} id not found in {thingName}", actionName, id, thingName);
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return;
-            }
-            await context.WriteBodyAsync(HttpStatusCode.OK, actionInfo, option)
+            
+            await context.WriteBodyAsync(HttpStatusCode.OK, actionContext.Actions, option)
                 .ConfigureAwait(false);
         }
     }

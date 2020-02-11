@@ -11,14 +11,15 @@ using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
-    internal class GetThingAction
+    internal class GetActions
     {
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
-            var logger = service.GetRequiredService<ILogger<GetThingAction>>();
+            var logger = service.GetRequiredService<ILogger<GetActions>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             var thingName = context.GetRouteData<string>("name");
+            
             logger.LogInformation("Requesting Action for Thing. [Name: {name}]", thingName);
             var thing = things.FirstOrDefault(x => x.Name.Equals(thingName, StringComparison.OrdinalIgnoreCase));
 
@@ -31,16 +32,17 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var option = ThingConverter.Options;
             
-            var actionName = context.GetRouteData<string>("action");
+            var result = new LinkedList<object>();
 
-            if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
+            foreach (var actions in thing.ThingContext.Actions)
             {
-                logger.LogInformation("{actionName} Action not found in {thingName}", actionName, thingName);
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return;
+                foreach (var value in actions.Value.Actions)
+                {
+                    result.AddLast(new Dictionary<string, object> {[actions.Key] = value});
+                }
             }
-            
-            await context.WriteBodyAsync(HttpStatusCode.OK, actionContext.Actions, option)
+
+            await context.WriteBodyAsync(HttpStatusCode.OK, result, option)
                 .ConfigureAwait(false);
         }
     }
