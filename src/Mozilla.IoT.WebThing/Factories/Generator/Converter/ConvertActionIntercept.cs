@@ -1,6 +1,8 @@
 using System;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading;
+using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
@@ -66,6 +68,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _jsonWriter.StartObject("Properties");
                 foreach (var parameter in parameters)
                 {
+                    if (parameter.GetCustomAttribute<FromServicesAttribute>() != null
+                        || parameter.ParameterType == typeof(CancellationToken))
+                    {
+                        continue;
+                    }
+                    
                     _jsonWriter.StartObject(parameter.Name!);
                     var jsonType = GetJsonType(parameter.ParameterType);
 

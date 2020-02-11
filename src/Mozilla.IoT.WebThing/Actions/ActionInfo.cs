@@ -8,8 +8,7 @@ namespace Mozilla.IoT.WebThing.Actions
 {
     public abstract class ActionInfo
     {
-         
-        private CancellationTokenSource _source = new CancellationTokenSource();
+        protected CancellationTokenSource Source { get; } = new CancellationTokenSource();
         
         internal Guid Id { get; } = Guid.NewGuid();
         internal Thing Thing { get; set; } = default!;
@@ -49,7 +48,7 @@ namespace Mozilla.IoT.WebThing.Actions
         internal string GetActionName() => ActionName;
 
         public void Cancel()
-            => _source.Cancel();
+            => Source.Cancel();
 
     }
 }

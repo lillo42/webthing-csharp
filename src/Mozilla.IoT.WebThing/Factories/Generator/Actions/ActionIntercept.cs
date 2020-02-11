@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Actions;
@@ -44,7 +45,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var parameters = action.GetParameters();
             foreach (var parameter in parameters)
             {
-                if (parameter.GetCustomAttribute<FromServicesAttribute>() == null)
+                if (parameter.GetCustomAttribute<FromServicesAttribute>() == null
+                    && parameter.ParameterType != typeof(CancellationToken))
                 {
                     CreateProperty(inputBuilder, parameter.Name!, parameter.ParameterType);   
                 }
@@ -62,7 +64,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var isValid = actionBuilder.DefineMethod("IsValid",
                 MethodAttributes.Private | MethodAttributes.Static, typeof(bool),
                 parameters
-                    .Where(x => x.GetCustomAttribute<FromServicesAttribute>() == null)
+                    .Where(x => x.GetCustomAttribute<FromServicesAttribute>() == null 
+                                && x.ParameterType != typeof(CancellationToken))
                     .Select(x => x.ParameterType)
                     .ToArray());
             var isValidIl = isValid.GetILGenerator();
@@ -152,7 +155,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 var validationParameter = parameter.GetCustomAttribute<ThingParameterAttribute>();
 
                 if (parameter.GetCustomAttribute<FromServicesAttribute>() != null 
-                    || validationParameter == null)
+                    || validationParameter == null
+                    || parameter.ParameterType == typeof(CancellationToken))
                 {
                     continue;
                 }
@@ -224,8 +228,14 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var executeBuilder = builder.DefineMethod("InternalExecuteAsync",
                 MethodAttributes.Family | MethodAttributes.ReuseSlot | MethodAttributes.Virtual | MethodAttributes.HideBySig,
                 typeof(ValueTask), new [] { typeof(Thing), typeof(IServiceProvider) });
+            
             var getService = typeof(IServiceProvider).GetMethod(nameof(IServiceProvider.GetService));
             var getTypeFromHandle = typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle));
+
+            var getSource = typeof(ActionInfo).GetProperty("Source", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var getToken = typeof(CancellationTokenSource).GetProperty(nameof(CancellationTokenSource.Token), 
+                BindingFlags.Public | BindingFlags.Instance)!;
+            
             var il = executeBuilder.GetILGenerator();
             il.DeclareLocal(typeof(ValueTask));
             il.Emit(OpCodes.Ldarg_1);
@@ -233,7 +243,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
 
 
             var inputProperties = inputBuilder.GetProperties();
-            int counter = 0;
+            var counter = 0;
             foreach (var parameter in action.GetParameters())
             {
                 if (parameter.GetCustomAttribute<FromServicesAttribute>() != null)
@@ -243,6 +253,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                     il.EmitCall(OpCodes.Call, getTypeFromHandle, null);
                     il.EmitCall(OpCodes.Callvirt, getService, null);
                     il.Emit(OpCodes.Castclass, parameter.ParameterType);
+                }
+                else if (parameter.ParameterType == typeof(CancellationToken))
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.EmitCall(OpCodes.Call, getSource.GetMethod!, null);
+                    il.EmitCall(OpCodes.Callvirt, getToken.GetMethod!, null);
                 }
                 else
                 {
