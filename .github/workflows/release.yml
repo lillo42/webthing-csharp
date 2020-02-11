@@ -38,10 +38,3 @@ jobs:
       run: dotnet pack ./src/Mozilla.IoT.WebThing -c Release --include-source -o ./artifacts/pack -p:PackageVersion=${{env.RELEASE_VERSION}}
     - name: Publish to Nuget
       run: dotnet nuget push ./artifacts/pack/*.nupkg -k ${{secrets.NUGET_TOKEN}} -s https://api.nuget.org/v3/index.json
-    - name: Publish to Github
-      run: dotnet nuget push ./artifacts/pack/*.nupkg -k ${{secrets.GITHUB_TOKEN}} -s https://nuget.pkg.github.com/${{github.repository}}/index.json
-    - name: Archive Nuget pack
-      uses: actions/upload-artifact@v1
-      with:
-        name: Mozilla.IoT.WebThing v${{env.RELEASE_VERSION}}
-        path: ./artifacts/pack/Mozilla.IoT.WebThing ${{env.RELEASE_VERSION}}.nupkg
