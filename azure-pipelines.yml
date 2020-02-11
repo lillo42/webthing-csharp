@@ -9,15 +9,22 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: DotNetCoreInstaller@0
+- task: UseDotNet@2
   inputs:
-    version: '3.1.101'
+    version: '3.1.X'
 
-- script: dotnet restore
-  displayName: 'Restore application'
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
 
-- script: dotnet build -c Release
-  displayName: 'Build application'
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    arguments: '--configuration Release --collect "Code coverage"'
 
-- script: dotnet test -c Release --no-build
-  displayName: 'Testing application'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    arguments: '--configuration Release'
