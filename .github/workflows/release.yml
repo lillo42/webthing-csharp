@@ -35,7 +35,7 @@ jobs:
       with:
         dotnet-version: 3.1.101
     - name: Pack
-      run: dotnet pack ./src/CastForm -c Release --include-source -o ./artifacts/pack -p:PackageVersion=${{env.RELEASE_VERSION}}
+      run: dotnet pack ./src/Mozilla.IoT.WebThing -c Release --include-source -o ./artifacts/pack -p:PackageVersion=${{env.RELEASE_VERSION}}
     - name: Publish to Nuget
       run: dotnet nuget push ./artifacts/pack/*.nupkg -k ${{secrets.NUGET_TOKEN}} -s https://api.nuget.org/v3/index.json
     - name: Publish to Github
@@ -43,5 +43,5 @@ jobs:
     - name: Archive Nuget pack
       uses: actions/upload-artifact@v1
       with:
-        name: CastForm v${{env.RELEASE_VERSION}}
-        path: ./artifacts/pack/CastForm ${{env.RELEASE_VERSION}}.nupkg
+        name: Mozilla.IoT.WebThing v${{env.RELEASE_VERSION}}
+        path: ./artifacts/pack/Mozilla.IoT.WebThing ${{env.RELEASE_VERSION}}.nupkg
