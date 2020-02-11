@@ -16,8 +16,8 @@ steps:
 - script: dotnet restore
   displayName: 'Restore application'
 
-- script: dotnet build
+- script: dotnet build -c Release
   displayName: 'Build application'
 
-- script: dotnet test
+- script: dotnet test -c Release --no-build
   displayName: 'Testing application'

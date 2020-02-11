@@ -77,7 +77,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Type.Should().Be(JTokenType.Array);
             ((JArray)json).Should().BeEmpty();
 
-            await Task.Delay(3_500);
+            await Task.Delay(3_000);
             
             response = await client.GetAsync("/things/Lamp/events/overheated");
             
@@ -89,7 +89,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Array);
-            ((JArray)json).Should().HaveCount(1);
+            ((JArray)json).Should().HaveCountGreaterOrEqualTo(1);
 
             var obj = ((JArray)json)[0] as JObject;
             obj.GetValue("overheated", StringComparison.OrdinalIgnoreCase).Type.Should().Be(JTokenType.Object);
