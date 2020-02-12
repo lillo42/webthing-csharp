@@ -31,10 +31,10 @@ namespace Multi
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseHttpsRedirection();
-
             app.UseRouting();
 
+            app.UseWebSockets();
+            
             app.UseEndpoints(config =>
             {
                 config.MapThing<ExampleDimmableLight>();
