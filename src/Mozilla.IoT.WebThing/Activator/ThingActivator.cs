@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,8 +40,11 @@ namespace Mozilla.IoT.WebThing.Activator
             Register<T>(service, name.Replace("Thing", ""));
 
             var thing = CreateInstance(service, name.Replace("Thing", ""));
-            
-            _thingType.TryAdd(thing.Name, typeof(T));
+
+            if (thing.Name != null)
+            {
+                _thingType.TryAdd(thing.Name, typeof(T));
+            }
         }
 
         public void Register<T>(IServiceProvider service, string thing)
