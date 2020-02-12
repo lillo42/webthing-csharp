@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Mozilla.IoT.WebThing.Activator;
@@ -14,11 +15,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
         private static readonly  ArraySegment<byte> s_errorMessage = new ArraySegment<byte>(Encoding.UTF8.GetBytes(@"{""messageType"": ""error"",""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid action request""}}"));
         public string Action => "requestAction";
         
-        private readonly ITargetBlock<Action> _target;
+        private readonly ChannelWriter<Action> _target;
         private readonly IActionActivator _activator;
         private readonly IServiceProvider _provider;
 
-        public RequestAction(ITargetBlock<Action> target, IActionActivator activator, IServiceProvider provider)
+        public RequestAction(ChannelWriter<Action> target, IActionActivator activator, IServiceProvider provider)
         {
             _target = target;
             _activator = activator;
@@ -35,11 +36,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     input = body["input"];
                 }
 
-                Action action = _activator.CreateInstance(_provider, thing, key, input as IDictionary<string, object>);
+                var action = _activator.CreateInstance(_provider, thing, key, input as IDictionary<string, object>);
                 if (action != null)
                 {
                     thing.Actions.Add(action);
-                    await _target.SendAsync(action, cancellation);
+                    await _target.WriteAsync(action, cancellation).ConfigureAwait(false);
                 }
                 else
                 {

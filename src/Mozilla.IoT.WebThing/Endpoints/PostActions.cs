@@ -1,6 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Http;
@@ -51,14 +52,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             var result = new Dictionary<string, object>();
             var descriptor = services.GetService<IDescriptor<Action>>();
-            var target = services.GetService<ITargetBlock<Action>>();
+            var target = services.GetService<ChannelWriter<Action>>();
             var activator = services.GetService<IActionActivator>();
 
             foreach ((string key, object token) in json)
             {
                 var input = GetInput(token);
 
-                Action action = activator.CreateInstance(httpContext.RequestServices, thing, key,
+                var action = activator.CreateInstance(httpContext.RequestServices, thing, key,
                     input as IDictionary<string, object>);
 
                 if (action != null)
@@ -66,7 +67,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     thing.Actions.Add(action);
                     var actionDescriptor = descriptor.CreateDescription(action);
                     result.Add(key, actionDescriptor);
-                    await target.SendAsync(action);
+                    await target.WriteAsync(action);
                 }
             }
             
