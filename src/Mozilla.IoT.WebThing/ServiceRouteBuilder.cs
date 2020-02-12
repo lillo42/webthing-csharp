@@ -27,7 +27,7 @@ namespace Mozilla.IoT.WebThing
                 
                 if (!_option.IsSingleThing)
                 {
-                    prefix = "/{{thing}}";
+                    prefix = "/things/{thing}";
                     result.AddLast(endpointRouteBuilder.MapGet("/", GetThings.Invoke));
                     result.AddLast(endpointRouteBuilder.MapGet(prefix, GetThing.Invoke));
                     

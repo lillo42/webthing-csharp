@@ -20,19 +20,7 @@ namespace Mozilla.IoT.WebThing
         {
         }
 
-        public new virtual T Value
-        {
-            get
-            {
-                if (base.Value == null)
-                {
-                    return default;
-                }
-
-                return (T)base.Value;
-            }
-            set => base.Value = value;
-        }
+        public new virtual T Value { get; set; }
 
         internal override Type Type => typeof(T);
 

@@ -38,6 +38,10 @@ namespace Mozilla.IoT.WebThing.Activator
         {
             string name = typeof(T).Name;
             Register<T>(service, name.Replace("Thing", ""));
+
+            var thing = CreateInstance(service, name.Replace("Thing", ""));
+            
+            _thingType.TryAdd(thing.Name, typeof(T));
         }
 
         public void Register<T>(IServiceProvider service, string thing)
@@ -53,6 +57,7 @@ namespace Mozilla.IoT.WebThing.Activator
         {
             _thingType.TryAdd(thing.Name, typeof(T));
             _typeActivatorCache.TryAdd(typeof(T), thing);
+            
             BindingThingNotify(thing, service, thing.Name);
         }
 

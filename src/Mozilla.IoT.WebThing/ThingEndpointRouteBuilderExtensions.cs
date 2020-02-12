@@ -70,9 +70,7 @@ namespace Microsoft.AspNetCore.Routing
             
             var activator = builder.ServiceProvider.GetService<IThingActivator>();
             activator.Register<T>(builder.ServiceProvider, thing);
-            
-            
-            
+
             var serviceRouteBuilder = builder.ServiceProvider.GetRequiredService<ServiceRouteBuilder>();
             var endpointConventionBuilders = serviceRouteBuilder.Build(builder);
 
