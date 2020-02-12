@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.Json;
+using System.Threading.Channels;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -79,9 +80,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddHostedService<ActionExecutorHostedService>();
 
-            var block = new BufferBlock<Action>();
-            services.AddSingleton<ISourceBlock<Action>>(block);
-            services.AddSingleton<ITargetBlock<Action>>(block);
+            var block = Channel.CreateUnbounded<Action>();
+            services.AddSingleton(block.Writer);
+            services.AddSingleton(block.Reader);
 
             services.AddTransient<WebSocketProcessor>();
 
