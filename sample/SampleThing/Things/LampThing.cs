@@ -1,4 +1,7 @@
 using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Attributes;
 
@@ -6,26 +9,7 @@ namespace SampleThing.Things
 {
     public class LampThing : Thing
     {
-        public LampThing()
-        {
-            // Task.Factory.StartNew(() =>
-            // {
-            //     while (true)
-            //     {
-            //         Task.Delay(3_000).GetAwaiter().GetResult();
-            //         var @event = Overheated;
-            //         try
-            //         {
-            //             @event?.Invoke(this, 10);
-            //         }
-            //         catch (Exception e)
-            //         {
-            //             Console.WriteLine(e);
-            //         }
-            //     }
-            // });
-        }
-        public override string Name => "Lamp";
+        public override string Name => "my-lamp-123";
         public override string? Title => "My Lamp";
         public override string? Description => "A web connected lamp";
         public override string[]? Type { get; } = new[] { "Light", "OnOffSwitch" };
@@ -37,7 +21,7 @@ namespace SampleThing.Things
             Description = "The level of light from 0-100", Minimum = 0, Maximum = 100)]
         public int Brightness { get; set; }
 
-        [ThingEvent(Title = "Overheated", 
+        [ThingEvent(Title = "Overheated", Unit = "degree celsius",
             Type = new [] {"OverheatedEvent"},
             Description = "The lamp has exceeded its safe operating temperature")]
         public event EventHandler<double> Overheated;
@@ -45,11 +29,18 @@ namespace SampleThing.Things
 
         [ThingAction(Name = "fade", Title = "Fade", Type = new []{"FadeAction"},
             Description = "Fade the lamp to a given level")]
-        public void Fade(
-            [ThingParameter(Minimum = 0, Maximum = 100)]int level,
-            [ThingParameter(Minimum = 0, Unit = "milliseconds")]int duration)
+        public async Task Fade(
+            [ThingParameter(Minimum = 0, Maximum = 100, Unit = "percent")]int brightness,
+            [ThingParameter(Minimum = 1, Unit = "milliseconds")]int duration,
+            [FromServices]ILogger<LampThing> logger)
         {
-            Console.WriteLine("Fade executed....");
+            await Task.Delay(duration);
+            
+            logger.LogInformation("Going to set Brightness to {brightness}", brightness);
+            Brightness = brightness;
+            
+            logger.LogInformation("Going to send event Overheated");
+            Overheated?.Invoke(this, 102);
         }
     }
 }
