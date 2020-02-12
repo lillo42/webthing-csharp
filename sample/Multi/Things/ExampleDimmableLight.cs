@@ -108,7 +108,7 @@ namespace Multi.Things
             
             protected override async ValueTask ExecuteAsync(CancellationToken cancellation)
             {
-                int value = Input["input"] as int? ?? 0;
+                int value = Input?["input"] as int? ?? 0;
                 await Task.Delay(value, cancellation);
                 
                 var property = Thing.Properties.FirstOrDefault(x => x.Name == "brightness");

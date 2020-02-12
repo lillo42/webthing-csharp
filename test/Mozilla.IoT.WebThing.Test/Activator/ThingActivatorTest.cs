@@ -1,4 +1,4 @@
-using Mozilla.IoT.WebThing.Activator;
+﻿using Mozilla.IoT.WebThing.Activator;
 #if DEBUG
 using System.Linq;
 using System;
@@ -295,7 +295,6 @@ namespace Mozilla.IoT.WebThing.Test.Activator
 
         private class SampleThing : Thing
         {
-            
         }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -20,18 +20,16 @@ namespace Mozilla.IoT.WebThing
         {
         }
 
+        private T _value;
+
         public new virtual T Value
         {
-            get
+            get => _value;
+            set
             {
-                if (base.Value == null)
-                {
-                    return default;
-                }
-
-                return (T)base.Value;
+                _value = value;
+                OnValueChanged();
             }
-            set => base.Value = value;
         }
 
         internal override Type Type => typeof(T);
