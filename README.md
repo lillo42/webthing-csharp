@@ -143,3 +143,7 @@ Task.Factory.StartNew(async () => {
    await Level = ReadFromGPIO();
 });
 ```
+
+## Limitation
+
+Current version, 2.0.0-previewX, Websocket is not working
