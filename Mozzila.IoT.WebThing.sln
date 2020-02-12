@@ -14,15 +14,17 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{370B1F76-EFE0-44D4-A395-59F5EF266112}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Itens", "Solution Itens", "{E90FFA85-A210-450A-AA08-528D7F8962C2}"
-ProjectSection(SolutionItems) = preProject
-	Directory.Build.props = Directory.Build.props
-	.editorconfig = .editorconfig
-	azure-pipelines.yml = azure-pipelines.yml
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		.editorconfig = .editorconfig
+		README.md = README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleThing", "sample\SampleThing\SampleThing.csproj", "{6FB673AA-FD52-4509-97C8-28572549F609}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mozilla.IoT.WebThing.AcceptanceTest", "test\Mozilla.IoT.WebThing.AcceptanceTest\Mozilla.IoT.WebThing.AcceptanceTest.csproj", "{0D709627-98FA-4A39-8631-90C982ADED44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiThing", "sample\MultiThing\MultiThing.csproj", "{3CDFC9FB-F240-419A-800D-79C506CBDAE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,11 +87,24 @@ Global
 		{0D709627-98FA-4A39-8631-90C982ADED44}.Release|x64.Build.0 = Release|Any CPU
 		{0D709627-98FA-4A39-8631-90C982ADED44}.Release|x86.ActiveCfg = Release|Any CPU
 		{0D709627-98FA-4A39-8631-90C982ADED44}.Release|x86.Build.0 = Release|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Debug|x64.Build.0 = Debug|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Debug|x86.Build.0 = Debug|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Release|x64.ActiveCfg = Release|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Release|x64.Build.0 = Release|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Release|x86.ActiveCfg = Release|Any CPU
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4999C9EF-BCC2-4252-A404-0161E655AAD9} = {F6436C38-AB0A-4D3F-8BA7-E2C0FA30D052}
 		{63874B3F-6000-418D-BD19-C56A4D86B612} = {65C51E32-2901-4983-A238-0F931D9EB651}
 		{6FB673AA-FD52-4509-97C8-28572549F609} = {370B1F76-EFE0-44D4-A395-59F5EF266112}
 		{0D709627-98FA-4A39-8631-90C982ADED44} = {65C51E32-2901-4983-A238-0F931D9EB651}
+		{3CDFC9FB-F240-419A-800D-79C506CBDAE2} = {370B1F76-EFE0-44D4-A395-59F5EF266112}
 	EndGlobalSection
 EndGlobal

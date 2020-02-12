@@ -1,5 +1,10 @@
 # webthing
 
+![Build](https://github.com/lillo42/webthing-csharp/workflows/Build/badge.svg)
+[![NuGet](http://img.shields.io/nuget/v/Mozilla.IoT.WebThing.svg)](https://www.nuget.org/packages/Mozilla.IoT.WebThing/)
+
+
+
 Implementation of an HTTP [Web Thing](https://iot.mozilla.org/wot/).
 
 # Using
@@ -27,57 +32,51 @@ Imagine you have a dimmable light that you want to expose via the web of things 
 First we create a new Thing:
 
 ```csharp
-var light = new Thing
+public class LampThing : Thing
 {
-    Name = "My Lamp",
-    Type = new [] { "OnOffSwitch", "Light" },
-    Description = "A web connected lamp"
-};
+    public override string Name => "my-lamp-123";
+    public override string? Title => "My Lamp";
+    public override string? Description => "A web connected lamp";
+    public override string[]? Type { get; } = new[] { "Light", "OnOffSwitch" };
+
+}
 ```
 
 Now we can add the required properties.
 
-The **`on`** property reports and sets the on/off state of the light. For this, we need to have a `Property` object which holds the actual state and also a method to turn the light on/off. For our purposes, we just want to log the new state if the light is switched on/off.
+The **`on`** property reports and sets the on/off state of the light. For this, we need to create a new property in Thing. For our purposes, we just want to log the new state if the light is switched on/off.
 
 ```csharp
-var onDescription = new Dictionary<string, object>
+public class LampThing : Thing
 {
-    ["@type"] = "OnOffProperty",
-    ["title"] = "On/Off",
-    ["type"] = "boolean",
-    ["description"] = "Whether the lamp is turned on"
-};
-
-var property = new Property<bool>(light, "on", true, onDescription);
-property.ValuedChanged += (sender, value) => 
-{
-   Console.WriteLine($"On-State is now {value}");
-};
-
-light.AddProperty(property);
+    ...
+     [ThingProperty(Type = new []{ "OnOffProperty" }, Title = "On/Off", 
+        Description = "Whether the lamp is turned on")]
+     public bool On { get; set; }
+}
 ```
 
 The **`brightness`** property reports the brightness level of the light and sets the level. Like before, instead of actually setting the level of a light, we just log the level.
 
 ```csharp
-var brightnessDescription = new Dictionary<string, object>
+public class LampThing : Thing
 {
-    ["@type"] = "BrightnessProperty",
-    ["title"] = "Brightness",
-    ["type"] = "integer",
-    ["description"] = "The level of light from 0-100",
-    ["minimum"] = 0,
-    ["maximum"] = 100,
-    ["unit"] = "percent"
-};
+    ...
 
-var level = new Property<double>(light, "level", true, onDescription);
-level.ValuedChanged += (sender, value) => 
-{
-   Console.WriteLine($"Brightness is now {value}");
-};
-
-light.AddProperty(level);
+    private int _brightness;
+    [ThingProperty(Type = new []{ "BrightnessProperty" },Title = "Brightness",
+        Description = "The level of light from 0-100", Minimum = 0, Maximum = 100,
+        Unit = "percent")]
+    public int Brightness 
+    { 
+        get => _brightness; 
+        set
+        { 
+            _brightness = value;
+            Console.WriteLine($"Brightness is now {value}");
+        } 
+    }
+}
 ```
 
 Now we can add our newly created thing and add Thing middleware to Asp Net Core:
@@ -86,13 +85,15 @@ Now we can add our newly created thing and add Thing middleware to Asp Net Core:
 // This method gets called by the runtime. Use this method to add services to the container.
 public void ConfigureServices(IServiceCollection services)
 {
-   services.AddThing(option => option.IsSingleThing = true);
+    services.AddThings()
+        .AddThing<LampThing>();
 }
 
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-    app.UseEndpoints(config => {
-        config.MapThing(light);
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapThings();
     });
 }
 ```
@@ -108,33 +109,29 @@ A [`MultiLevelSensor`](https://iot.mozilla.org/schemas/#MultiLevelSensor) (a sen
 First we create a new Thing:
 
 ```csharp
-var sensor = new Thing
+public class Humidity : Thing
 {
-    Name = "My Humidity Sensor",
-    Type = new [] { "MultiLevelSensor" },
-    Description = "A web connected humidity sensor"
-};
+    public override string? Title => "My Humidity Sensor";
+
+    public override string[]? Type { get; } = new[] {"MultiLevelSensor"};
+
+    public override string? Description => "A web connected humidity sensor";
+}
 ```
 
 Then we create and add the appropriate property:
 * `level`: tells us what the sensor is actually reading
     * Contrary to the light, the value cannot be set via an API call, as it wouldn't make much sense, to SET what a sensor is reading. Therefore, we are creating a *readOnly* property.
 
-    ```csharp
-   var levelDescription = new Dictionary<string, object>
-   {
-      ["@type"] = "LevelProperty",
-      ["title"] = "Humidity",
-      ["type"] = "number",
-      ["description"] = "The current humidity in %",
-      ["minimum"] = 0,
-      ["maximum"] = 100,
-      ["unit"] = "percent",
-      ["readOnly"] = true
-   };
-
-   sensor.AddProperty(new Property<double>(sensor, "level", 0, levelDescription));
-    ```
+```csharp
+public class Humidity : Thing
+{
+    ...
+    [ThingProperty(Type = new []{"LevelProperty"}, Title = "Humidity", Description = "The current humidity in %",
+        Minimum = 0, Maximum = 100, Unit = "percent")]
+    public double Level { get; private set; }
+}
+```
 
 Now we have a sensor that constantly reports 0%. To make it usable, we need a thread or some kind of inAdd when the sensor has a new reading available. For this purpose we start a task that queries the physical sensor every few seconds. For our purposes, it just calls a fake method.
 
@@ -143,8 +140,6 @@ Now we have a sensor that constantly reports 0%. To make it usable, we need a th
 
 Task.Factory.StartNew(async () => {
    await Task.Delay(3_000);
-   await level.NotifyOfExternalUpdate(ReadFromGPIO());
+   await Level = ReadFromGPIO();
 });
 ```
-
-This will update our `Value` object with the sensor readings via the `this.level.NotifyOfExternalUpdate(ReadFromGPIO());` call. The `Value` object now notifies the property and the thing that the value has changed, which in turn notifies all websocket listeners.
