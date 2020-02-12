@@ -1,5 +1,8 @@
 # webthing
 
+[![NuGet](http://img.shields.io/nuget/v/Mozilla.IoT.WebThing.svg)](https://www.nuget.org/packages/Mozilla.IoT.WebThing/)
+
+
 Implementation of an HTTP [Web Thing](https://iot.mozilla.org/wot/).
 
 # Using
@@ -91,6 +94,8 @@ public void ConfigureServices(IServiceCollection services)
 
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
+    app.UseRouting();
+    app.UseWebSockets();
     app.UseEndpoints(config => {
         config.MapThing(light);
     });

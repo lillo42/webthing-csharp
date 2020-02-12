@@ -33,8 +33,6 @@ namespace Single
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseHttpsRedirection();
-
             app.UseRouting();
             
             
@@ -77,6 +75,8 @@ namespace Single
 
             light.Properties.Add(level);
 
+            
+            app.UseWebSockets();
             app.UseEndpoints(config =>
             {
                 config.MapThing(light);
