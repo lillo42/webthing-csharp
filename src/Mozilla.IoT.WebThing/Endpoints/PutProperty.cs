@@ -32,12 +32,12 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var property = context.GetRouteData<string>("property");
             
-            logger.LogTrace("Going to set property {propertyName}", property);
+            logger.LogInformation("Going to set property {propertyName}", property);
             
-            var json = await context.FromBodyAsync<Dictionary<string, object>>(new JsonSerializerOptions())
+            var json = await context.FromBodyAsync<JsonElement>(new JsonSerializerOptions())
                 .ConfigureAwait(false);
             
-            var result = thing.ThingContext.Properties.SetProperty(property, json[property]);
+            var result = thing.ThingContext.Properties.SetProperty(property, json.GetProperty(property));
             
             if (result == SetPropertyResult.NotFound)
             {

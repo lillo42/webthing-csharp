@@ -77,7 +77,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 actionInfo.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
                 
-                actionContext.Actions.TryAdd(actionInfo.Id, actionInfo);
+                actionContext.Actions.Add(actionInfo.Id, actionInfo);
             }
             
             if (actionsToExecute.Count == 1)

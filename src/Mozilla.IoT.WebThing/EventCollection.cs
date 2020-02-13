@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -7,6 +9,8 @@ namespace Mozilla.IoT.WebThing
         private readonly ConcurrentQueue<Event> _events;
         private readonly object _locker = new object();
         private readonly int _size;
+
+        public EventHandler<Event> Add;
 
         public EventCollection(int size)
         {
@@ -28,6 +32,9 @@ namespace Mozilla.IoT.WebThing
             }
     
             _events.Enqueue(@event);
+            
+            var add = Add;
+            add?.Invoke(this, @event);
         }
         
         public void Dequeue()
