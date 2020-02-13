@@ -108,8 +108,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task GetInvalidEvent()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync("/things/Lamp/events/aaaaa");
             

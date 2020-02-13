@@ -14,8 +14,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task GetAll()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync("/things");
             
@@ -152,8 +151,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task Get()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync("/things/Lamp");
             
@@ -289,8 +287,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         public async Task GetInvalid()
         {
             var fixture = new Fixture();
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync($"/things/{fixture.Create<string>()}");
             
