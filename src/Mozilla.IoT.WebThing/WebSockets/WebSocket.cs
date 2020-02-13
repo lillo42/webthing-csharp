@@ -70,7 +70,8 @@ namespace Mozilla.IoT.WebThing.WebSockets
             try
             {
                 BindActions(thing, socket, jsonOptions, cancellation);
-
+                BindPropertyChange(thing, socket, jsonOptions, cancellation);
+                
                 while (!socket.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
                     if (buffer != null)
@@ -161,6 +162,18 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         .ConfigureAwait(false);
                 };
             }
+        }
+        
+        private static void BindPropertyChange(Thing thing, System.Net.WebSockets.WebSocket socket, JsonSerializerOptions jsonOptions,
+            CancellationToken cancellation)
+        {
+            thing.PropertyChanged += (sender, args) =>
+            {
+                socket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("setProperty",
+                        thing.ThingContext.Properties.GetProperties(args.PropertyName)), jsonOptions),
+                    WebSocketMessageType.Text, true, cancellation)
+                    .ConfigureAwait(false);
+            };
         }
     }
 }

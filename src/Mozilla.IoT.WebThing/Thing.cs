@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Mozilla.IoT.WebThing.Attributes;
 using static Mozilla.IoT.WebThing.Const;
 
@@ -7,7 +9,7 @@ namespace Mozilla.IoT.WebThing
     /// <summary>
     /// The thing
     /// </summary>
-    public abstract class Thing
+    public abstract class Thing : INotifyPropertyChanged, IEquatable<Thing>
     {
         #region Properties
 
@@ -45,5 +47,52 @@ namespace Mozilla.IoT.WebThing
         public virtual string[]? Type { get; } = null;
 
         #endregion
+
+        public bool Equals(Thing other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return Context == other.Context
+                   && Title == other.Title
+                   && Description == other.Description;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((Thing) obj);
+        }
+
+        public override int GetHashCode() 
+            => HashCode.Combine(Context, Title, Description);
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

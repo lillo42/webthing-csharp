@@ -22,7 +22,7 @@ namespace Mozilla.IoT.WebThing
         public IThingConverter Converter { get; }
         
         public IProperties Properties { get; }
-        
+        public LinkedList<string> PropertiesName { get; }
         public Dictionary<string, EventCollection> Events { get; }
         public Dictionary<string, ActionContext> Actions { get; } 
         public ConcurrentDictionary<Guid, WebSocket> Sockets { get; } = new ConcurrentDictionary<Guid, WebSocket>();
