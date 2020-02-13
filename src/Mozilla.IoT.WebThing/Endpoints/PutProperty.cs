@@ -54,6 +54,13 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
+            
+            if (result == SetPropertyResult.ReadOnly)
+            {
+                logger.LogInformation("Read-Only Property. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return;
+            }
 
             await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), jsonOptions)
                 .ConfigureAwait(false);

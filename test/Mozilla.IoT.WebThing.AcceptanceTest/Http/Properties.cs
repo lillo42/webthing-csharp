@@ -122,6 +122,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Theory]
         [InlineData("brightness", -1, 0)]
         [InlineData("brightness", 101, 0)]
+        [InlineData("reader", 101, 0)]
         public async Task PutInvalidValue(string property, object value, object defaulValue)
         {
             var host = await Program.GetHost();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
@@ -31,11 +32,27 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 var result = thing.ThingContext.Properties.SetProperty(propertyName, property);
                 if (result == SetPropertyResult.InvalidValue)
                 {
-                    _logger.LogInformation("Invalid property value");
-                    var response = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("error", new ErrorResponse("400 Bad Request", "Invalid Property")), options);
+                    _logger.LogInformation("Invalid property value. [Thing: {thing}][Property Name: {propertyName}]", thing.Name, propertyName);
+                    
+                    var response = JsonSerializer.SerializeToUtf8Bytes(
+                        new WebSocketResponse("error", 
+                            new ErrorResponse("400 Bad Request", "Invalid property value")), options);
 
                     socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
                         .ConfigureAwait(false);
+                }
+
+                if (result == SetPropertyResult.ReadOnly)
+                {
+                    _logger.LogInformation("Read-only property. [Thing: {thing}][Property Name: {propertyName}]", thing.Name, propertyName);
+                    
+                    var response = JsonSerializer.SerializeToUtf8Bytes(
+                        new WebSocketResponse("error", 
+                            new ErrorResponse("400 Bad Request", "Read-only property")), options);
+
+                    socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
+                        .ConfigureAwait(false);
+                    
                 }
             }
             

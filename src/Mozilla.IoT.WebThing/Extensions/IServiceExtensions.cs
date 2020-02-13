@@ -29,7 +29,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = opt.PropertyNamingPolicy,
-                    DictionaryKeyPolicy = opt.PropertyNamingPolicy
+                    DictionaryKeyPolicy = opt.PropertyNamingPolicy,
+                    IgnoreNullValues = true
                 };
             });
 

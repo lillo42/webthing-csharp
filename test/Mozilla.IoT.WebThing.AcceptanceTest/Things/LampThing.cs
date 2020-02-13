@@ -60,6 +60,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
                 OnPropertyChanged();
             }
         }
+        
+        public int Reader => _brightness;
+        
 
         [ThingEvent(Title = "Overheated", 
             Type = new [] {"OverheatedEvent"},
