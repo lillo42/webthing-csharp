@@ -11,11 +11,11 @@ namespace MultiThing.Things
     {
         public override string Name => "my-lamp-1234";
 
-        public override string? Title => "My Lamp";
+        public override string Title => "My Lamp";
 
-        public override string[]? Type { get; } = new[] {"OnOffSwitch", "Light"};
+        public override string[] Type { get; } = new[] {"OnOffSwitch", "Light"};
 
-        public override string? Description => "A web connected lamp";
+        public override string Description => "A web connected lamp";
 
         private bool _on = true;
 

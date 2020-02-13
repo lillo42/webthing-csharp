@@ -21,14 +21,14 @@ namespace Mozilla.IoT.WebThing.WebSockets
         public Task ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data, JsonSerializerOptions options,
             IServiceProvider provider, CancellationToken cancellationToken)
         {
-            foreach (var propertyName in thing.ThingContext.PropertiesName)
+            foreach (var propertyName in thing.ThingContext.Properties.PropertiesNames)
             {
                 if (!data.TryGetProperty(propertyName, out var property))
                 {
                     continue;
                 }
 
-                var result = thing.ThingContext.Properties.SetProperty(propertyName, data);
+                var result = thing.ThingContext.Properties.SetProperty(propertyName, property);
                 if (result == SetPropertyResult.InvalidValue)
                 {
                     _logger.LogInformation("Invalid property value");

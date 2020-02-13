@@ -1,9 +1,8 @@
 using System;
-using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -15,17 +14,12 @@ namespace Mozilla.IoT.WebThing.WebSockets
             JsonSerializerOptions options,
             IServiceProvider provider, CancellationToken cancellationToken)
         {
+            var observer = provider.GetRequiredService<ThingObserver>();
             foreach (var (@event, collection) in thing.ThingContext.Events)
             {
-                if (data.TryGetProperty(@event, out var value))
+                if (data.TryGetProperty(@event, out _))
                 {
-                    collection.Add += (_, eventData) =>
-                    {
-                        var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("event", eventData),
-                            options);
-                        socket.SendAsync(sent, WebSocketMessageType.Text, true, cancellationToken)
-                            .ConfigureAwait(false);
-                    };
+                    collection.Added += observer.OnEvenAdded;
                 }
             }
 

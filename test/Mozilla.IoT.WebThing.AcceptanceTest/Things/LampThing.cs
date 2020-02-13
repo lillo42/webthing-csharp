@@ -31,9 +31,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             });
         }
         public override string Name => "Lamp";
-        public override string? Title => "My Lamp";
-        public override string? Description => "A web connected lamp";
-        public override string[]? Type { get; } = new[] { "Light", "OnOffSwitch" };
+        public override string Title => "My Lamp";
+        public override string Description => "A web connected lamp";
+        public override string[] Type { get; } = new[] { "Light", "OnOffSwitch" };
 
         [ThingProperty(Type = new []{ "OnOffProperty" }, Title = "On/Off", Description = "Whether the lamp is turned on")]
         public bool On { get; set; }

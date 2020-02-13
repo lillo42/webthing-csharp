@@ -10,7 +10,8 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IServiceExtensions
     {
-        public static IThingCollectionBuilder AddThings(this IServiceCollection service, Action<ThingOption>? options = null)
+        public static IThingCollectionBuilder AddThings(this IServiceCollection service,
+            Action<ThingOption>? options = null)
         {
             if (service == null)
             {
@@ -27,14 +28,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 var opt = provider.GetRequiredService<ThingOption>();
                 return new JsonSerializerOptions
                 {
-                    PropertyNamingPolicy = opt.PropertyNamingPolicy,
-                    PropertyNameCaseInsensitive = opt.IgnoreCase
+                    PropertyNamingPolicy = opt.PropertyNamingPolicy, PropertyNameCaseInsensitive = opt.IgnoreCase
                 };
             });
-            
+
             service.AddSingleton<IWebSocketAction, RequestAction>();
             service.AddSingleton<IWebSocketAction, AddEventSubscription>();
-            
+
+            service.AddScoped<ThingObserverResolver>();
+            service.AddScoped(provider => provider.GetRequiredService<ThingObserverResolver>().Observer);
+
             service.AddSingleton(provider =>
             {
                 var opt = provider.GetRequiredService<ThingOption>();
@@ -45,9 +48,15 @@ namespace Microsoft.Extensions.DependencyInjection
                     x => x,
                     opt.IgnoreCase ? StringComparer.InvariantCultureIgnoreCase : null);
             });
-            
+
             var builder = new ThingCollectionBuilder(service);
             return builder;
         }
     }
+
+    public class ThingObserverResolver
+    {
+        public ThingObserver Observer { get; set; } = default!;
+    }
+
 }

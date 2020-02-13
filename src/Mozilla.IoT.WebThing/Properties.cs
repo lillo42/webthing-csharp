@@ -16,6 +16,8 @@ namespace Mozilla.IoT.WebThing
             _properties = properties ?? throw new ArgumentNullException(nameof(properties));
         }
 
+        public IEnumerable<string> PropertiesNames => _properties.Keys;
+
         public Dictionary<string, object>? GetProperties(string? propertyName = null)
         {
             if (propertyName == null)

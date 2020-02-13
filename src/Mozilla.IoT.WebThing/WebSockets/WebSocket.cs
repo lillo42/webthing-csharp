@@ -23,9 +23,6 @@ namespace Mozilla.IoT.WebThing.WebSockets
         private static readonly ArraySegment<byte> s_error = new ArraySegment<byte>(
             Encoding.UTF8.GetBytes(
                 @"{""messageType"": ""error"", ""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid message""}}"));
-
-
-        
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
@@ -59,7 +56,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             var id = Guid.NewGuid();
             thing.ThingContext.Sockets.TryAdd(id, socket);
 
-            byte[] buffer = null;
+            byte[]? buffer = null;
 
             var actions = service.GetRequiredService<Dictionary<string, IWebSocketAction>>();
 
@@ -67,10 +64,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
             
             var webSocketOption = service.GetService<IOptions<WebSocketOptions>>();
             
+            var observer = new ThingObserver(service.GetRequiredService<ILogger<ThingObserver>>(),
+                jsonOptions, socket, cancellation, thing);
+            
             try
             {
-                BindActions(thing, socket, jsonOptions, cancellation);
-                BindPropertyChange(thing, socket, jsonOptions, cancellation);
+                BindActions(thing, observer);
+                BindPropertyChanged(thing, observer);
                 
                 while (!socket.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
@@ -114,6 +114,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     try
                     {
                         using var scope = service.CreateScope();
+                        scope.ServiceProvider.GetRequiredService<ThingObserverResolver>().Observer = observer;
                         await action.ExecuteAsync(socket, thing, json["data"], jsonOptions, scope.ServiceProvider, cancellation)
                             .ConfigureAwait(false);
                     }
@@ -138,42 +139,40 @@ namespace Mozilla.IoT.WebThing.WebSockets
             {
                 s_pool.Return(buffer, true);
             }
+
+            UnbindActions(thing, observer);
+            UnbindPropertyChanged(thing, observer);
+            UnbindEvent(thing, observer);
         }
 
-        private static void BindActions(Thing thing, System.Net.WebSockets.WebSocket socket, JsonSerializerOptions jsonOptions,
-            CancellationToken cancellation)
+        private static void BindActions(Thing thing, ThingObserver observer)
         {
-            foreach (var (actionName, actionContext) in thing.ThingContext.Actions)
+            foreach (var (_, actionContext) in thing.ThingContext.Actions)
             {
-                
-                actionContext.Actions.Added += (_, actionAdded) =>
-                {
-                    if (socket == null)
-                    {
-                        return;
-                    }
-                    
-                    socket.SendAsync(
-                            JsonSerializer.SerializeToUtf8Bytes(new Dictionary<string, object>
-                            {
-                                [actionName] = actionAdded
-                            }, jsonOptions),
-                            WebSocketMessageType.Text, true, cancellation)
-                        .ConfigureAwait(false);
-                };
+                actionContext.Actions.Change += observer.OnActionChange;
+            }
+        }
+
+        private static void BindPropertyChanged(Thing thing, ThingObserver observer) 
+            => thing.PropertyChanged += observer.OnPropertyChanged;
+        
+        private static void UnbindActions(Thing thing, ThingObserver observer)
+        {
+            foreach (var (_, actionContext) in thing.ThingContext.Actions)
+            {
+                actionContext.Actions.Change -= observer.OnActionChange;
             }
         }
         
-        private static void BindPropertyChange(Thing thing, System.Net.WebSockets.WebSocket socket, JsonSerializerOptions jsonOptions,
-            CancellationToken cancellation)
+        private static void UnbindPropertyChanged(Thing thing, ThingObserver observer) 
+            => thing.PropertyChanged -= observer.OnPropertyChanged;
+        
+        private static void UnbindEvent(Thing thing, ThingObserver observer)
         {
-            thing.PropertyChanged += (sender, args) =>
+            foreach (var @event in observer.EventsBind)
             {
-                socket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("setProperty",
-                        thing.ThingContext.Properties.GetProperties(args.PropertyName)), jsonOptions),
-                    WebSocketMessageType.Text, true, cancellation)
-                    .ConfigureAwait(false);
-            };
+                thing.ThingContext.Events[@event].Added -= observer.OnEvenAdded;
+            }
         }
     }
 }

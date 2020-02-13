@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Concurrent;
-using Mozilla.IoT.WebThing.Actions;
 
 namespace Mozilla.IoT.WebThing
 {

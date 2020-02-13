@@ -10,7 +10,7 @@ namespace Mozilla.IoT.WebThing
     {
         private readonly ConcurrentDictionary<Guid, ActionInfo> _actions;
 
-        public event EventHandler<ActionInfo> Added;
+        public event EventHandler<ActionInfo>? Change;
 
         public ActionCollection()
         {
@@ -21,15 +21,32 @@ namespace Mozilla.IoT.WebThing
         {
             _actions.TryAdd(id, actionInfo);
 
-            var added = Added;
-            added?.Invoke(this, actionInfo);
+            actionInfo.StatusChanged += OnStatusChange;
+            
+            var change = Change;
+            change?.Invoke(this, actionInfo);
         }
 
-        public bool TryGetValue(Guid id, out ActionInfo action)
+        public bool TryGetValue(Guid id, out ActionInfo? action)
             => _actions.TryGetValue(id, out action);
         
         public bool TryRemove(Guid id, out ActionInfo action)
-            => _actions.TryRemove(id, out action);
+        {
+            var result =_actions.TryRemove(id, out action);
+            if (result && action != null)
+            {
+             
+                action.StatusChanged -= OnStatusChange;   
+            }
+            
+            return result;
+        }
+
+        private void OnStatusChange(object? sender, EventArgs args)
+        {
+            var change = Change;
+            change?.Invoke(this, (ActionInfo)sender);
+        }
 
         public IEnumerator<ActionInfo> GetEnumerator()
             => _actions.Values.GetEnumerator();

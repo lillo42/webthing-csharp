@@ -24,7 +24,7 @@ namespace SampleThing.Things
         [ThingEvent(Title = "Overheated", Unit = "degree celsius",
             Type = new [] {"OverheatedEvent"},
             Description = "The lamp has exceeded its safe operating temperature")]
-        public event EventHandler<double> Overheated;
+        public event EventHandler<double>? Overheated;
 
 
         [ThingAction(Name = "fade", Title = "Fade", Type = new []{"FadeAction"},
