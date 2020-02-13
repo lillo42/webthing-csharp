@@ -33,8 +33,10 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var property = context.GetRouteData<string>("property");
             
             logger.LogInformation("Going to set property {propertyName}", property);
+
+            var jsonOptions = service.GetRequiredService<JsonSerializerOptions>();
             
-            var json = await context.FromBodyAsync<JsonElement>(new JsonSerializerOptions())
+            var json = await context.FromBodyAsync<JsonElement>(jsonOptions)
                 .ConfigureAwait(false);
             
             var result = thing.ThingContext.Properties.SetProperty(property, json.GetProperty(property));
@@ -53,7 +55,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), ThingConverter.Options)
+            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), jsonOptions)
                 .ConfigureAwait(false);
         }
     }

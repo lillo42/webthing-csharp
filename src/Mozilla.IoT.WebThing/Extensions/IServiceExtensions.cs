@@ -28,12 +28,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 var opt = provider.GetRequiredService<ThingOption>();
                 return new JsonSerializerOptions
                 {
-                    PropertyNamingPolicy = opt.PropertyNamingPolicy, PropertyNameCaseInsensitive = opt.IgnoreCase
+                    PropertyNamingPolicy = opt.PropertyNamingPolicy,
+                    DictionaryKeyPolicy = opt.PropertyNamingPolicy
                 };
             });
 
             service.AddSingleton<IWebSocketAction, RequestAction>();
             service.AddSingleton<IWebSocketAction, AddEventSubscription>();
+            service.AddSingleton<IWebSocketAction, SetThingProperty>();
 
             service.AddScoped<ThingObserverResolver>();
             service.AddScoped(provider => provider.GetRequiredService<ThingObserverResolver>().Observer);

@@ -12,9 +12,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
     internal class PropertiesIntercept : IPropertyIntercept
     {
         public Dictionary<string, Property> Properties { get; }
+        private readonly ThingOption _option;
 
         public PropertiesIntercept(ThingOption option)
         {
+            _option = option ?? throw new ArgumentNullException(nameof(option));
             Properties = option.IgnoreCase ? new Dictionary<string, Property>(StringComparer.InvariantCultureIgnoreCase) 
                 : new Dictionary<string, Property>();   
         }
@@ -27,7 +29,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
         {
             var propertyName =  thingPropertyAttribute?.Name ?? propertyInfo.Name;
-            Properties.Add(propertyName, new Property(GetGetMethod(propertyInfo),
+            Properties.Add(_option.PropertyNamingPolicy.ConvertName(propertyName), new Property(GetGetMethod(propertyInfo),
                 GetSetMethod(propertyInfo),
                 CreateValidator(propertyInfo, thingPropertyAttribute),
                 CreateMapper(propertyInfo.PropertyType)));

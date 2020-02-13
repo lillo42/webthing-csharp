@@ -23,7 +23,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             foreach (var propertyName in thing.ThingContext.Properties.PropertiesNames)
             {
-                if (!data.TryGetProperty(propertyName, out var property))
+                if (!data.TryGetProperty(options.PropertyNamingPolicy.ConvertName(propertyName), out var property))
                 {
                     continue;
                 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mozilla.IoT.WebThing.AcceptanceTest.Things;
@@ -15,6 +16,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
         {
             services.AddThings()
                 .AddThing<LampThing>();
+
+            services.AddWebSockets(o => { });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -27,6 +30,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
 
             app.UseRouting();
 
+            app.UseWebSockets();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapThings();
