@@ -16,6 +16,8 @@ namespace Mozilla.IoT.WebThing
             _properties = properties ?? throw new ArgumentNullException(nameof(properties));
         }
 
+        public IEnumerable<string> PropertiesNames => _properties.Keys;
+
         public Dictionary<string, object>? GetProperties(string? propertyName = null)
         {
             if (propertyName == null)
@@ -40,6 +42,11 @@ namespace Mozilla.IoT.WebThing
             if (_properties.TryGetValue(propertyName, out var property))
             {
                 value = property.Mapper.Map(value);
+                if (property.Validator.IsReadOnly)
+                {
+                    return SetPropertyResult.ReadOnly;
+                }
+                
                 if (property.Validator.IsValid(value))
                 {
                     property.Setter(_thing, value);

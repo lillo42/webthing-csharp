@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using AutoFixture;
@@ -52,7 +52,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 .BeEquivalentTo(JToken.Parse(@"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
-    ""id"": ""https://iot.mozilla.org/things/Lamp"",
+    ""id"": ""http://localhost/things/lamp"",
     ""title"": ""My Lamp"",
     ""description"": ""A web connected lamp"",
     ""@type"": [
@@ -69,7 +69,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             ""type"": ""boolean"",
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/properties/on""
+                    ""href"": ""/things/lamp/properties/on""
                 }
             ]
         },
@@ -84,7 +84,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             ""type"": ""integer"",
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/properties/brightness""
+                    ""href"": ""/things/lamp/properties/brightness""
                 }
             ]
         }
@@ -111,7 +111,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             },
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/actions/fade""
+                    ""href"": ""/things/lamp/actions/fade""
                 }
             ]
         }
@@ -124,7 +124,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             ""type"": ""number"",
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/events/overheated""
+                    ""href"": ""/things/lamp/events/overheated""
                 }
             ]
         }
@@ -132,19 +132,19 @@ namespace Mozilla.IoT.WebThing.Test.Generator
     ""links"": [
         {
             ""rel"": ""properties"",
-            ""href"": ""/things/Lamp/properties""
+            ""href"": ""/things/lamp/properties""
         },
         {
             ""rel"": ""actions"",
-            ""href"": ""/things/Lamp/actions""
+            ""href"": ""/things/lamp/actions""
         },
         {
             ""rel"": ""events"",
-            ""href"": ""/things/Lamp/events""
+            ""href"": ""/things/lamp/events""
         },
         {
             ""rel"": ""alternate"",
-            ""href"": ""ws://iot.mozilla.org:443/things/Lamp""
+            ""href"": ""ws://localhost/things/lamp""
         }
     ]
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
@@ -83,7 +83,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             _jsonWriter.StartObject();
 
             _jsonWriter.PropertyWithValue("href",
-                $"/things/{thing.Name}/properties/{_options.GetPropertyName(propertyName)}");
+                $"/things/{_options.GetPropertyName(thing.Name)}/properties/{_options.GetPropertyName(propertyName)}");
 
             _jsonWriter.EndObject();
             _jsonWriter.EndArray();

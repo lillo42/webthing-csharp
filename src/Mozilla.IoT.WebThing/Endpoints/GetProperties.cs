@@ -37,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, properties, ThingConverter.Options);
+            return JsonSerializer.SerializeAsync(context.Response.Body, properties, service.GetRequiredService<JsonSerializerOptions>());
         }
     }
 }

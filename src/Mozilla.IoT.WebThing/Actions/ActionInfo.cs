@@ -14,8 +14,8 @@ namespace Mozilla.IoT.WebThing.Actions
         internal Thing Thing { get; set; } = default!;
         protected abstract string ActionName { get; }
         
-        public string Href => $"/things/{Thing.Name}/actions/{ActionName}/{Id}";
-        
+        public string Href { get; internal set; }
+
         public DateTime TimeRequested { get; } = DateTime.UtcNow;
         public DateTime? TimeCompleted { get; private set; } = null;
         public string Status { get; private set; } = "pending";
@@ -27,7 +27,12 @@ namespace Mozilla.IoT.WebThing.Actions
         {
             var logger = provider.GetRequiredService<ILogger<ActionInfo>>();
             logger.LogInformation("Going to execute {actionName}", ActionName);
+
+            var status = StatusChanged;
+            
             Status = "executing";
+            
+            status?.Invoke(this, EventArgs.Empty);
             
             try
             {
@@ -42,7 +47,11 @@ namespace Mozilla.IoT.WebThing.Actions
             }
             
             TimeCompleted = DateTime.UtcNow;
+            
             Status = "completed";
+            
+            status?.Invoke(this, EventArgs.Empty);
+
         }
 
         internal string GetActionName() => ActionName;
@@ -50,5 +59,6 @@ namespace Mozilla.IoT.WebThing.Actions
         public void Cancel()
             => Source.Cancel();
 
+        public event EventHandler? StatusChanged;
     }
 }

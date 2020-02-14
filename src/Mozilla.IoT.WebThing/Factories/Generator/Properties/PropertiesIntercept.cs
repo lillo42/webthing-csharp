@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -12,11 +12,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
     internal class PropertiesIntercept : IPropertyIntercept
     {
         public Dictionary<string, Property> Properties { get; }
+        private readonly ThingOption _option;
 
         public PropertiesIntercept(ThingOption option)
         {
+            _option = option ?? throw new ArgumentNullException(nameof(option));
             Properties = option.IgnoreCase ? new Dictionary<string, Property>(StringComparer.InvariantCultureIgnoreCase) 
-                : new Dictionary<string, Property>();   
+                : new Dictionary<string, Property>();
         }
 
         public void Before(Thing thing)
@@ -27,8 +29,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
         {
             var propertyName =  thingPropertyAttribute?.Name ?? propertyInfo.Name;
-            Properties.Add(propertyName, new Property(GetGetMethod(propertyInfo),
-                GetSetMethod(propertyInfo),
+            Properties.Add(_option.PropertyNamingPolicy.ConvertName(propertyName), new Property(GetGetMethod(propertyInfo),
+                GetSetMethod(propertyInfo, thingPropertyAttribute),
                 CreateValidator(propertyInfo, thingPropertyAttribute),
                 CreateMapper(propertyInfo.PropertyType)));
         }
@@ -45,8 +47,14 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             return Expression.Lambda<Func<object, object>>(typeAs, instance).Compile();
         }
         
-        private static Action<object, object> GetSetMethod(PropertyInfo property)
+        private static Action<object, object> GetSetMethod(PropertyInfo property, ThingPropertyAttribute? thingPropertyAttribute)
         {
+            if ((thingPropertyAttribute != null && thingPropertyAttribute.IsReadOnly)
+                || !property.CanWrite)
+            {
+                return null;
+            }
+            
             var instance = Expression.Parameter(typeof(object), "instance");
             var value = Expression.Parameter(typeof(object), "value");
 

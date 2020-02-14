@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Attributes;
@@ -19,7 +19,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         {
             _fixture = new Fixture();
             _thing = new LampThing();
-            _factory = new PropertiesInterceptFactory(_thing, new ThingOption());
+            _factory = new PropertiesInterceptFactory(_thing, new ThingOption
+            {
+
+            });
         }
 
         [Fact]
@@ -44,10 +47,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var properties = _factory.Create();
             var values = properties.GetProperties();
             
-            values.ContainsKey(nameof(LampThing.Id)).Should().BeTrue();
+            values.ContainsKey("id").Should().BeTrue();
             values.ContainsKey("test").Should().BeTrue();
             
-            values[nameof(LampThing.Id)].Should().Be(id);
+            values["id"].Should().Be(id);
             values["test"].Should().Be(value);
             
             properties.GetProperties(nameof(LampThing.Id))[nameof(LampThing.Id)].Should().Be(id);

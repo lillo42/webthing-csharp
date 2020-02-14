@@ -20,6 +20,8 @@ namespace Mozilla.IoT.WebThing
             _enums = enums;
         }
 
+        public bool IsReadOnly => _isReadOnly;
+
         public bool IsValid(object? value)
         {
             if (_isReadOnly)

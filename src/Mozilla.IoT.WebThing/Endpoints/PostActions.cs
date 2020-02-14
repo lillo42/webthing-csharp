@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -31,9 +32,10 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
             
             context.Request.EnableBuffering();
-            var option = ThingConverter.Options;
+            var jsonOption = service.GetRequiredService<JsonSerializerOptions>();
+            var option = service.GetRequiredService<ThingOption>();
             
-            var actions =  await context.FromBodyAsync<Dictionary<string, JsonElement>>(option)
+            var actions =  await context.FromBodyAsync<Dictionary<string, JsonElement>>(jsonOption)
                 .ConfigureAwait(false);
             
             var actionsToExecute = new LinkedList<ActionInfo>();
@@ -48,7 +50,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 
                 logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
                 var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
-                    actionContext.ActionType, option);
+                    actionContext.ActionType, jsonOption);
                 
                 if (!action.IsValid())
                 {
@@ -59,27 +61,28 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
                 actionsToExecute.AddLast(action); 
                 action.Thing = thing;
+                var namePolicy = option.PropertyNamingPolicy;
+                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{action.Id}";
             }
             
             foreach (var actionInfo in actionsToExecute)
             {
                 logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", actionInfo.GetActionName(), thingName);
                 
+                thing.ThingContext.Actions[actionInfo.GetActionName()].Actions.Add(actionInfo.Id, actionInfo);
+                
                 actionInfo.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
-                
-                thing.ThingContext.Actions[actionInfo.GetActionName()].Actions.TryAdd(actionInfo.Id, actionInfo);
-
             }
             
             if (actionsToExecute.Count == 1)
             {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First.Value, option)
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First.Value, jsonOption)
                     .ConfigureAwait(false);
             }
             else
             {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, option)
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, jsonOption)
                     .ConfigureAwait(false);
             }
         }

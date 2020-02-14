@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing
@@ -20,8 +22,8 @@ namespace Mozilla.IoT.WebThing
         public IThingConverter Converter { get; }
         
         public IProperties Properties { get; }
-        
         public Dictionary<string, EventCollection> Events { get; }
         public Dictionary<string, ActionContext> Actions { get; } 
+        public ConcurrentDictionary<Guid, WebSocket> Sockets { get; } = new ConcurrentDictionary<Guid, WebSocket>();
     }
 }
