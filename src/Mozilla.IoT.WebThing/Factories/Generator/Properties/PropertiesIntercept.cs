@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -18,7 +18,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         {
             _option = option ?? throw new ArgumentNullException(nameof(option));
             Properties = option.IgnoreCase ? new Dictionary<string, Property>(StringComparer.InvariantCultureIgnoreCase) 
-                : new Dictionary<string, Property>();   
+                : new Dictionary<string, Property>();
         }
 
         public void Before(Thing thing)

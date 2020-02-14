@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -40,7 +40,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     .BeEquivalentTo(JToken.Parse(@"
 {
     ""on"": false,
-    ""brightness"": 0
+    ""brightness"": 0,
+    ""reader"": 0
 }
 "));
         }

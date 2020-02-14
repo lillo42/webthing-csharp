@@ -44,7 +44,7 @@ namespace Mozilla.IoT.WebThing.Converts
 
             writer.WriteStartObject();
             writer.WriteString("@context", value.Context);
-            var builder = new UriBuilder(value.Context) {Path = $"/things/{value.Name}"};
+            var builder = new UriBuilder(value.Prefix) {Path = $"/things/{options.GetPropertyName(value.Name)}"};
             WriteProperty(writer, "Id", builder.Uri.ToString(), options);
             value.ThingContext.Converter.Write(writer, value, options);
             
@@ -52,21 +52,20 @@ namespace Mozilla.IoT.WebThing.Converts
             
             writer.WriteStartObject();
             WriteProperty(writer, "rel",  "properties", options);
-            WriteProperty(writer, "href",  $"/things/{value.Name}/properties", options);
+            WriteProperty(writer, "href",  $"/things/{options.GetPropertyName(value.Name)}/properties", options);
             writer.WriteEndObject();
             
             writer.WriteStartObject();
             WriteProperty(writer, "rel",  "actions", options);
-            WriteProperty(writer, "href",  $"/things/{value.Name}/actions", options);
+            WriteProperty(writer, "href",  $"/things/{options.GetPropertyName(value.Name)}/actions", options);
             writer.WriteEndObject();
             
             writer.WriteStartObject();
             WriteProperty(writer, "rel",  "events", options);
-            WriteProperty(writer, "href",  $"/things/{value.Name}/events", options);
+            WriteProperty(writer, "href",  $"/things/{options.GetPropertyName(value.Name)}/events", options);
             writer.WriteEndObject();
             
             builder.Scheme = value.Prefix.Scheme == "http" ? "ws" : "wss";
-            builder.Path = $"/things/{value.Name}";
             writer.WriteStartObject();
             WriteProperty(writer, "rel",  "alternate", options);
             WriteProperty(writer, "href",  builder.Uri.ToString(), options);
