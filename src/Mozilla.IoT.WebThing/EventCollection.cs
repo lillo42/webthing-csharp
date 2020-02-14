@@ -17,7 +17,7 @@ namespace Mozilla.IoT.WebThing
             _events = new ConcurrentQueue<Event>();
         }
 
-        public void Enqueue(Event @event)
+        public void Enqueue(Event @event, string name)
         {
             if (_events.Count >= _size)
             {
@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing
             _events.Enqueue(@event);
             
             var add = Added;
-            add?.Invoke(this, @event);
+            add?.Invoke(name, @event);
         }
         
         public void Dequeue()

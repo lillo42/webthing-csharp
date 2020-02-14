@@ -35,8 +35,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
         public async void OnEvenAdded(object sender, Event @event)
         {
             _logger.LogInformation("Event add received, going to notify Web Socket");
-            var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("event", @event),
-                _options);
+            var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("event", 
+                    new Dictionary<string, object>
+                    {
+                        [sender.ToString()] = @event
+                    }), _options);
             
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
@@ -65,4 +68,5 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 .ConfigureAwait(false);
         }
     }
+    
 }

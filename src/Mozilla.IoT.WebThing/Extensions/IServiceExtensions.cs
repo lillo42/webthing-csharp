@@ -30,6 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     PropertyNamingPolicy = opt.PropertyNamingPolicy,
                     DictionaryKeyPolicy = opt.PropertyNamingPolicy,
+                    PropertyNameCaseInsensitive = opt.IgnoreCase,
                     IgnoreNullValues = true
                 };
             });

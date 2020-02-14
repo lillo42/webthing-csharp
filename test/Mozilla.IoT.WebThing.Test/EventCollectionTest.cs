@@ -27,7 +27,7 @@ namespace Mozilla.IoT.WebThing.Test
             {
                 var @event = new Event(_fixture.Create<object>());
                 data.AddLast(@event);
-                collection.Enqueue(@event);
+                collection.Enqueue(@event, "");
             }
 
             collection.ToArray().Length.Should().Be(size);
@@ -36,7 +36,7 @@ namespace Mozilla.IoT.WebThing.Test
             var event2 = new Event(_fixture.Create<object>());
             data.AddLast(@event2);
             data.RemoveFirst();
-            collection.Enqueue(@event2);
+            collection.Enqueue(@event2, "");
             
             collection.ToArray().Length.Should().Be(size);
             collection.ToArray().Should().BeEquivalentTo(data);
