@@ -59,11 +59,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
         public async void OnActionChange(object sender, ActionInfo action)
         {
             await _socket.SendAsync(
-                    JsonSerializer.SerializeToUtf8Bytes(new Dictionary<string, object>
+                    JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("actionStatus",new Dictionary<string, object>
                     {
-                        ["messageType"] = "actionStatus",
-                        [action.GetActionName()] = action
-                    }, _options),
+                        [ action.GetActionName()] = action
+                    }), _options),
                     WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }

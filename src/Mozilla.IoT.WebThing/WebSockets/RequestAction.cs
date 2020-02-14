@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 }
                 
                 _logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actionName, thing.Name);
-                var actionInfo = (ActionInfo)JsonSerializer.Deserialize(json.GetBytesFromBase64(), actionContext.ActionType, options);
+                var actionInfo = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(), actionContext.ActionType, options);
                 
                 if (!actionInfo.IsValid())
                 {
@@ -45,10 +45,12 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 
                 _logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", actionName, thing.Name);
                 
+                var namePolicy = options.PropertyNamingPolicy;
+                actionInfo.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{actionInfo.Id}";
+
+                thing.ThingContext.Actions[actionInfo.GetActionName()].Actions.Add(actionInfo.Id, actionInfo);
                 actionInfo.ExecuteAsync(thing, provider)
                     .ConfigureAwait(false);
-                
-                thing.ThingContext.Actions[actionInfo.GetActionName()].Actions.Add(actionInfo.Id, actionInfo);
             }
             
             return Task.CompletedTask;

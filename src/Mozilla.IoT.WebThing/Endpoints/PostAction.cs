@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -30,9 +31,10 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            var option = ThingConverter.Options;
+            var jsonOption = service.GetRequiredService<JsonSerializerOptions>();
+            var option = service.GetRequiredService<ThingOption>();
             
-            var actions = await context.FromBodyAsync<Dictionary<string, JsonElement>>(option)
+            var actions = await context.FromBodyAsync<Dictionary<string, JsonElement>>(jsonOption)
                 .ConfigureAwait(false);
             
             var actionName = context.GetRouteData<string>("action");
@@ -57,7 +59,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
                 var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
-                    actionContext.ActionType, option);
+                    actionContext.ActionType, jsonOption);
                 
                 if (!action.IsValid())
                 {
@@ -67,6 +69,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 }
 
                 action.Thing = thing;
+                var namePolicy = option.PropertyNamingPolicy;
+                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{action.Id}";
                 actionsToExecute.AddLast(action);
             }
             
@@ -82,12 +86,12 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             if (actionsToExecute.Count == 1)
             {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First.Value, option)
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First.Value, jsonOption)
                     .ConfigureAwait(false);
             }
             else
             {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, option)
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, jsonOption)
                     .ConfigureAwait(false);
             }
         }

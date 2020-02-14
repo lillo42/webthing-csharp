@@ -19,10 +19,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
         private readonly ModuleBuilder _moduleBuilder;
+        private readonly ThingOption _option;
         public  Dictionary<string, ActionContext> Actions { get; }
 
         public ActionIntercept(ModuleBuilder moduleBuilder, ThingOption option)
         {
+            _option = option;
             _moduleBuilder = moduleBuilder;
             Actions = option.IgnoreCase ? new Dictionary<string, ActionContext>(StringComparer.InvariantCultureIgnoreCase) 
                 : new Dictionary<string, ActionContext>();
@@ -74,7 +76,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             CreateInputValidation(actionBuilder, inputBuilder, isValid, input);
             CreateExecuteAsync(actionBuilder, inputBuilder,input, action, thingType);
             
-            Actions.Add(name, new ActionContext(actionBuilder.CreateType()!));
+            Actions.Add(_option.PropertyNamingPolicy.ConvertName(name), new ActionContext(actionBuilder.CreateType()!));
         }
         
         private static PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)

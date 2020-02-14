@@ -14,8 +14,8 @@ namespace Mozilla.IoT.WebThing.Actions
         internal Thing Thing { get; set; } = default!;
         protected abstract string ActionName { get; }
         
-        public string Href => $"/things/{Thing.Name}/actions/{ActionName}/{Id}";
-        
+        public string Href { get; internal set; }
+
         public DateTime TimeRequested { get; } = DateTime.UtcNow;
         public DateTime? TimeCompleted { get; private set; } = null;
         public string Status { get; private set; } = "pending";
