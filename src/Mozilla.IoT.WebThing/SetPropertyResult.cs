@@ -4,6 +4,7 @@ namespace Mozilla.IoT.WebThing
     {
         Ok,
         NotFound,
-        InvalidValue
+        InvalidValue,
+        ReadOnly
     }
 }

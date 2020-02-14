@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -23,8 +23,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task GetAll()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync("/things/Lamp/properties");
             
@@ -41,7 +40,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     .BeEquivalentTo(JToken.Parse(@"
 {
     ""on"": false,
-    ""brightness"": 0
+    ""brightness"": 0,
+    ""reader"": 0
 }
 "));
         }
@@ -51,8 +51,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [InlineData("brightness", 0)]
         public async Task Get(string property, object value)
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync($"/things/Lamp/properties/{property}");
             
@@ -72,8 +71,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task GetInvalid()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync($"/things/Lamp/properties/{_fixture.Create<string>()}");
             
@@ -125,10 +123,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Theory]
         [InlineData("brightness", -1, 0)]
         [InlineData("brightness", 101, 0)]
+        [InlineData("reader", 101, 0)]
         public async Task PutInvalidValue(string property, object value, object defaulValue)
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.PutAsync($"/things/Lamp/properties/{property}", 
                 new StringContent($@"{{ ""{property}"": {value.ToString().ToLower()}  }}"));
@@ -154,8 +152,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task PutInvalidProperty()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var property = _fixture.Create<string>();
             var response = await client.PutAsync($"/things/Lamp/properties/{property}", 

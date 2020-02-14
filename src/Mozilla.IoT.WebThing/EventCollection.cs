@@ -1,20 +1,23 @@
+using System;
 using System.Collections.Concurrent;
 
 namespace Mozilla.IoT.WebThing
 {
-    public class EventCollection 
+    public class EventCollection
     {
         private readonly ConcurrentQueue<Event> _events;
         private readonly object _locker = new object();
         private readonly int _size;
 
+        public event EventHandler<Event>? Added; 
+        
         public EventCollection(int size)
         {
             _size = size;
             _events = new ConcurrentQueue<Event>();
         }
 
-        public void Enqueue(Event @event)
+        public void Enqueue(Event @event, string name)
         {
             if (_events.Count >= _size)
             {
@@ -28,6 +31,9 @@ namespace Mozilla.IoT.WebThing
             }
     
             _events.Enqueue(@event);
+            
+            var add = Added;
+            add?.Invoke(name, @event);
         }
         
         public void Dequeue()

@@ -32,12 +32,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var property = context.GetRouteData<string>("property");
             
-            logger.LogTrace("Going to set property {propertyName}", property);
+            logger.LogInformation("Going to set property {propertyName}", property);
+
+            var jsonOptions = service.GetRequiredService<JsonSerializerOptions>();
             
-            var json = await context.FromBodyAsync<Dictionary<string, object>>(new JsonSerializerOptions())
+            var json = await context.FromBodyAsync<JsonElement>(jsonOptions)
                 .ConfigureAwait(false);
             
-            var result = thing.ThingContext.Properties.SetProperty(property, json[property]);
+            var result = thing.ThingContext.Properties.SetProperty(property, json.GetProperty(property));
             
             if (result == SetPropertyResult.NotFound)
             {
@@ -52,8 +54,15 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
+            
+            if (result == SetPropertyResult.ReadOnly)
+            {
+                logger.LogInformation("Read-Only Property. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return;
+            }
 
-            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), ThingConverter.Options)
+            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), jsonOptions)
                 .ConfigureAwait(false);
         }
     }

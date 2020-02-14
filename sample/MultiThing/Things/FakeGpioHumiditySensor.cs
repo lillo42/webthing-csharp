@@ -24,11 +24,11 @@ namespace MultiThing.Things
         }
         public override string Name => "my-humidity-sensor-1234";
 
-        public override string? Title => "My Humidity Sensor";
+        public override string Title => "My Humidity Sensor";
 
-        public override string[]? Type { get; } = new[] {"MultiLevelSensor"};
+        public override string[] Type { get; } = new[] {"MultiLevelSensor"};
 
-        public override string? Description => "A web connected humidity sensor";
+        public override string Description => "A web connected humidity sensor";
         
         
         [ThingProperty(Type = new []{"LevelProperty"}, Title = "Humidity", Description = "The current humidity in %",

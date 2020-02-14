@@ -49,7 +49,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
         {
             _eventToBind.Enqueue(@event);
             var name = eventInfo?.Name ?? @event.Name;
-            Events.Add(name, new EventCollection(_options.MaxEventSize));
+            Events.Add(_options.PropertyNamingPolicy.ConvertName(name), new EventCollection(_options.MaxEventSize));
 
             var type = @event.EventHandlerType?.GetGenericArguments()[0]!;
             var methodBuilder =_builder.DefineMethod($"{@event.Name}Handler",
@@ -73,6 +73,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
             }
             
             il.Emit(OpCodes.Newobj, _createThing);
+            il.Emit(OpCodes.Ldstr, _options.PropertyNamingPolicy.ConvertName(name));
             il.EmitCall(OpCodes.Callvirt, _addItem, null);
             il.Emit(OpCodes.Ret);
         }

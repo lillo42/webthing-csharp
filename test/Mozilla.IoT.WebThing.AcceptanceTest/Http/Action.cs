@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -45,7 +45,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Input.Should().NotBeNull();
             json.Input.Level.Should().Be(level);
             json.Input.Duration.Should().Be(duration);
-            json.Href.Should().StartWith("/things/Lamp/actions/fade/");
+            json.Href.Should().StartWith("/things/lamp/actions/fade/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
         }
@@ -81,7 +81,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Input.Should().NotBeNull();
             json.Input.Level.Should().Be(level);
             json.Input.Duration.Should().Be(duration);
-            json.Href.Should().StartWith("/things/Lamp/actions/fade/");
+            json.Href.Should().StartWith("/things/lamp/actions/fade/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
         }
@@ -172,7 +172,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var response = await client.PostAsync("/things/Lamp/actions", 
                 new StringContent($@"
 {{ 
-    ""LongRun"": {{
+    ""longRun"": {{
     }} 
 }}"));
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -185,20 +185,20 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             
-            json.Href.Should().StartWith("/things/Lamp/actions/LongRun/");
+            json.Href.Should().StartWith("/things/lamp/actions/longRun/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
 
             await Task.Delay(3_000);
 
-            response = await client.GetAsync($"/things/Lamp/actions/LongRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response = await client.GetAsync($"/things/lamp/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
             message = await response.Content.ReadAsStringAsync();
             json = JsonConvert.DeserializeObject<LongRun>(message, new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             
-            json.Href.Should().StartWith("/things/Lamp/actions/LongRun/");
+            json.Href.Should().StartWith("/things/lamp/actions/longRun/");
             json.Status.Should().NotBeNullOrEmpty();
             json.Status.Should().Be("completed");
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
@@ -229,14 +229,14 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             
-            json.Href.Should().StartWith("/things/Lamp/actions/LongRun/");
+            json.Href.Should().StartWith("/things/lamp/actions/longRun/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
 
-            response = await client.DeleteAsync($"/things/Lamp/actions/LongRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response = await client.DeleteAsync($"/things/lamp/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
             
-            response = await client.GetAsync($"/things/Lamp/actions/LongRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response = await client.GetAsync($"/things/lamp/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
         

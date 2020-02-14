@@ -1,9 +1,8 @@
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -14,8 +13,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task GetAll()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync("/things");
             
@@ -34,7 +32,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
 [
     {
         ""@context"": ""https://iot.mozilla.org/schemas"",
-        ""id"": ""https://iot.mozilla.org/things/Lamp"",
+        ""id"": ""http://localhost/things/lamp"",
         ""title"": ""My Lamp"",
         ""description"": ""A web connected lamp"",
         ""@type"": [
@@ -46,11 +44,11 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ""title"": ""On/Off"",
                 ""description"": ""Whether the lamp is turned on"",
                 ""readOnly"": false,
-                ""@type"": ""OnOffProperty"",
                 ""type"": ""boolean"",
+                ""@type"": ""OnOffProperty"",
                 ""links"": [
                     {
-                        ""href"": ""/things/Lamp/properties/on""
+                        ""href"": ""/things/lamp/properties/on""
                     }
                 ]
             },
@@ -58,13 +56,20 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ""title"": ""Brightness"",
                 ""description"": ""The level of light from 0-100"",
                 ""readOnly"": false,
+                ""type"": ""integer"",
                 ""@type"": ""BrightnessProperty"",
                 ""minimum"": 0,
                 ""maximum"": 100,
-                ""type"": ""integer"",
                 ""links"": [
                     {
-                        ""href"": ""/things/Lamp/properties/brightness""
+                        ""href"": ""/things/lamp/properties/brightness""
+                    }
+                ]
+            },
+            ""reader"": {
+                ""links"": [
+                    {
+                        ""href"": ""/things/lamp/properties/reader""
                     }
                 ]
             }
@@ -91,18 +96,18 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 },
                 ""links"": [
                     {
-                        ""href"": ""/things/Lamp/actions/fade""
+                        ""href"": ""/things/lamp/actions/fade""
                     }
                 ]
             },
-            ""longRun"":{
+            ""longRun"": {
                 ""input"": {
                     ""type"": ""object"",
                     ""properties"": {}
                 },
                 ""links"": [
                     {
-                        ""href"": ""/things/Lamp/actions/longRun""
+                        ""href"": ""/things/lamp/actions/longRun""
                     }
                 ]
             }
@@ -115,45 +120,47 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ""type"": ""integer"",
                 ""links"": [
                     {
-                        ""href"": ""/things/Lamp/events/overheated""
+                        ""href"": ""/things/lamp/events/overheated""
                     }
                 ]
             },
             ""otherEvent"": {
                 ""title"": ""OtherEvent"",
                 ""type"": ""string"",
-                ""links"": [{
-                    ""href"": ""/things/Lamp/events/otherEvent""
-                }]
+                ""links"": [
+                    {
+                        ""href"": ""/things/lamp/events/otherEvent""
+                    }
+                ]
             }
         },
         ""links"": [
             {
                 ""rel"": ""properties"",
-                ""href"": ""/things/Lamp/properties""
+                ""href"": ""/things/lamp/properties""
             },
             {
                 ""rel"": ""actions"",
-                ""href"": ""/things/Lamp/actions""
+                ""href"": ""/things/lamp/actions""
             },
             {
                 ""rel"": ""events"",
-                ""href"": ""/things/Lamp/events""
+                ""href"": ""/things/lamp/events""
             },
             {
                 ""rel"": ""alternate"",
-                ""href"": ""ws://iot.mozilla.org:443/things/Lamp""
+                ""href"": ""ws://localhost/things/lamp""
             }
         ]
     }
-]"));
+]
+"));
         }
         
         [Fact]
         public async Task Get()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync("/things/Lamp");
             
@@ -170,7 +177,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     .BeEquivalentTo(JToken.Parse(@"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
-    ""id"": ""https://iot.mozilla.org/things/Lamp"",
+    ""id"": ""http://localhost/things/lamp"",
     ""title"": ""My Lamp"",
     ""description"": ""A web connected lamp"",
     ""@type"": [
@@ -182,11 +189,11 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""title"": ""On/Off"",
             ""description"": ""Whether the lamp is turned on"",
             ""readOnly"": false,
-            ""@type"": ""OnOffProperty"",
             ""type"": ""boolean"",
+            ""@type"": ""OnOffProperty"",
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/properties/on""
+                    ""href"": ""/things/lamp/properties/on""
                 }
             ]
         },
@@ -194,13 +201,20 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""title"": ""Brightness"",
             ""description"": ""The level of light from 0-100"",
             ""readOnly"": false,
+            ""type"": ""integer"",
             ""@type"": ""BrightnessProperty"",
             ""minimum"": 0,
             ""maximum"": 100,
-            ""type"": ""integer"",
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/properties/brightness""
+                    ""href"": ""/things/lamp/properties/brightness""
+                }
+            ]
+        },
+        ""reader"": {
+            ""links"": [
+                {
+                    ""href"": ""/things/lamp/properties/reader""
                 }
             ]
         }
@@ -227,18 +241,18 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             },
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/actions/fade""
+                    ""href"": ""/things/lamp/actions/fade""
                 }
             ]
         },
-       ""longRun"":{
+        ""longRun"": {
             ""input"": {
                 ""type"": ""object"",
                 ""properties"": {}
             },
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/actions/longRun""
+                    ""href"": ""/things/lamp/actions/longRun""
                 }
             ]
         }
@@ -251,34 +265,36 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""type"": ""integer"",
             ""links"": [
                 {
-                    ""href"": ""/things/Lamp/events/overheated""
+                    ""href"": ""/things/lamp/events/overheated""
                 }
             ]
         },
         ""otherEvent"": {
             ""title"": ""OtherEvent"",
             ""type"": ""string"",
-            ""links"": [{
-                ""href"": ""/things/Lamp/events/otherEvent""
-            }]
+            ""links"": [
+                {
+                    ""href"": ""/things/lamp/events/otherEvent""
+                }
+            ]
         }
     },
     ""links"": [
         {
             ""rel"": ""properties"",
-            ""href"": ""/things/Lamp/properties""
+            ""href"": ""/things/lamp/properties""
         },
         {
             ""rel"": ""actions"",
-            ""href"": ""/things/Lamp/actions""
+            ""href"": ""/things/lamp/actions""
         },
         {
             ""rel"": ""events"",
-            ""href"": ""/things/Lamp/events""
+            ""href"": ""/things/lamp/events""
         },
         {
             ""rel"": ""alternate"",
-            ""href"": ""ws://iot.mozilla.org:443/things/Lamp""
+            ""href"": ""ws://localhost/things/lamp""
         }
     ]
 }
@@ -289,8 +305,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         public async Task GetInvalid()
         {
             var fixture = new Fixture();
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
+            var host = await Program.GetHost();
             var client = host.GetTestServer().CreateClient();
             var response = await client.GetAsync($"/things/{fixture.Create<string>()}");
             
