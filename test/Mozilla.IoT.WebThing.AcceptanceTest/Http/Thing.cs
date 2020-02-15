@@ -67,6 +67,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""reader"": {
+                ""readOnly"": true,
                 ""links"": [
                     {
                         ""href"": ""/things/lamp/properties/reader""
@@ -212,6 +213,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ]
         },
         ""reader"": {
+            ""readOnly"": true,
             ""links"": [
                 {
                     ""href"": ""/things/lamp/properties/reader""

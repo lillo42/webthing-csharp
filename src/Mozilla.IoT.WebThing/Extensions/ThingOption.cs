@@ -11,7 +11,7 @@ namespace Mozilla.IoT.WebThing.Extensions
         public JsonNamingPolicy PropertyNamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
 
         private JsonSerializerOptions _options;
-        private readonly object _locker = null;
+        private readonly object _locker = new object();
         public JsonSerializerOptions ToJsonSerializerOptions()
         {
             if (_options == null)
