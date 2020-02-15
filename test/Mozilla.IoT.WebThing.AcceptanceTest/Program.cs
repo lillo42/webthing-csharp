@@ -1,14 +1,16 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.AcceptanceTest
 {
     public class Program
     {
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder(string[] args, Action<ThingOption>? option = null) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(logger =>
                 {
@@ -18,6 +20,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    Startup.Option = option;
                     webBuilder
                         .UseTestServer()
                         .UseStartup<Startup>();
