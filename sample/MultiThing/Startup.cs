@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using MultiThing.Things;
 
 namespace MultiThing
@@ -30,8 +23,7 @@ namespace MultiThing
         {
             services.AddThings()
                 .AddThing<ExampleDimmableLight>()
-                .AddThing<FakeGpioHumiditySensor>()
-                ;
+                .AddThing<FakeGpioHumiditySensor>();
 
             services.AddWebSockets(opt => { });
         }
