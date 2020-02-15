@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Mozilla.IoT.WebThing.AcceptanceTest
 {
@@ -9,6 +10,12 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
     {
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logger =>
+                {
+                    logger.ClearProviders()
+                        .AddConsole()
+                        .AddFilter("*", LogLevel.Error);
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder

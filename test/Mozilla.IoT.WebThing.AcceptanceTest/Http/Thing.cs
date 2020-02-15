@@ -213,7 +213,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ]
         },
         ""reader"": {
-            ""readOnly"": truek,
+            ""readOnly"": true,
             ""links"": [
                 {
                     ""href"": ""/things/lamp/properties/reader""
