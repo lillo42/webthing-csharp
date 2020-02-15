@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -21,12 +20,12 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var name = context.GetRouteData<string>("name");
             
-            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
+            logger.LogInformation("Requesting Thing. [Thing: {name}]", name);
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation("Thing not found. [Name: {name}]", name);
+                logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
@@ -36,12 +35,12 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             if (properties == null)
             {
-                logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                logger.LogInformation("Property not found. [Thing: {thingName}][Property: {propertyName}]", thing.Name, property);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
 
-            logger.LogInformation("Found Thing with {property} Property. [Name: {name}]", property, thing.Name);
+            logger.LogInformation("Found Property. [Thing: {thingName}][Property: {propertyName}]", thing.Name, property);
             
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;

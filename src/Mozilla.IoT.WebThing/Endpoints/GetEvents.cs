@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -20,13 +19,13 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             
             var name = context.GetRouteData<string>("name");
-            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
+            logger.LogInformation("Requesting Events. [Thing: {name}]", name);
             
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation("Thing not found. [Name: {name}]", name);
+                logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
@@ -43,7 +42,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
 
-            logger.LogInformation("Found Thing with {counter} events. [Name: {name}]", result.Count, thing.Name);
+            logger.LogInformation("Found Thing with {counter} events. [Thing: {name}]", result.Count, thing.Name);
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             

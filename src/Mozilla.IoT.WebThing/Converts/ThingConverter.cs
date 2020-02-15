@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Converts
 {
     public class ThingConverter : JsonConverter<Thing>
     {
-        public static JsonSerializerOptions Options { get; } = new JsonSerializerOptions
+
+        private readonly ThingOption _option;
+        public ThingConverter(ThingOption option)
         {
-            WriteIndented = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new ThingConverter()}
-        };
+            _option = option;
+        }
         
         public override bool CanConvert(Type typeToConvert)
         {
@@ -45,7 +45,17 @@ namespace Mozilla.IoT.WebThing.Converts
             writer.WriteStartObject();
             writer.WriteString("@context", value.Context);
             var builder = new UriBuilder(value.Prefix) {Path = $"/things/{options.GetPropertyName(value.Name)}"};
-            WriteProperty(writer, "Id", builder.Uri.ToString(), options);
+            if (_option.UseThingAdapterUrl)
+            {
+                WriteProperty(writer, "Id", options.GetPropertyName(value.Name), options);
+                WriteProperty(writer, "href", builder.Path, options);
+                WriteProperty(writer, "base", builder.Uri.ToString(), options);
+            }
+            else
+            {
+                WriteProperty(writer, "Id", builder.Uri.ToString(), options);
+            }
+
             value.ThingContext.Converter.Write(writer, value, options);
             
             StartArray(writer, "Links", options);

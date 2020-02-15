@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -21,29 +22,31 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             
             var name = context.GetRouteData<string>("name");
-            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
+            logger.LogInformation("Requesting Thing. [Thing: {name}]", name);
 
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation("Thing not found. [Name: {name}]", name);
+                logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
             
             if (thing.Prefix == null)
             {
-                logger.LogDebug("Thing without prefix. [Name: {name}]", thing.Name);
+                logger.LogDebug("Thing without prefix. [Thing: {name}]", thing.Name);
                 thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
                     context.Request.Host));
             }
             
-            logger.LogInformation("Found 1 Thing. [Name: {name}]", thing.Name);
+            logger.LogInformation("Found 1 Thing. [Thing: {name}]", thing.Name);
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, thing, ThingConverter.Options, context.RequestAborted);
+            return JsonSerializer.SerializeAsync(context.Response.Body, thing,
+                service.GetRequiredService<ThingOption>().ToJsonSerializerOptions(),
+                context.RequestAborted);
         }
     }
 }
