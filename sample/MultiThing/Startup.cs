@@ -30,7 +30,8 @@ namespace MultiThing
         {
             services.AddThings()
                 .AddThing<ExampleDimmableLight>()
-                .AddThing<FakeGpioHumiditySensor>();
+                .AddThing<FakeGpioHumiditySensor>()
+                ;
 
             services.AddWebSockets(opt => { });
         }

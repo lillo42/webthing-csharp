@@ -24,8 +24,8 @@ namespace Mozilla.IoT.WebThing.Extensions
         public IThingCollectionBuilder AddThing<T>() 
             where T : Thing
         {
-            _service.TryAddSingleton<T>();
-            _service.TryAddSingleton(ConfigureThing<T>);
+            _service.AddSingleton<T>();
+            _service.AddSingleton(ConfigureThing<T>);
             return this;
         }
 
@@ -37,8 +37,8 @@ namespace Mozilla.IoT.WebThing.Extensions
                 throw new ArgumentNullException(nameof(thing));
             }
 
-            _service.TryAddSingleton(thing);
-            _service.TryAddSingleton(ConfigureThing<T>);
+            _service.AddSingleton(thing);
+            _service.AddSingleton(ConfigureThing<T>);
 
             return this;
         }

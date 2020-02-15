@@ -152,7 +152,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_R8, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberDouble, new[] { typeof(string), typeof(double) });
         }
         

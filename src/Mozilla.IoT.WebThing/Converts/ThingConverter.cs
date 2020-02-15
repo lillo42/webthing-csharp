@@ -45,8 +45,10 @@ namespace Mozilla.IoT.WebThing.Converts
             writer.WriteStartObject();
             writer.WriteString("@context", value.Context);
             var builder = new UriBuilder(value.Prefix) {Path = $"/things/{options.GetPropertyName(value.Name)}"};
-            WriteProperty(writer, "Id", builder.Uri.ToString(), options);
+            WriteProperty(writer, "Id", value.Name, options);
             value.ThingContext.Converter.Write(writer, value, options);
+            WriteProperty(writer, "href", builder.Path, options);
+            WriteProperty(writer, "base", builder.Uri.ToString(), options);
             
             StartArray(writer, "Links", options);
             

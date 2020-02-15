@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
+            endpoint.MapGet("/", GetAllThings.InvokeAsync);
             endpoint.MapGet("/things", GetAllThings.InvokeAsync);
             endpoint.MapGet("/things/{name}",  context => context.WebSockets.IsWebSocketRequest 
                 ? WebSocket.InvokeAsync(context) : GetThing.InvokeAsync(context));

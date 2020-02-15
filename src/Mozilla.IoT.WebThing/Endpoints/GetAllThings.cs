@@ -31,7 +31,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 }
             }
             
-            logger.LogTrace("Found {counter} things", things.Count());
+            logger.LogInformation("Found {counter} things", things.Count());
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             

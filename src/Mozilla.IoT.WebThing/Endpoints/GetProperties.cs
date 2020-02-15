@@ -21,18 +21,18 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var name = context.GetRouteData<string>("name");
             
-            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
+            logger.LogInformation("Requesting Thing. [Thing: {name}]", name);
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation("Thing not found. [Name: {name}]", name);
+                logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
 
             var properties = thing.ThingContext.Properties.GetProperties()!;
-            logger.LogInformation("Found Thing with {counter} properties. [Name: {name}]", properties.Count, thing.Name);
+            logger.LogInformation("Found Thing with {counter} properties. [Thing: {name}]", properties.Count, thing.Name);
             
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
