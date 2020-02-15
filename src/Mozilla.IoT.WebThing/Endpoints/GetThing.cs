@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -43,7 +44,9 @@ namespace Mozilla.IoT.WebThing.Endpoints
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, thing, ThingConverter.Options, context.RequestAborted);
+            return JsonSerializer.SerializeAsync(context.Response.Body, thing,
+                service.GetRequiredService<ThingOption>().ToJsonSerializerOptions(),
+                context.RequestAborted);
         }
     }
 }

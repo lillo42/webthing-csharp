@@ -5,6 +5,7 @@ using AutoFixture;
 using FluentAssertions.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 using Newtonsoft.Json.Linq;
@@ -44,7 +45,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 new JsonSerializerOptions {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     IgnoreNullValues = true,
-                    Converters = { new ThingConverter() }
+                    Converters = { new ThingConverter(new ThingOption()) }
                 });
 
             JToken.Parse(value)
