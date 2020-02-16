@@ -4,7 +4,7 @@ on: pull_request
 jobs:
   build:
     name: build
-    runs-on:  [self-hosted, linux, ARM64]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - name: Setup dotnet version
