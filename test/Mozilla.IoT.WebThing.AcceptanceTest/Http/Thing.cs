@@ -108,10 +108,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""longRun"": {
-                ""input"": {
-                    ""type"": ""object"",
-                    ""properties"": {}
-                },
                 ""links"": [
                     {
                         ""href"": ""/things/lamp/actions/longRun""
@@ -283,10 +279,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""longRun"": {
-                ""input"": {
-                    ""type"": ""object"",
-                    ""properties"": {}
-                },
                 ""links"": [
                     {
                         ""href"": ""/things/action/actions/longRun""
@@ -512,10 +504,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""longRun"": {
-                ""input"": {
-                    ""type"": ""object"",
-                    ""properties"": {}
-                },
                 ""links"": [
                     {
                         ""href"": ""/things/lamp/actions/longRun""
@@ -693,10 +681,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""longRun"": {
-                ""input"": {
-                    ""type"": ""object"",
-                    ""properties"": {}
-                },
                 ""links"": [
                     {
                         ""href"": ""/things/action/actions/longRun""
@@ -879,10 +863,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ]
         },
         ""longRun"": {
-            ""input"": {
-                ""type"": ""object"",
-                ""properties"": {}
-            },
             ""links"": [
                 {
                     ""href"": ""/things/lamp/actions/longRun""
@@ -1015,10 +995,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""longRun"": {
-                ""input"": {
-                    ""type"": ""object"",
-                    ""properties"": {}
-                },
                 ""links"": [
                     {
                         ""href"": ""/things/action/actions/longRun""
@@ -1214,10 +1190,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 ]
             },
             ""longRun"": {
-                ""input"": {
-                    ""type"": ""object"",
-                    ""properties"": {}
-                },
                 ""links"": [
                     {
                         ""href"": ""/things/lamp/actions/longRun""
