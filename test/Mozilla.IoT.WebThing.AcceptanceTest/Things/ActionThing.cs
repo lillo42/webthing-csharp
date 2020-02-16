@@ -18,9 +18,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             
         }
         
-        public Task LongRun(CancellationToken cancellationToken)
+        public Task LongRun()
         {
-            return Task.Delay(3_000, cancellationToken);
+            return Task.Delay(3_000);
         }
 
     }
