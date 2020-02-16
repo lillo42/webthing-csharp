@@ -792,7 +792,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         {
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
-            
+                
             var host = await Program.CreateHostBuilder(null, opt => opt.UseThingAdapterUrl = true)
                 .StartAsync(source.Token)
                 .ConfigureAwait(false);
