@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
@@ -14,15 +15,22 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
 {
     public class Action
     {
+        private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
+        private readonly HttpClient _client;
+        public Action()
+        {
+            var host = Program.GetHost().GetAwaiter().GetResult();
+            _client = host.GetTestServer().CreateClient();
+        }
+        
         [Theory]
         [InlineData(50, 2_000)]
         public async Task Create(int level, int duration)
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
-            var client = host.GetTestServer().CreateClient();
-            
-            var response = await client.PostAsync("/things/Lamp/actions", 
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action/actions", 
                 new StringContent($@"
 {{ 
     ""fade"": {{
@@ -31,12 +39,13 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""duration"": {duration}
         }}    
     }} 
-}}"));
+}}"), source.Token).ConfigureAwait(false);
+            
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<Fade>(message, new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -45,7 +54,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Input.Should().NotBeNull();
             json.Input.Level.Should().Be(level);
             json.Input.Duration.Should().Be(duration);
-            json.Href.Should().StartWith("/things/lamp/actions/fade/");
+            json.Href.Should().StartWith("/things/action/actions/fade/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
         }
@@ -54,11 +63,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [InlineData(50, 2_000)]
         public async Task CreateInSpecificUrl(int level, int duration)
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
-            var client = host.GetTestServer().CreateClient();
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
             
-            var response = await client.PostAsync("/things/lamp/actions/fade", 
+            var response = await _client.PostAsync("/things/action/actions/fade", 
                 new StringContent($@"
 {{ 
     ""fade"": {{
@@ -67,12 +75,14 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""duration"": {duration}
         }}    
     }} 
-}}"));
+}}"), source.Token).ConfigureAwait(false);
+            
+            
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<Fade>(message, new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
@@ -81,7 +91,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Input.Should().NotBeNull();
             json.Input.Level.Should().Be(level);
             json.Input.Duration.Should().Be(duration);
-            json.Href.Should().StartWith("/things/lamp/actions/fade/");
+            json.Href.Should().StartWith("/things/action/actions/fade/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
         }
@@ -89,11 +99,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task InvalidAction()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
-            var client = host.GetTestServer().CreateClient();
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
             
-            var response = await client.PostAsync("/things/lamp/actions/aaaa", 
+            var response = await _client.PostAsync("/things/action/actions/aaaa", 
                 new StringContent(@"
 { 
     ""aaaa"": {
@@ -102,7 +111,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""duration"": 100
         }    
     } 
-}"));
+}"), source.Token).ConfigureAwait(false);
+            
             response.IsSuccessStatusCode.Should().BeFalse();
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
@@ -110,11 +120,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task TryCreateActionWithOtherName()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
-            var client = host.GetTestServer().CreateClient();
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
             
-            var response = await client.PostAsync("/things/lamp/actions/fade", 
+            var response = await _client.PostAsync("/things/action/actions/fade", 
                 new StringContent(@"
 { 
     ""aaaa"": {
@@ -123,7 +132,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""duration"": 100
         }    
     } 
-}"));
+}"), source.Token).ConfigureAwait(false);
+            
             response.IsSuccessStatusCode.Should().BeFalse();
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -133,11 +143,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [InlineData(101, 2_000)]
         public async Task TryCreateWithInvalidParameter(int level, int duration)
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
-            var client = host.GetTestServer().CreateClient();
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
             
-            var response = await client.PostAsync("/things/Lamp/actions", 
+            var response = await _client.PostAsync("/things/action/actions", 
                 new StringContent($@"
 {{ 
     ""fade"": {{
@@ -146,17 +155,18 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""duration"": {duration}
         }}    
     }} 
-}}"));
+}}"), source.Token).ConfigureAwait(false);
+            
             response.IsSuccessStatusCode.Should().BeFalse();
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-            response = await client.GetAsync("/things/Lamp/actions");
+            response = await _client.GetAsync("/things/action/actions", source.Token).ConfigureAwait(false);
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = JToken.Parse(message);
             json.Type.Should().Be(JTokenType.Array);
             ((JArray)json).Should().HaveCount(0);
@@ -165,40 +175,42 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task LongRunner()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
-            var client = host.GetTestServer().CreateClient();
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
             
-            var response = await client.PostAsync("/things/Lamp/actions", 
+            var response = await _client.PostAsync("/things/action/actions", 
                 new StringContent($@"
 {{ 
     ""longRun"": {{
     }} 
-}}"));
+}}"), source.Token).ConfigureAwait(false);
+            
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<LongRun>(message, new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             
-            json.Href.Should().StartWith("/things/lamp/actions/longRun/");
+            json.Href.Should().StartWith("/things/action/actions/longRun/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
 
-            await Task.Delay(3_000);
+            await Task.Delay(3_000).ConfigureAwait(false);
 
-            response = await client.GetAsync($"/things/lamp/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response = await _client.GetAsync($"/things/action/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}", source.Token)
+                .ConfigureAwait(false);
+            
             message = await response.Content.ReadAsStringAsync();
             json = JsonConvert.DeserializeObject<LongRun>(message, new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             
-            json.Href.Should().StartWith("/things/lamp/actions/longRun/");
+            json.Href.Should().StartWith("/things/action/actions/longRun/");
             json.Status.Should().NotBeNullOrEmpty();
             json.Status.Should().Be("completed");
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
@@ -209,34 +221,36 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Fact]
         public async Task CancelAction()
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync();
-            var client = host.GetTestServer().CreateClient();
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
             
-            var response = await client.PostAsync("/things/Lamp/actions", 
+            var response = await _client.PostAsync("/things/action/actions", 
                 new StringContent($@"
 {{ 
     ""LongRun"": {{
     }} 
-}}"));
+}}"), source.Token).ConfigureAwait(false);
+            
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<LongRun>(message, new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             
-            json.Href.Should().StartWith("/things/lamp/actions/longRun/");
+            json.Href.Should().StartWith("/things/action/actions/longRun/");
             json.Status.Should().NotBeNullOrEmpty();
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
 
-            response = await client.DeleteAsync($"/things/lamp/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response = await _client.DeleteAsync($"/things/action/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}", source.Token)
+                .ConfigureAwait(false);
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
             
-            response = await client.GetAsync($"/things/lamp/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}");
+            response = await _client.GetAsync($"/things/action/actions/longRun/{json.Href.Substring(json.Href.LastIndexOf('/') + 1)}", source.Token)
+                .ConfigureAwait(false);
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
         
