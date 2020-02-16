@@ -50,7 +50,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         private static Action<object, object> GetSetMethod(PropertyInfo property, ThingPropertyAttribute? thingPropertyAttribute)
         {
             if ((thingPropertyAttribute != null && thingPropertyAttribute.IsReadOnly)
-                || !property.CanWrite)
+                || !property.CanWrite || !property.SetMethod.IsPublic) 
             {
                 return null;
             }

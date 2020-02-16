@@ -9,6 +9,13 @@ namespace MultiThing.Things
 {
     public class ExampleDimmableLight : Thing
     {
+        private readonly ILogger<ExampleDimmableLight> _logger;
+        
+        public ExampleDimmableLight(ILogger<ExampleDimmableLight> logger)
+        {
+            _logger = logger;
+        }
+        
         public override string Name => "my-lamp-1234";
 
         public override string Title => "My Lamp";
@@ -27,11 +34,13 @@ namespace MultiThing.Things
             {
                 _on = value;
                 
-                Console.WriteLine($"On-State is now {_on}");
+                _logger.LogInformation("On-State is now {on}", _on);
+                OnPropertyChanged();
             }
         }
 
         private int _brightness = 50;
+
 
         [ThingProperty(Type = new []{ "BrightnessProperty" }, Title = "Brightness", Description = "The level of light from 0-100",
             Minimum = 0, Maximum = 100, Unit = "percent")]
@@ -41,8 +50,8 @@ namespace MultiThing.Things
             set
             {
                 _brightness = value;
-
-                Console.WriteLine($"Brightness is now {_brightness}");
+                _logger.LogInformation("Brightness is now {brightness}", _brightness);
+                OnPropertyChanged();
             }
         }
 

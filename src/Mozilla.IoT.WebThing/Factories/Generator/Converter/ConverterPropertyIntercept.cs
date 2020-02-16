@@ -43,7 +43,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _isObjectStart = true;
             }
 
-            var propertyName = thingPropertyAttribute?.Name ?? propertyInfo.Name;
+            var propertyName = _options.GetPropertyName(thingPropertyAttribute?.Name ?? propertyInfo.Name);
             var propertyType = propertyInfo.PropertyType;
             var jsonType = GetJsonType(propertyType);
             if (jsonType == null)
@@ -59,7 +59,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     thingPropertyAttribute.Title);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Description),
                     thingPropertyAttribute.Description);
-                _jsonWriter.PropertyWithNullableValue("ReadOnly", thingPropertyAttribute.IsReadOnly);
+                var readOnly = thingPropertyAttribute.IsReadOnly || !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic;
+                _jsonWriter.PropertyWithNullableValue("ReadOnly", readOnly);
                 _jsonWriter.PropertyWithNullableValue("Type", jsonType);
                 _jsonWriter.PropertyEnum("@enum", propertyType, thingPropertyAttribute.Enum);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Unit), thingPropertyAttribute.Unit);
@@ -75,7 +76,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         thingPropertyAttribute.MultipleOfValue);
                 }
             }
-            
+            else
+            {
+                if (!propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic)
+                {
+                    _jsonWriter.PropertyWithNullableValue("ReadOnly", true);
+                }
+            }
             
 
             _jsonWriter.StartArray("Links");
@@ -83,7 +90,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             _jsonWriter.StartObject();
 
             _jsonWriter.PropertyWithValue("href",
-                $"/things/{_options.GetPropertyName(thing.Name)}/properties/{_options.GetPropertyName(propertyName)}");
+                $"/things/{_options.GetPropertyName(thing.Name)}/properties/{propertyName}");
 
             _jsonWriter.EndObject();
             _jsonWriter.EndArray();

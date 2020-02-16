@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -28,8 +30,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
-            
-            var option = ThingConverter.Options;;
+
+            var option = service.GetRequiredService<JsonSerializerOptions>();
             
             var actionName = context.GetRouteData<string>("action");
             var id = Guid.Parse(context.GetRouteData<string>("id"));

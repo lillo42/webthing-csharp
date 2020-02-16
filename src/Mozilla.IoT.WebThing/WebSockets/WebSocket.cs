@@ -85,42 +85,53 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         .ReceiveAsync(segment, cancellation)
                         .ConfigureAwait(false);
 
-                    var json = JsonSerializer.Deserialize<JsonElement>(segment.Slice(0, received.Count), jsonOptions);
-
-                    if (!json.TryGetProperty("messageType", out var messageType))
+                    if (received.CloseStatus.HasValue)
                     {
-                        logger.LogInformation("Web Socket request without messageType");
-                        await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
-                            .ConfigureAwait(false);
-                        continue;
-                    }
-                    
-                    if (!json.TryGetProperty("data", out var data))
-                    {
-                        logger.LogInformation("Web Socket request without data. [Message Type: {messageType}]", messageType.GetString());
-                        await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
-                            .ConfigureAwait(false);
+                        logger.LogInformation("Going to close socket. [Thing: {name}]", thing.Name);
                         continue;
                     }
 
-                    if (!actions.TryGetValue(messageType.GetString(), out var action))
-                    {
-                        logger.LogInformation("Invalid Message Type: {messageType}", messageType.GetString());
-                        await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
-                            .ConfigureAwait(false);
-                        continue;
-                    }
-
+                    var messageTypeString = string.Empty;
                     try
                     {
+                        var json = JsonSerializer.Deserialize<JsonElement>(segment.Slice(0, received.Count), jsonOptions);
+
+                        if (!json.TryGetProperty("messageType", out var messageType))
+                        {
+                            logger.LogInformation("Web Socket request without messageType");
+                            await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
+                                .ConfigureAwait(false);
+                            continue;
+                        }
+                        
+                        if (!json.TryGetProperty("data", out var data))
+                        {
+                            logger.LogInformation("Web Socket request without data. [Message Type: {messageType}]", messageType.GetString());
+                            await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
+                                .ConfigureAwait(false);
+                            continue;
+                        }
+
+                        messageTypeString = messageType.GetString();
+                        if (!actions.TryGetValue(messageType.GetString(), out var action))
+                        {
+                            logger.LogInformation("Invalid Message Type: {messageType}", messageType.GetString());
+                            await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
+                                .ConfigureAwait(false);
+                            continue;
+                        }
+
                         using var scope = service.CreateScope();
                         scope.ServiceProvider.GetRequiredService<ThingObserverResolver>().Observer = observer;
                         await action.ExecuteAsync(socket, thing, data, jsonOptions, scope.ServiceProvider, cancellation)
                             .ConfigureAwait(false);
+
+                        messageTypeString = string.Empty;
+
                     }
                     catch (Exception e)
                     {
-                        logger.LogError(e, "Error to execute Web Socket Action: {action}", messageType.GetString());
+                        logger.LogError(e, "Error to execute Web Socket Action: {action}", messageTypeString);
                     }
                 }
             }

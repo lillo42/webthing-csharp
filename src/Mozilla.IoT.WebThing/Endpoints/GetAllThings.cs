@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Converts;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -31,11 +32,13 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 }
             }
             
-            logger.LogTrace("Found {counter} things", things.Count());
+            logger.LogInformation("Found {counter} things", things.Count());
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, things, ThingConverter.Options, context.RequestAborted);
+            return JsonSerializer.SerializeAsync(context.Response.Body, things, 
+                service.GetRequiredService<ThingOption>().ToJsonSerializerOptions(), 
+                context.RequestAborted);
         }
     }
 }
