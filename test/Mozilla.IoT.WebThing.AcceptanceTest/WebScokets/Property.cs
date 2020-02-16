@@ -1,12 +1,12 @@
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -14,24 +14,36 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {
     public class Property
     {
+        private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
+        private readonly WebSocketClient _webSocketClient;
+        private readonly HttpClient _client;
+        private readonly Uri _uri;
+        public Property()
+        {
+            var host = Program.GetHost().GetAwaiter().GetResult();
+            _client = host.GetTestServer().CreateClient();
+            _webSocketClient = host.GetTestServer().CreateWebSocketClient();
+
+            _uri =  new UriBuilder(_client.BaseAddress)
+            {
+                Scheme = "ws",
+                Path = "/things/web-socket-property"
+            }.Uri;
+        }
+        
         [Theory]
         [InlineData("on", true)]
         [InlineData("brightness", 10)]
         public async Task SetProperties(string property, object value)
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync()
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var socket = await _webSocketClient.ConnectAsync(_uri, source.Token)
                 .ConfigureAwait(false);
-            var client = host.GetTestServer().CreateClient();
-            var webSocketClient = host.GetTestServer().CreateWebSocketClient();
 
-            var uri =  new UriBuilder(client.BaseAddress)
-            {
-                Scheme = "ws",
-                Path = "/things/lamp"
-            }.Uri;
-            var socket = await webSocketClient.ConnectAsync(uri, CancellationToken.None);
-
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
             await socket
                 .SendAsync(Encoding.UTF8.GetBytes($@"
 {{
@@ -40,11 +52,14 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         ""{property}"": {value.ToString().ToLower()}
     }}
 }}"), WebSocketMessageType.Text, true,
-                    CancellationToken.None)
+                    source.Token)
                 .ConfigureAwait(false);
             
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
             var segment = new ArraySegment<byte>(new byte[4096]);
-            var result = await socket.ReceiveAsync(segment, CancellationToken.None)
+            var result = await socket.ReceiveAsync(segment, source.Token)
                 .ConfigureAwait(false);
 
             result.MessageType.Should().Be(WebSocketMessageType.Text);
@@ -62,12 +77,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         ""{property}"": {value.ToString().ToLower()}
     }}
 }}"));
-            var response = await client.GetAsync($"/things/Lamp/properties/{property}");
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var response = await _client.GetAsync($"/things/web-socket-property/properties/{property}", source.Token)
+                .ConfigureAwait(false);
+            
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Object);
@@ -82,19 +102,15 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         [InlineData("reader", 50, 0, "Read-only property")]
         public async Task SetPropertiesInvalidValue(string property, object value, object defaultValue, string errorMessage)
         {
-            var host = await Program.CreateHostBuilder(null)
-                .StartAsync()
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var socket = await _webSocketClient.ConnectAsync(_uri, source.Token)
                 .ConfigureAwait(false);
-            var client = host.GetTestServer().CreateClient();
-            var webSocketClient = host.GetTestServer().CreateWebSocketClient();
 
-            var uri =  new UriBuilder(client.BaseAddress)
-            {
-                Scheme = "ws",
-                Path = "/things/lamp"
-            }.Uri;
-            var socket = await webSocketClient.ConnectAsync(uri, CancellationToken.None);
-
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
             await socket
                 .SendAsync(Encoding.UTF8.GetBytes($@"
 {{
@@ -103,12 +119,12 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         ""{property}"": {value.ToString().ToLower()}
     }}
 }}"), WebSocketMessageType.Text, true,
-                    CancellationToken.None)
+                   source.Token)
                 .ConfigureAwait(false);
             
             
             var segment = new ArraySegment<byte>(new byte[4096]);
-            var result = await socket.ReceiveAsync(segment, CancellationToken.None)
+            var result = await socket.ReceiveAsync(segment, source.Token)
                 .ConfigureAwait(false);
 
             result.MessageType.Should().Be(WebSocketMessageType.Text);
@@ -128,12 +144,16 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
     }}
 }}"));
             
-            var response = await client.GetAsync($"/things/Lamp/properties/{property}");
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var response = await _client.GetAsync($"/things/web-socket-property/properties/{property}", source.Token)
+                .ConfigureAwait(false);
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var message = await response.Content.ReadAsStringAsync();
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Object);

@@ -18,7 +18,11 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddThings(Option)
-                .AddThing<LampThing>();
+                .AddThing<LampThing>()
+                .AddThing<PropertyThing>()
+                .AddThing<EventThing>()
+                .AddThing<ActionThing>()
+                .AddThing<WebSocketPropertyThing>();
 
             services.AddWebSockets(o => { });
         }
