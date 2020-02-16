@@ -6,7 +6,6 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
 {
     public class EventThing : Thing
     {
-        private int _counter = 0;
         public EventThing()
         {
             Task.Factory.StartNew(() =>
@@ -15,7 +14,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
                 {
                     Task.Delay(3_000).GetAwaiter().GetResult();
                     var @event = Overheated;
-                    @event?.Invoke(this, _counter++);
+                    @event?.Invoke(this, 0);
                 }
             });
             
@@ -25,7 +24,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
                 {
                     Task.Delay(4_000).GetAwaiter().GetResult();
                     var @event = OtherEvent;
-                    @event?.Invoke(this, _counter.ToString());
+                    @event?.Invoke(this, 1.ToString());
                 }
             });
         }
