@@ -24,7 +24,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
                 .AddThing<ActionThing>()
                 .AddThing<WebSocketPropertyThing>()
                 .AddThing<PropertyTypeThing>()
-                .AddThing<PropertyEnumThing>();
+                .AddThing<PropertyEnumThing>()
+                .AddThing<WebSocketPropertyTypeThing>()
+                .AddThing<WebSocketPropertyEnumThing>();
 
             services.AddWebSockets(o => { });
         }

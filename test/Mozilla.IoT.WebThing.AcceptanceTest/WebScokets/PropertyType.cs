@@ -31,7 +31,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             _uri =  new UriBuilder(_client.BaseAddress)
             {
                 Scheme = "ws",
-                Path = "/things/property-type"
+                Path = "/things/web-socket-property-type"
             }.Uri;
         }
         
@@ -96,7 +96,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync($"/things/property-type/properties/{property}", source.Token)
+            var response = await _client.GetAsync($"/things/web-socket-property-type/properties/{property}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -180,7 +180,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync($"/things/property-type/properties/{property}", source.Token)
+            var response = await _client.GetAsync($"/things/web-socket-property-type/properties/{property}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
