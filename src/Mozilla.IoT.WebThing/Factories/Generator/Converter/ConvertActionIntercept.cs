@@ -73,7 +73,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     {
                         continue;
                     }
-                    
+
                     _jsonWriter.StartObject(parameter.Name!);
                     var jsonType = GetJsonType(parameter.ParameterType);
 
@@ -116,7 +116,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 
             _jsonWriter.StartArray("Links");
             _jsonWriter.StartObject();
-            _jsonWriter.PropertyWithValue("href", $"/things/{_options.GetPropertyName(thing.Name)}/actions/{_options.GetPropertyName(name)}");
+            _jsonWriter.PropertyWithValue("href",
+                $"/things/{_options.GetPropertyName(thing.Name)}/actions/{_options.GetPropertyName(name)}");
             _jsonWriter.EndObject();
             _jsonWriter.EndArray();
             _jsonWriter.EndObject();
@@ -130,7 +131,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
 
             if (type == typeof(string)
-                || type == typeof(DateTime))
+                || type == typeof(DateTime)
+                || type == typeof(DateTimeOffset))
             {
                 return "string";
             }
@@ -139,7 +141,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             {
                 return "boolean";
             }
-            
+
             if (type == typeof(int)
                 || type == typeof(sbyte)
                 || type == typeof(byte)
@@ -153,7 +155,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
             
             if (type == typeof(double)
-                || type == typeof(float))
+                || type == typeof(float)
+                || type == typeof(decimal))
             {
                 return "number";
             }

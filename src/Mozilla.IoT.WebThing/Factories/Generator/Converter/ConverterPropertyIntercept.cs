@@ -106,7 +106,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
 
             if (type == typeof(string)
-                || type == typeof(DateTime))
+                || type == typeof(DateTime)
+                || type == typeof(DateTimeOffset))
             {
                 return "string";
             }
@@ -129,7 +130,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
             
             if (type == typeof(double)
-                || type == typeof(float))
+                || type == typeof(float)
+                || type == typeof(decimal))
             {
                 return "number";
             }

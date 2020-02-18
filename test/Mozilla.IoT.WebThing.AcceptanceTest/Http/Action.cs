@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;

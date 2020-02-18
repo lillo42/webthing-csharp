@@ -113,12 +113,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 
             if (type == typeof(short))
             {
-                return LongJsonMapper.Instance;
+                return ShortJsonMapper.Instance;
             }
 
             if (type == typeof(ushort))
             {
-                return ULongJsonMapper.Instance;
+                return UShortJsonMapper.Instance;
             }
             
             if (type == typeof(double))
@@ -151,7 +151,206 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 return DateTimeJsonMapper.Instance;
             }
             
+            if (type == typeof(DateTimeOffset))
+            {
+                return DateTimeOffsetJsonMapper.Instance;
+            }
+            
+            
             throw new Exception();
+        }
+        
+        private static object[] Cast(object?[] enums, Type type)
+        {
+            if (enums == null)
+            {
+                return null;
+            }
+
+            var result = new object?[enums.Length];
+            if (type == typeof(string))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToString(enums[i]);
+                }
+            }
+
+            if(type == typeof(bool))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToBoolean(enums[i]);
+                }
+            }
+
+            if (type == typeof(int))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToInt32(enums[i]);
+                }
+            }
+            
+            if (type == typeof(uint))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToUInt32(enums[i]);
+                }
+            }
+
+            if (type == typeof(long))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToInt64(enums[i]);
+                }
+            }
+
+            if (type == typeof(ulong))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToUInt64(enums[i]);
+                }
+            }
+
+            if (type == typeof(short))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToInt16(enums[i]);
+                }
+            }
+
+            if (type == typeof(ushort))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToUInt16(enums[i]);
+                }
+            }
+            
+            if (type == typeof(double))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToDouble(enums[i]);
+                }
+            }
+
+            if (type == typeof(float))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToSingle(enums[i]);
+                }
+            }
+            
+            if (type == typeof(byte))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToByte(enums[i]);
+                }
+            }
+            
+            if (type == typeof(sbyte))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToSByte(enums[i]);
+                }
+            }
+            
+            if (type == typeof(decimal))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToDecimal(enums[i]);
+                }
+            }
+            
+            if (type == typeof(DateTime))
+            {
+                for (var i = 0; i < enums.Length; i++)
+                {
+                    if (enums[i] == null)
+                    {
+                        result[i] = null;
+                    }
+                    
+                    result[i] = Convert.ToDateTime(enums[i]);
+                }
+            }
+
+            return result;
         }
         
         public void After(Thing thing)

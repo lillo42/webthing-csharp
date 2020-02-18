@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json;
@@ -352,6 +353,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             
             StartArray(propertyName);
 
+            enums = enums.Distinct().ToArray();
             if (propertyType == typeof(string))
             {
                 foreach (var @enum in enums)
@@ -362,7 +364,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((string)@enum);
+                        Value(Convert.ToString(@enum));
                     }
                 }
             }
@@ -376,14 +378,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((bool)@enum);
+                        Value(Convert.ToBoolean(@enum));
                     }
                 }
             }
-            else if (propertyType == typeof(int)
-                     || propertyType == typeof(byte)
-                     || propertyType == typeof(short)
-                     || propertyType == typeof(ushort))
+            else if (propertyType == typeof(sbyte))
             {
                 foreach (var @enum in enums)
                 {
@@ -393,7 +392,63 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((int)@enum);
+                        Value(Convert.ToSByte(@enum));
+                    }
+                }
+            }
+            else if (propertyType == typeof(byte))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value(Convert.ToByte(@enum));
+                    }
+                }
+            }
+            else if (propertyType == typeof(short))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value(Convert.ToInt16(@enum));
+                    }
+                }
+            }
+            else if (propertyType == typeof(ushort))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value(Convert.ToUInt16(@enum));
+                    }
+                }
+            }
+            else if (propertyType == typeof(int))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        Value(Convert.ToInt32(@enum));
                     }
                 }
             }
@@ -407,7 +462,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((uint)@enum);
+                        Value(Convert.ToUInt32(@enum));
                     }
                 }
             }
@@ -421,7 +476,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((long)@enum);
+                        Value(Convert.ToInt64(@enum));
                     }
                 }
             }
@@ -435,7 +490,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((ulong)@enum);
+                        Value(Convert.ToUInt64(@enum));
                     }
                 }
             }
@@ -449,7 +504,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((double)@enum);
+                        Value(Convert.ToDouble(@enum));
                     }
                 }
             }
@@ -463,7 +518,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((float)@enum);
+                        Value(Convert.ToSingle(@enum));
                     }
                 }
             }

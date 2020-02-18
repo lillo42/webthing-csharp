@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Mozilla.IoT.WebThing
@@ -50,7 +51,15 @@ namespace Mozilla.IoT.WebThing
                 }
             }
 
-            if (_enums != null && _enums.All(x => !x.Equals(value)))
+            if (_enums != null && !_enums.Any(x =>
+            {
+                if (value == null && x == null)
+                {
+                    return true;
+                }
+                
+                return x.Equals(value);
+            }))
             {
                 return false;
             }
