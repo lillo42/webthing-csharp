@@ -76,11 +76,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 thingPropertyAttribute?.MinimumValue,
                 thingPropertyAttribute?.MaximumValue,
                 thingPropertyAttribute?.MultipleOfValue,
-                Cast(thingPropertyAttribute?.Enum, propertyInfo.PropertyType));
+                Cast(thingPropertyAttribute?.Enum, propertyInfo.PropertyType),
+                Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null);
         }
 
         private static IJsonMapper CreateMapper(Type type)
         {
+            type = Nullable.GetUnderlyingType(type) ?? type;
             if (type == typeof(string))
             {
                 return StringJsonMapper.Instance;
@@ -166,6 +168,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             {
                 return null;
             }
+
+            type = Nullable.GetUnderlyingType(type) ?? type;
 
             var result = new object?[enums.Length];
             if (type == typeof(string))

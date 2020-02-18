@@ -7,7 +7,15 @@ namespace Mozilla.IoT.WebThing.Mapper
         private static DoubleJsonMapper? s_instance;
         public static DoubleJsonMapper Instance => s_instance ??= new DoubleJsonMapper();
 
-        public object Map(object value) 
-            => ((JsonElement)value).GetDouble();
+        public object Map(object value)
+        {
+            var element = (JsonElement)value;
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return element.GetDouble();
+        }
     }
 }

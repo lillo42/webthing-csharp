@@ -7,7 +7,15 @@ namespace Mozilla.IoT.WebThing.Mapper
         private static IntJsonMapper? s_instance;
         public static IntJsonMapper Instance => s_instance ??= new IntJsonMapper();
 
-        public object Map(object value) 
-            => ((JsonElement)value).GetInt32();
+        public object Map(object value)
+        {
+            var element = (JsonElement)value;
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return element.GetInt32();
+        }
     }
 }

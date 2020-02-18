@@ -7,7 +7,15 @@ namespace Mozilla.IoT.WebThing.Mapper
         private static FloatJsonMapper? s_instance;
         public static FloatJsonMapper Instance => s_instance ??= new FloatJsonMapper();
 
-        public object Map(object value) 
-            => ((JsonElement)value).GetSingle();
+        public object Map(object value)
+        {
+            var element = (JsonElement)value;
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return element.GetSingle();
+        }
     }
 }

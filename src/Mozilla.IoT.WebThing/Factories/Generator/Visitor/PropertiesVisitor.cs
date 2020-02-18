@@ -69,7 +69,21 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
                    || type == typeof(float)
                    || type == typeof(decimal)
                    || type == typeof(DateTime)
-                   || type == typeof(DateTimeOffset);
+                   || type == typeof(DateTimeOffset)
+                   || type == typeof(bool?)
+                   || type == typeof(int?)
+                   || type == typeof(byte?)
+                   || type == typeof(short?)
+                   || type == typeof(long?)
+                   || type == typeof(sbyte?)
+                   || type == typeof(uint?)
+                   || type == typeof(ulong?)
+                   || type == typeof(ushort?)
+                   || type == typeof(double?)
+                   || type == typeof(float?)
+                   || type == typeof(decimal?)
+                   || type == typeof(DateTime?)
+                   || type == typeof(DateTimeOffset?);
     }
         
         private static bool IsThingProperty(string name)

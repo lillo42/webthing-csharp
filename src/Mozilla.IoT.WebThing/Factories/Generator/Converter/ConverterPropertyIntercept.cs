@@ -4,6 +4,8 @@ using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
+using static Mozilla.IoT.WebThing.Factories.Generator.Converter.Helper;
+
 namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
     internal class ConverterPropertyIntercept : IPropertyIntercept
@@ -98,45 +100,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             _jsonWriter.EndObject();
         }
 
-        private static string? GetJsonType(Type? type)
-        {
-            if (type == null)
-            {
-                return null;
-            }
-
-            if (type == typeof(string)
-                || type == typeof(DateTime)
-                || type == typeof(DateTimeOffset))
-            {
-                return "string";
-            }
-
-            if (type == typeof(bool))
-            {
-                return "boolean";
-            }
-            
-            if (type == typeof(int)
-                || type == typeof(byte)
-                || type == typeof(sbyte)
-                || type == typeof(short)
-                || type == typeof(long)
-                || type == typeof(uint)
-                || type == typeof(ulong)
-                || type == typeof(ushort))
-            {
-                return "integer";
-            }
-            
-            if (type == typeof(double)
-                || type == typeof(float)
-                || type == typeof(decimal))
-            {
-                return "number";
-            }
-
-            return null;
-        }
+       
     }
 }

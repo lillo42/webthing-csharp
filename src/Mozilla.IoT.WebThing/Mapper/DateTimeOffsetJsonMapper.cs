@@ -7,7 +7,15 @@ namespace Mozilla.IoT.WebThing.Mapper
         private static DateTimeOffsetJsonMapper? s_instance;
         public static DateTimeOffsetJsonMapper Instance => s_instance ??= new DateTimeOffsetJsonMapper();
 
-        public object Map(object value) 
-            => ((JsonElement)value).GetDateTimeOffset();
+        public object Map(object value)
+        {
+            var element = (JsonElement)value;
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return element.GetDateTimeOffset();
+        }
     }
 }

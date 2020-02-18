@@ -17,6 +17,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private bool? _nullableBool;
+        public bool? NullableBool
+        {
+            get => _nullableBool;
+            set
+            {
+                _nullableBool = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private byte _numberByte;
         public byte NumberByte
         {
@@ -28,6 +39,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private byte? _nullableByte;
+        public byte? NullableByte
+        {
+            get => _nullableByte;
+            set
+            {
+                _nullableByte = value;
+                OnPropertyChanged();
+            }
+        }
+
         private sbyte _numberSByte;
         public sbyte NumberSByte
         {
@@ -35,6 +57,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             set
             {
                 _numberSByte = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private sbyte? _nullableSByte;
+        public sbyte? NullableSByte
+        {
+            get => _nullableSByte;
+            set
+            {
+                _nullableSByte = value;
                 OnPropertyChanged();
             }
         }
@@ -50,6 +83,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private short? _nullableShort;
+        public short? NullableShort
+        {
+            get => _nullableShort;
+            set
+            {
+                _nullableShort = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private ushort _numberUShort;
         public ushort NumberUShort
         {
@@ -57,6 +101,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             set
             {
                 _numberUShort = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private ushort? _nullableUShort;
+        public ushort? NullableUShort
+        {
+            get => _nullableUShort;
+            set
+            {
+                _nullableUShort = value;
                 OnPropertyChanged();
             }
         }
@@ -72,6 +127,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private int? _nullableInt;
+        public int? NullableInt
+        {
+            get => _nullableInt;
+            set
+            {
+                _nullableInt = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private uint _numberUInt;
         public uint NumberUInt
         {
@@ -79,6 +145,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             set
             {
                 _numberUInt = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private uint? _nullableUInt;
+        public uint? NullableUInt
+        {
+            get => _nullableUInt;
+            set
+            {
+                _nullableUInt = value;
                 OnPropertyChanged();
             }
         }
@@ -94,6 +171,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private long? _nullableLong;
+        public long? NullableLong
+        {
+            get => _nullableLong;
+            set
+            {
+                _nullableLong = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private ulong _numberULong;
         public ulong NumberULong
         {
@@ -101,6 +189,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             set
             {
                 _numberULong = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private ulong? _nullableULong;
+        public ulong? NullableULong
+        {
+            get => _nullableULong;
+            set
+            {
+                _nullableULong = value;
                 OnPropertyChanged();
             }
         }
@@ -116,6 +215,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private double? _nullableDouble;
+        public double? NullableDouble
+        {
+            get => _nullableDouble;
+            set
+            {
+                _nullableDouble = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private float _numberFloat;
         public float NumberFloat
         {
@@ -127,6 +237,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private float? _nullableFloat;
+        public float? NullableFloat
+        {
+            get => _nullableFloat;
+            set
+            {
+                _nullableFloat = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private decimal _numberDecimal;
         public decimal NumberDecimal
         {
@@ -134,6 +255,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             set
             {
                 _numberDecimal = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private decimal? _nullableDecimal;
+        public decimal? NullableDecimal
+        {
+            get => _nullableDecimal;
+            set
+            {
+                _nullableDecimal = value;
                 OnPropertyChanged();
             }
         }
@@ -160,6 +292,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             }
         }
         
+        private DateTime? _nullableData;
+        public DateTime? NullableData
+        {
+            get => _nullableData;
+            set
+            {
+                _nullableData = value;
+                OnPropertyChanged();
+            }
+        }
+        
         private DateTimeOffset _dataOffset;
         public DateTimeOffset DataOffset
         {
@@ -167,6 +310,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             set
             {
                 _dataOffset = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private DateTimeOffset? _nullableDataOffset;
+        public DateTimeOffset? NullableDataOffset
+        {
+            get => _nullableDataOffset;
+            set
+            {
+                _nullableDataOffset = value;
                 OnPropertyChanged();
             }
         }

@@ -7,7 +7,15 @@ namespace Mozilla.IoT.WebThing.Mapper
         private static ULongJsonMapper? s_instance;
         public static ULongJsonMapper Instance => s_instance ??= new ULongJsonMapper();
 
-        public object Map(object value) 
-            => ((JsonElement)value).GetUInt64();
+        public object Map(object value)
+        {
+            var element = (JsonElement)value;
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return element.GetUInt64();
+        }
     }
 }
