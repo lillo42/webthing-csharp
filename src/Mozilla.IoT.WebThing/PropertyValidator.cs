@@ -66,7 +66,7 @@ namespace Mozilla.IoT.WebThing
                     return true;
                 }
                 
-                return x.Equals(value);
+                return value.Equals(x);
             }))
             {
                 return false;

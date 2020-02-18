@@ -65,10 +65,43 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         [InlineData("numberFloat", float.MinValue)]
         [InlineData("bool", true)]
         [InlineData("bool", false)]
+        [InlineData("nullableBool", null)]
+        [InlineData("nullableBool", true)]
+        [InlineData("nullableBool", false)] 
+        [InlineData("nullableByte", null)]
+        [InlineData("nullableByte", byte.MaxValue)]
+        [InlineData("nullableByte", byte.MinValue)]
+        [InlineData("nullableSByte", null)]
+        [InlineData("nullableSByte", sbyte.MinValue)]
+        [InlineData("nullableSByte", sbyte.MaxValue)]
+        [InlineData("nullableShort", null)]
+        [InlineData("nullableShort", short.MinValue)]
+        [InlineData("nullableShort", short.MaxValue)]
+        [InlineData("nullableUShort", null)]
+        [InlineData("nullableUShort", ushort.MinValue)]
+        [InlineData("nullableUShort", ushort.MaxValue)]
+        [InlineData("nullableInt", null)]
+        [InlineData("nullableInt", int.MinValue)]
+        [InlineData("nullableInt", int.MaxValue)]
+        [InlineData("nullableUInt", null)]
+        [InlineData("nullableUInt", uint.MinValue)]
+        [InlineData("nullableUInt", uint.MaxValue)]
+        [InlineData("nullableLong", null)]
+        [InlineData("nullableLong", long.MinValue)]
+        [InlineData("nullableLong", long.MaxValue)]
+        [InlineData("nullableULong", null)]
+        [InlineData("nullableULong", ulong.MinValue)]
+        [InlineData("nullableULong", ulong.MaxValue)]
+        [InlineData("nullableDouble", null)]
+        [InlineData("nullableDouble", double.MinValue)]
+        [InlineData("nullableDouble", double.MaxValue)]
+        [InlineData("nullableFloat", null)]
+        [InlineData("nullableFloat", float.MinValue)]
+        [InlineData("nullableFloat", float.MaxValue)]
+        [InlineData("nullableDecimal", null)]
         public async Task SetProperties(string property, object value)
         {
-            value = value.ToString().ToLower();
-            
+            value = value != null ? value.ToString().ToLower() : "null";
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
@@ -126,7 +159,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Type.Should().Be(JTokenType.Object);
             FluentAssertions.Json.JsonAssertionExtensions
                 .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value.ToString().ToLower()}  }}"));
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value}  }}"));
         }
         
         
@@ -134,8 +167,11 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         [InlineData("text", "ola")]
         [InlineData("text", "ass")]
         [InlineData("text", "aaa")]
-        public async Task SetPropertiesStringValue(string property, object value)
+        [InlineData("text", null)]
+        public async Task SetStringValue(string property, string value)
         {
+            value = value != null ? $"\"{value}\"" : "null";
+
             value = value.ToString().ToLower();
 
             var source = new CancellationTokenSource();
@@ -151,7 +187,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {{
     ""messageType"": ""setProperty"",
     ""data"": {{
-        ""{property}"": ""{value}""
+        ""{property}"": {value}
     }}
 }}"), WebSocketMessageType.Text, true,
                     source.Token)
@@ -176,7 +212,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {{
     ""messageType"": ""propertyStatus"",
     ""data"": {{
-        ""{property}"": ""{value}""
+        ""{property}"": {value}
     }}
 }}"));
             source = new CancellationTokenSource();
@@ -195,7 +231,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Type.Should().Be(JTokenType.Object);
             FluentAssertions.Json.JsonAssertionExtensions
                 .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": ""{value}""  }}"));
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value}  }}"));
         }
     }
 }

@@ -77,7 +77,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 thingPropertyAttribute?.MaximumValue,
                 thingPropertyAttribute?.MultipleOfValue,
                 Cast(thingPropertyAttribute?.Enum, propertyInfo.PropertyType),
-                Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null);
+                propertyInfo.PropertyType == typeof(string) || Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null);
         }
 
         private static IJsonMapper CreateMapper(Type type)
@@ -179,6 +179,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToString(enums[i]);
@@ -192,6 +193,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToBoolean(enums[i]);
@@ -205,6 +207,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToInt32(enums[i]);
@@ -218,6 +221,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToUInt32(enums[i]);
@@ -231,6 +235,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToInt64(enums[i]);
@@ -244,6 +249,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToUInt64(enums[i]);
@@ -257,6 +263,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToInt16(enums[i]);
@@ -270,6 +277,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToUInt16(enums[i]);
@@ -283,6 +291,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToDouble(enums[i]);
@@ -296,6 +305,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToSingle(enums[i]);
@@ -309,6 +319,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToByte(enums[i]);
@@ -322,6 +333,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToSByte(enums[i]);
@@ -335,6 +347,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToDecimal(enums[i]);
@@ -348,6 +361,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     if (enums[i] == null)
                     {
                         result[i] = null;
+                        continue;
                     }
                     
                     result[i] = Convert.ToDateTime(enums[i]);

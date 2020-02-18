@@ -55,9 +55,43 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [InlineData("numberFloat", float.MinValue)]
         [InlineData("bool", true)]
         [InlineData("bool", false)]
+        [InlineData("nullableBool", null)]
+        [InlineData("nullableBool", true)]
+        [InlineData("nullableBool", false)] 
+        [InlineData("nullableByte", null)]
+        [InlineData("nullableByte", byte.MaxValue)]
+        [InlineData("nullableByte", byte.MinValue)]
+        [InlineData("nullableSByte", null)]
+        [InlineData("nullableSByte", sbyte.MinValue)]
+        [InlineData("nullableSByte", sbyte.MaxValue)]
+        [InlineData("nullableShort", null)]
+        [InlineData("nullableShort", short.MinValue)]
+        [InlineData("nullableShort", short.MaxValue)]
+        [InlineData("nullableUShort", null)]
+        [InlineData("nullableUShort", ushort.MinValue)]
+        [InlineData("nullableUShort", ushort.MaxValue)]
+        [InlineData("nullableInt", null)]
+        [InlineData("nullableInt", int.MinValue)]
+        [InlineData("nullableInt", int.MaxValue)]
+        [InlineData("nullableUInt", null)]
+        [InlineData("nullableUInt", uint.MinValue)]
+        [InlineData("nullableUInt", uint.MaxValue)]
+        [InlineData("nullableLong", null)]
+        [InlineData("nullableLong", long.MinValue)]
+        [InlineData("nullableLong", long.MaxValue)]
+        [InlineData("nullableULong", null)]
+        [InlineData("nullableULong", ulong.MinValue)]
+        [InlineData("nullableULong", ulong.MaxValue)]
+        [InlineData("nullableDouble", null)]
+        [InlineData("nullableDouble", double.MinValue)]
+        [InlineData("nullableDouble", double.MaxValue)]
+        [InlineData("nullableFloat", null)]
+        [InlineData("nullableFloat", float.MinValue)]
+        [InlineData("nullableFloat", float.MaxValue)]
+        [InlineData("nullableDecimal", null)]
         public async Task PutNumber(string property, object value)
         {
-            value = value.ToString().ToLower();
+            value = value != null ? value.ToString().ToLower() : "null";
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
@@ -102,14 +136,16 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [InlineData("text", "ola")]
         [InlineData("text", "ass")]
         [InlineData("text", "aaa")]
+        [InlineData("text", null)]
         public async Task PutStringValue(string property, string value)
         {
-
+            value = value != null ? $"\"{value}\"" : "null";
+            
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
             var response = await _client.PutAsync($"/things/property-enum-type/properties/{property}", 
-                new StringContent($@"{{ ""{property}"": ""{value}""  }}"), source.Token)
+                new StringContent($@"{{ ""{property}"": {value}  }}"), source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -122,7 +158,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Type.Should().Be(JTokenType.Object);
             FluentAssertions.Json.JsonAssertionExtensions
                 .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": ""{value}""  }}"));
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value}  }}"));
 
             
             source = new CancellationTokenSource();
@@ -142,7 +178,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Type.Should().Be(JTokenType.Object);
             FluentAssertions.Json.JsonAssertionExtensions
                 .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": ""{value}""  }}"));
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value}  }}"));
         }
         
 
