@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -21,9 +22,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         
         public ActionType()
         {
+            _fixture = new Fixture();
             var host = Program.GetHost().GetAwaiter().GetResult();
             _client = host.GetTestServer().CreateClient();
-            _fixture = new Fixture();
         }
         
         [Fact]
@@ -48,7 +49,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.PostAsync("/things/action-type/run", 
+            var response = await _client.PostAsync("/things/action-type/actions/run", 
                 new StringContent($@"
 {{ 
     ""run"": {{
@@ -65,12 +66,12 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             ""double"": {@double},
             ""float"": {@float},
             ""decimal"": {@decimal},
-            ""string"": {@string},
-            ""dateTime"": {@dateTime},
-            ""dateTimeOffset"": {@dateTimeOffset}
+            ""string"": ""{@string}"",
+            ""dateTime"": ""{@dateTime:O}"",
+            ""dateTimeOffset"": ""{@dateTimeOffset:O}""
         }}
     }} 
-}}"), source.Token).ConfigureAwait(false);
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.Created);
