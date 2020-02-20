@@ -54,22 +54,18 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
         }
         
         public void RunNullVWithValidation(
-            bool? @bool,
-            [ThingParameter(Minimum = byte.MinValue, Maximum = byte.MaxValue, MultipleOf = 2)]byte? @byte,
-            [ThingParameter(Minimum = sbyte.MinValue, Maximum = sbyte.MaxValue, MultipleOf = 2)]sbyte? @sbyte,
-            [ThingParameter(Minimum = short.MinValue, Maximum = short.MaxValue, MultipleOf = 2)]short? @short,
-            [ThingParameter(Minimum = ushort.MinValue, Maximum = ushort.MaxValue, MultipleOf = 2)]ushort? @ushort,
-            [ThingParameter(Minimum = int.MinValue, Maximum = int.MaxValue, MultipleOf = 2)]int? @int,
-            [ThingParameter(Minimum = uint.MinValue, Maximum = uint.MaxValue, MultipleOf = 2)]uint? @uint,
-            [ThingParameter(Minimum = long.MinValue, Maximum = long.MaxValue, MultipleOf = 2)]long? @long,
-            [ThingParameter(Minimum = ulong.MinValue, Maximum = ulong.MaxValue, MultipleOf = 2)]ulong? @ulong,
-            [ThingParameter(Minimum = double.MinValue, Maximum = double.MaxValue, MultipleOf = 2)]double? @double,
-            [ThingParameter(Minimum = float.MinValue, Maximum = float.MaxValue, MultipleOf = 2)]float? @float,
-            [ThingParameter(Minimum = byte.MinValue, Maximum = byte.MaxValue, MultipleOf = 2)]decimal? @decimal,
-            string? @string,
-            DateTime? @dateTime,
-            DateTimeOffset? @dateTimeOffset,
-            [FromServices]ILogger<ActionTypeThing> logger
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]byte @byte,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]sbyte @sbyte,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]short @short,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]ushort @ushort,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]int @int,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]uint @uint,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]long @long,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]ulong @ulong,
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]float @float, 
+             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]double @double,
+             //[ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]decimal @decimal,
+             [FromServices]ILogger<ActionTypeThing> logger
         )
         {
             logger.LogInformation("Execution action....");

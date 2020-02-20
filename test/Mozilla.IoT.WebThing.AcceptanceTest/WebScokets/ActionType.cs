@@ -252,6 +252,98 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Data.RunNull.Input.DateTimeOffset.Should().Be(dateTimeOffset);
         }
         
+        
+        [Fact]
+        public async Task RunNullVWithValidationAction()
+        {
+            var @byte = (byte)10;
+            var @sbyte = (sbyte)10;
+            var @short = (short)10;
+            var @ushort = (ushort)10;
+            var @int = 10;
+            var @uint = (uint)10;
+            var @long = (long)10;
+            var @ulong = (ulong)10;
+            var @double = (double)10;
+            var @float = (float)10;
+            var @decimal = (decimal)10;
+            
+            
+            var host = await Program.CreateHostBuilder(null)
+                .StartAsync()
+                .ConfigureAwait(false);
+            var client = host.GetTestServer().CreateClient();
+            var webSocketClient = host.GetTestServer().CreateWebSocketClient();
+
+            var uri =  new UriBuilder(client.BaseAddress)
+            {
+                Scheme = "ws",
+                Path = "/things/action-type"
+            }.Uri;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var socket = await webSocketClient.ConnectAsync(uri, source.Token)
+                .ConfigureAwait(false);
+            
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            await socket
+                .SendAsync(Encoding.UTF8.GetBytes($@"
+{{
+    ""messageType"": ""requestAction"",
+    ""data"": {{
+        ""runNullVWithValidation"": {{
+            ""input"": {{
+                ""byte"": {@byte},
+                ""sbyte"": {@sbyte},
+                ""short"": {@short},
+                ""ushort"": {@ushort},
+                ""int"": {@int},
+                ""uint"": {@uint},
+                ""long"": {@long},
+                ""ulong"": {@ulong},
+                ""double"": {@double},
+                ""float"": {@float},
+                ""decimal"": {@decimal}
+            }}
+        }}
+    }}
+}}"), WebSocketMessageType.Text, true,
+                    source.Token)
+                .ConfigureAwait(false);
+            
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var segment = new ArraySegment<byte>(new byte[4096]);
+            var result = await socket.ReceiveAsync(segment, source.Token)
+                .ConfigureAwait(false);
+
+            result.MessageType.Should().Be(WebSocketMessageType.Text);
+            result.EndOfMessage.Should().BeTrue();
+            result.CloseStatus.Should().BeNull();
+
+            var json = JsonConvert.DeserializeObject<Message>(Encoding.UTF8.GetString(segment.Slice(0, result.Count)),
+                new JsonSerializerSettings {ContractResolver = new CamelCasePropertyNamesContractResolver()});
+           
+            json.MessageType.Should().Be("actionStatus");
+            json.Data.RunNullVWithValidation.Input.Byte.Should().Be(@byte);
+            json.Data.RunNullVWithValidation.Input.Sbyte.Should().Be(@sbyte);
+            json.Data.RunNullVWithValidation.Input.Short.Should().Be(@short);
+            json.Data.RunNullVWithValidation.Input.UShort.Should().Be(@ushort); 
+            json.Data.RunNullVWithValidation.Input.Int.Should().Be(@int);
+            json.Data.RunNullVWithValidation.Input.Uint.Should().Be(@uint);
+            json.Data.RunNullVWithValidation.Input.Long.Should().Be(@long);
+            json.Data.RunNullVWithValidation.Input.ULong.Should().Be(@ulong);
+            json.Data.RunNullVWithValidation.Input.Double.Should().Be(@double);
+            json.Data.RunNullVWithValidation.Input.Float.Should().Be(@float);
+           // json.Data.RunNullVWithValidation.Input.Decimal.Should().Be(@decimal);
+        }
         public class Message
         {
             public string MessageType { get; set; }
@@ -262,6 +354,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         {
             public Http.ActionType.Run Run { get; set; }
             public Http.ActionType.RunNull RunNull { get; set; }
+            
+            public Http.ActionType.Run RunNullVWithValidation { get; set; }
         }
             
     }

@@ -102,7 +102,71 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Input.DateTimeOffset.Should().Be(dateTimeOffset);
             json.Status.Should().NotBeNullOrEmpty();
         }
-        
+
+        [Fact]
+        public async Task RunNullVWithValidationAction()
+        {
+            var @byte = (byte)10;
+            var @sbyte = (sbyte)10;
+            var @short = (short)10;
+            var @ushort = (ushort)10;
+            var @int = 10;
+            var @uint = (uint)10;
+            var @long = (long)10;
+            var @ulong = (ulong)10;
+            var @double = (double)10;
+            var @float = (float)10;
+            var @decimal = (decimal)10;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action-type/actions/runNullVWithValidation", 
+                new StringContent($@"
+{{ 
+    ""runNullVWithValidation"": {{
+        ""input"": {{
+            ""byte"": {@byte},
+            ""sbyte"": {@sbyte},
+            ""short"": {@short},
+            ""ushort"": {@ushort},
+            ""int"": {@int},
+            ""uint"": {@uint},
+            ""long"": {@long},
+            ""ulong"": {@ulong},
+            ""double"": {@double},
+            ""float"": {@float},
+            ""decimal"": {@decimal}
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JsonConvert.DeserializeObject<Run>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Input.Should().NotBeNull();
+            json.Input.Byte.Should().Be(@byte);
+            json.Input.Sbyte.Should().Be(@sbyte);
+            json.Input.Short.Should().Be(@short);
+            json.Input.UShort.Should().Be(@ushort); 
+            json.Input.Int.Should().Be(@int);
+            json.Input.Uint.Should().Be(@uint);
+            json.Input.Long.Should().Be(@long);
+            json.Input.ULong.Should().Be(@ulong);
+            json.Input.Double.Should().Be(@double);
+            json.Input.Float.Should().Be(@float);
+//            json.Input.Decimal.Should().Be(@decimal);
+            json.Status.Should().NotBeNullOrEmpty();
+        }
+
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -195,7 +259,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             json.Input.DateTimeOffset.Should().Be(dateTimeOffset);
             json.Status.Should().NotBeNullOrEmpty();
         }
-        
+
         public class Run
         {
             public Input Input { get; set; }
