@@ -174,7 +174,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         next = il.DefineLabel();
                     
                         il.Emit(OpCodes.Ldarg_S, i);
-                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MinimumValue.Value);
+                        GreaterThan(il, validationParameter.MinimumValue.Value, parameter.ParameterType);
+                        
                         il.Emit(OpCodes.Bge_S, next.Value);
                     
                         il.Emit(OpCodes.Ldc_I4_0);
@@ -285,6 +286,26 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             }
             
             il.Emit(OpCodes.Ret);
+        }
+
+        private static void GreaterThan(ILGenerator il, double value, Type type)
+        {
+            if (type == typeof(byte))
+            {
+                var @byte = Convert.ToByte(value);
+                il.Emit(OpCodes.Ldc_I4_S, @byte);
+            }
+            else if (type == typeof(sbyte))
+            {
+                var @byte = Convert.ToSByte(value);
+                il.Emit(OpCodes.Ldc_I4_S, @byte);
+            }
+            else if (type == typeof(short))
+            {
+                var @byte = Convert.ToInt16(value);
+                il.Emit(OpCodes.Ldc_I4_S, @byte);
+            }
+            
         }
         
         private static bool IsNumber(Type type)

@@ -8,12 +8,12 @@ namespace Mozilla.IoT.WebThing
     {
         private readonly bool _isReadOnly;
         private readonly object[]? _enums;
-        private readonly float? _minimum;
-        private readonly float? _maximum;
-        private readonly float? _multipleOf;
+        private readonly double? _minimum;
+        private readonly double? _maximum;
+        private readonly int? _multipleOf;
         private readonly bool _acceptedNullableValue;
 
-        public PropertyValidator(bool isReadOnly, float? minimum, float? maximum, float? multipleOf, object[]? enums, bool acceptedNullableValue)
+        public PropertyValidator(bool isReadOnly, double? minimum, double? maximum, int? multipleOf, object[]? enums, bool acceptedNullableValue)
         {
             _isReadOnly = isReadOnly;
             _minimum = minimum;
@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing
                     return true;
                 }
                 
-                var comparer = Convert.ToSingle(value);
+                var comparer = Convert.ToDouble(value);
                 if (_minimum.HasValue && comparer < _minimum.Value)
                 {
                     return false;

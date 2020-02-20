@@ -306,7 +306,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
         }
         
-        public void PropertyNumber(string propertyName, Type propertyType, float? value)
+        public void PropertyNumber(string propertyName, Type propertyType, double? value)
             {
                 if (value == null)
                 {
