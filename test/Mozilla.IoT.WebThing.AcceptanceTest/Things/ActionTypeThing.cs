@@ -29,5 +29,27 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
         {
             logger.LogInformation("Execution action....");
         }
+        
+        public void RunNull(
+            bool? @bool,
+            byte? @byte,
+            sbyte? @sbyte,
+            short? @short,
+            ushort? @ushort,
+            int? @int,
+            uint? @uint,
+            long? @long,
+            ulong? @ulong,
+            double? @double,
+            float? @float,
+            decimal? @decimal,
+            string? @string,
+            DateTime? @dateTime,
+            DateTimeOffset? @dateTimeOffset,
+            [FromServices]ILogger<ActionTypeThing> logger
+        )
+        {
+            logger.LogInformation("Execution action....");
+        }
     }
 }
