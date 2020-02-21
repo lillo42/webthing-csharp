@@ -229,6 +229,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             response.Content.Headers.ContentType.ToString().Should().Be("application/json");
             
+            
             var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = JsonConvert.DeserializeObject<List<Events>>(message, new JsonSerializerSettings
             {
