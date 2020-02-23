@@ -7,7 +7,16 @@ namespace Mozilla.IoT.WebThing.Mapper
         private static UShortJsonMapper? s_instance;
         public static UShortJsonMapper Instance => s_instance ??= new UShortJsonMapper();
 
-        public object Map(object value) 
-            => ((JsonElement)value).GetUInt16();
+        public object Map(object value)
+        {
+            var element = (JsonElement)value;
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return element.GetUInt16();
+        }
+        
     }
 }

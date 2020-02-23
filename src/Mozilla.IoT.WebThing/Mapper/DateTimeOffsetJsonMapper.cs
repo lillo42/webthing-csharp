@@ -2,10 +2,10 @@ using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Mapper
 {
-    public class SByteJsonMapper : IJsonMapper
+    public class DateTimeOffsetJsonMapper : IJsonMapper
     {
-        private static SByteJsonMapper? s_instance;
-        public static SByteJsonMapper Instance => s_instance ??= new SByteJsonMapper();
+        private static DateTimeOffsetJsonMapper? s_instance;
+        public static DateTimeOffsetJsonMapper Instance => s_instance ??= new DateTimeOffsetJsonMapper();
 
         public object Map(object value)
         {
@@ -15,7 +15,7 @@ namespace Mozilla.IoT.WebThing.Mapper
                 return null;
             }
 
-            return element.GetSByte();
+            return element.GetDateTimeOffset();
         }
     }
 }

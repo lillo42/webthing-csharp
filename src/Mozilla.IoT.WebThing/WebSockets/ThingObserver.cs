@@ -47,9 +47,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
         {
+            var data = _thing.ThingContext.Properties.GetProperties(property.PropertyName);
             _logger.LogInformation("Event add received, going to notify Web Socket");
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
-                    _thing.ThingContext.Properties.GetProperties(property.PropertyName)),
+                    new Dictionary<string, object>
+                    {
+                        [_options.GetPropertyName(property.PropertyName)] = data[property.PropertyName]
+                    }),
                 _options);
             
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)

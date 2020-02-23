@@ -171,11 +171,22 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         {
                             il.MarkLabel(next.Value);
                         }
+
                         next = il.DefineLabel();
-                    
+
                         il.Emit(OpCodes.Ldarg_S, i);
-                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MinimumValue.Value);
-                        il.Emit(OpCodes.Bge_S, next.Value);
+                        SetValue(il, validationParameter.MinimumValue.Value, parameter.ParameterType);
+                        if (parameter.ParameterType == typeof(ulong)
+                            || parameter.ParameterType == typeof(float) 
+                            || parameter.ParameterType == typeof(double) 
+                            || parameter.ParameterType == typeof(decimal))
+                        {
+                            il.Emit(OpCodes.Bge_Un_S, next.Value);
+                        }
+                        else
+                        {
+                            il.Emit(OpCodes.Bge_S, next.Value);   
+                        }
                     
                         il.Emit(OpCodes.Ldc_I4_0);
                         il.Emit(OpCodes.Ret);
@@ -191,8 +202,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         next = il.DefineLabel();
 
                         il.Emit(OpCodes.Ldarg_S, i);
-                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MaximumValue.Value);
-                        il.Emit(OpCodes.Ble_S, next.Value);
+                        SetValue(il, validationParameter.MaximumValue.Value, parameter.ParameterType);
+                        if (parameter.ParameterType == typeof(ulong)
+                            || parameter.ParameterType == typeof(float) 
+                            || parameter.ParameterType == typeof(double) 
+                            || parameter.ParameterType == typeof(decimal))
+                        {
+                            il.Emit(OpCodes.Ble_Un_S, next.Value);
+                        }
+                        else
+                        {
+                            il.Emit(OpCodes.Ble_S, next.Value);
+                        }
                     
                         il.Emit(OpCodes.Ldc_I4_0);
                         il.Emit(OpCodes.Ret);
@@ -204,11 +225,33 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         {
                             il.MarkLabel(next.Value);
                         }
+                        
                         next = il.DefineLabel();
+                        
                         il.Emit(OpCodes.Ldarg_S, i);
-                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MultipleOfValue.Value);
-                        il.Emit(OpCodes.Rem);
-                        il.Emit(OpCodes.Brtrue, next.Value);
+                        SetValue(il, validationParameter.MultipleOfValue.Value, parameter.ParameterType);
+
+                        if (parameter.ParameterType == typeof(float) 
+                            || parameter.ParameterType == typeof(double) 
+                            || parameter.ParameterType == typeof(decimal))
+                        {
+                            il.Emit(OpCodes.Rem);
+                            if (parameter.ParameterType == typeof(float))
+                            {
+                                il.Emit(OpCodes.Ldc_R4 , (float)0);
+                            }
+                            else
+                            {
+                                il.Emit(OpCodes.Ldc_R8, (double)0);
+                            }
+                            
+                            il.Emit(OpCodes.Beq_S, next.Value);
+                        }
+                        else
+                        {
+                            il.Emit(parameter.ParameterType == typeof(ulong) ? OpCodes.Rem_Un : OpCodes.Rem);
+                            il.Emit(OpCodes.Brfalse_S, next.Value);
+                        }
                         
                         il.Emit(OpCodes.Ldc_I4_0);
                         il.Emit(OpCodes.Ret);
@@ -285,6 +328,68 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             }
             
             il.Emit(OpCodes.Ret);
+        }
+
+        private static void SetValue(ILGenerator il, double value, Type type)
+        {
+            if (type == typeof(byte))
+            {
+                var convert = Convert.ToByte(value);
+                il.Emit(OpCodes.Ldc_I4_S, convert);
+            }
+            else if (type == typeof(sbyte))
+            {
+                var convert = Convert.ToSByte(value);
+                il.Emit(OpCodes.Ldc_I4_S, convert);
+            }
+            else if (type == typeof(short))
+            {
+                var convert = Convert.ToInt16(value);
+                il.Emit(OpCodes.Ldc_I4_S, convert);
+            }
+            else if (type == typeof(ushort))
+            {
+                var convert = Convert.ToUInt16(value);
+                il.Emit(OpCodes.Ldc_I4_S, convert);
+            }
+            else if (type == typeof(int))
+            {
+                var convert = Convert.ToInt32(value);
+                il.Emit(OpCodes.Ldc_I4_S, convert);
+            }
+            else if (type == typeof(uint))
+            {
+                var convert = Convert.ToUInt32(value);
+                il.Emit(OpCodes.Ldc_I4_S, convert);
+            }
+            else if (type == typeof(long))
+            {
+                var convert = Convert.ToInt64(value);
+                il.Emit(OpCodes.Ldc_I8, convert);
+            }
+            else if (type == typeof(ulong))
+            {
+                var convert = Convert.ToUInt64(value);
+                if (convert <= uint.MaxValue)
+                {
+                    il.Emit(OpCodes.Ldc_I4_S, (int)convert);
+                    il.Emit(OpCodes.Conv_I8);
+                }
+                else
+                {
+                    il.Emit(OpCodes.Ldc_I8, convert);
+                }
+            }
+            else if (type == typeof(float))
+            {
+                var convert = Convert.ToSingle(value);
+                il.Emit(OpCodes.Ldc_R4, convert);
+            }
+            else
+            {
+                var convert = Convert.ToDouble(value);
+                il.Emit(OpCodes.Ldc_R8, convert);
+            }
         }
         
         private static bool IsNumber(Type type)

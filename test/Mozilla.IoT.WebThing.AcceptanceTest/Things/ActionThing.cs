@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Attributes;
 

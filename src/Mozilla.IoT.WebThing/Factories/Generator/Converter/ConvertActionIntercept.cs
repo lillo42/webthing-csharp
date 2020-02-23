@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
+using static Mozilla.IoT.WebThing.Factories.Generator.Converter.Helper;
+
 namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
     internal class ConvertActionIntercept : IActionIntercept
@@ -73,9 +75,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     {
                         continue;
                     }
-                    
+
                     _jsonWriter.StartObject(parameter.Name!);
-                    var jsonType = GetJsonType(parameter.ParameterType);
+                    var parameterType = parameter.ParameterType.GetUnderlyingType();
+                    var jsonType = GetJsonType(parameterType);
 
                     if (jsonType == null)
                     {
@@ -92,9 +95,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         _jsonWriter.PropertyWithNullableValue("Unit", parameterActionInfo.Unit);
                         if (jsonType == "number" || jsonType == "integer")
                         {
-                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), parameter.ParameterType,
+                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), parameterType,
                                 parameterActionInfo.MinimumValue);
-                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Maximum), parameter.ParameterType,
+                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Maximum), parameterType,
                                 parameterActionInfo.MaximumValue);
                             _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.MultipleOf),
                                 parameterActionInfo.MultipleOfValue);
@@ -116,49 +119,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 
             _jsonWriter.StartArray("Links");
             _jsonWriter.StartObject();
-            _jsonWriter.PropertyWithValue("href", $"/things/{_options.GetPropertyName(thing.Name)}/actions/{_options.GetPropertyName(name)}");
+            _jsonWriter.PropertyWithValue("href",
+                $"/things/{_options.GetPropertyName(thing.Name)}/actions/{_options.GetPropertyName(name)}");
             _jsonWriter.EndObject();
             _jsonWriter.EndArray();
             _jsonWriter.EndObject();
-        }
-
-        private static string? GetJsonType(Type? type)
-        {
-            if (type == null)
-            {
-                return null;
-            }
-
-            if (type == typeof(string)
-                || type == typeof(DateTime))
-            {
-                return "string";
-            }
-
-            if (type == typeof(bool))
-            {
-                return "boolean";
-            }
-            
-            if (type == typeof(int)
-                || type == typeof(sbyte)
-                || type == typeof(byte)
-                || type == typeof(short)
-                || type == typeof(long)
-                || type == typeof(uint)
-                || type == typeof(ulong)
-                || type == typeof(ushort))
-            {
-                return "integer";
-            }
-            
-            if (type == typeof(double)
-                || type == typeof(float))
-            {
-                return "number";
-            }
-
-            return null;
         }
     }
 }
