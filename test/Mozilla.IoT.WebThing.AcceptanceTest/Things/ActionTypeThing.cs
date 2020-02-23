@@ -53,19 +53,37 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             logger.LogInformation("Execution action....");
         }
         
-        public void RunNullVWithValidation(
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]byte @byte,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]sbyte @sbyte,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]short @short,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]ushort @ushort,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]int @int,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]uint @uint,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]long @long,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]ulong @ulong,
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]float @float, 
-             [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]double @double,
+        public void RunWithValidation(
+             [ThingParameter(Minimum = 1, Maximum = 100)]byte @byte,
+             [ThingParameter(Minimum = 1, Maximum = 100)]sbyte @sbyte,
+             [ThingParameter(Minimum = 1, Maximum = 100)]short @short,
+             [ThingParameter(Minimum = 1, Maximum = 100)]ushort @ushort,
+             [ThingParameter(Minimum = 1, Maximum = 100)]int @int,
+             [ThingParameter(Minimum = 1, Maximum = 100)]uint @uint,
+             [ThingParameter(Minimum = 1, Maximum = 100)]long @long,
+             [ThingParameter(Minimum = 1, Maximum = 100)]ulong @ulong,
+             [ThingParameter(Minimum = 1, Maximum = 100)]float @float, 
+             [ThingParameter(Minimum = 1, Maximum = 100)]double @double,
              //[ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]decimal @decimal,
              [FromServices]ILogger<ActionTypeThing> logger
+        )
+        {
+            logger.LogInformation("Execution action....");
+        }
+        
+        public void RunWithValidationExclusive(
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]byte @byte,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]sbyte @sbyte,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]short @short,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]ushort @ushort,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]int @int,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]uint @uint,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]long @long,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]ulong @ulong,
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]float @float, 
+            [ThingParameter(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]double @double,
+            //[ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]decimal @decimal,
+            [FromServices]ILogger<ActionTypeThing> logger
         )
         {
             logger.LogInformation("Execution action....");

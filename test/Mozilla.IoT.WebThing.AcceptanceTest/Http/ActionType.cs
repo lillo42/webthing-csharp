@@ -104,7 +104,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         }
 
         [Fact]
-        public async Task RunNullVWithValidationAction()
+        public async Task RunWithValidation()
         {
             var @byte = (byte)10;
             var @sbyte = (sbyte)10;
@@ -121,10 +121,10 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.PostAsync("/things/action-type/actions/runNullVWithValidation", 
+            var response = await _client.PostAsync("/things/action-type/actions/runWithValidation", 
                 new StringContent($@"
 {{ 
-    ""runNullVWithValidation"": {{
+    ""runWithValidation"": {{
         ""input"": {{
             ""byte"": {@byte},
             ""sbyte"": {@sbyte},
@@ -165,7 +165,287 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
 //            json.Input.Decimal.Should().Be(@decimal);
             json.Status.Should().NotBeNullOrEmpty();
         }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RunWithValidationActionMinAndMax(bool isMin)
+        {
+            var @byte = isMin ? (byte)1 : (byte)100;
+            var @sbyte = isMin ? (sbyte)1 : (sbyte)100;
+            var @short = isMin ? (short)1 : (short)100;
+            var @ushort = isMin ? (ushort)1 : (ushort)100;
+            var @int = isMin ? (int)1 : 100;
+            var @uint = isMin ? 1 : (uint)100;
+            var @long = isMin ? 1 : (long)100;
+            var @ulong = isMin ? 1 : (ulong)100;
+            var @double = isMin ? 1 : (double)100;
+            var @float = isMin ? 1 : (float)100;
+            var @decimal = isMin ? 1 : (decimal)100;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
 
+            var response = await _client.PostAsync("/things/action-type/actions/runWithValidation", 
+                new StringContent($@"
+{{ 
+    ""runWithValidation"": {{
+        ""input"": {{
+            ""byte"": {@byte},
+            ""sbyte"": {@sbyte},
+            ""short"": {@short},
+            ""ushort"": {@ushort},
+            ""int"": {@int},
+            ""uint"": {@uint},
+            ""long"": {@long},
+            ""ulong"": {@ulong},
+            ""double"": {@double},
+            ""float"": {@float},
+            ""decimal"": {@decimal}
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JsonConvert.DeserializeObject<Run>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Input.Should().NotBeNull();
+            json.Input.Byte.Should().Be(@byte);
+            json.Input.Sbyte.Should().Be(@sbyte);
+            json.Input.Short.Should().Be(@short);
+            json.Input.UShort.Should().Be(@ushort); 
+            json.Input.Int.Should().Be(@int);
+            json.Input.Uint.Should().Be(@uint);
+            json.Input.Long.Should().Be(@long);
+            json.Input.ULong.Should().Be(@ulong);
+            json.Input.Double.Should().Be(@double);
+            json.Input.Float.Should().Be(@float);
+//            json.Input.Decimal.Should().Be(@decimal);
+            json.Status.Should().NotBeNullOrEmpty();
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RunWithInvalidation(bool isMin)
+        {
+            var @byte = isMin ? (byte)0 : (byte)101;
+            var @sbyte = isMin ? (sbyte)0 : (sbyte)101;
+            var @short = isMin ? (short)0 : (short)101;
+            var @ushort = isMin ? (ushort)0 : (ushort)101;
+            var @int = isMin ? 0 : 101;
+            var @uint = isMin ? 0 : (uint)101;
+            var @long = isMin ? 0 : (long)101;
+            var @ulong = isMin ? 0 : (ulong)101;
+            var @double = isMin ? 0 : (double)101;
+            var @float = isMin ? 0 : (float)101;
+            var @decimal = isMin ? 0 : (decimal)101;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action-type/actions/runWithValidation", 
+                new StringContent($@"
+{{ 
+    ""runWithValidation"": {{
+        ""input"": {{
+            ""byte"": {@byte},
+            ""sbyte"": {@sbyte},
+            ""short"": {@short},
+            ""ushort"": {@ushort},
+            ""int"": {@int},
+            ""uint"": {@uint},
+            ""long"": {@long},
+            ""ulong"": {@ulong},
+            ""double"": {@double},
+            ""float"": {@float},
+            ""decimal"": {@decimal}
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeFalse();
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+        
+        [Fact]
+        public async Task RunWithValidationExclusiveValid()
+        {
+            var @byte = (byte)10;
+            var @sbyte = (sbyte)10;
+            var @short = (short)10;
+            var @ushort = (ushort)10;
+            var @int = 10;
+            var @uint = (uint)10;
+            var @long = (long)10;
+            var @ulong = (ulong)10;
+            var @double = (double)10;
+            var @float = (float)10;
+            var @decimal = (decimal)10;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action-type/actions/runWithValidationExclusive", 
+                new StringContent($@"
+{{ 
+    ""runWithValidationExclusive"": {{
+        ""input"": {{
+            ""byte"": {@byte},
+            ""sbyte"": {@sbyte},
+            ""short"": {@short},
+            ""ushort"": {@ushort},
+            ""int"": {@int},
+            ""uint"": {@uint},
+            ""long"": {@long},
+            ""ulong"": {@ulong},
+            ""double"": {@double},
+            ""float"": {@float},
+            ""decimal"": {@decimal}
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JsonConvert.DeserializeObject<Run>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Input.Should().NotBeNull();
+            json.Input.Byte.Should().Be(@byte);
+            json.Input.Sbyte.Should().Be(@sbyte);
+            json.Input.Short.Should().Be(@short);
+            json.Input.UShort.Should().Be(@ushort); 
+            json.Input.Int.Should().Be(@int);
+            json.Input.Uint.Should().Be(@uint);
+            json.Input.Long.Should().Be(@long);
+            json.Input.ULong.Should().Be(@ulong);
+            json.Input.Double.Should().Be(@double);
+            json.Input.Float.Should().Be(@float);
+//            json.Input.Decimal.Should().Be(@decimal);
+            json.Status.Should().NotBeNullOrEmpty();
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RunWithValidationExclusiveMinAndMax(bool isMin)
+        {
+            var @byte = isMin ? (byte)2 : (byte)99;
+            var @sbyte = isMin ? (sbyte)2 : (sbyte)99;
+            var @short = isMin ? (short)2 : (short)99;
+            var @ushort = isMin ? (ushort)2 : (ushort)99;
+            var @int = isMin ? 2 : 99;
+            var @uint = isMin ? 2 : (uint)99;
+            var @long = isMin ? 2 : (long)99;
+            var @ulong = isMin ? 2 : (ulong)99;
+            var @double = isMin ? 2 : (double)99;
+            var @float = isMin ? 2 : (float)99;
+            var @decimal = isMin ? 2 : (decimal)99;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action-type/actions/runWithValidation", 
+                new StringContent($@"
+{{ 
+    ""runWithValidationExclusive"": {{
+        ""input"": {{
+            ""byte"": {@byte},
+            ""sbyte"": {@sbyte},
+            ""short"": {@short},
+            ""ushort"": {@ushort},
+            ""int"": {@int},
+            ""uint"": {@uint},
+            ""long"": {@long},
+            ""ulong"": {@ulong},
+            ""double"": {@double},
+            ""float"": {@float},
+            ""decimal"": {@decimal}
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JsonConvert.DeserializeObject<Run>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Input.Should().NotBeNull();
+            json.Input.Byte.Should().Be(@byte);
+            json.Input.Sbyte.Should().Be(@sbyte);
+            json.Input.Short.Should().Be(@short);
+            json.Input.UShort.Should().Be(@ushort); 
+            json.Input.Int.Should().Be(@int);
+            json.Input.Uint.Should().Be(@uint);
+            json.Input.Long.Should().Be(@long);
+            json.Input.ULong.Should().Be(@ulong);
+            json.Input.Double.Should().Be(@double);
+            json.Input.Float.Should().Be(@float);
+//            json.Input.Decimal.Should().Be(@decimal);
+            json.Status.Should().NotBeNullOrEmpty();
+        }
+        
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RunWithValidationExclusiveActionInvalid(bool isMin)
+        {
+            var @byte = isMin ? 1 : 100;
+            var @sbyte = isMin ? 1 : 100;
+            var @short = isMin ? 1 : 100;
+            var @ushort = isMin ? 1 : 100;
+            var @int = isMin ? 1 : 100;
+            var @uint =isMin ? 1 : 100;
+            var @long = isMin ? 1 : 100;
+            var @ulong = isMin ? 1 : 100;
+            var @double = isMin ? 1 : 100;
+            var @float = isMin ? 1 : 100;
+            var @decimal = isMin ? 1 : 100;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action-type/actions/runWithValidationExclusive", 
+                new StringContent($@"
+{{ 
+    ""runWithValidationExclusive"": {{
+        ""input"": {{
+            ""byte"": {@byte},
+            ""sbyte"": {@sbyte},
+            ""short"": {@short},
+            ""ushort"": {@ushort},
+            ""int"": {@int},
+            ""uint"": {@uint},
+            ""long"": {@long},
+            ""ulong"": {@ulong},
+            ""double"": {@double},
+            ""float"": {@float},
+            ""decimal"": {@decimal}
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeFalse();
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
 
         [Theory]
         [InlineData(true)]
