@@ -358,7 +358,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.PostAsync("/things/action-type/actions/runWithValidation", 
+            var response = await _client.PostAsync("/things/action-type/actions/runWithValidationExclusive", 
                 new StringContent($@"
 {{ 
     ""runWithValidationExclusive"": {{

@@ -63,9 +63,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     thingPropertyAttribute.Description);
                 var readOnly = thingPropertyAttribute.IsReadOnly || !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic;
                 _jsonWriter.PropertyWithNullableValue("ReadOnly", readOnly);
+
+                if (thingPropertyAttribute.IsWriteOnlyValue.HasValue)
+                {
+                    _jsonWriter.PropertyWithNullableValue("WriteOnly", thingPropertyAttribute.IsWriteOnlyValue.Value);
+                }
+                else if(!propertyInfo.CanRead || !propertyInfo.GetMethod.IsPublic)
+                {
+                    _jsonWriter.PropertyWithNullableValue("WriteOnly", true);
+                }
                 
-                var writeOnly = thingPropertyAttribute.IsWriteOnly || !propertyInfo.CanRead || !propertyInfo.GetMethod.IsPublic;
-                _jsonWriter.PropertyWithNullableValue("WriteOnly", writeOnly);
                 
                 _jsonWriter.PropertyWithNullableValue("Type", jsonType);
                 _jsonWriter.PropertyEnum("@enum", propertyType, thingPropertyAttribute.Enum);
