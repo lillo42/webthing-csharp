@@ -77,7 +77,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
 
                     _jsonWriter.StartObject(parameter.Name!);
-                    var jsonType = GetJsonType(parameter.ParameterType);
+                    var parameterType = parameter.ParameterType.GetUnderlyingType();
+                    var jsonType = GetJsonType(parameterType);
 
                     if (jsonType == null)
                     {
@@ -94,9 +95,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         _jsonWriter.PropertyWithNullableValue("Unit", parameterActionInfo.Unit);
                         if (jsonType == "number" || jsonType == "integer")
                         {
-                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), parameter.ParameterType,
+                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), parameterType,
                                 parameterActionInfo.MinimumValue);
-                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Maximum), parameter.ParameterType,
+                            _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Maximum), parameterType,
                                 parameterActionInfo.MaximumValue);
                             _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.MultipleOf),
                                 parameterActionInfo.MultipleOfValue);

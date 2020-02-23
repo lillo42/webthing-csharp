@@ -127,7 +127,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_I4, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberInt, new[] { typeof(string), typeof(int) });
         }
         
@@ -135,7 +135,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_I4, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberUInt, new[] { typeof(string), typeof(uint) });
         }
         
@@ -143,7 +143,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_I8, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberLong, new[] { typeof(string), typeof(long) });
         }
         
@@ -151,7 +151,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            if (value > long.MaxValue)
+            {
+                _ilGenerator.Emit(OpCodes.Ldstr, value.ToString());
+                _ilGenerator.EmitCall(OpCodes.Call, s_convertULong, null);
+            }
+            else
+            {
+                _ilGenerator.Emit(OpCodes.Ldc_I8, Convert.ToInt64(value));   
+            }
+            
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberULong, new[] { typeof(string), typeof(long) });
         }
         
@@ -167,7 +176,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_R4, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberFloat, new[] { typeof(string), typeof(float) });
         }
 
@@ -335,32 +344,33 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 return;
             }
 
-            if (propertyType == typeof(int)
+            if (propertyType == typeof(int)           
+                || propertyType == typeof(sbyte)
                 || propertyType == typeof(byte)
                 || propertyType == typeof(short)
                 || propertyType == typeof(ushort))
             {
-                PropertyWithValue(propertyName, (int)value);
+                PropertyWithValue(propertyName, Convert.ToInt32(value));
             }
             else if (propertyType == typeof(uint))
             {
-                PropertyWithValue(propertyName, (uint)value);
+                PropertyWithValue(propertyName, Convert.ToUInt32(value));
             }
             else if (propertyType == typeof(long))
             {
-                PropertyWithValue(propertyName, (long)value);
+                PropertyWithValue(propertyName, Convert.ToInt64(value));
             }
             else if (propertyType == typeof(ulong))
             {
-                PropertyWithValue(propertyName, (ulong)value);
+                PropertyWithValue(propertyName, Convert.ToUInt64(value));
             }
             else if (propertyType == typeof(double))
             {
-                PropertyWithValue(propertyName, (double)value);
+                PropertyWithValue(propertyName, value.Value);
             }
             else
             {
-                PropertyWithValue(propertyName, (float)value);
+                PropertyWithValue(propertyName, Convert.ToSingle(value));
             }
         }
 
