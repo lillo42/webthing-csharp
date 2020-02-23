@@ -46,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
 
             var propertyName = _options.GetPropertyName(thingPropertyAttribute?.Name ?? propertyInfo.Name);
-            var propertyType = propertyInfo.PropertyType;
+            var propertyType = propertyInfo.PropertyType.GetUnderlyingType();
             var jsonType = GetJsonType(propertyType);
             if (jsonType == null)
             {

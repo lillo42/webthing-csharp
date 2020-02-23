@@ -799,9 +799,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     .BeEquivalentTo(JToken.Parse(@"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
-    ""base"": ""http://localhost/things/lamp"",
-    ""href"": ""/things/lamp"",
     ""id"": ""lamp"",
+    ""href"": ""/things/lamp"",
+    ""base"": ""http://localhost/things/lamp"",
     ""title"": ""My Lamp"",
     ""description"": ""A web connected lamp"",
     ""@type"": [

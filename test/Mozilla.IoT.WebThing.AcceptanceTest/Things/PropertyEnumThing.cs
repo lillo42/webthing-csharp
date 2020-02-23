@@ -199,7 +199,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
         }
         
         private ulong _numberULong;
-        [ThingProperty(Enum =  new object[]{ 0, ulong.MaxValue, ulong.MinValue })]
+        [ThingProperty(Enum =  new object[]{ 0, ulong.MaxValue, ulong.MinValue})]
         public ulong NumberULong
         {
             get => _numberULong;
@@ -221,7 +221,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
                 OnPropertyChanged();
             }
         }
-
+        
         private double _numberDouble;
         [ThingProperty(Enum =  new object[]{ 0, double.MaxValue, double.MinValue })]
         public double NumberDouble
@@ -245,7 +245,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
                 OnPropertyChanged();
             }
         }
-
+        
         private float _numberFloat;
         [ThingProperty(Enum =  new object[]{ 0, float.MaxValue, float.MinValue })]
         public float NumberFloat

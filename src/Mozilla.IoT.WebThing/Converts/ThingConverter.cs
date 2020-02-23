@@ -40,8 +40,7 @@ namespace Mozilla.IoT.WebThing.Converts
             {
                 throw new ArgumentNullException(nameof(options));
             }
-
-
+            writer.WriteNumberValue(ulong.MaxValue);
             writer.WriteStartObject();
             writer.WriteString("@context", value.Context);
             var builder = new UriBuilder(value.Prefix) {Path = $"/things/{options.GetPropertyName(value.Name)}"};
