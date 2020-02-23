@@ -218,6 +218,60 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         il.Emit(OpCodes.Ldc_I4_0);
                         il.Emit(OpCodes.Ret);
                     }
+                    
+                    if (validationParameter.ExclusiveMinimumValue.HasValue)
+                    {
+                        if (next != null)
+                        {
+                            il.MarkLabel(next.Value);
+                        }
+
+                        next = il.DefineLabel();
+
+                        il.Emit(OpCodes.Ldarg_S, i);
+                        SetValue(il, validationParameter.ExclusiveMinimumValue.Value, parameter.ParameterType);
+                        if (parameter.ParameterType == typeof(ulong)
+                            || parameter.ParameterType == typeof(float) 
+                            || parameter.ParameterType == typeof(double) 
+                            || parameter.ParameterType == typeof(decimal))
+                        {
+                            il.Emit(OpCodes.Bgt_Un_S, next.Value);
+                        }
+                        else
+                        {
+                            il.Emit(OpCodes.Bgt_S, next.Value);   
+                        }
+                    
+                        il.Emit(OpCodes.Ldc_I4_0);
+                        il.Emit(OpCodes.Ret);
+                    }
+                    
+                    if (validationParameter.ExclusiveMaximumValue.HasValue)
+                    {
+                        if (next != null)
+                        {
+                            il.MarkLabel(next.Value);
+                        }
+                    
+                        next = il.DefineLabel();
+
+                        il.Emit(OpCodes.Ldarg_S, i);
+                        SetValue(il, validationParameter.ExclusiveMaximumValue.Value, parameter.ParameterType);
+                        if (parameter.ParameterType == typeof(ulong)
+                            || parameter.ParameterType == typeof(float) 
+                            || parameter.ParameterType == typeof(double) 
+                            || parameter.ParameterType == typeof(decimal))
+                        {
+                            il.Emit(OpCodes.Blt_Un_S, next.Value);
+                        }
+                        else
+                        {
+                            il.Emit(OpCodes.Blt_S, next.Value);
+                        }
+                    
+                        il.Emit(OpCodes.Ldc_I4_0);
+                        il.Emit(OpCodes.Ret);
+                    }
                 
                     if (validationParameter.MultipleOfValue.HasValue)
                     {

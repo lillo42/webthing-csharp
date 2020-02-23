@@ -77,7 +77,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 thingPropertyAttribute?.MaximumValue,
                 thingPropertyAttribute?.MultipleOfValue,
                 Cast(thingPropertyAttribute?.Enum, propertyInfo.PropertyType),
-                propertyInfo.PropertyType == typeof(string) || Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null);
+                propertyInfo.PropertyType == typeof(string) || Nullable.GetUnderlyingType(propertyInfo.PropertyType) != null,
+                thingPropertyAttribute?.ExclusiveMinimumValue, thingPropertyAttribute?.ExclusiveMaximumValue);
         }
 
         private static IJsonMapper CreateMapper(Type type)
