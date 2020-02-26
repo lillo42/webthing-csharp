@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.Json;
@@ -44,6 +47,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         private readonly MethodInfo s_writeNumberULongValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(ulong) })!;
         private readonly MethodInfo s_writeNumberDoubleValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(double) })!;
         private readonly MethodInfo s_writeNumberFloatValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(float) })!;
+        private readonly MethodInfo s_writeNumberDecimalValue = typeof(Utf8JsonWriter).GetMethod(nameof(Utf8JsonWriter.WriteNumberValue), new []{ typeof(decimal) })!;
+
+        private readonly MethodInfo s_convertULong = typeof(Convert).GetMethod(nameof(Convert.ToUInt64), new []{ typeof(string) })!;
+        private readonly MethodInfo s_convertDecimal = typeof(Convert).GetMethod(nameof(Convert.ToDecimal), new []{ typeof(string) })!;
         #endregion
 
         #region Object
@@ -120,7 +127,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_I4, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberInt, new[] { typeof(string), typeof(int) });
         }
         
@@ -128,7 +135,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_I4, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberUInt, new[] { typeof(string), typeof(uint) });
         }
         
@@ -136,7 +143,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_I8, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberLong, new[] { typeof(string), typeof(long) });
         }
         
@@ -144,7 +151,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            if (value > long.MaxValue)
+            {
+                _ilGenerator.Emit(OpCodes.Ldstr, value.ToString());
+                _ilGenerator.EmitCall(OpCodes.Call, s_convertULong, null);
+            }
+            else
+            {
+                _ilGenerator.Emit(OpCodes.Ldc_I8, Convert.ToInt64(value));   
+            }
+            
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberULong, new[] { typeof(string), typeof(long) });
         }
         
@@ -160,7 +176,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, _options.GetPropertyName(propertyName));
-            _ilGenerator.Emit(OpCodes.Ldc_I4_S, value);
+            _ilGenerator.Emit(OpCodes.Ldc_R4, value);
             _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberFloat, new[] { typeof(string), typeof(float) });
         }
 
@@ -220,59 +236,74 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(OpCodes.Ldstr, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeStringValue, new[] { typeof(string) });
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeStringValue, null);
         }
         
         public void Value(bool value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
             _ilGenerator.Emit(value ? OpCodes.Ldc_I4_0 : OpCodes.Ldc_I4_1);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeBoolValue, new[] { typeof(bool) });
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeBoolValue, null);
         }
         
         public void Value(int value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit( OpCodes.Ldc_I4_S, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberIntValue, new[] { typeof(int) });
+            _ilGenerator.Emit( OpCodes.Ldc_I4, value);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberIntValue, null);
         }
         
         public void Value(uint value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit( OpCodes.Ldc_I4_S, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberUIntValue, new[] { typeof(uint) });
+            _ilGenerator.Emit( OpCodes.Ldc_I4, value);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberUIntValue, null);
         }
         
         
         public void Value(long value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit( OpCodes.Ldc_I4_S, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberLongValue, new[] { typeof(long) });
+            _ilGenerator.Emit( OpCodes.Ldc_I8, value);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberLongValue, null);
         }
         
         public void Value(ulong value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit( OpCodes.Ldc_I4_S, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberULongValue, new[] { typeof(ulong) });
-        }
-        
-        public void Value(double value)
-        {
-            _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit( OpCodes.Ldc_I4_S, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberDoubleValue, new[] { typeof(double) });
+            if (value > long.MaxValue)
+            {
+                _ilGenerator.Emit(OpCodes.Ldstr, value.ToString());
+                _ilGenerator.EmitCall(OpCodes.Call, s_convertULong, null);
+            }
+            else
+            {
+                _ilGenerator.Emit(OpCodes.Ldc_I8, Convert.ToInt64(value));   
+            }
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberULongValue, null);
         }
         
         public void Value(float value)
         {
             _ilGenerator.Emit(OpCodes.Ldarg_1);
-            _ilGenerator.Emit( OpCodes.Ldc_I4_S, value);
-            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberFloatValue, new[] { typeof(float) });
+            _ilGenerator.Emit( OpCodes.Ldc_R4, value);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberFloatValue, null);
         }
-
+        
+        public void Value(double value)
+        {
+            _ilGenerator.Emit(OpCodes.Ldarg_1);
+            _ilGenerator.Emit( OpCodes.Ldc_R8, value);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberDoubleValue, null);
+        }
+        
+        public void Value(decimal value)
+        {
+            _ilGenerator.Emit(OpCodes.Ldarg_1);
+            _ilGenerator.Emit(OpCodes.Ldstr, value.ToString(CultureInfo.InvariantCulture));
+            _ilGenerator.EmitCall(OpCodes.Call, s_convertDecimal, null);
+            _ilGenerator.EmitCall(OpCodes.Callvirt, s_writeNumberDecimalValue, null);
+        }
         #endregion
         
         public void PropertyType(string propertyName, string[]? types)
@@ -305,42 +336,43 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
         }
         
-        public void PropertyNumber(string propertyName, Type propertyType, float? value)
+        public void PropertyNumber(string propertyName, Type propertyType, double? value)
+        {
+            if (value == null)
             {
-                if (value == null)
-                {
-                    PropertyWithNullValue(propertyName);
-                    return;
-                }
-
-                if (propertyType == typeof(int)
-                    || propertyType == typeof(byte)
-                    || propertyType == typeof(short)
-                    || propertyType == typeof(ushort))
-                {
-                    PropertyWithValue(propertyName, (int)value);
-                }
-                else if (propertyType == typeof(uint))
-                {
-                    PropertyWithValue(propertyName, (uint)value);
-                }
-                else if (propertyType == typeof(long))
-                {
-                    PropertyWithValue(propertyName, (long)value);
-                }
-                else if (propertyType == typeof(ulong))
-                {
-                    PropertyWithValue(propertyName, (ulong)value);
-                }
-                else if (propertyType == typeof(double))
-                {
-                    PropertyWithValue(propertyName, (double)value);
-                }
-                else
-                {
-                    PropertyWithValue(propertyName, (float)value);
-                }
+                PropertyWithNullValue(propertyName);
+                return;
             }
+
+            if (propertyType == typeof(int)           
+                || propertyType == typeof(sbyte)
+                || propertyType == typeof(byte)
+                || propertyType == typeof(short)
+                || propertyType == typeof(ushort))
+            {
+                PropertyWithValue(propertyName, Convert.ToInt32(value));
+            }
+            else if (propertyType == typeof(uint))
+            {
+                PropertyWithValue(propertyName, Convert.ToUInt32(value));
+            }
+            else if (propertyType == typeof(long))
+            {
+                PropertyWithValue(propertyName, Convert.ToInt64(value));
+            }
+            else if (propertyType == typeof(ulong))
+            {
+                PropertyWithValue(propertyName, Convert.ToUInt64(value));
+            }
+            else if (propertyType == typeof(double))
+            {
+                PropertyWithValue(propertyName, value.Value);
+            }
+            else
+            {
+                PropertyWithValue(propertyName, Convert.ToSingle(value));
+            }
+        }
 
         public void PropertyEnum(string propertyName, Type propertyType, object[]? @enums)
         {
@@ -351,7 +383,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
             
             StartArray(propertyName);
-
+            
+            var  set = new HashSet<object>();
+            
             if (propertyType == typeof(string))
             {
                 foreach (var @enum in enums)
@@ -362,7 +396,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((string)@enum);
+                        var value = Convert.ToString(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
                     }
                 }
             }
@@ -376,14 +416,17 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((bool)@enum);
+                        var value = Convert.ToBoolean(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
                     }
                 }
             }
-            else if (propertyType == typeof(int)
-                     || propertyType == typeof(byte)
-                     || propertyType == typeof(short)
-                     || propertyType == typeof(ushort))
+            else if (propertyType == typeof(sbyte))
             {
                 foreach (var @enum in enums)
                 {
@@ -393,7 +436,93 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((int)@enum);
+                        var value = Convert.ToSByte(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
+                    }
+                }
+            }
+            else if (propertyType == typeof(byte))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        var value = Convert.ToByte(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
+                    }
+                }
+            }
+            else if (propertyType == typeof(short))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        var value = Convert.ToInt16(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
+                    }
+                }
+            }
+            else if (propertyType == typeof(ushort))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        var value = Convert.ToUInt16(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
+                    }
+                }
+            }
+            else if (propertyType == typeof(int))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        var value = Convert.ToInt32(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(Convert.ToInt32(@enum));
                     }
                 }
             }
@@ -407,7 +536,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((uint)@enum);
+                        var value = Convert.ToUInt32(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
                     }
                 }
             }
@@ -421,7 +556,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((long)@enum);
+                        var value = Convert.ToInt64(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
                     }
                 }
             }
@@ -435,7 +576,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((ulong)@enum);
+                        var value = Convert.ToUInt64(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
                     }
                 }
             }
@@ -449,7 +596,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((double)@enum);
+                        var value = Convert.ToDouble(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        }
+                        
+                        Value(value);
                     }
                 }
             }
@@ -463,7 +616,31 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        Value((float)@enum);
+                        var value = Convert.ToSingle(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        } 
+                        Value(value);
+                    }
+                }
+            }
+            else if (propertyType == typeof(decimal))
+            {
+                foreach (var @enum in enums)
+                {
+                    if (@enum == null)
+                    {
+                        NullValue();
+                    }
+                    else
+                    {
+                        var value = Convert.ToDecimal(@enum);
+                        if (!set.Add(value))
+                        {
+                            continue;
+                        } 
+                        Value(value);
                     }
                 }
             }

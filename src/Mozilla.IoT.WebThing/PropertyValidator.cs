@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Mozilla.IoT.WebThing
@@ -7,17 +8,26 @@ namespace Mozilla.IoT.WebThing
     {
         private readonly bool _isReadOnly;
         private readonly object[]? _enums;
-        private readonly float? _minimum;
-        private readonly float? _maximum;
-        private readonly float? _multipleOf;
+        private readonly double? _minimum;
+        private readonly double? _maximum;
+        private readonly double? _exclusiveMinimum;
+        private readonly double? _exclusiveMaximum;
+        private readonly int? _multipleOf;
+        private readonly bool _acceptedNullableValue;
 
-        public PropertyValidator(bool isReadOnly, float? minimum, float? maximum, float? multipleOf, object[]? enums)
+        public PropertyValidator(bool isReadOnly, 
+            double? minimum, double? maximum, int? multipleOf, 
+            object[]? enums, bool acceptedNullableValue, 
+            double? exclusiveMinimum, double? exclusiveMaximum)
         {
             _isReadOnly = isReadOnly;
             _minimum = minimum;
             _maximum = maximum;
             _multipleOf = multipleOf;
             _enums = enums;
+            _acceptedNullableValue = acceptedNullableValue;
+            _exclusiveMinimum = exclusiveMinimum;
+            _exclusiveMaximum = exclusiveMaximum;
         }
 
         public bool IsReadOnly => _isReadOnly;
@@ -31,15 +41,33 @@ namespace Mozilla.IoT.WebThing
 
             if (_minimum.HasValue
                 || _maximum.HasValue
-                || _multipleOf.HasValue)
+                || _multipleOf.HasValue
+                || _exclusiveMinimum.HasValue
+                || _exclusiveMaximum.HasValue)
             {
-                var comparer = Convert.ToSingle(value);
+
+                if (_acceptedNullableValue && value == null)
+                {
+                    return true;
+                }
+                
+                var comparer = Convert.ToDouble(value);
                 if (_minimum.HasValue && comparer < _minimum.Value)
                 {
                     return false;
                 }
 
                 if (_maximum.HasValue && comparer > _maximum.Value)
+                {
+                    return false;
+                }
+                
+                if (_exclusiveMinimum.HasValue && comparer <= _exclusiveMinimum.Value)
+                {
+                    return false;
+                }
+
+                if (_exclusiveMaximum.HasValue && comparer >= _exclusiveMaximum.Value)
                 {
                     return false;
                 }
@@ -50,7 +78,20 @@ namespace Mozilla.IoT.WebThing
                 }
             }
 
-            if (_enums != null && _enums.All(x => !x.Equals(value)))
+            if (_enums != null && !_enums.Any(x =>
+            {
+                if (value == null && x == null)
+                {
+                    return true;
+                }
+                
+                return value.Equals(x);
+            }))
+            {
+                return false;
+            }
+
+            if (!_acceptedNullableValue && value == null)
             {
                 return false;
             }

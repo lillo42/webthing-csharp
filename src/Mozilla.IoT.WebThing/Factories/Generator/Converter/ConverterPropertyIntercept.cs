@@ -4,6 +4,8 @@ using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
+using static Mozilla.IoT.WebThing.Factories.Generator.Converter.Helper;
+
 namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
     internal class ConverterPropertyIntercept : IPropertyIntercept
@@ -44,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
 
             var propertyName = _options.GetPropertyName(thingPropertyAttribute?.Name ?? propertyInfo.Name);
-            var propertyType = propertyInfo.PropertyType;
+            var propertyType = propertyInfo.PropertyType.GetUnderlyingType();
             var jsonType = GetJsonType(propertyType);
             if (jsonType == null)
             {
@@ -61,6 +63,17 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     thingPropertyAttribute.Description);
                 var readOnly = thingPropertyAttribute.IsReadOnly || !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic;
                 _jsonWriter.PropertyWithNullableValue("ReadOnly", readOnly);
+
+                if (thingPropertyAttribute.IsWriteOnlyValue.HasValue)
+                {
+                    _jsonWriter.PropertyWithNullableValue("WriteOnly", thingPropertyAttribute.IsWriteOnlyValue.Value);
+                }
+                else if(!propertyInfo.CanRead || !propertyInfo.GetMethod.IsPublic)
+                {
+                    _jsonWriter.PropertyWithNullableValue("WriteOnly", true);
+                }
+                
+                
                 _jsonWriter.PropertyWithNullableValue("Type", jsonType);
                 _jsonWriter.PropertyEnum("@enum", propertyType, thingPropertyAttribute.Enum);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Unit), thingPropertyAttribute.Unit);
@@ -82,6 +95,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 {
                     _jsonWriter.PropertyWithNullableValue("ReadOnly", true);
                 }
+                
+                if (!propertyInfo.CanRead || !propertyInfo.GetMethod.IsPublic)
+                {
+                    _jsonWriter.PropertyWithNullableValue("WriteOnly", true);
+                }
             }
             
 
@@ -98,43 +116,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             _jsonWriter.EndObject();
         }
 
-        private static string? GetJsonType(Type? type)
-        {
-            if (type == null)
-            {
-                return null;
-            }
-
-            if (type == typeof(string)
-                || type == typeof(DateTime))
-            {
-                return "string";
-            }
-
-            if (type == typeof(bool))
-            {
-                return "boolean";
-            }
-            
-            if (type == typeof(int)
-                || type == typeof(byte)
-                || type == typeof(sbyte)
-                || type == typeof(short)
-                || type == typeof(long)
-                || type == typeof(uint)
-                || type == typeof(ulong)
-                || type == typeof(ushort))
-            {
-                return "integer";
-            }
-            
-            if (type == typeof(double)
-                || type == typeof(float))
-            {
-                return "number";
-            }
-
-            return null;
-        }
+       
     }
 }

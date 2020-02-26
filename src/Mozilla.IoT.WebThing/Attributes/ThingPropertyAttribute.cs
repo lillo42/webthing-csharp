@@ -12,30 +12,48 @@ namespace Mozilla.IoT.WebThing.Attributes
         public string? Unit { get; set; }
         public string[]? Type { get; set; }
         public bool IsReadOnly { get; set; }
-        public object[]? Enum { get; set; }
-        internal float? MinimumValue { get; set; }
+        internal bool? IsWriteOnlyValue { get; set; }
 
-        public float Minimum
+        public bool IsWriteOnly
+        {
+            get => IsWriteOnlyValue.GetValueOrDefault();
+            set => IsWriteOnlyValue = value;
+        }
+        
+        public object[]? Enum { get; set; }
+        internal double? MinimumValue { get; set; }
+        public double Minimum
         {
             get => MinimumValue ?? 0;
             set => MinimumValue = value;
         }
         
-        internal float? MaximumValue { get; set; }
-
-        public float Maximum
+        internal double? MaximumValue { get; set; }
+        public double Maximum
         {
             get => MaximumValue ?? 0;
             set => MaximumValue = value;
         }
-
-
-        internal float? MultipleOfValue { get; set; }
-
-        public float MultipleOf
+        
+        internal int? MultipleOfValue { get; set; }
+        public int MultipleOf
         {
             get => MultipleOfValue ?? 0;
             set => MultipleOfValue = value;
+        }
+
+        internal double? ExclusiveMinimumValue { get; set; }
+        public double ExclusiveMinimum
+        {
+            get => ExclusiveMinimumValue ?? 0;
+            set => ExclusiveMinimumValue = value;
+        }
+        
+        internal double? ExclusiveMaximumValue { get; set; }
+        public double ExclusiveMaximum
+        {
+            get => ExclusiveMaximumValue ?? 0;
+            set => ExclusiveMaximumValue = value;
         }
     }
 }

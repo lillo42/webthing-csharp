@@ -117,7 +117,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 PropertyAttributes.HasDefault | PropertyAttributes.SpecialName,
                 typeof(string), null);
 
-            var getProperty = builder.DefineMethod("get_ActionName",  
+            var getProperty = builder.DefineMethod("get_ActionName", 
                 MethodAttributes.Family | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual,
                 typeof(string), Type.EmptyTypes);
 
@@ -128,8 +128,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             propertyBuilder.SetGetMethod(getProperty);
         }
 
-        private static void CreateInputValidation(TypeBuilder builder, TypeBuilder input, MethodInfo isValid,
-            PropertyBuilder inputProperty)
+        private static void CreateInputValidation(TypeBuilder builder, TypeBuilder input, MethodInfo isValid, PropertyBuilder inputProperty)
         {
             var isInputValidBuilder = builder.DefineMethod(nameof(ActionInfo.IsValid),
                 MethodAttributes.Public | MethodAttributes.ReuseSlot | MethodAttributes.Virtual | MethodAttributes.HideBySig,
@@ -162,40 +161,33 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 {
                     continue;
                 }
+
+                var parameterType = parameter.ParameterType.GetUnderlyingType();
                 
                 if (IsNumber(parameter.ParameterType))
                 {
                     if (validationParameter.MinimumValue.HasValue)
                     {
-                        if (next != null)
-                        {
-                            il.MarkLabel(next.Value);
-                        }
-                        next = il.DefineLabel();
-                    
-                        il.Emit(OpCodes.Ldarg_S, i);
-                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MinimumValue.Value);
-                        il.Emit(OpCodes.Bge_S, next.Value);
-                    
-                        il.Emit(OpCodes.Ldc_I4_0);
-                        il.Emit(OpCodes.Ret);
+                        var code = IsComplexNumber(parameterType) ? OpCodes.Bge_Un_S : OpCodes.Bge_S;
+                        GenerateNumberValidation(il, i, parameterType, validationParameter.MinimumValue.Value, code, ref next);
                     }
                 
                     if (validationParameter.MaximumValue.HasValue)
                     {
-                        if (next != null)
-                        {
-                            il.MarkLabel(next.Value);
-                        }
+                        var code = IsComplexNumber(parameterType) ? OpCodes.Ble_Un_S : OpCodes.Ble_S;
+                        GenerateNumberValidation(il, i, parameterType, validationParameter.MaximumValue.Value, code, ref next);
+                    }
                     
-                        next = il.DefineLabel();
-
-                        il.Emit(OpCodes.Ldarg_S, i);
-                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MaximumValue.Value);
-                        il.Emit(OpCodes.Ble_S, next.Value);
+                    if (validationParameter.ExclusiveMinimumValue.HasValue)
+                    {
+                        var code = IsComplexNumber(parameterType) ? OpCodes.Bgt_Un_S : OpCodes.Bgt_S;
+                        GenerateNumberValidation(il, i, parameterType, validationParameter.ExclusiveMinimumValue.Value, code, ref next);
+                    }
                     
-                        il.Emit(OpCodes.Ldc_I4_0);
-                        il.Emit(OpCodes.Ret);
+                    if (validationParameter.ExclusiveMaximumValue.HasValue)
+                    {
+                        var code = IsComplexNumber(parameterType) ? OpCodes.Blt_Un_S : OpCodes.Blt_S;
+                        GenerateNumberValidation(il, i, parameterType, validationParameter.ExclusiveMaximumValue.Value, code, ref next);
                     }
                 
                     if (validationParameter.MultipleOfValue.HasValue)
@@ -204,11 +196,33 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         {
                             il.MarkLabel(next.Value);
                         }
+                        
                         next = il.DefineLabel();
+                        
                         il.Emit(OpCodes.Ldarg_S, i);
-                        il.Emit(OpCodes.Ldc_I4_S, validationParameter.MultipleOfValue.Value);
-                        il.Emit(OpCodes.Rem);
-                        il.Emit(OpCodes.Brtrue, next.Value);
+                        SetValue(il, validationParameter.MultipleOfValue.Value, parameter.ParameterType);
+
+                        if (parameter.ParameterType == typeof(float) 
+                            || parameter.ParameterType == typeof(double) 
+                            || parameter.ParameterType == typeof(decimal))
+                        {
+                            il.Emit(OpCodes.Rem);
+                            if (parameter.ParameterType == typeof(float))
+                            {
+                                il.Emit(OpCodes.Ldc_R4 , (float)0);
+                            }
+                            else
+                            {
+                                il.Emit(OpCodes.Ldc_R8, (double)0);
+                            }
+                            
+                            il.Emit(OpCodes.Beq_S, next.Value);
+                        }
+                        else
+                        {
+                            il.Emit(parameter.ParameterType == typeof(ulong) ? OpCodes.Rem_Un : OpCodes.Rem);
+                            il.Emit(OpCodes.Brfalse_S, next.Value);
+                        }
                         
                         il.Emit(OpCodes.Ldc_I4_0);
                         il.Emit(OpCodes.Ret);
@@ -223,6 +237,92 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             
             il.Emit(OpCodes.Ldc_I4_1);
             il.Emit(OpCodes.Ret);
+
+            static void GenerateNumberValidation(ILGenerator generator, int fieldIndex, Type fieldType, double value, OpCode code, ref Label? next)
+            {
+                if (next != null)
+                {
+                    generator.MarkLabel(next.Value);
+                }
+
+                next = generator.DefineLabel();
+                
+                generator.Emit(OpCodes.Ldarg_S, fieldIndex);
+                SetValue(generator, value, fieldType);
+                
+                generator.Emit(code, next.Value);
+                
+                generator.Emit(OpCodes.Ldc_I4_0);
+                generator.Emit(OpCodes.Ret);
+            }
+            
+            static void SetValue(ILGenerator generator, double value, Type fieldType)
+            {
+                if (fieldType == typeof(byte))
+                {
+                    var convert = Convert.ToByte(value);
+                    generator.Emit(OpCodes.Ldc_I4_S, convert);
+                }
+                else if (fieldType == typeof(sbyte))
+                {
+                    var convert = Convert.ToSByte(value);
+                    generator.Emit(OpCodes.Ldc_I4_S, convert);
+                }
+                else if (fieldType == typeof(short))
+                {
+                    var convert = Convert.ToInt16(value);
+                    generator.Emit(OpCodes.Ldc_I4_S, convert);
+                }
+                else if (fieldType == typeof(ushort))
+                {
+                    var convert = Convert.ToUInt16(value);
+                    generator.Emit(OpCodes.Ldc_I4_S, convert);
+                }
+                else if (fieldType == typeof(int))
+                {
+                    var convert = Convert.ToInt32(value);
+                    generator.Emit(OpCodes.Ldc_I4_S, convert);
+                }
+                else if (fieldType == typeof(uint))
+                {
+                    var convert = Convert.ToUInt32(value);
+                    generator.Emit(OpCodes.Ldc_I4_S, convert);
+                }
+                else if (fieldType == typeof(long))
+                {
+                    var convert = Convert.ToInt64(value);
+                    generator.Emit(OpCodes.Ldc_I8, convert);
+                }
+                else if (fieldType == typeof(ulong))
+                {
+                    var convert = Convert.ToUInt64(value);
+                    if (convert <= uint.MaxValue)
+                    {
+                        generator.Emit(OpCodes.Ldc_I4_S, (int)convert);
+                        generator.Emit(OpCodes.Conv_I8);
+                    }
+                    else
+                    {
+                        generator.Emit(OpCodes.Ldc_I8, convert);
+                    }
+                }
+                else if (fieldType == typeof(float))
+                {
+                    var convert = Convert.ToSingle(value);
+                    generator.Emit(OpCodes.Ldc_R4, convert);
+                }
+                else
+                {
+                    var convert = Convert.ToDouble(value);
+                    generator.Emit(OpCodes.Ldc_R8, convert);
+                }
+            }
+
+            static bool IsComplexNumber(Type parameterType)
+                => parameterType == typeof(ulong)
+                   || parameterType == typeof(float)
+                   || parameterType == typeof(double)
+                   || parameterType == typeof(decimal);
         }
 
         private static void CreateExecuteAsync(TypeBuilder builder, TypeBuilder inputBuilder, PropertyBuilder input, MethodInfo action, Type thingType)
@@ -286,7 +386,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             
             il.Emit(OpCodes.Ret);
         }
-        
+
         private static bool IsNumber(Type type)
             => type == typeof(int)
                || type == typeof(uint)

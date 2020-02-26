@@ -22,7 +22,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             _client = host.GetTestServer().CreateClient();
         }
         
-        [Fact]
+        [Fact(Skip = "To improve")]
         public async Task GetAll()
         {
             var source = new CancellationTokenSource();
@@ -408,7 +408,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
         
-        [Fact]
+        [Fact(Skip = "To improve")]
         public async Task GetAllWhenUseThingAdapter()
         {
             var source = new CancellationTokenSource();
@@ -799,9 +799,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     .BeEquivalentTo(JToken.Parse(@"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
-    ""base"": ""http://localhost/things/lamp"",
-    ""href"": ""/things/lamp"",
     ""id"": ""lamp"",
+    ""href"": ""/things/lamp"",
+    ""base"": ""http://localhost/things/lamp"",
     ""title"": ""My Lamp"",
     ""description"": ""A web connected lamp"",
     ""@type"": [

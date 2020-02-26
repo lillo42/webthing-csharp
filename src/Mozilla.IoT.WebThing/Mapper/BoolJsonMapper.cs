@@ -7,7 +7,15 @@ namespace Mozilla.IoT.WebThing.Mapper
         private static BoolJsonMapper? s_instance;
         public static BoolJsonMapper Instance => s_instance ??= new BoolJsonMapper();
 
-        public object Map(object value) 
-            => ((JsonElement)value).GetBoolean();
+        public object Map(object value)
+        {
+            var element = (JsonElement)value;
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return null;
+            }
+
+            return element.GetBoolean();
+        }
     }
 }
