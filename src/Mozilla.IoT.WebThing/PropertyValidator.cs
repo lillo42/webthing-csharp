@@ -72,6 +72,15 @@ namespace Mozilla.IoT.WebThing
                 || propertyType == typeof(decimal))
             {
                 _type = JsonType.Number;
+
+                _enums = _enums?.Select(x =>
+                {
+                    if (x == null)
+                    {
+                        return (object)null;
+                    }
+                    return Convert.ToDouble(x);
+                }).Distinct().ToArray();
             }
         }
 
@@ -100,27 +109,17 @@ namespace Mozilla.IoT.WebThing
                 }
             }
 
-            if (_enums != null && !_enums.Any(x =>
-            {
-                if (value == null && x == null)
-                {
-                    return true;
-                }
-
-                return value.Equals(x);
-            }))
-            {
-                return false;
-            }
-
             return true;
         }
 
 
         private bool IsValidNumber(object value)
         {
-            if (!_minimum.HasValue && !_maximum.HasValue && !_multipleOf.HasValue && !_exclusiveMinimum.HasValue &&
-                !_exclusiveMaximum.HasValue)
+            if (!_minimum.HasValue 
+                && !_maximum.HasValue && !_multipleOf.HasValue 
+                && !_exclusiveMinimum.HasValue 
+                && !_exclusiveMaximum.HasValue
+                && _enums == null)
             {
                 return true;
             }
@@ -152,12 +151,28 @@ namespace Mozilla.IoT.WebThing
                 return false;
             }
 
+            if (_enums != null && !_enums.Any(x =>
+            {
+                if (isNull && x == null)
+                {
+                    return true;
+                }
+                
+                return comparer.Equals(x);
+            }))
+            {
+                return false;
+            }
+            
             return true;
         }
 
         private bool IsValidString(object value)
         {
-            if (!_minimumLength.HasValue && !_maximumLength.HasValue && _patter == null)
+            if (!_minimumLength.HasValue 
+                && !_maximumLength.HasValue 
+                && _patter == null
+                && _enums == null)
             {
                 return true;
             }
@@ -175,6 +190,19 @@ namespace Mozilla.IoT.WebThing
             }
 
             if (_patter != null && !_patter.Match(comparer).Success)
+            {
+                return false;
+            }
+            
+            if (_enums != null && !_enums.Any(x =>
+            {
+                if (isNull && x == null)
+                {
+                    return true;
+                }
+                
+                return comparer.Equals(x);
+            }))
             {
                 return false;
             }
