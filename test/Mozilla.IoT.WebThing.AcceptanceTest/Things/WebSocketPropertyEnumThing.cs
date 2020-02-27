@@ -1,5 +1,3 @@
-using Mozilla.IoT.WebThing.Attributes;
-
 namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
 {
     public class WebSocketPropertyEnumThing : PropertyEnumThing

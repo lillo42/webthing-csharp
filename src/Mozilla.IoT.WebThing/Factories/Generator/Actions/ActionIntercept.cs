@@ -15,6 +15,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
 {
     public class ActionIntercept : IActionIntercept
     {
+        private static readonly MethodInfo s_getLength = typeof(string).GetProperty(nameof(string.Length)).GetMethod;
         private const MethodAttributes s_getSetAttributes =
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
@@ -228,6 +229,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         il.Emit(OpCodes.Ret);
                     }
                 }
+                else if (IsString(parameter.ParameterType))
+                {
+                    if (validationParameter.MinimumLengthValue.HasValue)
+                    {
+                        GenerateStringLengthValidation(il, i, validationParameter.MinimumLengthValue.Value, OpCodes.Bge_S, ref next);
+                    }
+                    
+                    if (validationParameter.MaximumLengthValue.HasValue)
+                    {
+                        GenerateStringLengthValidation(il, i, validationParameter.MaximumLengthValue.Value, OpCodes.Bge_S, ref next);
+                    }
+                }
             }
             
             if (next.HasValue)
@@ -252,6 +265,30 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 
                 generator.Emit(code, next.Value);
                 
+                generator.Emit(OpCodes.Ldc_I4_0);
+                generator.Emit(OpCodes.Ret);
+            }
+
+            static void GenerateStringLengthValidation(ILGenerator generator, int fieldIndex, uint value, OpCode code, ref Label? next)
+            {
+                if (next != null)
+                {
+                    generator.MarkLabel(next.Value);
+                }
+
+                next = generator.DefineLabel();
+
+                var nextCheckNull = generator.DefineLabel();
+                
+                generator.Emit(OpCodes.Ldarg_S, fieldIndex);
+                generator.Emit(OpCodes.Brfalse_S, nextCheckNull);
+                
+                generator.Emit(OpCodes.Ldarg_S, fieldIndex);
+                generator.EmitCall(OpCodes.Callvirt, s_getLength, null);
+                generator.Emit(OpCodes.Ldc_I4, value);
+                generator.Emit(code, next.Value);
+                
+                generator.MarkLabel(nextCheckNull);
                 generator.Emit(OpCodes.Ldc_I4_0);
                 generator.Emit(OpCodes.Ret);
             }
@@ -323,6 +360,22 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                    || parameterType == typeof(float)
                    || parameterType == typeof(double)
                    || parameterType == typeof(decimal);
+
+            static bool IsString(Type type)
+                => type == typeof(string);
+            
+            static bool IsNumber(Type type)
+                => type == typeof(int)
+                   || type == typeof(uint)
+                   || type == typeof(long)
+                   || type == typeof(ulong)
+                   || type == typeof(short)
+                   || type == typeof(ushort)
+                   || type == typeof(double)
+                   || type == typeof(float)
+                   || type == typeof(decimal)
+                   || type == typeof(byte)
+                   || type == typeof(sbyte);
         }
 
         private static void CreateExecuteAsync(TypeBuilder builder, TypeBuilder inputBuilder, PropertyBuilder input, MethodInfo action, Type thingType)
@@ -387,17 +440,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             il.Emit(OpCodes.Ret);
         }
 
-        private static bool IsNumber(Type type)
-            => type == typeof(int)
-               || type == typeof(uint)
-               || type == typeof(long)
-               || type == typeof(ulong)
-               || type == typeof(short)
-               || type == typeof(ushort)
-               || type == typeof(double)
-               || type == typeof(float)
-               || type == typeof(decimal)
-               || type == typeof(byte)
-               || type == typeof(sbyte);
+       
     }
 }
