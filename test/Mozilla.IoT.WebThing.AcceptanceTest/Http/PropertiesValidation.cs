@@ -1,37 +1,30 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoFixture;
 using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
+namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
 {
-    public class PropertyValidationType
+    public class PropertiesValidation
     {
-        private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
-        private readonly WebSocketClient _webSocketClient;
+        private readonly Fixture _fixture;
+        private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30_000);
         private readonly HttpClient _client;
-        private readonly Uri _uri;
-        
-        public PropertyValidationType()
+        public PropertiesValidation()
         {
+            _fixture = new Fixture();
             var host = Program.GetHost().GetAwaiter().GetResult();
             _client = host.GetTestServer().CreateClient();
-            _webSocketClient = host.GetTestServer().CreateWebSocketClient();
-
-            _uri =  new UriBuilder(_client.BaseAddress)
-            {
-                Scheme = "ws",
-                Path = "/things/web-socket-property-validation-type"
-            }.Uri;
         }
         
+        #region PUT
+
         [Theory]
         [InlineData("numberByte", 1)]
         [InlineData("numberByte", 10)]
@@ -99,60 +92,14 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         [InlineData("nullableDecimal", 1)]
         [InlineData("nullableDecimal", 10)]
         [InlineData("nullableDecimal", 100)]
-        [InlineData("text", "abc")]
-        [InlineData("email", "text@test.com")]
-        public async Task SetProperties(string property, object value)
+        public async Task PutNumber(string property, object value)
         {
-            if (value is string || value == null)
-            {
-                value = value != null ? $"\"{value}\"" : "null";
-            }
             
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
-            
-            var socket = await _webSocketClient.ConnectAsync(_uri, source.Token)
-                .ConfigureAwait(false);
 
-            source = new CancellationTokenSource();
-            source.CancelAfter(s_timeout);
-            await socket
-                .SendAsync(Encoding.UTF8.GetBytes($@"
-{{
-    ""messageType"": ""setProperty"",
-    ""data"": {{
-        ""{property}"": {value}
-    }}
-}}"), WebSocketMessageType.Text, true,
-                    source.Token)
-                .ConfigureAwait(false);
-            
-            source = new CancellationTokenSource();
-            source.CancelAfter(s_timeout);
-            
-            var segment = new ArraySegment<byte>(new byte[4096]);
-            var result = await socket.ReceiveAsync(segment, source.Token)
-                .ConfigureAwait(false);
-
-            result.MessageType.Should().Be(WebSocketMessageType.Text);
-            result.EndOfMessage.Should().BeTrue();
-            result.CloseStatus.Should().BeNull();
-
-            var json = JToken.Parse(Encoding.UTF8.GetString(segment.Slice(0, result.Count)));
-            
-            FluentAssertions.Json.JsonAssertionExtensions
-                .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"
-{{
-    ""messageType"": ""propertyStatus"",
-    ""data"": {{
-        ""{property}"": {value}
-    }}
-}}"));
-            source = new CancellationTokenSource();
-            source.CancelAfter(s_timeout);
-            
-            var response = await _client.GetAsync($"/things/web-socket-property-validation-type/properties/{property}", source.Token)
+            var response = await _client.PutAsync($"/things/property-validation-type/properties/{property}", 
+                new StringContent($@"{{ ""{property}"": {value}  }}"), source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -160,6 +107,26 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
             var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JToken.Parse(message);
+            
+            json.Type.Should().Be(JTokenType.Object);
+            FluentAssertions.Json.JsonAssertionExtensions
+                .Should(json)
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value}  }}"));
+
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            
+            response = await _client.GetAsync($"/things/property-validation-type/properties/{property}", source.Token)
+                .ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Object);
@@ -213,58 +180,87 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         [InlineData("nullableFloat", 101)]
         [InlineData("nullableDecimal", 0)]
         [InlineData("nullableDecimal", 101)]
-        [InlineData("text", "")]
-        [InlineData("text", null)]
-        [InlineData("email", "text")]
-        [InlineData("email", null)]
-        public async Task SetPropertiesInvalidNumber(string property, object value)
+        public async Task PutInvalidNumber(string property, object value)
         {
-            if (value is string || value == null)
-            {
-                value = value != null ? $"\"{value}\"" : "null";
-            }
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PutAsync($"/things/property-validation-type/properties/{property}", 
+                new StringContent($@"{{ ""{property}"": {value}  }}"), source.Token)
+                .ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeFalse();
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+        
+        [Theory]
+        [InlineData("text", "abc")]
+        [InlineData("email", "text@test.com")]
+        public async Task PutStringValue(string property, string value)
+        { 
+            value = value != null ? $"\"{value}\"" : "null";
             
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var socket = await _webSocketClient.ConnectAsync(_uri, source.Token)
-                .ConfigureAwait(false);
 
-            source = new CancellationTokenSource();
-            source.CancelAfter(s_timeout);
-            
-            await socket
-                .SendAsync(Encoding.UTF8.GetBytes($@"
-{{
-    ""messageType"": ""setProperty"",
-    ""data"": {{
-        ""{property}"": {value}
-    }}
-}}"), WebSocketMessageType.Text, true,
-                   source.Token)
+            var response = await _client.PutAsync($"/things/property-validation-type/properties/{property}", 
+                new StringContent($@"{{ ""{property}"": {value}  }}"), source.Token)
                 .ConfigureAwait(false);
             
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
             
-            var segment = new ArraySegment<byte>(new byte[4096]);
-            var result = await socket.ReceiveAsync(segment, source.Token)
-                .ConfigureAwait(false);
-
-            result.MessageType.Should().Be(WebSocketMessageType.Text);
-            result.EndOfMessage.Should().BeTrue();
-            result.CloseStatus.Should().BeNull();
-
-            var json = JToken.Parse(Encoding.UTF8.GetString(segment.Slice(0, result.Count)));
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JToken.Parse(message);
             
+            json.Type.Should().Be(JTokenType.Object);
             FluentAssertions.Json.JsonAssertionExtensions
                 .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"
-{{
-    ""messageType"": ""error"",
-    ""data"": {{
-        ""message"": ""Invalid property value"",
-        ""status"": ""400 Bad Request""
-    }}
-}}"));
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value}  }}"));
+
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            
+            response = await _client.GetAsync($"/things/property-validation-type/properties/{property}", source.Token)
+                .ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            json = JToken.Parse(message);
+            
+            json.Type.Should().Be(JTokenType.Object);
+            FluentAssertions.Json.JsonAssertionExtensions
+                .Should(json)
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value}  }}"));
         }
+        
+        [Theory]
+        [InlineData("text", "")]
+        [InlineData("text", null)]
+        [InlineData("email", "text")]
+        [InlineData("email", null)]
+        public async Task PutInvalidString(string property, string value)
+        { 
+            value = value != null ? $"\"{value}\"" : "null";
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+
+            var response = await _client.PutAsync($"/things/property-validation-type/properties/{property}", 
+                new StringContent($@"{{ ""{property}"": {value}  }}"), source.Token)
+                .ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeFalse();
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+        #endregion
     }
 }

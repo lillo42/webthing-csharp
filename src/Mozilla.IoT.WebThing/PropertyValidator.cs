@@ -12,7 +12,8 @@ namespace Mozilla.IoT.WebThing
         {
             String,
             Number,
-            Array
+            Array,
+            Bool
         }
 
         private readonly object[]? _enums;
@@ -46,13 +47,17 @@ namespace Mozilla.IoT.WebThing
                 _minimumLength = propertyAttribute.MinimumLengthValue;
                 _maximumLength = propertyAttribute.MaximumLengthValue;
                 _patter = propertyAttribute.Pattern != null
-                    ? new Regex?(propertyAttribute.Pattern, RegexOptions.Compiled)
+                    ? new Regex(propertyAttribute.Pattern!, RegexOptions.Compiled)
                     : null;
             }
 
             if (propertyType == typeof(string))
             {
                 _type = JsonType.String;
+            }
+            else if(propertyType == typeof(bool))
+            {
+                _type = JsonType.Bool;
             }
             else if(propertyType == typeof(byte)
                 || propertyType == typeof(sbyte)
@@ -152,7 +157,7 @@ namespace Mozilla.IoT.WebThing
 
         private bool IsValidString(object value)
         {
-            if (!_minimumLength.HasValue && !_maximumLength.HasValue && _patter != null)
+            if (!_minimumLength.HasValue && !_maximumLength.HasValue && _patter == null)
             {
                 return true;
             }

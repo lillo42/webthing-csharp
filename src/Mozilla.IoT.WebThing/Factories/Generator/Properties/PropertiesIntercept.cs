@@ -73,7 +73,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         {
             return new PropertyValidator(
                 thingPropertyAttribute?.IsReadOnly ?? !propertyInfo.CanWrite,
-                propertyInfo.PropertyType, thingPropertyAttribute);
+                propertyInfo.PropertyType.GetUnderlyingType(), thingPropertyAttribute);
         }
 
         private static IJsonMapper CreateMapper(Type type)
