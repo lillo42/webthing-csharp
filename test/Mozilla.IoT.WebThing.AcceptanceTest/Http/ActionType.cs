@@ -548,7 +548,67 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             public DateTime TimeRequested { get; set; }
             public DateTime? TimeCompleted { get; set; }
         }
-        
+
+        [Fact]
+        public async Task RunStringValidation()
+        {
+            var min = _fixture.Create<string>();
+            var email = "test@gmail.com";
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action-type/actions/runNull", 
+                new StringContent($@"
+{{ 
+    ""runWithStringValidation"": {{
+        ""input"": {{
+            ""minAnMax"": ""{min}"",
+            ""mail"": ""{email}""
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
+            response.Content.Headers.ContentType.ToString().Should().Be( "application/json");
+            
+            var message = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = JsonConvert.DeserializeObject<RunString>(message, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            });
+            
+            json.Input.Should().NotBeNull();
+            json.Input.Mail.Should().Be(email);
+            json.Input.MinAnMax.Should().Be(min);
+            json.Status.Should().NotBeNullOrEmpty();
+        }
+
+        [Theory]
+        [InlineData(null, "test@tese.com")]
+        [InlineData("", "test@tese.com")]
+        [InlineData("abc", null)]
+        [InlineData("abc", "test")]
+        public async Task RunStringInvalidation(string min, string email)
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client.PostAsync("/things/action-type/actions/runNull", 
+                new StringContent($@"
+{{ 
+    ""runWithStringValidation"": {{
+        ""input"": {{
+            ""minAnMax"": ""{min}"",
+            ""mail"": ""{email}""
+        }}
+    }} 
+}}", Encoding.UTF8, "application/json"), source.Token).ConfigureAwait(false);
+            
+            response.IsSuccessStatusCode.Should().BeFalse();
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
         public class Input
         {
             public bool Bool { get; set; }
@@ -568,7 +628,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             public DateTimeOffset DateTimeOffset { get; set; }
 
         }
-        
+
         public class RunNull
         {
             public InputNull Input { get; set; }
@@ -595,6 +655,19 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             public string? String { get; set; }
             public DateTime? DateTime { get; set; }
             public DateTimeOffset? DateTimeOffset { get; set; }
+        }
+        public class RunString
+        {
+            public InputString Input { get; set; }
+            public string Href { get; set; }
+            public string Status { get; set; }
+            public DateTime TimeRequested { get; set; }
+            public DateTime? TimeCompleted { get; set; }
+        }
+        public class InputString
+        {
+            public string? MinAnMax { get; set; }
+            public string? Mail { get; set; }
         }
     }
 }
