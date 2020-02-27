@@ -792,11 +792,11 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         }
         
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task RunWithStringValidationValid(bool isMin)
+        [InlineData("a")]
+        [InlineData("abc")]
+        [InlineData("0123456789")]
+        public async Task RunWithStringValidationValid(string min)
         {
-            var min = _fixture.Create<string>();
             var email = "test@gmail.com";
             
             
@@ -827,7 +827,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {{
     ""messageType"": ""requestAction"",
     ""data"": {{
-        ""runWithValidationExclusive"": {{
+        ""runWithStringValidation"": {{
             ""input"": {{
                 ""minAnMax"": ""{min}"",
                 ""mail"": ""{email}""
@@ -862,6 +862,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
         [Theory]
         [InlineData(null, "test@tese.com")]
         [InlineData("", "test@tese.com")]
+        [InlineData("a0123456789", "test@tese.com")]
         [InlineData("abc", null)]
         [InlineData("abc", "test")]
         public async Task RunWithStringValidationInvalid(string min, string email)
@@ -894,7 +895,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {{
     ""messageType"": ""requestAction"",
     ""data"": {{
-        ""runWithValidationExclusive"": {{
+        ""runWithStringValidation"": {{
             ""input"": {{
                 ""minAnMax"": ""{min}"",
                 ""mail"": ""{email}""

@@ -549,15 +549,17 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             public DateTime? TimeCompleted { get; set; }
         }
 
-        [Fact]
-        public async Task RunStringValidation()
+        [Theory]
+        [InlineData("a")]
+        [InlineData("abc")]
+        [InlineData("0123456789")]
+        public async Task RunStringValidation(string min)
         {
-            var min = _fixture.Create<string>();
             var email = "test@gmail.com";
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.PostAsync("/things/action-type/actions/runNull", 
+            var response = await _client.PostAsync("/things/action-type/actions/runWithStringValidation", 
                 new StringContent($@"
 {{ 
     ""runWithStringValidation"": {{
@@ -587,6 +589,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Theory]
         [InlineData(null, "test@tese.com")]
         [InlineData("", "test@tese.com")]
+        [InlineData("a0123456789", "test@tese.com")]
         [InlineData("abc", null)]
         [InlineData("abc", "test")]
         public async Task RunStringInvalidation(string min, string email)
@@ -594,7 +597,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.PostAsync("/things/action-type/actions/runNull", 
+            var response = await _client.PostAsync("/things/action-type/actions/runWithStringValidation", 
                 new StringContent($@"
 {{ 
     ""runWithStringValidation"": {{

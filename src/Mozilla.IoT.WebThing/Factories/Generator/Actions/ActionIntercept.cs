@@ -238,7 +238,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                     
                     if (validationParameter.MaximumLengthValue.HasValue)
                     {
-                        GenerateStringLengthValidation(il, i, validationParameter.MaximumLengthValue.Value, OpCodes.Bge_S, ref next);
+                        GenerateStringLengthValidation(il, i, validationParameter.MaximumLengthValue.Value, OpCodes.Ble_S, ref next);
                     }
                 }
             }

@@ -19,21 +19,22 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddThings(Option)
-                .AddThing<LampThing>()
-                .AddThing<PropertyThing>()
-                .AddThing<EventThing>()
-                .AddThing<ActionThing>()
-                .AddThing<WebSocketPropertyThing>()
-                .AddThing<PropertyTypeThing>()
-                .AddThing<PropertyEnumThing>()
-                .AddThing<WebSocketPropertyTypeThing>()
-                .AddThing<WebSocketPropertyEnumThing>()
+                // .AddThing<LampThing>()
+                // .AddThing<PropertyThing>()
+                // .AddThing<EventThing>()
+                // .AddThing<ActionThing>()
+                // .AddThing<WebSocketPropertyThing>()
+                // .AddThing<PropertyTypeThing>()
+                // .AddThing<PropertyEnumThing>()
+                // .AddThing<WebSocketPropertyTypeThing>()
+                // .AddThing<WebSocketPropertyEnumThing>()
                 .AddThing<ActionTypeThing>()
-                .AddThing<EventTypeThing>()
-                .AddThing<PropertyValidationThing>()
-                .AddThing<WebSocketPropertyValidationThing>();
+                // .AddThing<EventTypeThing>()
+                // .AddThing<PropertyValidationThing>()
+                // .AddThing<WebSocketPropertyValidationThing>()
+                ;
 
-            services.AddWebSockets(o => { });
+                services.AddWebSockets(o => { });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
