@@ -791,6 +791,142 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Data.Message.Should().Be("Invalid action request");
         }
         
+        [Theory]
+        [InlineData("a")]
+        [InlineData("abc")]
+        [InlineData("0123456789")]
+        public async Task RunWithStringValidationValid(string min)
+        {
+            var email = "test@gmail.com";
+            
+            
+            var host = await Program.CreateHostBuilder(null)
+                .StartAsync()
+                .ConfigureAwait(false);
+            var client = host.GetTestServer().CreateClient();
+            var webSocketClient = host.GetTestServer().CreateWebSocketClient();
+
+            var uri =  new UriBuilder(client.BaseAddress)
+            {
+                Scheme = "ws",
+                Path = "/things/action-type"
+            }.Uri;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var socket = await webSocketClient.ConnectAsync(uri, source.Token)
+                .ConfigureAwait(false);
+            
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            await socket
+                .SendAsync(Encoding.UTF8.GetBytes($@"
+{{
+    ""messageType"": ""requestAction"",
+    ""data"": {{
+        ""runWithStringValidation"": {{
+            ""input"": {{
+                ""minAnMax"": ""{min}"",
+                ""mail"": ""{email}""
+            }}
+        }}
+    }}
+}}"), WebSocketMessageType.Text, true,
+                    source.Token)
+                .ConfigureAwait(false);
+            
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var segment = new ArraySegment<byte>(new byte[4096]);
+            var result = await socket.ReceiveAsync(segment, source.Token)
+                .ConfigureAwait(false);
+
+            result.MessageType.Should().Be(WebSocketMessageType.Text);
+            result.EndOfMessage.Should().BeTrue();
+            result.CloseStatus.Should().BeNull();
+
+            var message = Encoding.UTF8.GetString(segment.Slice(0, result.Count));
+            var json = JsonConvert.DeserializeObject<Message>(message, new JsonSerializerSettings {ContractResolver = new CamelCasePropertyNamesContractResolver()});
+           
+            json.MessageType.Should().Be("actionStatus");
+            json.Data.RunWithStringValidation.Input.MinAnMax.Should().Be(min);
+            json.Data.RunWithStringValidation.Input.Mail.Should().Be(email);
+        }
+        
+        
+        [Theory]
+        [InlineData(null, "test@tese.com")]
+        [InlineData("", "test@tese.com")]
+        [InlineData("a0123456789", "test@tese.com")]
+        [InlineData("abc", null)]
+        [InlineData("abc", "test")]
+        public async Task RunWithStringValidationInvalid(string min, string email)
+        {
+            
+            var host = await Program.CreateHostBuilder(null)
+                .StartAsync()
+                .ConfigureAwait(false);
+            var client = host.GetTestServer().CreateClient();
+            var webSocketClient = host.GetTestServer().CreateWebSocketClient();
+
+            var uri =  new UriBuilder(client.BaseAddress)
+            {
+                Scheme = "ws",
+                Path = "/things/action-type"
+            }.Uri;
+            
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var socket = await webSocketClient.ConnectAsync(uri, source.Token)
+                .ConfigureAwait(false);
+            
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            await socket
+                .SendAsync(Encoding.UTF8.GetBytes($@"
+{{
+    ""messageType"": ""requestAction"",
+    ""data"": {{
+        ""runWithStringValidation"": {{
+            ""input"": {{
+                ""minAnMax"": ""{min}"",
+                ""mail"": ""{email}""
+            }}
+        }}
+    }}
+}}"), WebSocketMessageType.Text, true,
+                    source.Token)
+                .ConfigureAwait(false);
+            
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var segment = new ArraySegment<byte>(new byte[4096]);
+            var result = await socket.ReceiveAsync(segment, source.Token)
+                .ConfigureAwait(false);
+
+            result.MessageType.Should().Be(WebSocketMessageType.Text);
+            result.EndOfMessage.Should().BeTrue();
+            result.CloseStatus.Should().BeNull();
+
+            var message = Encoding.UTF8.GetString(segment.Slice(0, result.Count));
+            var json = JsonConvert.DeserializeObject<Message>(message, new JsonSerializerSettings {ContractResolver = new CamelCasePropertyNamesContractResolver()});
+           
+            json.MessageType.Should().Be("error");
+            json.Data.Status.Should().Be("400 Bad Request");
+            json.Data.Message.Should().Be("Invalid action request");
+        }
+        
+        
         public class Message
         {
             public string MessageType { get; set; }
@@ -806,6 +942,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             
             public Http.ActionType.Run RunWithValidation { get; set; }
             public Http.ActionType.Run RunWithValidationExclusive { get; set; }
+            
+            
+            public Http.ActionType.RunString RunWithStringValidation { get; set; }
         }
             
     }

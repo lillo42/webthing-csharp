@@ -85,8 +85,21 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         thingPropertyAttribute.MinimumValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Maximum), propertyType,
                         thingPropertyAttribute.MaximumValue);
+                    _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.ExclusiveMinimum), propertyType,
+                        thingPropertyAttribute.ExclusiveMinimumValue);
+                    _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.ExclusiveMaximum), propertyType,
+                        thingPropertyAttribute.ExclusiveMaximumValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MultipleOf), propertyType,
                         thingPropertyAttribute.MultipleOfValue);
+                }
+                else if (jsonType == "string")
+                {
+                    _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MinimumLength), propertyType,
+                        thingPropertyAttribute.MinimumLengthValue);
+                    _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MaximumLength), propertyType,
+                        thingPropertyAttribute.MaximumLengthValue);
+                    _jsonWriter.PropertyString(nameof(ThingPropertyAttribute.Pattern), propertyType,
+                        thingPropertyAttribute.Pattern);
                 }
             }
             else
