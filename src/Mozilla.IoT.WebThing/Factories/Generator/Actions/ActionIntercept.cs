@@ -19,8 +19,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
         private static readonly MethodInfo s_getLength = typeof(string).GetProperty(nameof(string.Length)).GetMethod;
         private static readonly MethodInfo s_match = typeof(Regex).GetMethod(nameof(Regex.Match) , new [] { typeof(string) });
         private static readonly MethodInfo s_success = typeof(Match).GetProperty(nameof(Match.Success)).GetMethod;
+        private static readonly ConstructorInfo s_regexConstructor = typeof(Regex).GetConstructors()[1];
         
-        private readonly ICollection<(string pattern, FieldBuilder field)> _regex = new LinkedList<(string pattern, FieldBuilder field)f>();
+        private readonly ICollection<(string pattern, FieldBuilder field)> _regex = new LinkedList<(string pattern, FieldBuilder field)>();
         private const MethodAttributes s_getSetAttributes =
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
@@ -76,20 +77,33 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                                 && x.ParameterType != typeof(CancellationToken))
                     .Select(x => x.ParameterType)
                     .ToArray());
-            var isValidIl = isValid.GetILGenerator();
             
-            CreateParameterValidation(isValidIl, parameters, inputBuilder);
+            var isValidIl = isValid.GetILGenerator();
+            CreateParameterValidation(isValidIl, parameters, actionBuilder);
             CreateInputValidation(actionBuilder, inputBuilder, isValid, input);
             CreateExecuteAsync(actionBuilder, inputBuilder,input, action, thingType);
-            
-            
+            CreateStaticConstructor(actionBuilder);
+
             Actions.Add(_option.PropertyNamingPolicy.ConvertName(name), new ActionContext(actionBuilder.CreateType()!));
         }
 
-        private static void CreateStaticConstructor(TypeBuilder typeBuilder)
+        private void CreateStaticConstructor(TypeBuilder typeBuilder)
         {
-            var constructor = typeBuilder.DefineTypeInitializer();
-            var il = constructor.GetILGenerator();
+            if (_regex.Count > 0)
+            {
+                var constructor = typeBuilder.DefineTypeInitializer();
+                var il = constructor.GetILGenerator();
+
+                foreach (var (pattern, field) in _regex)
+                {
+                    il.Emit(OpCodes.Ldstr, pattern);
+                    il.Emit(OpCodes.Ldc_I4_8);
+                    il.Emit(OpCodes.Newobj, s_regexConstructor);
+                    il.Emit(OpCodes.Stsfld, field);
+                }
+                
+                il.Emit(OpCodes.Ret);
+            }
         }
         
         private static PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)
