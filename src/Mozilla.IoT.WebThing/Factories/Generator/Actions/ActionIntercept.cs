@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
     public class ActionIntercept : IActionIntercept
     {
         private static readonly MethodInfo s_getLength = typeof(string).GetProperty(nameof(string.Length)).GetMethod;
+        private static readonly MethodInfo s_match = typeof(Regex).GetMethod(nameof(Regex.Match) , new [] { typeof(string) });
+        private static readonly MethodInfo s_success = typeof(Match).GetProperty(nameof(Match.Success)).GetMethod;
+        
+        private readonly ICollection<(string pattern, FieldBuilder field)> _regex = new LinkedList<(string pattern, FieldBuilder field)f>();
         private const MethodAttributes s_getSetAttributes =
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
@@ -73,11 +78,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                     .ToArray());
             var isValidIl = isValid.GetILGenerator();
             
-            CreateParameterValidation(isValidIl, parameters);
+            CreateParameterValidation(isValidIl, parameters, inputBuilder);
             CreateInputValidation(actionBuilder, inputBuilder, isValid, input);
             CreateExecuteAsync(actionBuilder, inputBuilder,input, action, thingType);
             
+            
             Actions.Add(_option.PropertyNamingPolicy.ConvertName(name), new ActionContext(actionBuilder.CreateType()!));
+        }
+
+        private static void CreateStaticConstructor(TypeBuilder typeBuilder)
+        {
+            var constructor = typeBuilder.DefineTypeInitializer();
+            var il = constructor.GetILGenerator();
         }
         
         private static PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)
@@ -148,7 +160,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             isInputValid.Emit(OpCodes.Ret);
         }
         
-        private static void CreateParameterValidation(ILGenerator il, ParameterInfo[] parameters)
+        private void CreateParameterValidation(ILGenerator il, ParameterInfo[] parameters, TypeBuilder typeBuilder)
         {
             Label? next = null;
             for (var i = 0; i < parameters.Length; i++)
@@ -239,6 +251,32 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                     if (validationParameter.MaximumLengthValue.HasValue)
                     {
                         GenerateStringLengthValidation(il, i, validationParameter.MaximumLengthValue.Value, OpCodes.Ble_S, ref next);
+                    }
+
+                    if (validationParameter.Pattern != null)
+                    {
+                        var regex = typeBuilder.DefineField($"_regex{parameter.Name}", typeof(Regex),
+                            FieldAttributes.Private | FieldAttributes.Static | FieldAttributes.InitOnly);
+                        _regex.Add((validationParameter.Pattern ,regex));
+                        if (next != null)
+                        {
+                            il.MarkLabel(next.Value);
+                        }
+
+                        next = il.DefineLabel();
+                        var isNull = il.DefineLabel();
+                        il.Emit(OpCodes.Ldarg_S, i);
+                        il.Emit(OpCodes.Brfalse_S, isNull);
+                        
+                        il.Emit(OpCodes.Ldsfld, regex);
+                        il.Emit(OpCodes.Ldarg_S, i);
+                        il.EmitCall(OpCodes.Callvirt, s_match, null);
+                        il.EmitCall(OpCodes.Callvirt, s_success, null);
+                        il.Emit(OpCodes.Brtrue_S, next.Value);
+                        
+                        il.MarkLabel(isNull);
+                        il.Emit(OpCodes.Ldc_I4_0);
+                        il.Emit(OpCodes.Ret);
                     }
                 }
             }
