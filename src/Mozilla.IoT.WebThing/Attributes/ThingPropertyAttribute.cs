@@ -55,5 +55,21 @@ namespace Mozilla.IoT.WebThing.Attributes
             get => ExclusiveMaximumValue ?? 0;
             set => ExclusiveMaximumValue = value;
         }
+        
+        internal uint? MinimumLengthValue { get; set; }
+        public uint MinimumLength
+        {
+            get => MinimumLengthValue.GetValueOrDefault();
+            set => MinimumLengthValue = value;
+        }
+
+        internal uint? MaximumLengthValue { get; set; }
+        public uint MaximumLength
+        {
+            get => MaximumLengthValue.GetValueOrDefault();
+            set => MaximumLengthValue = value;
+        }
+        
+        public string? Pattern { get; set; }
     }
 }

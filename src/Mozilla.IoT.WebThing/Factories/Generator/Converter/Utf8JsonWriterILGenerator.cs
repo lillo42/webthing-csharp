@@ -647,5 +647,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             
             EndArray();
         }
+        
+        public void PropertyString(string propertyName, Type propertyType, string? value)
+        {
+            if (value == null)
+            {
+                PropertyWithNullValue(propertyName);
+                return;
+            }
+            
+            PropertyWithValue(propertyName, value);
+        }
     }
 }

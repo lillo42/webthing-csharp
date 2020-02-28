@@ -88,5 +88,14 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
         {
             logger.LogInformation("Execution action....");
         }
+        
+        public void RunWithStringValidation(
+            [ThingParameter(MinimumLength = 1, MaximumLength = 10)]string @minAnMax,
+            [ThingParameter(Pattern = @"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$")]string mail,
+            [FromServices]ILogger<ActionTypeThing> logger
+        )
+        {
+            logger.LogInformation("Execution action....");
+        }
     }
 }
