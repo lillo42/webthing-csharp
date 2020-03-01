@@ -51,9 +51,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             _factory.Actions.Should().ContainKey(actionName);
 
             _thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
                 new Dictionary<string, EventCollection>(),
-                _factory.Actions);
+                _factory.Actions, 
+                new Dictionary<string, IProperty>());
             var actionType = _thing.ThingContext.Actions[actionName].ActionType;
             return (ActionInfo)Activator.CreateInstance(actionType);
 
@@ -65,9 +65,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             _factory.Actions.Should().ContainKey(actionName);
 
             _thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
-                Substitute.For<IProperties>(),
                 new Dictionary<string, EventCollection>(),
-                _factory.Actions);
+                _factory.Actions,
+                new Dictionary<string, IProperty>());
             var actionType = _thing.ThingContext.Actions[actionName].ActionType;
             var action = (ActionInfo)Activator.CreateInstance(actionType);
             

@@ -9,7 +9,6 @@ using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 using Newtonsoft.Json.Linq;
-using NSubstitute;
 using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test.Generator
@@ -37,9 +36,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             CodeGeneratorFactory.Generate(_thing, new[] {_factory});
             _thing.Prefix = new Uri("http://localhost/");
             _thing.ThingContext = new Context(_factory.Create(),
-                Substitute.For<IProperties>(),
                 new Dictionary<string, EventCollection>(), 
-                new Dictionary<string, ActionContext>());
+                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, IProperty>());
             
             var value = JsonSerializer.Serialize(_thing,
                 new JsonSerializerOptions {

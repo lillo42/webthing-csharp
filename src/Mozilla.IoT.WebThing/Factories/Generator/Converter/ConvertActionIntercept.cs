@@ -85,7 +85,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         throw new ArgumentException();
                     }
 
-                    _jsonWriter.PropertyWithValue("Type", jsonType);
+                    _jsonWriter.PropertyWithValue("Type", jsonType.ToString().ToLower());
                     var parameterActionInfo = parameter.GetCustomAttribute<ThingParameterAttribute>();
 
                     if (parameterActionInfo != null)
@@ -93,7 +93,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         _jsonWriter.PropertyWithNullableValue("Title", parameterActionInfo.Title);
                         _jsonWriter.PropertyWithNullableValue("Description", parameterActionInfo.Description);
                         _jsonWriter.PropertyWithNullableValue("Unit", parameterActionInfo.Unit);
-                        if (jsonType == "number" || jsonType == "integer")
+                        if (jsonType == JsonType.Number || jsonType == JsonType.Integer)
                         {
                             _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), parameterType,
                                 parameterActionInfo.MinimumValue);
@@ -106,7 +106,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                             _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.MultipleOf),
                                 parameterActionInfo.MultipleOfValue);
                         }
-                        else if (jsonType == "string")
+                        else if (jsonType == JsonType.String)
                         {
                             _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MinimumLength), parameterType,
                                 parameterActionInfo.MinimumLengthValue);

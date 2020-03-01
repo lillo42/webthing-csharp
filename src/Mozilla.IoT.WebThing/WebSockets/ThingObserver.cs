@@ -30,7 +30,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
         }
         
-        public HashSet<string> EventsBind { get; } = new HashSet<string>();
+        public IEnumerable<string> EventsBind { get; } = new HashSet<string>();
         
         public async void OnEvenAdded(object sender, Event @event)
         {
@@ -47,12 +47,12 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
         {
-            var data = _thing.ThingContext.Properties.GetProperties(property.PropertyName);
-            _logger.LogInformation("Event add received, going to notify Web Socket");
+            var data = _thing.ThingContext.Properties[property.PropertyName];
+            _logger.LogInformation("Property changed, going to notify via Web Socket. [Property: {propertyName}]", property.PropertyName);
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
                     new Dictionary<string, object>
                     {
-                        [_options.GetPropertyName(property.PropertyName)] = data[property.PropertyName]
+                        [_options.GetPropertyName(property.PropertyName)] = data
                     }),
                 _options);
             
@@ -62,10 +62,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
         public async void OnActionChange(object sender, ActionInfo action)
         {
+            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.Status);
             await _socket.SendAsync(
                     JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("actionStatus",new Dictionary<string, object>
                     {
-                        [ action.GetActionName()] = action
+                        [action.GetActionName()] = action
                     }), _options),
                     WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);

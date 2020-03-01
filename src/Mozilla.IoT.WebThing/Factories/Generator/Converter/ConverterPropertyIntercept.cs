@@ -74,12 +74,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 }
                 
                 
-                _jsonWriter.PropertyWithNullableValue("Type", jsonType);
+                _jsonWriter.PropertyWithNullableValue("Type", jsonType.ToString().ToLower());
                 _jsonWriter.PropertyEnum("@enum", propertyType, thingPropertyAttribute.Enum);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Unit), thingPropertyAttribute.Unit);
                 _jsonWriter.PropertyType("@type", thingPropertyAttribute.Type);
 
-                if (jsonType == "number" || jsonType == "integer")
+                if (jsonType == JsonType.Number || jsonType == JsonType.Integer)
                 {
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), propertyType,
                         thingPropertyAttribute.MinimumValue);
@@ -92,7 +92,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MultipleOf), propertyType,
                         thingPropertyAttribute.MultipleOfValue);
                 }
-                else if (jsonType == "string")
+                else if (jsonType == JsonType.String)
                 {
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MinimumLength), propertyType,
                         thingPropertyAttribute.MinimumLengthValue);

@@ -29,9 +29,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
-
-            var properties = thing.ThingContext.Properties.GetProperties()!;
-            logger.LogInformation("Found Thing with {counter} properties. [Thing: {name}]", properties.Count, thing.Name);
+            logger.LogInformation("Found Thing with {counter} properties. [Thing: {name}]", thing.ThingContext.Properties.Count, thing.Name);
+            
+            var properties = new Dictionary<string, object>();
+            
+            foreach (var (propertyName, property) in thing.ThingContext.Properties)
+            {
+                properties.Add(propertyName, property.GetValue());
+            }
             
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
