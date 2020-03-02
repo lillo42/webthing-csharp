@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
@@ -14,7 +15,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static readonly MethodInfo s_match = typeof(Regex).GetMethod(nameof(Regex.Match) , new [] { typeof(string) });
         private static readonly MethodInfo s_success = typeof(Match).GetProperty(nameof(Match.Success)).GetMethod;
         private static readonly ConstructorInfo s_regexConstructor = typeof(Regex).GetConstructors()[1];
-
+        
+        private static readonly MethodInfo s_toDecimal = typeof(Convert).GetMethod(nameof(Convert.ToDecimal), new[] {typeof(string)});
+        private static readonly MethodInfo s_decimalComparer = typeof(decimal).GetMethod(nameof(decimal.Compare), new[] {typeof(decimal), typeof(decimal)});
+        private static readonly MethodInfo s_decimalRemainder = typeof(decimal).GetMethod(nameof(decimal.Remainder), new[] {typeof(decimal), typeof(decimal)});
+        private static readonly FieldInfo s_decimalZero = typeof(decimal).GetField(nameof(decimal.Zero));
+        
         public ValidationGeneration(ILGenerator generator, TypeBuilder builder)
         {
             _generator = generator ?? throw new ArgumentNullException(nameof(generator));
@@ -36,69 +42,112 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         
         private void AddNumberValidation(Type type, Validation validation, Action getValue, Action error, ref Label? next)
         {
-            var isBig = IsBigNumber(type);
-            
-            if (validation.Minimum.HasValue)
+            if (type == typeof(decimal))
             {
-                var code = isBig ? OpCodes.Bge_Un_S : OpCodes.Bge_S;
-                GenerateNumberValidation(code, validation.Minimum.Value, ref next);
-            }
-            
-            if (validation.Maximum.HasValue)
-            {
-                var code = isBig ? OpCodes.Ble_Un_S : OpCodes.Ble_S;
-                GenerateNumberValidation(code, validation.Maximum.Value, ref next);
-            }
-            
-            if (validation.ExclusiveMinimum.HasValue)
-            {
-                var code = isBig ? OpCodes.Bgt_Un_S : OpCodes.Bgt_S;
-                GenerateNumberValidation(code, validation.ExclusiveMinimum.Value, ref next);
-            }
-            
-            if (validation.ExclusiveMaximum.HasValue)
-            {
-                var code = isBig ? OpCodes.Blt_Un_S : OpCodes.Blt_S;
-                GenerateNumberValidation(code, validation.ExclusiveMaximum.Value, ref next);
-            }
+                if (validation.Minimum.HasValue)
+                {
+                    GenerateDecimalValidation(OpCodes.Bge_S, validation.Minimum.Value, ref next);
+                }
+                
+                if (validation.Maximum.HasValue)
+                {
+                    GenerateDecimalValidation(OpCodes.Ble_S, validation.Maximum.Value, ref next);
+                }
+                
+                if (validation.ExclusiveMinimum.HasValue)
+                {
+                    GenerateDecimalValidation(OpCodes.Bgt_S, validation.ExclusiveMinimum.Value, ref next);
+                }
+                
+                if (validation.ExclusiveMaximum.HasValue)
+                {
+                    GenerateDecimalValidation(OpCodes.Blt_S, validation.ExclusiveMaximum.Value, ref next);
+                }
 
-            if (validation.MultipleOf.HasValue)
-            {
-                if (next != null)
+                if (validation.MultipleOf.HasValue)
                 {
-                    _generator.MarkLabel(next.Value);
-                }
-            
-                next = _generator.DefineLabel();
-                getValue();
-                EmitValue(type, validation.MultipleOf.Value);
-                if (!IsBigNumber(type) || type == typeof(ulong))
-                {
-                    var rem = OpCodes.Rem;
-                    if (type == typeof(uint) || type == typeof(ulong))
+                    if (next != null)
                     {
-                        rem = OpCodes.Rem_Un;
+                        _generator.MarkLabel(next.Value);
                     }
-                    
-                    _generator.Emit(rem);
+            
+                    next = _generator.DefineLabel();
+                    getValue();
+                    EmitValue(type, validation.MultipleOf.Value);
+                    _generator.EmitCall(OpCodes.Call, s_decimalRemainder, null);
+                    _generator.Emit(OpCodes.Ldsfld, s_decimalZero);
+                    _generator.EmitCall(OpCodes.Call, s_decimalComparer, null);
                     _generator.Emit(OpCodes.Brfalse_S, next.Value);
+                    
+                    error();
                 }
-                else
+            }
+            else
+            {
+                var isBig = IsBigNumber(type);
+                
+                if (validation.Minimum.HasValue)
                 {
-                    _generator.Emit(OpCodes.Rem);
-                    if (type == typeof(float))
+                    var code = isBig ? OpCodes.Bge_Un_S : OpCodes.Bge_S;
+                    GenerateNumberValidation(code, validation.Minimum.Value, ref next);
+                }
+                
+                if (validation.Maximum.HasValue)
+                {
+                    var code = isBig ? OpCodes.Ble_Un_S : OpCodes.Ble_S;
+                    GenerateNumberValidation(code, validation.Maximum.Value, ref next);
+                }
+                
+                if (validation.ExclusiveMinimum.HasValue)
+                {
+                    var code = isBig ? OpCodes.Bgt_Un_S : OpCodes.Bgt_S;
+                    GenerateNumberValidation(code, validation.ExclusiveMinimum.Value, ref next);
+                }
+                
+                if (validation.ExclusiveMaximum.HasValue)
+                {
+                    var code = isBig ? OpCodes.Blt_Un_S : OpCodes.Blt_S;
+                    GenerateNumberValidation(code, validation.ExclusiveMaximum.Value, ref next);
+                }
+
+                if (validation.MultipleOf.HasValue)
+                {
+                    if (next != null)
                     {
-                        _generator.Emit(OpCodes.Ldc_R4 , (float)0);
+                        _generator.MarkLabel(next.Value);
+                    }
+                
+                    next = _generator.DefineLabel();
+                    getValue();
+                    EmitValue(type, validation.MultipleOf.Value);
+                    if (!IsBigNumber(type) || type == typeof(ulong))
+                    {
+                        var rem = OpCodes.Rem;
+                        if (type == typeof(uint) || type == typeof(ulong))
+                        {
+                            rem = OpCodes.Rem_Un;
+                        }
+                        
+                        _generator.Emit(rem);
+                        _generator.Emit(OpCodes.Brfalse_S, next.Value);
                     }
                     else
                     {
-                        _generator.Emit(OpCodes.Ldc_R8, (double)0);
+                        _generator.Emit(OpCodes.Rem);
+                        if (type == typeof(float))
+                        {
+                            _generator.Emit(OpCodes.Ldc_R4 , (float)0);
+                        }
+                        else
+                        {
+                            _generator.Emit(OpCodes.Ldc_R8, (double)0);
+                        }
+                        
+                        _generator.Emit(OpCodes.Beq_S, next.Value);
                     }
-                    
-                    _generator.Emit(OpCodes.Beq_S, next.Value);
+                   
+                    error();
                 }
-               
-                error();
             }
             
             void GenerateNumberValidation(OpCode code, double value, ref Label? next)
@@ -112,6 +161,23 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 getValue();
                 EmitValue(type, value);
                 _generator.Emit(code, next.Value);
+                error();
+            }
+
+            void GenerateDecimalValidation(OpCode code, double value, ref Label? next)
+            {
+                if (next != null)
+                {
+                    _generator.MarkLabel(next.Value);
+                }
+            
+                next = _generator.DefineLabel();
+                getValue();
+                EmitValue(type, value);
+                _generator.EmitCall(OpCodes.Call, s_decimalComparer, null);
+                _generator.Emit(OpCodes.Ldc_I4_0);
+                _generator.Emit(code, next.Value);
+                
                 error();
             }
             
@@ -203,10 +269,15 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                     var convert = Convert.ToSingle(value);
                     _generator.Emit(OpCodes.Ldc_R4, convert);
                 }
-                else
+                else if(fieldType == typeof(double))
                 {
                     var convert = Convert.ToDouble(value);
                     _generator.Emit(OpCodes.Ldc_R8, convert);
+                }
+                else
+                {
+                    _generator.Emit(OpCodes.Ldstr, Convert.ToString(value, CultureInfo.InvariantCulture));
+                    _generator.EmitCall(OpCodes.Call, s_toDecimal, null);
                 }
             }
         }
@@ -300,8 +371,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static bool IsBigNumber(Type parameterType)
             => parameterType == typeof(ulong)
                || parameterType == typeof(float)
-               || parameterType == typeof(double)
-               || parameterType == typeof(decimal);
+               || parameterType == typeof(double);
     }
 
     public class Validation

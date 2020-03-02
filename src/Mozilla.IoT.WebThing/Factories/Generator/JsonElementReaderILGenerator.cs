@@ -23,7 +23,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static readonly MethodInfo s_getTryGetLong = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetInt64));
         private static readonly MethodInfo s_getTryGetULong = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetUInt64));
         private static readonly MethodInfo s_getTryGetFloat = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetSingle));
-        private static readonly MethodInfo s_getTryGetDouble = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetDecimal));
+        private static readonly MethodInfo s_getTryGetDouble = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetDouble));
         private static readonly MethodInfo s_getTryGetDecimal = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetDecimal));
         private static readonly MethodInfo s_getTryGetDateTime = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetDateTime));
         private static readonly MethodInfo s_getTryGetDateTimeOffset = typeof(JsonElement).GetMethod(nameof(JsonElement.TryGetDateTimeOffset));

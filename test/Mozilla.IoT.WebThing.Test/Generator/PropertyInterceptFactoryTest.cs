@@ -488,6 +488,12 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             [ThingProperty(Minimum = 1, Maximum = 100)]
             public decimal Decimal { get; set; }
             
+            [ThingProperty(MultipleOf = 2)]
+            public decimal MultipleOfDecimal { get; set; }
+            
+            [ThingProperty(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]
+            public double ExclusiveDecimal { get; set; }
+            
             #endregion
             
             #region String
@@ -608,6 +614,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 nameof(NoNullablePropertyWithValidationThing.MultipleOfULong), 
                 nameof(NoNullablePropertyWithValidationThing.MultipleOfFloat), 
                 nameof(NoNullablePropertyWithValidationThing.MultipleOfDouble),
+                nameof(NoNullablePropertyWithValidationThing.MultipleOfDecimal),
             };
             
             private readonly List<string> _propertyNameExclusive = new List<string>
@@ -622,6 +629,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 nameof(NoNullablePropertyWithValidationThing.ExclusiveULong), 
                 nameof(NoNullablePropertyWithValidationThing.ExclusiveFloat), 
                 nameof(NoNullablePropertyWithValidationThing.ExclusiveDouble),
+                nameof(NoNullablePropertyWithValidationThing.ExclusiveDecimal),
             };
             
             private readonly int[] _values = { 0, 101};
