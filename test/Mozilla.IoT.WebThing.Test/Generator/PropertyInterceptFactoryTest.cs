@@ -8,6 +8,7 @@ using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Properties;
+using Mozilla.IoT.WebThing.Test.Extensions;
 using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test.Generator
@@ -215,6 +216,35 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         }
         #endregion
         
+        #region NullableProperty
+        
+        [Theory]
+        [ClassData(typeof(NullablePropertValidGenerator))]
+        public void SetValidValueNullableWithValidation(string propertyName, object value)
+        { 
+            var thing = new NullablePropertyThing(); 
+            CodeGeneratorFactory.Generate(thing, new []{ _factory });
+
+            var jsonValue = value;
+            if (value is string)
+            {
+                jsonValue = $@"""{value}""";
+            }
+            var properties = _factory.Properties;
+            properties.Should().ContainKey(propertyName);
+            
+            var jsonProperty = JsonSerializer.Deserialize<JsonElement>($@"{{ ""{propertyName}"": {jsonValue} }}")
+                .GetProperty(propertyName);
+            
+            properties[propertyName].SetValue(jsonProperty).Should().Be(SetPropertyResult.Ok);
+            properties[propertyName].GetValue().Should().Be(value);
+        }
+        
+        #endregion
+
+        
+        
+        
         private object GetValue(Type type)
         {
             if (type == typeof(bool))
@@ -289,7 +319,8 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
             return _fixture.Create<string>();
         }
-        
+
+        #region Thing
         public class PropertyThing : Thing
         {
             public override string Name => nameof(PropertyThing);
@@ -335,9 +366,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
             public bool? Bool { get; set; }
             public byte? Byte { get; set; }
-            public sbyte? Sbyte { get; set; }
+            public sbyte? SByte { get; set; }
             public short? Short { get; set; }
-            public ushort? Ushort { get; set; }
+            public ushort? UShort { get; set; }
             public int? Int { get; set; }
             public uint? UInt { get; set; }
             public long? Long { get; set; }
@@ -506,7 +537,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
             #endregion
         }
+        #endregion
         
+        #region Data generator
+
         public class NoNullablePropertyWithValidationSuccessThingDataGenerator : IEnumerable<object[]>
         {
             private readonly Fixture _fixture = new Fixture();
@@ -667,5 +701,44 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             IEnumerator IEnumerable.GetEnumerator() 
                 => GetEnumerator();
         }
+        
+        public class NullablePropertValidGenerator : IEnumerable<object[]>
+        {
+            private readonly Fixture _fixture = new Fixture();
+            private readonly List<(string, Type)> _propertyName = new List<(string, Type)>
+            {
+                (nameof(NullablePropertyThing.Bool), typeof(bool)),
+                (nameof(NullablePropertyThing.Byte), typeof(byte)),
+                (nameof(NullablePropertyThing.SByte), typeof(sbyte)),
+                (nameof(NullablePropertyThing.Short), typeof(short)),
+                (nameof(NullablePropertyThing.UShort), typeof(ushort)),
+                (nameof(NullablePropertyThing.Int), typeof(int)),
+                (nameof(NullablePropertyThing.UInt), typeof(uint)),
+                (nameof(NullablePropertyThing.Long), typeof(long)),
+                (nameof(NullablePropertyThing.ULong),  typeof(ulong)),
+                (nameof(NullablePropertyThing.Float),  typeof(float)),
+                (nameof(NullablePropertyThing.Double), typeof(double)),
+                (nameof(NullablePropertyThing.Decimal), typeof(decimal)),
+                (nameof(NullablePropertyThing.String), typeof(string)),
+                (nameof(NullablePropertyThing.DateTime), typeof(DateTime)),
+                (nameof(NullablePropertyThing.DateTimeOffset), typeof(DateTimeOffset))
+            };
+            
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                foreach (var (property, type) in _propertyName)
+                {
+                    yield return new object[]{property, null};
+                    yield return new []{property, _fixture.GetValue(type)};
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() 
+                => GetEnumerator();
+            
+            
+        }
+        
+        #endregion
     }
 }

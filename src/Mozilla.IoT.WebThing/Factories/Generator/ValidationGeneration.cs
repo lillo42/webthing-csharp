@@ -374,7 +374,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || parameterType == typeof(double);
     }
 
-    public class Validation
+    public readonly struct Validation
     {
         public Validation(double? minimum, double? maximum, 
             double? exclusiveMinimum, double? exclusiveMaximum, double? multipleOf, 
@@ -398,5 +398,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public int? MinimumLength { get; }
         public int? MaximumLength { get; }
         public string? Pattern { get; }
+
+        public bool HasValidation
+            => Minimum.HasValue
+               || Maximum.HasValue
+               || MultipleOf.HasValue
+               || MinimumLength.HasValue
+               || MaximumLength.HasValue
+               || Pattern != null;
     }
 }
