@@ -42,6 +42,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 logger.LogInformation("Property not found. [Thing: {thingName}][Property: {propertyName}]", thing.Name, propertyName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
 
             var jsonProperties = jsonElement.EnumerateObject();
@@ -69,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 }
             }
             
-            await context.WriteBodyAsync(HttpStatusCode.OK, property, jsonOptions)
+            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object> {[propertyName] = property.GetValue() }, jsonOptions)
                 .ConfigureAwait(false);
         }
     }

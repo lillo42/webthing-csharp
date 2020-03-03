@@ -30,7 +30,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync("/things/property/properties", source.Token)
+            var response = await _client.GetAsync("/things/lamp/properties", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -46,8 +46,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                     .BeEquivalentTo(JToken.Parse(@"
 {
     ""on"": false,
-    ""brightness"": 0,
-    ""reader"": 0
+    ""brightness"": 0
 }
 "));
         }
@@ -60,7 +59,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync($"/things/property/properties/{property}", source.Token)
+            var response = await _client.GetAsync($"/things/lamp/properties/{property}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -82,7 +81,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.GetAsync($"/things/property/properties/{_fixture.Create<string>()}", source.Token)
+            var response = await _client.GetAsync($"/things/lamp/properties/{_fixture.Create<string>()}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeFalse();
@@ -100,7 +99,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.PutAsync($"/things/property/properties/{property}", 
+            var response = await _client.PutAsync($"/things/lamp/properties/{property}", 
                 new StringContent($@"{{ ""{property}"": {value.ToString().ToLower()}  }}"), source.Token)
                 .ConfigureAwait(false);
             
@@ -121,7 +120,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             source.CancelAfter(s_timeout);
 
             
-            response = await _client.GetAsync($"/things/property/properties/{property}", source.Token)
+            response = await _client.GetAsync($"/things/lamp/properties/{property}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -140,13 +139,12 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
         [Theory]
         [InlineData("brightness", -1, 0)]
         [InlineData("brightness", 101, 0)]
-        [InlineData("reader", 101, 0)]
         public async Task PutInvalidValue(string property, object value, object defaultValue)
         {
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.PutAsync($"/things/property/properties/{property}", 
+            var response = await _client.PutAsync($"/things/lamp/properties/{property}", 
                 new StringContent($@"{{ ""{property}"": {value.ToString().ToLower()}  }}"), source.Token)
                 .ConfigureAwait(false);
             
@@ -156,7 +154,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            response = await _client.GetAsync($"/things/property/properties/{property}", source.Token)
+            response = await _client.GetAsync($"/things/lamp/properties/{property}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -181,7 +179,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             source.CancelAfter(s_timeout);
 
             
-            var response = await _client.PutAsync($"/things/property/properties/{property}", 
+            var response = await _client.PutAsync($"/things/lamp/properties/{property}", 
                 new StringContent($@"{{ ""{property}"": {_fixture.Create<int>()}  }}"), source.Token);
             
             response.IsSuccessStatusCode.Should().BeFalse();

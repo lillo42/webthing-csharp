@@ -6,7 +6,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
 {
     public class LampThing : Thing
     {
-        public override string Name => "Lamp";
+        public override string Name => "lamp";
         public override string Title => "My Lamp";
         public override string Description => "A web connected lamp";
         public override string[] Type { get; } = new[] { "Light", "OnOffSwitch" };
