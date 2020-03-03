@@ -118,10 +118,35 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
 
             var getter = new JsonElementReaderILGenerator(generator);
+            var validator = ToValidation(propertyValidation);
 
             var next = generator.DefineLabel();
             if (propertyType == typeof(string))
             {
+                getter.GetValueKind();
+                generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.Null);
+                generator.Emit(OpCodes.Bne_Un_S, next);
+                
+                if (validator.HasValidation)
+                {
+                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
+                    generator.Emit(OpCodes.Ret);
+                }
+                else
+                {
+                    generator.Emit(OpCodes.Ldarg_0);
+                    generator.Emit(OpCodes.Ldfld, thingField);
+                    generator.Emit(OpCodes.Ldnull);
+                    generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
+            
+                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
+                    generator.Emit(OpCodes.Ret);
+                }
+                
+                generator.MarkLabel(next);
+                next = generator.DefineLabel();
+                
+                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
                 getter.GetValueKind();
                 generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.String);
                 generator.Emit(OpCodes.Beq_S, next);
@@ -179,11 +204,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 generator.MarkLabel(next);
             }
             
-            if (propertyValidation != null)
+            if (validator.HasValidation)
             {
                 Label? validationMark = null;
-                var validation = new ValidationGeneration(generator, typeBuilder);
-                validation.AddValidation(propertyType, ToValidation(propertyValidation), 
+                var validationGeneration = new ValidationGeneration(generator, typeBuilder);
+                validationGeneration.AddValidation(propertyType, validator, 
                     () => generator.Emit(OpCodes.Ldloc_S, local.LocalIndex), () =>
                 {
                     generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
@@ -205,11 +230,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             generator.Emit(OpCodes.Ret);
 
             static Validation ToValidation(ThingPropertyAttribute propertyValidation)
-                => new Validation(propertyValidation.MinimumValue, propertyValidation.MaximumValue,
-                    propertyValidation.ExclusiveMinimumValue, propertyValidation.ExclusiveMaximumValue,
-                    propertyValidation.MultipleOfValue,
-                    propertyValidation.MinimumLengthValue, propertyValidation.MaximumLengthValue,
-                    propertyValidation.Pattern);
+                => new Validation(propertyValidation?.MinimumValue, propertyValidation?.MaximumValue,
+                    propertyValidation?.ExclusiveMinimumValue, propertyValidation?.ExclusiveMaximumValue,
+                    propertyValidation?.MultipleOfValue,
+                    propertyValidation?.MinimumLengthValue, propertyValidation?.MaximumLengthValue,
+                    propertyValidation?.Pattern);
         }
     }
 }

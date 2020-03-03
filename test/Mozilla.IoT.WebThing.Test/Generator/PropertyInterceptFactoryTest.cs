@@ -219,7 +219,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         #region NullableProperty
         
         [Theory]
-        [ClassData(typeof(NullablePropertValidGenerator))]
+        [ClassData(typeof(NullablePropertyValidGenerator))]
         public void SetValidValueNullableWithValidation(string propertyName, object value)
         { 
             var thing = new NullablePropertyThing(); 
@@ -702,7 +702,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 => GetEnumerator();
         }
         
-        public class NullablePropertValidGenerator : IEnumerable<object[]>
+        public class NullablePropertyValidGenerator : IEnumerable<object[]>
         {
             private readonly Fixture _fixture = new Fixture();
             private readonly List<(string, Type)> _propertyName = new List<(string, Type)>
