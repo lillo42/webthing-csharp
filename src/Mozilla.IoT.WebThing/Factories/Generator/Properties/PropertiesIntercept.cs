@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
@@ -44,8 +45,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.BeforeFieldInit |  TypeAttributes.AnsiClass,
                 typeof(ValueType), new []{ typeof(IProperty<>).MakeGenericType(propertyInfo.PropertyType) });
 
-            var thingField = typeBuilder.DefineField("_thing", thing.GetType(), FieldAttributes.Private | FieldAttributes.InitOnly);
+            var isReadOnly = typeof(IsReadOnlyAttribute).GetConstructors()[0];
+            typeBuilder.SetCustomAttribute(new CustomAttributeBuilder(isReadOnly, new object?[0]));
             
+            
+            var thingField = typeBuilder.DefineField("_thing", thing.GetType(), FieldAttributes.Private | FieldAttributes.InitOnly);
             
             CreateConstructor(typeBuilder, thingField, thingType);
             CreateGetValue(typeBuilder, propertyInfo, thingField, propertyName);
