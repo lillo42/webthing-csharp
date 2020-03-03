@@ -217,19 +217,34 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         #endregion
         
         #region NullableProperty
-        
+
         [Theory]
         [ClassData(typeof(NullablePropertyValidGenerator))]
         public void SetValidValueNullableWithValidation(string propertyName, object value)
-        { 
-            var thing = new NullablePropertyThing(); 
-            CodeGeneratorFactory.Generate(thing, new []{ _factory });
+        {
+            var thing = new NullablePropertyThing();
+            CodeGeneratorFactory.Generate(thing, new[] {_factory});
 
             var jsonValue = value;
-            if (value is string)
+            switch (value)
             {
-                jsonValue = $@"""{value}""";
+                case string _:
+                    jsonValue = $@"""{value}""";
+                    break;
+                case DateTime d:
+                    jsonValue = $@"""{d:O}""";
+                    break;
+                case DateTimeOffset dt:
+                    jsonValue = $@"""{dt:O}""";
+                    break;
+                case bool _:
+                    jsonValue = value.ToString().ToLower();
+                    break;
+                case null:
+                    jsonValue = "null";
+                    break;
             }
+
             var properties = _factory.Properties;
             properties.Should().ContainKey(propertyName);
             
