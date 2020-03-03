@@ -41,8 +41,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             var thingType = thing.GetType();
             var propertyName = thingPropertyAttribute?.Name ?? propertyInfo.Name;
             var typeBuilder = _moduleBuilder.DefineType($"{propertyInfo.Name}{thingType.Name}PropertyThing",
-                TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
-                null, new []{ typeof(IProperty<>).MakeGenericType(propertyInfo.PropertyType) });
+                TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.BeforeFieldInit |  TypeAttributes.AnsiClass,
+                typeof(ValueType), new []{ typeof(IProperty<>).MakeGenericType(propertyInfo.PropertyType) });
 
             var thingField = typeBuilder.DefineField("_thing", thing.GetType(), FieldAttributes.Private | FieldAttributes.InitOnly);
             
