@@ -33,8 +33,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             {
                 AddNumberValidation(type, validation, getValue, error, ref next);
             }
-
-            if (IsString(type))
+            else if (IsString(type))
             {
                 AddStringValidation(validation, getValue, error, ref next);
             }
@@ -100,12 +99,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 
                 if (validation.ExclusiveMinimum.HasValue)
                 {
+                    Console.WriteLine("====================================00");
+                    Console.WriteLine(validation.ExclusiveMinimum.Value);
                     var code = isBig ? OpCodes.Bgt_Un_S : OpCodes.Bgt_S;
                     GenerateNumberValidation(code, validation.ExclusiveMinimum.Value, ref next);
                 }
                 
                 if (validation.ExclusiveMaximum.HasValue)
                 {
+                    Console.WriteLine("====================================00");
+                    Console.WriteLine(validation.ExclusiveMaximum.Value);
                     var code = isBig ? OpCodes.Blt_Un_S : OpCodes.Blt_S;
                     GenerateNumberValidation(code, validation.ExclusiveMaximum.Value, ref next);
                 }
@@ -402,6 +405,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public bool HasValidation
             => Minimum.HasValue
                || Maximum.HasValue
+               || ExclusiveMinimum.HasValue
+               || ExclusiveMaximum.HasValue
                || MultipleOf.HasValue
                || MinimumLength.HasValue
                || MaximumLength.HasValue
