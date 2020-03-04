@@ -24,7 +24,8 @@ namespace Mozilla.IoT.WebThing.Extensions
                         {
                             PropertyNamingPolicy = PropertyNamingPolicy,
                             DictionaryKeyPolicy = PropertyNamingPolicy,
-                            IgnoreNullValues = true,
+                            IgnoreReadOnlyProperties = false,
+                            IgnoreNullValues = false,
                             Converters =
                             {
                                 new ThingConverter(this)

@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
+using System.Linq;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
     internal static class Helper
     {
-        public static string? GetJsonType(Type? type)
+        public static JsonType? GetJsonType(Type? type)
         {
             if (type == null)
             {
@@ -17,12 +19,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset))
             {
-                return "string";
+                return JsonType.String;
             }
 
             if (type == typeof(bool))
             {
-                return "boolean";
+                return JsonType.Boolean;
             }
             
             if (type == typeof(int)
@@ -34,14 +36,19 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 || type == typeof(ulong)
                 || type == typeof(ushort))
             {
-                return "integer";
+                return JsonType.Integer;
             }
             
             if (type == typeof(double)
                 || type == typeof(float)
                 || type == typeof(decimal))
             {
-                return "number";
+                return JsonType.Number;
+            }
+
+            if (type.IsArray || type.GetInterfaces().Any(x => x == typeof(IEnumerable)))
+            {
+                return JsonType.Array;
             }
 
             return null;

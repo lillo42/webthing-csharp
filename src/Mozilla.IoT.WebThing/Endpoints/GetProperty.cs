@@ -30,22 +30,22 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            var property = context.GetRouteData<string>("property");
-            var properties = thing.ThingContext.Properties.GetProperties(property);
+            var propertyName = context.GetRouteData<string>("property");
 
-            if (properties == null)
+            if (!thing.ThingContext.Properties.TryGetValue(propertyName, out var property))
             {
-                logger.LogInformation("Property not found. [Thing: {thingName}][Property: {propertyName}]", thing.Name, property);
+                logger.LogInformation("Property not found. [Thing: {thingName}][Property: {propertyName}]", thing.Name, propertyName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
-
-            logger.LogInformation("Found Property. [Thing: {thingName}][Property: {propertyName}]", thing.Name, property);
+            
+            logger.LogInformation("Found Property. [Thing: {thingName}][Property: {propertyName}]", thing.Name, propertyName);
             
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, properties, service.GetRequiredService<JsonSerializerOptions>());
+            return JsonSerializer.SerializeAsync(context.Response.Body, new Dictionary<string, object> {[propertyName] = property.GetValue() }, 
+                service.GetRequiredService<JsonSerializerOptions>());
         }
     }
 }

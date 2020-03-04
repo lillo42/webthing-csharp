@@ -55,7 +55,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             };
 
             var converter = new ConverterInterceptorFactory(thing, optionsJson);
-            var properties = new PropertiesInterceptFactory(thing, option);
+            var properties = new PropertiesInterceptFactory(option);
             var events = new EventInterceptFactory(thing, option);
             var actions = new ActionInterceptFactory(option);
                 
@@ -68,9 +68,10 @@ namespace Mozilla.IoT.WebThing.Extensions
             });
 
             thing.ThingContext = new Context(converter.Create(), 
-                properties.Create(), 
                 events.Events,
-                actions.Actions);
+                actions.Actions,
+                properties.Properties);
+            
             return thing;
             
         }

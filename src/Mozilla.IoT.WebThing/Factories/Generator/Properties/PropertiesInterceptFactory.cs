@@ -1,32 +1,37 @@
-using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Factories.Generator.Actions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
-    internal class PropertiesInterceptFactory : IInterceptorFactory
+    public class PropertiesInterceptFactory : IInterceptorFactory
     {
-        private readonly Thing _thing;
+        private readonly EmptyIntercept _empty = new EmptyIntercept();
         private readonly PropertiesIntercept _intercept;
 
-        public PropertiesInterceptFactory(Thing thing, ThingOption option)
+        public Dictionary<string, IProperty> Properties => _intercept.Properties;
+
+        public PropertiesInterceptFactory(ThingOption option)
         {
-            _thing = thing ?? throw new ArgumentNullException(nameof(thing));
-            _intercept = new PropertiesIntercept(option);
+            var assemblyName = new AssemblyName("PropertyAssembly");
+            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+            var moduleBuilder = assemblyBuilder.DefineDynamicModule("Property");
+            _intercept = new PropertiesIntercept(option, moduleBuilder);
         }
 
-        public IThingIntercept CreateThingIntercept() => new EmptyIntercept();
+        public IThingIntercept CreateThingIntercept() 
+            => _empty;
 
-        public IPropertyIntercept CreatePropertyIntercept()
+        public IPropertyIntercept CreatePropertyIntercept() 
             => _intercept;
 
         public IActionIntercept CreatActionIntercept()
-            => new EmptyIntercept();
+            => _empty;
 
         public IEventIntercept CreatEventIntercept()
-            => new EmptyIntercept();
-
-        public IProperties Create() 
-            => new WebThing.Properties(_thing, _intercept.Properties);
+            => _empty;
     }
 }
