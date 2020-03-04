@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -20,6 +21,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static readonly MethodInfo s_decimalComparer = typeof(decimal).GetMethod(nameof(decimal.Compare), new[] {typeof(decimal), typeof(decimal)});
         private static readonly MethodInfo s_decimalRemainder = typeof(decimal).GetMethod(nameof(decimal.Remainder), new[] {typeof(decimal), typeof(decimal)});
         private static readonly FieldInfo s_decimalZero = typeof(decimal).GetField(nameof(decimal.Zero));
+        
+        private static readonly MethodInfo s_stringComparer = typeof(string).GetMethod(nameof(string.Compare), new []{typeof(string), typeof(string)});
         
         public ValidationGeneration(ILGenerator generator, TypeBuilder builder)
         {
@@ -71,6 +74,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                     }
             
                     next = _generator.DefineLabel();
+                    
                     getValue();
                     EmitValue(type, validation.MultipleOf.Value);
                     _generator.EmitCall(OpCodes.Call, s_decimalRemainder, null);
@@ -78,6 +82,35 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                     _generator.EmitCall(OpCodes.Call, s_decimalComparer, null);
                     _generator.Emit(OpCodes.Brfalse_S, next.Value);
                     
+                    error();
+                }
+                
+                if (validation.Enums != null && validation.Enums.Length > 0)
+                {
+                    var hash = new HashSet<double>();
+                    
+                    if (next != null)
+                    {
+                        _generator.MarkLabel(next.Value);
+                    }
+                
+                    next = _generator.DefineLabel();
+
+                    foreach (var value in validation.Enums)
+                    {
+                        var convert = Convert.ToDouble(value);
+                        if (!hash.Add(convert))
+                        {
+                            continue;
+                        }
+
+                        getValue();
+                        EmitValue(type, convert);
+                        _generator.Emit(OpCodes.Ldsfld, s_decimalZero);
+                        _generator.EmitCall(OpCodes.Call, s_decimalComparer, null);
+                        _generator.Emit(OpCodes.Brfalse_S, next.Value);
+                    }
+
                     error();
                 }
             }
@@ -99,16 +132,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 
                 if (validation.ExclusiveMinimum.HasValue)
                 {
-                    Console.WriteLine("====================================00");
-                    Console.WriteLine(validation.ExclusiveMinimum.Value);
                     var code = isBig ? OpCodes.Bgt_Un_S : OpCodes.Bgt_S;
                     GenerateNumberValidation(code, validation.ExclusiveMinimum.Value, ref next);
                 }
                 
                 if (validation.ExclusiveMaximum.HasValue)
                 {
-                    Console.WriteLine("====================================00");
-                    Console.WriteLine(validation.ExclusiveMaximum.Value);
                     var code = isBig ? OpCodes.Blt_Un_S : OpCodes.Blt_S;
                     GenerateNumberValidation(code, validation.ExclusiveMaximum.Value, ref next);
                 }
@@ -149,6 +178,33 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                         _generator.Emit(OpCodes.Beq_S, next.Value);
                     }
                    
+                    error();
+                }
+
+                if (validation.Enums != null && validation.Enums.Length > 0)
+                {
+                    var hash = new HashSet<double>();
+                    
+                    if (next != null)
+                    {
+                        _generator.MarkLabel(next.Value);
+                    }
+                
+                    next = _generator.DefineLabel();
+
+                    foreach (var value in validation.Enums)
+                    {
+                        var convert = Convert.ToDouble(value);
+                        if (!hash.Add(convert))
+                        {
+                            continue;
+                        }
+
+                        getValue();
+                        EmitValue(type, convert);
+                        _generator.Emit(OpCodes.Beq_S, next.Value);
+                    }
+
                     error();
                 }
             }
@@ -331,6 +387,34 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 constructorIL.Emit(OpCodes.Ret);
             }
             
+            if (validation.Enums != null && validation.Enums.Length > 0)
+            {
+                var hash = new HashSet<string>();
+                    
+                if (next != null)
+                {
+                    _generator.MarkLabel(next.Value);
+                }
+                
+                next = _generator.DefineLabel();
+
+                foreach (var value in validation.Enums)
+                {
+                    var convert = Convert.ToString(value);
+                    if (!hash.Add(convert))
+                    {
+                        continue;
+                    }
+
+                    getValue();
+                    _generator.Emit(OpCodes.Ldstr, convert);
+                    _generator.EmitCall(OpCodes.Call, s_stringComparer, null);
+                    _generator.Emit(OpCodes.Brfalse_S, next.Value);
+                }
+
+                error();
+            }
+            
             void GenerateNumberValidation(OpCode code, int value, ref Label? next)
             {
                 if (next != null)
@@ -379,9 +463,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
 
     public readonly struct Validation
     {
-        public Validation(double? minimum, double? maximum, 
-            double? exclusiveMinimum, double? exclusiveMaximum, double? multipleOf, 
-            int? minimumLength, int? maximumLength, string? pattern)
+        public Validation(double? minimum, double? maximum,
+            double? exclusiveMinimum, double? exclusiveMaximum, double? multipleOf,
+            int? minimumLength, int? maximumLength, string? pattern, object[]? enums)
         {
             Minimum = minimum;
             Maximum = maximum;
@@ -391,6 +475,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             MinimumLength = minimumLength;
             MaximumLength = maximumLength;
             Pattern = pattern;
+            Enums = enums;
         }
 
         public double? Minimum { get; }
@@ -401,6 +486,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public int? MinimumLength { get; }
         public int? MaximumLength { get; }
         public string? Pattern { get; }
+        public object[]? Enums { get; }
 
         public bool HasValidation
             => Minimum.HasValue
@@ -410,6 +496,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || MultipleOf.HasValue
                || MinimumLength.HasValue
                || MaximumLength.HasValue
-               || Pattern != null;
+               || Pattern != null
+               || (Enums != null && Enums.Length > 0);
     }
 }

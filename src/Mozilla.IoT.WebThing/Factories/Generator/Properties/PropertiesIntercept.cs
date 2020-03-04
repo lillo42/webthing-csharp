@@ -304,7 +304,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     propertyValidation?.ExclusiveMinimumValue, propertyValidation?.ExclusiveMaximumValue,
                     propertyValidation?.MultipleOfValue,
                     propertyValidation?.MinimumLengthValue, propertyValidation?.MaximumLengthValue,
-                    propertyValidation?.Pattern);
+                    propertyValidation?.Pattern, propertyValidation?.Enum);
         }
     }
 }

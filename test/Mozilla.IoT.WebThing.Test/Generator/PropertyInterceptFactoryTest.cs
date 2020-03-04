@@ -527,6 +527,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             [ThingProperty(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]
             public double ExclusiveDouble { get; set; }
             
+            [ThingProperty(Enum = new object[]{ 1, 2 })]
+            public double EnumDouble { get; set; }
+            
             #endregion
 
             #region Decimal
@@ -540,6 +543,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             [ThingProperty(ExclusiveMinimum = 1, ExclusiveMaximum = 100)]
             public double ExclusiveDecimal { get; set; }
             
+            [ThingProperty(Enum = new object[]{ 1, 2 })]
+            public double EnumDecimal { get; set; }
+            
             #endregion
             
             #region String
@@ -549,6 +555,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             [ThingProperty(Pattern = @"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$")]
             public string Mail { get; set; }
+            
+            [ThingProperty(Enum = new object[]{ "Ola", "test" })]
+            public string Enum { get; set; }
 
             #endregion
         }
@@ -628,6 +637,15 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
                 yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.String), _fixture.Create<string>() };
                 yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.Mail), "test@teste.com" };
+                
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.Enum), "Ola" };
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.Enum), "test" };
+                
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.EnumDecimal), 1 };
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.EnumDecimal), 2 };
+                
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.EnumDouble), 1 };
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.EnumDouble), 2 };
             }
 
             IEnumerator IEnumerable.GetEnumerator() 
@@ -711,6 +729,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.String), string.Empty };
                 yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.String),  invalid};
                 yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.Mail), _fixture.Create<string>() };
+                
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.Enum), _fixture.Create<string>() };
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.EnumDecimal), _fixture.Create<decimal>() };
+                yield return  new object[] { nameof(NoNullablePropertyWithValidationThing.EnumDouble), _fixture.Create<double>() };
             }
 
             IEnumerator IEnumerable.GetEnumerator() 
