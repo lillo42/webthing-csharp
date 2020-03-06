@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
@@ -107,165 +106,98 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 typeof(SetPropertyResult), new[] {typeof(JsonElement)});
 
             var generator = setValue.GetILGenerator();
+            
+            var factory = new IlFactory(generator);
 
             if (!property.CanWrite || !property.SetMethod.IsPublic ||
                 (propertyValidation != null && propertyValidation.IsReadOnly))
             {
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.ReadOnly);
-                generator.Emit(OpCodes.Ret);
+                factory.Return((int)SetPropertyResult.ReadOnly);
                 return;
             }
 
             var propertyType = property.PropertyType.GetUnderlyingType();
-            var jsonElement = generator.DeclareLocal(typeof(JsonElement));
-            var local = generator.DeclareLocal(propertyType);
+            var jsonElement = factory.CreateLocalField(typeof(JsonElement));
+            var local = factory.CreateLocalField(propertyType);
             var nullable = local;
             if (property.PropertyType.IsNullable())
             {
-                nullable = generator.DeclareLocal(property.PropertyType);
+                nullable = factory.CreateLocalField(property.PropertyType);
             }
 
-            generator.Emit(OpCodes.Ldarg_1);
-            generator.Emit(OpCodes.Stloc_0);
-            generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-
-            var getter = new JsonElementReaderILGenerator(generator);
+            factory.SetArgToLocal(jsonElement);
+            
             var validator = ToValidation(propertyValidation);
 
-            var next = generator.DefineLabel();
             if (propertyType == typeof(string))
             {
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.Null);
-                generator.Emit(OpCodes.Bne_Un_S, next);
-
+                factory.IfIsEquals(jsonElement, JsonElementMethods.ValueKind, (int)JsonValueKind.Null);
+                
                 if (validator.HasValidation)
                 {
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                    generator.Emit(OpCodes.Ret);
+                    factory.Return((int)SetPropertyResult.InvalidValue);
                 }
                 else
                 {
-                    generator.Emit(OpCodes.Ldarg_0);
-                    generator.Emit(OpCodes.Ldfld, thingField);
-                    generator.Emit(OpCodes.Ldnull);
-                    generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-                    generator.Emit(OpCodes.Ret);
+                    factory.SetNullValue(thingField, property.SetMethod);
+                    factory.Return((int)SetPropertyResult.Ok);
                 }
+                
+                factory.EndIf();
+                
+                factory.IfIsDifferent(jsonElement, JsonElementMethods.ValueKind ,(int)JsonValueKind.String);
+                factory.Return((int)SetPropertyResult.InvalidValue);
+                factory.EndIf();
 
-                generator.MarkLabel(next);
-                next = generator.DefineLabel();
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.String);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.Get(propertyType);
-                generator.Emit(OpCodes.Stloc_S, local.LocalIndex);
+                factory.SetLocal(jsonElement, JsonElementMethods.GetValue(propertyType), local);
             }
             else if (propertyType == typeof(bool))
             {
                 if (property.PropertyType.IsNullable())
                 {
-                    getter.GetValueKind();
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.Null);
-                    generator.Emit(OpCodes.Bne_Un_S, next);
-
-                    generator.Emit(OpCodes.Ldarg_0);
-                    generator.Emit(OpCodes.Ldfld, thingField);
-                    generator.Emit(OpCodes.Ldloca_S, nullable.LocalIndex);
-                    generator.Emit(OpCodes.Initobj, nullable.LocalType);
-                    generator.Emit(OpCodes.Ldloc_S, nullable.LocalIndex);
-                    generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-                    generator.Emit(OpCodes.Ret);
-
-                    generator.MarkLabel(next);
-                    next = generator.DefineLabel();
-
-                    generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
+                    factory.IfIsEquals(jsonElement, JsonElementMethods.ValueKind, (int)JsonValueKind.Null);
+                    
+                    factory.SetNullValue(thingField, property.SetMethod, nullable);
+                    factory.Return((int)SetPropertyResult.Ok);
+                    
+                    factory.EndIf();
                 }
-
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (byte)JsonValueKind.True);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (byte)JsonValueKind.False);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.Get(propertyType);
-                generator.Emit(OpCodes.Stloc_S, local.LocalIndex);
+                
+                factory.IfIsDifferent(jsonElement, JsonElementMethods.ValueKind,(int)JsonValueKind.True, (int)JsonValueKind.False );
+                factory.Return((int)SetPropertyResult.InvalidValue);
+                factory.EndIf();
+                
+                factory.SetLocal(jsonElement, JsonElementMethods.GetValue(propertyType), local);
             }
             else
             {
                 if (property.PropertyType.IsNullable())
                 {
-                    getter.GetValueKind();
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.Null);
-                    generator.Emit(OpCodes.Bne_Un_S, next);
-
+                    factory.IfIsEquals(jsonElement, JsonElementMethods.ValueKind, (int)JsonValueKind.Null);
+                    
                     if (validator.HasValidation)
                     {
-                        generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                        generator.Emit(OpCodes.Ret);
+                        factory.Return((int)SetPropertyResult.InvalidValue);
                     }
                     else
                     {
-                        generator.Emit(OpCodes.Ldarg_0);
-                        generator.Emit(OpCodes.Ldfld, thingField);
-                        generator.Emit(OpCodes.Ldloca_S, nullable.LocalIndex);
-                        generator.Emit(OpCodes.Initobj, nullable.LocalType);
-                        generator.Emit(OpCodes.Ldloc_S, nullable.LocalIndex);
-                        generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-
-                        generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-                        generator.Emit(OpCodes.Ret);
+                        factory.SetNullValue(thingField, property.SetMethod, nullable);
+                        factory.Return((int)SetPropertyResult.Ok);
                     }
 
-                    generator.MarkLabel(next);
-                    next = generator.DefineLabel();
-
-                    generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
+                    factory.EndIf();
                 }
 
-                var isDate = propertyType == typeof(DateTime) || propertyType == typeof(DateTimeOffset);
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, isDate ? (byte)JsonValueKind.String : (byte)JsonValueKind.Number);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
-                next = generator.DefineLabel();
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                generator.Emit(OpCodes.Ldloca_S, local.LocalIndex);
-                getter.TryGet(propertyType);
-                generator.Emit(OpCodes.Brtrue_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
+                var valueKind = propertyType == typeof(DateTime) || propertyType == typeof(DateTimeOffset) ? 
+                    (int)JsonValueKind.String : (int)JsonValueKind.Number;
+                
+                factory.IfIsDifferent(jsonElement, JsonElementMethods.ValueKind, valueKind);
+                factory.Return((int)SetPropertyResult.InvalidValue);
+                factory.EndIf();
+                
+                factory.IfTryGetIsFalse(jsonElement, local, JsonElementMethods.TryGetValue(propertyType));
+                factory.Return((int)SetPropertyResult.InvalidValue);
+                factory.EndIf();
             }
 
             if (validator.HasValidation)
@@ -285,19 +217,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 }
             }
 
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldfld, thingField);
-            generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
-            
-            if (property.PropertyType.IsNullable())
-            {
-                var constructor = nullable.LocalType.GetConstructors().Last();
-                generator.Emit(OpCodes.Newobj, constructor);
-            }
-            
-            generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-            generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-            generator.Emit(OpCodes.Ret);
+            factory.SetValue(local, thingField, property.SetMethod);
+            factory.Return((int)SetPropertyResult.Ok);
 
             static Validation ToValidation(ThingPropertyAttribute propertyValidation)
                 => new Validation(propertyValidation?.MinimumValue, propertyValidation?.MaximumValue,

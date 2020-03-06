@@ -5,11 +5,11 @@ using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator
 {
-    public class JsonElementReaderILGenerator
+    public class JsonElementMethods
     {
         private readonly ILGenerator _generator;
 
-        public JsonElementReaderILGenerator(ILGenerator generator)
+        public JsonElementMethods(ILGenerator generator)
         {
             _generator = generator ?? throw new ArgumentNullException(nameof(generator));
         }
@@ -32,6 +32,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static readonly MethodInfo s_getString = typeof(JsonElement).GetMethod(nameof(JsonElement.GetString));
         private static readonly MethodInfo s_getBool = typeof(JsonElement).GetMethod(nameof(JsonElement.GetBoolean));
 
+        public static MethodInfo ValueKind => s_getValueKind;
+        
         public void TryGet(Type type)
         {
             if (type == typeof(byte))
@@ -87,17 +89,89 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 Call(s_getTryGetDateTimeOffset);
             }
         }
+
+        public static MethodInfo TryGetValue(Type type)
+        {
+            if (type == typeof(byte))
+            {
+                return s_getTryGetByte;
+            }
+
+            if (type == typeof(sbyte))
+            {
+                return s_getTryGetSByte;
+            }
+            if (type == typeof(short))
+            {
+                return s_getTryGetShort;
+            }
+            
+            if (type == typeof(ushort))
+            {
+                return s_getTryGetUShort;
+            }
+            
+            if (type == typeof(int))
+            {
+                return s_getTryGetInt;
+            }
+            
+            if (type == typeof(uint))
+            {
+                return s_getTryGetUInt;
+            }
+            
+            if (type == typeof(long))
+            {
+                return s_getTryGetLong;
+            }
+            
+            if (type == typeof(ulong))
+            {
+                return s_getTryGetULong;
+            }
+            
+            if (type == typeof(float))
+            {
+                return s_getTryGetFloat;
+            }
+            
+            if (type == typeof(double))
+            {
+                return s_getTryGetDouble;
+            }
+            
+            if (type == typeof(decimal))
+            {
+                return s_getTryGetDecimal;
+            }
+            
+            if (type == typeof(DateTime))
+            {
+                return s_getTryGetDateTime;
+            }
+            
+            if (type == typeof(DateTimeOffset))
+            {
+                return s_getTryGetDateTimeOffset;
+            }
+
+            return null;
+        }
         
-        public void Get(Type type)
+        public static MethodInfo GetValue(Type type)
         {
             if (type == typeof(string))
             {
-                Call(s_getString);
+                return s_getString;
             }
-            else if (type == typeof(bool))
+            
+            if (type == typeof(bool))
             {
-                Call(s_getBool);
+                return s_getBool;
             }
+
+            return null;
         }
         
         private void Call(MethodInfo tryGet) 
