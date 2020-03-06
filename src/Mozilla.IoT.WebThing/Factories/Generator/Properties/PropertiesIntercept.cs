@@ -202,19 +202,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 
             if (validator.HasValidation)
             {
-                Label? validationMark = null;
-                var validationGeneration = new ValidationGeneration(generator, typeBuilder);
-                validationGeneration.AddValidation(propertyType, validator,
-                    () => generator.Emit(OpCodes.Ldloc_S, local.LocalIndex), () =>
-                    {
-                        generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                        generator.Emit(OpCodes.Ret);
-                    }, ref validationMark);
-
-                if (validationMark.HasValue)
-                {
-                    generator.MarkLabel(validationMark.Value);
-                }
+                ValidationGeneration.AddValidation(factory, validator, local, (int)SetPropertyResult.InvalidValue);
             }
 
             factory.SetValue(local, thingField, property.SetMethod);

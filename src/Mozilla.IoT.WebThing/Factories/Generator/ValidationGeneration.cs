@@ -11,6 +11,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
     {
         private readonly ILGenerator _generator;
         private readonly TypeBuilder _builder;
+        private readonly IlFactory _factory;
+        private readonly LocalBuilder _local;
         
         private static readonly MethodInfo s_getLength = typeof(string).GetProperty(nameof(string.Length)).GetMethod;
         private static readonly MethodInfo s_match = typeof(Regex).GetMethod(nameof(Regex.Match) , new [] { typeof(string) });
@@ -24,10 +26,98 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         
         private static readonly MethodInfo s_stringComparer = typeof(string).GetMethod(nameof(string.Compare), new []{typeof(string), typeof(string)});
         
-        public ValidationGeneration(ILGenerator generator, TypeBuilder builder)
+        public ValidationGeneration(ILGenerator generator, TypeBuilder builder, IlFactory factory)
         {
             _generator = generator ?? throw new ArgumentNullException(nameof(generator));
             _builder = builder;
+            _factory = factory;
+        }
+
+        public static void AddValidation(IlFactory factory, Validation validation, LocalBuilder field, int returnValue)
+        {
+            if (IsNumber(field.LocalType))
+            {
+                AddNumberValidation(factory, validation, field, returnValue);
+            }
+            
+        }
+
+        private static void AddNumberValidation(IlFactory factory, Validation validation, LocalBuilder field, int returnValue)
+        {
+            if (field.LocalType == typeof(decimal))
+            {
+                if (validation.Minimum.HasValue)
+                {
+                    factory.IfIsLessThan(field, validation.Minimum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+
+                if (validation.Maximum.HasValue)
+                {
+                    factory.IfIsGreaterThan(field, validation.Maximum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+
+                if (validation.ExclusiveMinimum.HasValue)
+                {
+                    factory.IfIsLessOrEqualThan(field, validation.ExclusiveMinimum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+                
+                if (validation.ExclusiveMaximum.HasValue)
+                {
+                    factory.IfIsGreaterOrEqualThan(field, validation.ExclusiveMaximum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+
+                if (validation.MultipleOf.HasValue)
+                {
+                    factory.IfIsNotMultipleOf(field, validation.MultipleOf.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+            }
+            else
+            {
+                if (validation.Minimum.HasValue)
+                {
+                    factory.IfIsLessThan(field, validation.Minimum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+
+                if (validation.Maximum.HasValue)
+                {
+                    factory.IfIsGreaterThan(field, validation.Maximum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+
+                if (validation.ExclusiveMinimum.HasValue)
+                {
+                    factory.IfIsLessOrEqualThan(field, validation.ExclusiveMinimum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+                
+                if (validation.ExclusiveMaximum.HasValue)
+                {
+                    factory.IfIsGreaterOrEqualThan(field, validation.ExclusiveMaximum.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+
+                if (validation.MultipleOf.HasValue)
+                {
+                    factory.IfIsNotMultipleOf(field, validation.MultipleOf.Value);
+                    factory.Return(returnValue);
+                    factory.EndIf();
+                }
+            }
         }
         
         public void AddValidation(Type type, Validation validation, Action getValue, Action error, ref Label? next)
@@ -117,13 +207,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             else
             {
                 var isBig = IsBigNumber(type);
-                
+
                 if (validation.Minimum.HasValue)
                 {
-                    var code = isBig ? OpCodes.Bge_Un_S : OpCodes.Bge_S;
-                    GenerateNumberValidation(code, validation.Minimum.Value, ref next);
+                    var code = isBig ? OpCodes.Ble_Un_S : OpCodes.Ble_S;
+                    GenerateNumberValidation(code, validation.Maximum.Value, ref next);
                 }
-                
+
                 if (validation.Maximum.HasValue)
                 {
                     var code = isBig ? OpCodes.Ble_Un_S : OpCodes.Ble_S;
@@ -249,7 +339,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                     || fieldType == typeof(int))
                 {
                     var convert = Convert.ToInt32(value);
-                    if (convert <= 127)
+                    if (convert >= -128 && convert <= 127)
                     {
                         _generator.Emit(OpCodes.Ldc_I4_S, convert);
                     }

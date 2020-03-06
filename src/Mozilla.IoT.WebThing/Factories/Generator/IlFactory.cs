@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -8,15 +9,23 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
 {
     public class IlFactory
     {
+        private static readonly MethodInfo s_toDecimal = typeof(Convert).GetMethod(nameof(Convert.ToDecimal), new[] {typeof(string)});
+        private static readonly MethodInfo s_decimalComparer = typeof(decimal).GetMethod(nameof(decimal.Compare), new[] {typeof(decimal), typeof(decimal)});
+        private static readonly MethodInfo s_decimalRemainder = typeof(decimal).GetMethod(nameof(decimal.Remainder), new[] {typeof(decimal), typeof(decimal)});
+        private static readonly FieldInfo s_decimalZero = typeof(decimal).GetField(nameof(decimal.Zero));
+
+        
+        
         private readonly ILGenerator _generator;
         public readonly StringBuilder _sb = new StringBuilder();
         private Label _next;
+
 
         public IlFactory(ILGenerator generator)
         {
             _generator = generator ?? throw new ArgumentNullException(nameof(generator));
         }
-        
+
         public void Return(int result)
         {
             _generator.Emit(OpCodes.Ldc_I4_S, result);
@@ -27,14 +36,14 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             _sb.AppendLine();
         }
 
-        public LocalBuilder CreateLocalField(Type local) 
+        public LocalBuilder CreateLocalField(Type local)
             => _generator.DeclareLocal(local);
 
         public void SetArgToLocal(LocalBuilder local)
         {
             _generator.Emit(OpCodes.Ldarg_1);
             _generator.Emit(OpCodes.Stloc_S, local.LocalIndex);
-            
+
             _sb.AppendLine("ldarg.1");
             _sb.Append("stloc.s ").AppendLine(local.LocalIndex.ToString());
         }
@@ -66,7 +75,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
 
             _sb.AppendLine(method.Name);
         }
-        
+
         #region If
 
         public void IfIsEquals(LocalBuilder local, MethodInfo getter, int value)
@@ -74,14 +83,165 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             SetNext();
             GetLocal(local);
             Call(getter);
-            _generator.Emit(OpCodes.Ldc_I4_S, value);
             _generator.Emit(OpCodes.Bne_Un_S, _next);
 
             _sb.Append("lcd.i4.s ").AppendLine(value.ToString());
             _sb.AppendLine("bne.un.s NEXT");
             
-            
             _sb.AppendLine();
+        }
+
+        public void IfIsLessThan(LocalBuilder local, double value)
+        {
+            SetNext();
+            GetLocal(local);
+            EmitNumber(value, local.LocalType);
+            
+            if (local.LocalType == typeof(decimal))
+            {
+                Call(s_decimalComparer);
+                _generator.Emit(OpCodes.Ldc_I4_0);
+                _sb.AppendLine("ldc.i4.0");
+                _generator.Emit(OpCodes.Bge_S, _next);
+                _sb.AppendLine("bge.S NEXT");
+            }
+            else
+            {
+                if (IsBigNumber(local.LocalType))
+                {
+                    _generator.Emit(OpCodes.Bge_Un_S, _next);
+                    _sb.AppendLine("bge.un.S NEXT");
+                }
+                else
+                {
+                    _generator.Emit(OpCodes.Bge_S, _next);
+                    _sb.AppendLine("bge.S NEXT");
+                }
+            }
+
+            _sb.AppendLine();
+        }
+
+        public void IfIsLessOrEqualThan(LocalBuilder local, double value)
+        {
+            SetNext();
+            GetLocal(local);
+            EmitNumber(value, local.LocalType);
+            if (local.LocalType == typeof(decimal))
+            {
+                Call(s_decimalComparer);
+                _generator.Emit(OpCodes.Ldc_I4_0);
+                _sb.AppendLine("ldc.i4.0");
+                _generator.Emit(OpCodes.Bgt_S, _next);
+                _sb.AppendLine("bge.S NEXT");
+            }
+            else
+            {
+                if (IsBigNumber(local.LocalType))
+                {
+                    _generator.Emit(OpCodes.Bgt_Un_S, _next);
+                    _sb.AppendLine("bgt.un.S NEXT");
+                }
+                else
+                {
+                    _generator.Emit(OpCodes.Bgt_S, _next);
+                    _sb.AppendLine("bgt.S NEXT");
+                }
+            }
+
+            _sb.AppendLine();
+        }
+
+        public void IfIsGreaterThan(LocalBuilder local, double value)
+        {
+            SetNext();
+            GetLocal(local);
+            EmitNumber(value, local.LocalType);
+            if (local.LocalType == typeof(decimal))
+            {
+                Call(s_decimalComparer);
+                _generator.Emit(OpCodes.Ldc_I4_0);
+                _sb.AppendLine("ldc.i4.0");
+                _generator.Emit(OpCodes.Bgt_S, _next);
+                _sb.AppendLine("ble.S NEXT");
+            }
+            else
+            {
+                if (IsBigNumber(local.LocalType))
+                {
+                    _generator.Emit(OpCodes.Ble_Un_S, _next);
+                    _sb.AppendLine("ble.un.S NEXT");
+                }
+                else
+                {
+                    _generator.Emit(OpCodes.Ble_S, _next);
+                    _sb.AppendLine("ble.S NEXT");
+                }
+            }
+
+            _sb.AppendLine();
+        }
+
+        public void IfIsGreaterOrEqualThan(LocalBuilder local, double value)
+        {
+            SetNext();
+            GetLocal(local);
+            EmitNumber(value, local.LocalType);
+            if (local.LocalType == typeof(decimal))
+            {
+                Call(s_decimalComparer);
+                _generator.Emit(OpCodes.Ldc_I4_0);
+                _sb.AppendLine("ldc.i4.0");
+                _generator.Emit(OpCodes.Bgt_S, _next);
+                _sb.AppendLine("ble.S NEXT");
+            }
+            else
+            {
+                if (IsBigNumber(local.LocalType))
+                {
+                    _generator.Emit(OpCodes.Blt_Un_S, _next);
+                    _sb.AppendLine("ble.un.S NEXT");
+                }
+                else
+                {
+                    _generator.Emit(OpCodes.Blt_S, _next);
+                    _sb.AppendLine("ble.S NEXT");
+                }
+            }
+
+            _sb.AppendLine();
+        }
+
+        public void IfIsNotMultipleOf(LocalBuilder local, double value)
+        {
+            SetNext();
+            GetLocal(local);
+            EmitNumber(value, local.LocalType);
+            if (!IsBigNumber(local.LocalType) || local.LocalType == typeof(ulong))
+            {
+                var rem = OpCodes.Rem;
+                if (local.LocalType == typeof(uint) || local.LocalType == typeof(ulong))
+                {
+                    rem = OpCodes.Rem_Un;
+                }
+                        
+                _generator.Emit(rem);
+                _generator.Emit(OpCodes.Brfalse_S, _next);
+            }
+            else
+            {
+                _generator.Emit(OpCodes.Rem);
+                if (local.LocalType == typeof(float))
+                {
+                    _generator.Emit(OpCodes.Ldc_R4 , (float)0);
+                }
+                else
+                {
+                    _generator.Emit(OpCodes.Ldc_R8, (double)0);
+                }
+                        
+                _generator.Emit(OpCodes.Beq_S, _next);
+            }
         }
         
         public void IfIsDifferent(LocalBuilder local, MethodInfo getter, int value)
@@ -130,6 +290,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             
             _sb.AppendLine();
         }
+        
         public void EndIf()
         {
             _generator.MarkLabel(_next);
@@ -198,6 +359,137 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             Call(setter);
         }
         
+        #endregion
+
+
+        #region Number
+        
+        private static bool IsBigNumber(Type parameterType)
+            => parameterType == typeof(ulong)
+               || parameterType == typeof(float)
+               || parameterType == typeof(double);
+
+        private void EmitNumber(double value, Type fieldType)
+        {
+            if (fieldType == typeof(byte)
+                    || fieldType == typeof(sbyte)
+                    || fieldType == typeof(short)
+                    || fieldType == typeof(ushort)
+                    || fieldType == typeof(int))
+                {
+                    var convert = Convert.ToInt32(value);
+                    if (convert >= -128 && convert <= 127)
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4_S, convert);
+                        _sb.Append("ldc.i4.s ").AppendLine(convert.ToString());
+                    }
+                    else
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4, convert);
+                        _sb.Append("ldc.i4 ").AppendLine(convert.ToString());
+                    }
+                }
+                else if (fieldType == typeof(uint))
+                {
+                    var convert = Convert.ToUInt32(value);
+                    if (convert >= -128 || convert <= 127)
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4_S, convert);
+                        _sb.Append("ldc.i4.s ").AppendLine(convert.ToString());
+                    }
+                    else if(convert <= int.MaxValue)
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4, convert);
+                        _sb.Append("ldc.i4 ").AppendLine(convert.ToString());
+                    }
+                    else if(convert < uint.MaxValue)
+                    {
+                        var number = (convert - int.MaxValue) + int.MinValue; 
+                        _generator.Emit(OpCodes.Ldc_I4, number);
+                        _sb.Append("ldc.i4 ").AppendLine(convert.ToString());
+                    }
+                    else
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4_M1);
+                        _sb.Append("ldc.i4.m1 ").AppendLine(convert.ToString());
+                    }
+                }
+                else if (fieldType == typeof(long))
+                {
+                    var convert = Convert.ToInt64(value);
+                    _generator.Emit(OpCodes.Ldc_I8, convert);
+                    _sb.Append("ldc.i8 ").AppendLine(convert.ToString());
+                }
+                else if (fieldType == typeof(ulong))
+                {
+                    var convert = Convert.ToUInt64(value);
+                    if (convert <= 127)
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4_S, (int)convert);
+                        _sb.Append("ldc.i4.s ").AppendLine(convert.ToString());
+                        _generator.Emit(OpCodes.Conv_I8);
+                        _sb.AppendLine("ldc.i8 ");
+                        
+                    }
+                    else if (convert <= uint.MaxValue)
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4, (int)convert);
+                        _sb.Append("ldc.i4 ").AppendLine(convert.ToString());
+                        _generator.Emit(OpCodes.Conv_I8);
+                        _sb.AppendLine("ldc.i8 ");
+                    }
+                    else if (convert <= long.MaxValue)
+                    {
+                        _generator.Emit(OpCodes.Ldc_I8, convert);
+                        _sb.Append("ldc.i8 ").AppendLine(convert.ToString());
+                    }
+                    else if (convert == ulong.MaxValue)
+                    {
+                        _generator.Emit(OpCodes.Ldc_I4_M1);
+                        _sb.AppendLine("ldc.i4.m1 ");
+                    }
+                    else if(convert <= ulong.MaxValue - 127)
+                    {
+                        var number = -(long)(ulong.MaxValue  - convert); 
+                        _generator.Emit(OpCodes.Ldc_I4_S, number);
+                        _sb.Append("ldc.i4.s ").AppendLine(convert.ToString());
+                        _generator.Emit(OpCodes.Conv_I8);
+                        _sb.AppendLine("ldc.i8 ");
+                    }
+                    else if(convert <= ulong.MaxValue - int.MaxValue)
+                    {
+                        var number = -(long)(ulong.MaxValue  - convert); 
+                        _generator.Emit(OpCodes.Ldc_I4, number);
+                        _sb.Append("ldc.i4 ").AppendLine(convert.ToString());
+                        _generator.Emit(OpCodes.Conv_I8);
+                        _sb.AppendLine("ldc.i8 ");
+                    }
+                    else
+                    {
+                        var number = -(long)(ulong.MaxValue  - convert); 
+                        _generator.Emit(OpCodes.Ldc_I8, number);
+                        _sb.Append("ldc.i8 ").AppendLine(convert.ToString());
+                    }
+                }
+                else if (fieldType == typeof(float))
+                {
+                    var convert = Convert.ToSingle(value);
+                    _generator.Emit(OpCodes.Ldc_R4, convert);
+                    _sb.Append("ldc.r4 ").AppendLine(convert.ToString(CultureInfo.InvariantCulture));
+                }
+                else if(fieldType == typeof(double))
+                {
+                    var convert = Convert.ToDouble(value);
+                    _generator.Emit(OpCodes.Ldc_R8, convert);
+                    _sb.Append("ldc.r8 ").AppendLine(convert.ToString(CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    _generator.Emit(OpCodes.Ldstr, Convert.ToString(value, CultureInfo.InvariantCulture));
+                    _generator.EmitCall(OpCodes.Call, s_toDecimal, null);
+                }
+        }
+
         #endregion
     }
 }
