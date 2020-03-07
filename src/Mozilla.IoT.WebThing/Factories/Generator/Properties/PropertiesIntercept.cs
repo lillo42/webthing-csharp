@@ -207,9 +207,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 
             factory.SetValue(local, thingField, property.SetMethod);
             factory.Return((int)SetPropertyResult.Ok);
-
-            Console.WriteLine(factory._sb.ToString());
-
+            
             static Validation ToValidation(ThingPropertyAttribute propertyValidation)
                 => new Validation(propertyValidation?.MinimumValue, propertyValidation?.MaximumValue,
                     propertyValidation?.ExclusiveMinimumValue, propertyValidation?.ExclusiveMaximumValue,

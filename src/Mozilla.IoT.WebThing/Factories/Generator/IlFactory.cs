@@ -172,7 +172,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 Call(s_decimalComparer);
                 _generator.Emit(OpCodes.Ldc_I4_0);
                 _sb.AppendLine("ldc.i4.0");
-                _generator.Emit(OpCodes.Bgt_S, _next);
+                _generator.Emit(OpCodes.Ble_S, _next);
                 _sb.AppendLine("ble.S NEXT");
             }
             else if (IsBigNumber(local.LocalType))
@@ -324,14 +324,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                     continue;
                 }
                 
-                GetLocal(local);
+                _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+                _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
                 
                 if (local.LocalType == typeof(string))
                 {
                     var convert = Convert.ToString(value);
                     _generator.Emit(OpCodes.Ldstr, convert);
+                    _sb.Append("ldstr ").AppendLine(convert);
                     _generator.EmitCall(OpCodes.Call, s_stringComparer, null);
+                    _sb.Append("call string.Comparer").AppendLine(convert);
                     _generator.Emit(OpCodes.Brfalse_S, _next);
+                    _sb.AppendLine("brfalse.s NEXT");
                 }
                 else
                 {
