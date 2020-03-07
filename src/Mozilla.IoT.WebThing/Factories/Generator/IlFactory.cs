@@ -83,9 +83,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             SetNext();
             GetLocal(local);
             Call(getter);
-            _generator.Emit(OpCodes.Bne_Un_S, _next);
-
+            EmitNumber(value, typeof(int));
             _sb.Append("lcd.i4.s ").AppendLine(value.ToString());
+            _generator.Emit(OpCodes.Bne_Un_S, _next);
             _sb.AppendLine("bne.un.s NEXT");
 
             _sb.AppendLine();
@@ -94,7 +94,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void IfIsLessThan(LocalBuilder local, MethodInfo getter, int value)
         {
             SetNext();
-            GetLocal(local);
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
             Call(getter);
             EmitNumber(value, typeof(int));
             _generator.Emit(OpCodes.Bge_S, _next);
@@ -106,7 +107,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void IfIsLessThan(LocalBuilder local, double value)
         {
             SetNext();
-            GetLocal(local);
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
             EmitNumber(value, local.LocalType);
 
             if (local.LocalType == typeof(decimal))
@@ -125,7 +127,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             else
             {
                 _generator.Emit(OpCodes.Bge_S, _next);
-                _sb.AppendLine("bge.S NEXT");
+                _sb.AppendLine("bge.s NEXT");
             }
 
             _sb.AppendLine();
@@ -134,7 +136,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void IfIsLessOrEqualThan(LocalBuilder local, double value)
         {
             SetNext();
-            GetLocal(local);
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
             EmitNumber(value, local.LocalType);
             if (local.LocalType == typeof(decimal))
             {
@@ -161,7 +164,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void IfIsGreaterThan(LocalBuilder local, double value)
         {
             SetNext();
-            GetLocal(local);
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
             EmitNumber(value, local.LocalType);
             if (local.LocalType == typeof(decimal))
             {
@@ -188,7 +192,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void IfIsGreaterThan(LocalBuilder local, MethodInfo getter, int value)
         {
             SetNext();
-            GetLocal(local);
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
             Call(getter);
             EmitNumber(value, typeof(int));
             _generator.Emit(OpCodes.Ble_S, _next);
@@ -200,7 +205,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void IfIsGreaterOrEqualThan(LocalBuilder local, double value)
         {
             SetNext();
-            GetLocal(local);
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
             EmitNumber(value, local.LocalType);
             if (local.LocalType == typeof(decimal))
             {
@@ -227,7 +233,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         public void IfIsNotMultipleOf(LocalBuilder local, double value)
         {
             SetNext();
-            GetLocal(local);
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
             EmitNumber(value, local.LocalType);
             if (local.LocalType == typeof(decimal))
             {
@@ -547,7 +554,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             else
             {
                 _generator.Emit(OpCodes.Ldstr, Convert.ToString(value, CultureInfo.InvariantCulture));
+                _sb.Append("ldstr ").AppendLine(value.ToString());
                 _generator.EmitCall(OpCodes.Call, s_toDecimal, null);
+                _sb.Append("call ").AppendLine("ToDecimal");
             }
         }
 

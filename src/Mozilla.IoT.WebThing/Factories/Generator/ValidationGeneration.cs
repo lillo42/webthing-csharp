@@ -13,8 +13,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static readonly MethodInfo s_match = typeof(Regex).GetMethod(nameof(Regex.Match), new[] { typeof(string) });
         private static readonly MethodInfo s_success = typeof(Match).GetProperty(nameof(Match.Success)).GetMethod;
         private static readonly ConstructorInfo s_regexConstructor = typeof(Regex).GetConstructors()[1];
-        private static readonly MethodInfo s_stringComparer = typeof(string).GetMethod(nameof(string.Compare), new[] { typeof(string), typeof(string) });
-
+        
         public static void AddValidation(IlFactory factory, Validation validation, LocalBuilder field, int returnValue)
         {
             if (IsNumber(field.LocalType))
@@ -111,11 +110,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || type == typeof(decimal)
                || type == typeof(byte)
                || type == typeof(sbyte);
-
-        private static bool IsBigNumber(Type parameterType)
-            => parameterType == typeof(ulong)
-               || parameterType == typeof(float)
-               || parameterType == typeof(double);
     }
 
     public readonly struct Validation
