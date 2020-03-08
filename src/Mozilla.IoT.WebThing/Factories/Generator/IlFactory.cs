@@ -595,5 +595,30 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         }
 
         #endregion
+
+        #region Property
+
+        public void GetProperty(FieldBuilder field, MethodInfo getter)
+        {
+            _generator.Emit(OpCodes.Ldarg_0);
+            _generator.Emit(OpCodes.Ldfld, field);
+            Call(getter);
+            _generator.Emit(OpCodes.Ret);
+        }
+
+        #endregion
+
+        #region Constructor
+
+        public static void Constructor(ILGenerator generator, FieldBuilder field, Type cast)
+        {
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldarg_1);
+            generator.Emit(OpCodes.Castclass, cast);
+            generator.Emit(OpCodes.Stfld, field);
+            generator.Emit(OpCodes.Ret);
+        }
+
+        #endregion
     }
 }

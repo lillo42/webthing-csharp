@@ -48,7 +48,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             var isReadOnly = typeof(IsReadOnlyAttribute).GetConstructors()[0];
             typeBuilder.SetCustomAttribute(new CustomAttributeBuilder(isReadOnly, new object?[0]));
             
-            
             var thingField = typeBuilder.DefineField("_thing", thing.GetType(), FieldAttributes.Private | FieldAttributes.InitOnly);
             
             CreateConstructor(typeBuilder, thingField, thingType);
@@ -64,13 +63,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         {
             var constructor = typeBuilder.DefineConstructor(MethodAttributes.Public, 
                 CallingConventions.Standard, new[] {typeof(Thing)});
-            var generator = constructor.GetILGenerator();
-            
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldarg_1);
-            generator.Emit(OpCodes.Castclass, thingType);
-            generator.Emit(OpCodes.Stfld, field);
-            generator.Emit(OpCodes.Ret);
+            IlFactory.Constructor(constructor.GetILGenerator(), field, thingType);
         }
         private static void CreateGetValue(TypeBuilder typeBuilder, PropertyInfo property, FieldBuilder thingField, string propertyName)
         {
@@ -78,26 +71,17 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 MethodAttributes.Public | MethodAttributes.Final |  MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
                 property.PropertyType, Type.EmptyTypes);
 
-            var generator = getValueMethod.GetILGenerator();
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldfld, thingField);
-            generator.EmitCall(OpCodes.Callvirt, property.GetMethod, null);
-            generator.Emit(OpCodes.Ret);
-            
+            new IlFactory(getValueMethod.GetILGenerator()).GetProperty(thingField, property.GetMethod);
+
             var getMethod = typeBuilder.DefineMethod($"get_{propertyName}", 
                 MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
                 property.PropertyType, Type.EmptyTypes);
             
-            generator = getMethod.GetILGenerator();
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldfld, thingField);
-            generator.EmitCall(OpCodes.Callvirt, property.GetMethod, null);
-            generator.Emit(OpCodes.Ret);
+            new IlFactory(getMethod.GetILGenerator()).GetProperty(thingField, property.GetMethod);
 
             var getProperty = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, property.PropertyType, null);
             getProperty.SetGetMethod(getMethod);
         }
-
         private static void CreateSetValidation(TypeBuilder typeBuilder, PropertyInfo property,
             ThingPropertyAttribute? propertyValidation, FieldBuilder thingField)
         {
@@ -158,8 +142,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 factory.EndIf();
 
                 factory.SetLocal(jsonElement, JsonElementMethods.GetValue(propertyType), local);
-                
-                
             }
             else if (propertyType == typeof(bool))
             {
