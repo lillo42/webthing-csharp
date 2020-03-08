@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
@@ -105,12 +106,20 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 MethodAttributes.Virtual,
                 typeof(SetPropertyResult), new[] {typeof(JsonElement)});
 
-            var generator = setValue.GetILGenerator();
+            FieldBuilder? regex = null;
+            var validator = ToValidation(propertyValidation);
+            if (validator.Pattern != null)
+            {
+                regex = typeBuilder.DefineField("_regex", typeof(Regex), FieldAttributes.Private | FieldAttributes.InitOnly | FieldAttributes.Static);
+                var staticConstructor = typeBuilder.DefineTypeInitializer();
+                var staticConstructorFactory = new IlFactory(staticConstructor.GetILGenerator());
+                staticConstructorFactory.InitializerRegex(regex, validator.Pattern);
+            }
             
+            var generator = setValue.GetILGenerator();
             var factory = new IlFactory(generator);
 
-            if (!property.CanWrite || !property.SetMethod.IsPublic ||
-                (propertyValidation != null && propertyValidation.IsReadOnly))
+            if (!property.CanWrite || !property.SetMethod.IsPublic || (propertyValidation != null && propertyValidation.IsReadOnly))
             {
                 factory.Return((int)SetPropertyResult.ReadOnly);
                 return;
@@ -120,20 +129,19 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             var jsonElement = factory.CreateLocalField(typeof(JsonElement));
             var local = factory.CreateLocalField(propertyType);
             var nullable = local;
+            
             if (property.PropertyType.IsNullable())
             {
                 nullable = factory.CreateLocalField(property.PropertyType);
             }
 
             factory.SetArgToLocal(jsonElement);
-            
-            var validator = ToValidation(propertyValidation);
 
             if (propertyType == typeof(string))
             {
                 factory.IfIsEquals(jsonElement, JsonElementMethods.ValueKind, (int)JsonValueKind.Null);
-                
-                if (validator.HasValidation)
+
+                if (validator.HasValidation && !validator.HasNullOnEnum)
                 {
                     factory.Return((int)SetPropertyResult.InvalidValue);
                 }
@@ -150,6 +158,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 factory.EndIf();
 
                 factory.SetLocal(jsonElement, JsonElementMethods.GetValue(propertyType), local);
+                
+                
             }
             else if (propertyType == typeof(bool))
             {
@@ -175,7 +185,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 {
                     factory.IfIsEquals(jsonElement, JsonElementMethods.ValueKind, (int)JsonValueKind.Null);
                     
-                    if (validator.HasValidation)
+                    if (validator.HasValidation && !validator.HasNullOnEnum)
                     {
                         factory.Return((int)SetPropertyResult.InvalidValue);
                     }
@@ -202,7 +212,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 
             if (validator.HasValidation)
             {
-                ValidationGeneration.AddValidation(factory, validator, local, (int)SetPropertyResult.InvalidValue);
+                ValidationGeneration.AddValidation(factory, validator, local, (int)SetPropertyResult.InvalidValue, regex);
             }
 
             factory.SetValue(local, thingField, property.SetMethod);

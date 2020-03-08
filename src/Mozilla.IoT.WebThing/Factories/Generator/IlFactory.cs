@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator
 {
@@ -16,7 +17,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static readonly FieldInfo s_decimalZero = typeof(decimal).GetField(nameof(decimal.Zero));
 
         private static readonly MethodInfo s_stringComparer = typeof(string).GetMethod(nameof(string.Compare), new[] { typeof(string), typeof(string) });
-
+        private static readonly MethodInfo s_match = typeof(Regex).GetMethod(nameof(Regex.Match), new[] { typeof(string) });
+        private static readonly MethodInfo s_success = typeof(Match).GetProperty(nameof(Match.Success)).GetMethod;
+        private static readonly ConstructorInfo s_regexConstructor = typeof(Regex).GetConstructors()[1];
+        
         private readonly ILGenerator _generator;
         public readonly StringBuilder _sb = new StringBuilder();
         private Label _next;
@@ -348,6 +352,19 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             }
         }
 
+        public void IfNotMatchWithRegex(LocalBuilder local, FieldBuilder regex, string pattern)
+        {
+            SetNext();
+            _generator.Emit(OpCodes.Ldsfld, regex);
+            _sb.AppendLine("ldsfld regex");
+            _generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
+            _sb.Append("ldloc.s ").AppendLine(local.LocalIndex.ToString());
+            Call(s_match);
+            Call(s_success);
+            _generator.Emit(OpCodes.Brtrue_S, _next);
+            _sb.AppendLine("brtrue.s");
+        }
+        
         public void IfTryGetIsFalse(LocalBuilder source, LocalBuilder destiny, MethodInfo getter)
         {
             SetNext();
@@ -562,6 +579,19 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                 _generator.EmitCall(OpCodes.Call, s_toDecimal, null);
                 _sb.Append("call ").AppendLine("ToDecimal");
             }
+        }
+
+        #endregion
+
+        #region Constructor
+
+        public void InitializerRegex(FieldBuilder regex, string pattern)
+        {
+            _generator.Emit(OpCodes.Ldstr, pattern);
+            _generator.Emit(OpCodes.Ldc_I4_8);
+            _generator.Emit(OpCodes.Newobj, s_regexConstructor);
+            _generator.Emit(OpCodes.Stsfld, regex);
+            _generator.Emit(OpCodes.Ret);
         }
 
         #endregion

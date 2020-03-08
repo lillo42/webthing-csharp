@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
@@ -10,11 +11,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
     public class ValidationGeneration
     {
         private static readonly MethodInfo s_getLength = typeof(string).GetProperty(nameof(string.Length)).GetMethod;
-        private static readonly MethodInfo s_match = typeof(Regex).GetMethod(nameof(Regex.Match), new[] { typeof(string) });
-        private static readonly MethodInfo s_success = typeof(Match).GetProperty(nameof(Match.Success)).GetMethod;
-        private static readonly ConstructorInfo s_regexConstructor = typeof(Regex).GetConstructors()[1];
-        
-        public static void AddValidation(IlFactory factory, Validation validation, LocalBuilder field, int returnValue)
+
+        public static void AddValidation(IlFactory factory, Validation validation, LocalBuilder field, int returnValue, FieldBuilder? regex)
         {
             if (IsNumber(field.LocalType))
             {
@@ -22,7 +20,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             }
             else if (IsString(field.LocalType))
             {
-                AddStringValidation(factory, validation, field, returnValue);
+                AddStringValidation(factory, validation, field, returnValue, regex);
             }
         }
 
@@ -71,7 +69,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             }
         }
 
-        private static void AddStringValidation(IlFactory factory, Validation validation, LocalBuilder field, int returnValue)
+        private static void AddStringValidation(IlFactory factory, Validation validation, LocalBuilder field, int returnValue, FieldBuilder? regex)
         {
             if (validation.MinimumLength.HasValue)
             {
@@ -90,6 +88,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             if (validation.Enums != null && validation.Enums.Length > 0)
             {
                 factory.IfIsDifferent(field, validation.Enums);
+                factory.Return(returnValue);
+                factory.EndIf();
+            }
+
+            if (validation.Pattern != null)
+            {
+                factory.IfNotMatchWithRegex(field, regex, validation.Pattern);
                 factory.Return(returnValue);
                 factory.EndIf();
             }
@@ -149,5 +154,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || MaximumLength.HasValue
                || Pattern != null
                || (Enums != null && Enums.Length > 0);
+
+        public bool HasNullOnEnum
+            => Enums != null && Enums.Contains(null);
     }
 }
