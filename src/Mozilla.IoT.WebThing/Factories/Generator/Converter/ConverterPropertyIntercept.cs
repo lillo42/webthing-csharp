@@ -37,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
         }
 
-        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
+        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
         {
             if (!_isObjectStart)
             {
@@ -45,7 +45,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _isObjectStart = true;
             }
 
-            var propertyName = _options.GetPropertyName(thingPropertyAttribute?.Name ?? propertyInfo.Name);
+            var propertyName = _options.GetPropertyName(propertyAttribute?.Name ?? propertyInfo.Name);
             var propertyType = propertyInfo.PropertyType.GetUnderlyingType();
             var jsonType = GetJsonType(propertyType);
             if (jsonType == null)
@@ -55,18 +55,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 
             _jsonWriter.StartObject(propertyName);
 
-            if (thingPropertyAttribute != null)
+            if (propertyAttribute != null)
             {
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Title),
-                    thingPropertyAttribute.Title);
+                    propertyAttribute.Title);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Description),
-                    thingPropertyAttribute.Description);
-                var readOnly = thingPropertyAttribute.IsReadOnly || !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic;
+                    propertyAttribute.Description);
+                var readOnly = propertyAttribute.IsReadOnly || !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic;
                 _jsonWriter.PropertyWithNullableValue("ReadOnly", readOnly);
 
-                if (thingPropertyAttribute.IsWriteOnlyValue.HasValue)
+                if (propertyAttribute.IsWriteOnlyValue.HasValue)
                 {
-                    _jsonWriter.PropertyWithNullableValue("WriteOnly", thingPropertyAttribute.IsWriteOnlyValue.Value);
+                    _jsonWriter.PropertyWithNullableValue("WriteOnly", propertyAttribute.IsWriteOnlyValue.Value);
                 }
                 else if(!propertyInfo.CanRead || !propertyInfo.GetMethod.IsPublic)
                 {
@@ -75,31 +75,31 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 
                 
                 _jsonWriter.PropertyWithNullableValue("Type", jsonType.ToString().ToLower());
-                _jsonWriter.PropertyEnum("@enum", propertyType, thingPropertyAttribute.Enum);
-                _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Unit), thingPropertyAttribute.Unit);
-                _jsonWriter.PropertyType("@type", thingPropertyAttribute.Type);
+                _jsonWriter.PropertyEnum("@enum", propertyType, propertyAttribute.Enum);
+                _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Unit), propertyAttribute.Unit);
+                _jsonWriter.PropertyType("@type", propertyAttribute.Type);
 
                 if (jsonType == JsonType.Number || jsonType == JsonType.Integer)
                 {
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), propertyType,
-                        thingPropertyAttribute.MinimumValue);
+                        propertyAttribute.MinimumValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Maximum), propertyType,
-                        thingPropertyAttribute.MaximumValue);
+                        propertyAttribute.MaximumValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.ExclusiveMinimum), propertyType,
-                        thingPropertyAttribute.ExclusiveMinimumValue);
+                        propertyAttribute.ExclusiveMinimumValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.ExclusiveMaximum), propertyType,
-                        thingPropertyAttribute.ExclusiveMaximumValue);
+                        propertyAttribute.ExclusiveMaximumValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MultipleOf), propertyType,
-                        thingPropertyAttribute.MultipleOfValue);
+                        propertyAttribute.MultipleOfValue);
                 }
                 else if (jsonType == JsonType.String)
                 {
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MinimumLength), propertyType,
-                        thingPropertyAttribute.MinimumLengthValue);
+                        propertyAttribute.MinimumLengthValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MaximumLength), propertyType,
-                        thingPropertyAttribute.MaximumLengthValue);
+                        propertyAttribute.MaximumLengthValue);
                     _jsonWriter.PropertyString(nameof(ThingPropertyAttribute.Pattern), propertyType,
-                        thingPropertyAttribute.Pattern);
+                        propertyAttribute.Pattern);
                 }
             }
             else
