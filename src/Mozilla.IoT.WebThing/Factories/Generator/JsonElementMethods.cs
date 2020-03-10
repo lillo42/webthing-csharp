@@ -32,6 +32,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         private static readonly MethodInfo s_getString = typeof(JsonElement).GetMethod(nameof(JsonElement.GetString));
         private static readonly MethodInfo s_getBool = typeof(JsonElement).GetMethod(nameof(JsonElement.GetBoolean));
 
+        public static readonly Type[] ArrayOfJsonElement = new[] {typeof(JsonElement)};
+        
         public static MethodInfo ValueKind => s_getValueKind;
         
         public void TryGet(Type type)

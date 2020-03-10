@@ -155,7 +155,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || Pattern != null
                || (Enums != null && Enums.Length > 0);
 
-        public bool HasNullOnEnum
+        public bool HasNullValueOnEnum
             => Enums != null && Enums.Contains(null);
     }
 }

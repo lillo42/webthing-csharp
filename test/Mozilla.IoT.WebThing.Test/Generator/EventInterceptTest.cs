@@ -34,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
-                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, ActionContext2>(),
                 new Dictionary<string, IProperty>());
 
             var @int = _fixture.Create<int>();
@@ -77,7 +77,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
-                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, ActionContext2>(),
                 new Dictionary<string, IProperty>());
 
             var @int = _fixture.Create<int>();
@@ -97,7 +97,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
-                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, ActionContext2>(),
                 new Dictionary<string, IProperty>());
 
             var @int = _fixture.Create<int>();

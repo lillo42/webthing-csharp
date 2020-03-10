@@ -29,16 +29,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         {
             _generator = generator ?? throw new ArgumentNullException(nameof(generator));
         }
-
-        public void Return(int result)
-        {
-            _generator.Emit(OpCodes.Ldc_I4_S, result);
-            _generator.Emit(OpCodes.Ret);
-
-            _sb.Append("ldc.i4.s ").AppendLine(result.ToString());
-            _sb.AppendLine("ret");
-            _sb.AppendLine();
-        }
+        
 
         public LocalBuilder CreateLocalField(Type local)
             => _generator.DeclareLocal(local);
@@ -420,6 +411,14 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             _sb.AppendLine();
         }
 
+        public void SetNullValue(LocalBuilder local)
+        {
+            _generator.Emit(OpCodes.Ldnull);
+            _sb.AppendLine("ldnull");
+            _generator.Emit(OpCodes.Stloc_S, local.LocalIndex);
+            _sb.Append("ldloca.s ").AppendLine(local.LocalIndex.ToString());
+        }
+        
         public void SetLocal(LocalBuilder origin, MethodInfo getter, LocalBuilder destiny)
         {
             _generator.Emit(OpCodes.Ldloca_S, origin.LocalIndex);
@@ -620,5 +619,30 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         }
 
         #endregion
+
+        #region Return
+        
+        public void Return(int result)
+        {
+            _generator.Emit(OpCodes.Ldc_I4_S, result);
+            _generator.Emit(OpCodes.Ret);
+
+            _sb.Append("ldc.i4.s ").AppendLine(result.ToString());
+            _sb.AppendLine("ret");
+            _sb.AppendLine();
+        }
+        
+        public void ReturnNull()
+        {
+            _generator.Emit(OpCodes.Ldnull);
+            _generator.Emit(OpCodes.Ret);
+
+            _sb.Append("ldnull");
+            _sb.AppendLine("ret");
+            _sb.AppendLine();
+        }
+        
+        #endregion
+        
     }
 }

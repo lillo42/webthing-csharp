@@ -36,7 +36,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             foreach (var actions in thing.ThingContext.Actions)
             {
-                foreach (var value in actions.Value.Actions)
+                foreach (var value in actions.Value)
                 {
                     result.AddLast(new Dictionary<string, object> {[actions.Key] = value});
                 }

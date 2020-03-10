@@ -30,10 +30,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             _fixture = new Fixture();
             _thing = new LampThing();
             _factory = new ActionInterceptFactory(new ThingOption());
-            var logger = Substitute.For<ILogger<ActionInfo>>();
+            var logger = Substitute.For<ILogger<ActionInfo2>>();
             _provider = Substitute.For<IServiceProvider>();
 
-            _provider.GetService(typeof(ILogger<ActionInfo>))
+            _provider.GetService(typeof(ILogger<ActionInfo2>))
                 .Returns(logger);
         }
 
@@ -45,7 +45,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         }
 
 
-        private ActionInfo CreateAction(string actionName)
+        private ActionInfo2 CreateAction(string actionName)
         {
             CodeGeneratorFactory.Generate(_thing, new[] {_factory});
             _factory.Actions.Should().ContainKey(actionName);
@@ -55,11 +55,11 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 _factory.Actions, 
                 new Dictionary<string, IProperty>());
             var actionType = _thing.ThingContext.Actions[actionName].ActionType;
-            return (ActionInfo)Activator.CreateInstance(actionType);
+            return (ActionInfo2)Activator.CreateInstance(actionType);
 
         }
         
-        private ActionInfo CreateAction(string actionName, int inputValue)
+        private ActionInfo2 CreateAction(string actionName, int inputValue)
         {
             CodeGeneratorFactory.Generate(_thing, new[] {_factory});
             _factory.Actions.Should().ContainKey(actionName);
@@ -69,7 +69,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 _factory.Actions,
                 new Dictionary<string, IProperty>());
             var actionType = _thing.ThingContext.Actions[actionName].ActionType;
-            var action = (ActionInfo)Activator.CreateInstance(actionType);
+            var action = (ActionInfo2)Activator.CreateInstance(actionType);
             
             var inputPropertyType = actionType.GetProperty("Input", BindingFlags.Public | BindingFlags.Instance);
             inputPropertyType.Should().NotBeNull();

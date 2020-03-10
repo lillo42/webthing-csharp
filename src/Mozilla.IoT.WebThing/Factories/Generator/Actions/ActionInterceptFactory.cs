@@ -9,10 +9,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
     public class ActionInterceptFactory : IInterceptorFactory
     {
         private readonly ActionIntercept _intercept;
+        private readonly EmptyIntercept _empty;
 
-        public Dictionary<string, ActionContext> Actions => _intercept.Actions;
+        public Dictionary<string, ActionCollection> Actions => _intercept.Actions;
         public ActionInterceptFactory(ThingOption option)
         {
+            _empty = new EmptyIntercept();
             var assemblyName = new AssemblyName("ActionAssembly");
             var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
             var moduleBuilder = assemblyBuilder.DefineDynamicModule("ActionModule");
@@ -20,15 +22,15 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
         }
         
         public IThingIntercept CreateThingIntercept()
-            => new EmptyIntercept();
+            => _empty;
 
         public IPropertyIntercept CreatePropertyIntercept()
-            => new EmptyIntercept();
+            => _empty;
 
         public IActionIntercept CreatActionIntercept()
             => _intercept;
 
         public IEventIntercept CreatEventIntercept()
-            => new EmptyIntercept();
+            => _empty;
     }
 }

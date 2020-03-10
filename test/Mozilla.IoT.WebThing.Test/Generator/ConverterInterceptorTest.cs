@@ -37,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             _thing.Prefix = new Uri("http://localhost/");
             _thing.ThingContext = new Context(_factory.Create(),
                 new Dictionary<string, EventCollection>(), 
-                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, ActionContext2>(),
                 new Dictionary<string, IProperty>());
             
             var value = JsonSerializer.Serialize(_thing,

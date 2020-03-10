@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
@@ -32,35 +31,32 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             var jsonOption = service.GetRequiredService<JsonSerializerOptions>();
             var option = service.GetRequiredService<ThingOption>();
-            
-            var actions = await context.FromBodyAsync<Dictionary<string, JsonElement>>(jsonOption)
-                .ConfigureAwait(false);
-            
+
             var actionName = context.GetRouteData<string>("action");
 
-            if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
+            if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actions))
             {
-                logger.LogInformation("{actionName} Action not found in {thingName}", actions, thingName);
+                logger.LogInformation("{actionName} Action not found in {thingName}", actionName, thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-            
-            if (actions.Keys.Any(x => x != actionName))
-            {
-                logger.LogInformation("Payload has invalid action. [Name: {thingName}][Action Name: {actionName}]", thingName, actionName);
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                return;
-            }
-            
+
+            var jsonActions = await context.FromBodyAsync<JsonElement>(jsonOption)
+                .ConfigureAwait(false);
+
             var actionsToExecute = new LinkedList<ActionInfo>();
             
-            foreach (var (_, json) in actions)
+            foreach (var property in jsonActions.EnumerateObject())
             {
-                logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
-                var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
-                    actionContext.ActionType, jsonOption);
-                
-                if (!action.IsValid())
+                if (!property.Name.Equals(actionName, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    logger.LogInformation("Invalid {actionName} action. [Thing: {thingName}]", actions, thingName);
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return;
+                }
+
+                var action = actions.Add(property.Value);
+                if (action == null)
                 {
                     logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
@@ -69,18 +65,16 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
                 action.Thing = thing;
                 var namePolicy = option.PropertyNamingPolicy;
-                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{action.Id}";
+                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{action.GetActionName()}";
                 actionsToExecute.AddLast(action);
             }
             
-            foreach (var actionInfo in actionsToExecute)
+            foreach (var action in actionsToExecute)
             {
-                logger.LogInformation("Going to execute action {actionName}. [Name: {thingName}]", actionName, thingName);
+                logger.LogInformation("Going to execute {actionName} action with {id} Id. [Name: {thingName}]", action.GetActionName(), action.GetId(), thingName);
                 
-                actionInfo.ExecuteAsync(thing, service)
+                action.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
-                
-                actionContext.Actions.Add(actionInfo.Id, actionInfo);
             }
             
             if (actionsToExecute.Count == 1)

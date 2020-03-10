@@ -10,7 +10,7 @@ namespace Mozilla.IoT.WebThing
     {
         public Context(IThingConverter converter, 
             Dictionary<string, EventCollection> events,
-            Dictionary<string, ActionContext> actions, 
+            Dictionary<string, ActionCollection> actions, 
             Dictionary<string, IProperty> properties)
         {
             Converter = converter ?? throw new ArgumentNullException(nameof(converter));
@@ -22,7 +22,7 @@ namespace Mozilla.IoT.WebThing
         public IThingConverter Converter { get; }
         public Dictionary<string, IProperty> Properties { get; }
         public Dictionary<string, EventCollection> Events { get; }
-        public Dictionary<string, ActionContext> Actions { get; } 
+        public Dictionary<string, ActionCollection> Actions { get; } 
         public ConcurrentDictionary<Guid, WebSocket> Sockets { get; } = new ConcurrentDictionary<Guid, WebSocket>();
     }
 }

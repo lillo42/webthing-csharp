@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
@@ -34,42 +33,40 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var jsonOption = service.GetRequiredService<JsonSerializerOptions>();
             var option = service.GetRequiredService<ThingOption>();
             
-            var actions =  await context.FromBodyAsync<Dictionary<string, JsonElement>>(jsonOption)
+            var jsonAction =  await context.FromBodyAsync<JsonElement>(jsonOption)
                 .ConfigureAwait(false);
             
             var actionsToExecute = new LinkedList<ActionInfo>();
-            foreach (var (actionName, json) in actions)
+
+            foreach (var property in jsonAction.EnumerateObject())
             {
-                if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
+                if (!thing.ThingContext.Actions.TryGetValue(property.Name, out var actions))
                 {
                     logger.LogInformation("{actionName} Action not found in {thingName}", actions, thingName);
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     return;
                 }
+
+                var action = actions.Add(property.Value);
                 
-                logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
-                var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
-                    actionContext.ActionType, jsonOption);
-                
-                if (!action.IsValid())
+                if (action == null)
                 {
                     logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return;
                 }
-
-                actionsToExecute.AddLast(action); 
+                
                 action.Thing = thing;
                 var namePolicy = option.PropertyNamingPolicy;
-                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{action.Id}";
+                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(action.GetActionName())}/{action.GetId()}";
+
+                actionsToExecute.AddLast(action);
+
             }
             
             foreach (var actionInfo in actionsToExecute)
             {
                 logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", actionInfo.GetActionName(), thingName);
-                
-                thing.ThingContext.Actions[actionInfo.GetActionName()].Actions.Add(actionInfo.Id, actionInfo);
-                
                 actionInfo.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
             }

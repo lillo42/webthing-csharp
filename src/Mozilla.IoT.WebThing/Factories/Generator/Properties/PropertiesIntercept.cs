@@ -86,9 +86,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             ThingPropertyAttribute? propertyValidation, FieldBuilder thingField)
         {
             var setValue = typeBuilder.DefineMethod(nameof(IProperty.SetValue),
-                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot |
-                MethodAttributes.Virtual,
-                typeof(SetPropertyResult), new[] {typeof(JsonElement)});
+                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
+                typeof(SetPropertyResult), JsonElementMethods.ArrayOfJsonElement);
 
             FieldBuilder? regex = null;
             var validator = ToValidation(propertyValidation);
@@ -125,7 +124,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             {
                 factory.IfIsEquals(jsonElement, JsonElementMethods.ValueKind, (int)JsonValueKind.Null);
 
-                if (validator.HasValidation && !validator.HasNullOnEnum)
+                if (validator.HasValidation && !validator.HasNullValueOnEnum)
                 {
                     factory.Return((int)SetPropertyResult.InvalidValue);
                 }
@@ -167,7 +166,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 {
                     factory.IfIsEquals(jsonElement, JsonElementMethods.ValueKind, (int)JsonValueKind.Null);
                     
-                    if (validator.HasValidation && !validator.HasNullOnEnum)
+                    if (validator.HasValidation && !validator.HasNullValueOnEnum)
                     {
                         factory.Return((int)SetPropertyResult.InvalidValue);
                     }

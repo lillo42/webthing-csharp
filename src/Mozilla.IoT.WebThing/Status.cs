@@ -1,4 +1,4 @@
-namespace Mozilla.IoT.WebThing.Actions
+namespace Mozilla.IoT.WebThing
 {
     public enum Status
     {
