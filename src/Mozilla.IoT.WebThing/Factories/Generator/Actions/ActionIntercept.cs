@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Actions.Parameters.Boolean;
@@ -21,6 +22,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
         private const MethodAttributes s_getSetAttributes =
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
+        private static readonly ConstructorInfo s_valueTask = typeof(ValueTask).GetConstructor(new[] {typeof(Task)});
         private readonly ModuleBuilder _moduleBuilder;
         private readonly ThingOption _option;
         public  Dictionary<string, ActionCollection> Actions { get; }
@@ -48,7 +50,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             
             var inputBuilder = CreateInput(action);
             var actionInfoBuilder = CreateActionInfo(action, inputBuilder, thingType, name);
+            var factory = CreateActionInfoFactory(actionInfoBuilder, inputBuilder);
             var parameters = GetParameters(action);
+            
+            Actions.Add(name, new ActionCollection(new InfoConvert(parameters), (IActionInfoFactory)Activator.CreateInstance(factory)));
         }
 
         private TypeBuilder CreateInput(MethodInfo action)
@@ -73,20 +78,93 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
                 typeof(ActionInfo));
             
-            CreateProperty(actionInfo, "input", inputType);
+             var input = CreateProperty(actionInfo, "input", inputType);
             
             var getProperty = actionInfo.DefineMethod(nameof(ActionInfo.GetActionName), 
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, 
                 typeof(string), Type.EmptyTypes);
 
             getProperty.GetILGenerator().Return(actionName);
+            
+            CreateInternalExecuteAsync(action, actionInfo, inputType, input, thingType);
             actionInfo.CreateType();
             return actionInfo;
         }
 
-        private static IEnumerable<IActionParameter> GetParameters(MethodInfo action)
+        private TypeBuilder CreateActionInfoFactory(TypeBuilder actionInfo, TypeBuilder inputType)
         {
-            var parameters = new LinkedList<IActionParameter>();
+            var actionInfoFactory = _moduleBuilder.DefineType($"{actionInfo.Name}Factory",
+                TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
+                null, new []{ typeof(IActionInfoFactory) });
+
+            var createMethod = actionInfoFactory.DefineMethod(nameof(IActionInfoFactory.CreateActionInfo),
+                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot,
+                CallingConventions.Standard, typeof(ActionInfo), 
+                new[] {typeof(Dictionary<string, object>)});
+
+            var generator = createMethod.GetILGenerator();
+
+            generator.NewObj(actionInfo.GetConstructors()[0]);
+            generator.NewObj(inputType.GetConstructors()[0], true);
+
+            foreach (var property in inputType.GetProperties())
+            {
+                generator.SetProperty(property);
+            }
+            
+            generator.Emit(OpCodes.Ret);
+
+            actionInfoFactory.CreateType();
+            return actionInfoFactory;
+        }
+
+        private static void CreateInternalExecuteAsync(MethodInfo action, TypeBuilder actionInfo, TypeBuilder input, PropertyBuilder inputProperty, Type thingType)
+        {
+            var execute = actionInfo.DefineMethod("InternalExecuteAsync",
+                MethodAttributes.Family | MethodAttributes.ReuseSlot | MethodAttributes.Virtual | MethodAttributes.HideBySig,
+                    typeof(ValueTask), new [] { typeof(Thing), typeof(IServiceProvider) });
+
+            var generator = execute.GetILGenerator();
+            
+            var valueTask = generator.DeclareLocal(typeof(ValueTask));
+            generator.CastFirstArg(thingType);
+            
+            var inputProperties = input.GetProperties();
+            var counter = 0;
+
+            foreach (var parameter in action.GetParameters())
+            {
+                if (parameter.GetCustomAttribute<FromServicesAttribute>() != null)
+                {
+                    generator.LoadFromService(parameter.ParameterType);
+                }
+                else if(parameter.ParameterType == typeof(CancellationToken))
+                {
+                    generator.LoadCancellationToken();
+                }
+                else
+                {
+                    var property = inputProperties[counter++];
+                    generator.LoadFromInput(inputProperty.GetMethod, property.GetMethod);
+                }
+            }
+            
+            generator.Call(action);
+            if (action.ReturnType == typeof(void))
+            {
+               generator.Return(valueTask);
+            }
+            else if(action.ReturnType == typeof(Task))
+            {
+                generator.Return(valueTask, s_valueTask);
+            }
+        }
+
+        private IReadOnlyDictionary<string, IActionParameter> GetParameters(MethodInfo action)
+        {
+            var parameters = _option.IgnoreCase ? new Dictionary<string, IActionParameter>(StringComparer.InvariantCultureIgnoreCase)
+                : new Dictionary<string, IActionParameter>();
+            
             foreach (var parameter in action.GetParameters().Where(IsValidParameter))
             {
 
@@ -243,7 +321,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                     }
                 }
 
-                parameters.AddLast(actionParameter);
+                parameters.Add(parameter.Name, actionParameter);
             }
 
             return parameters;

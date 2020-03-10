@@ -20,12 +20,7 @@ namespace Mozilla.IoT.WebThing.Actions
             _inputConvert = inputConvert;
             _actions = new ConcurrentDictionary<Guid, ActionInfo>();
         }
-
-        public ActionInfo? Add(JsonElement element)
-        {
-            return null;
-        }
-
+        
         public bool TryAdd(JsonElement element, out ActionInfo? info)
         {
             info = null;

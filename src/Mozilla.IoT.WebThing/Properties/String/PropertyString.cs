@@ -15,7 +15,7 @@ namespace Mozilla.IoT.WebThing.Properties.String
         private readonly int? _minimum;
         private readonly int? _maximum;
         private readonly string[]? _enums;
-        private readonly Regex? _pattern;
+        private readonly Regex _pattern;
 
         public PropertyString(Thing thing, Func<Thing, object> getter, Action<Thing, object> setter, 
              bool isNullable, int? minimum, int? maximum, string? pattern, string[]? enums)
@@ -27,7 +27,7 @@ namespace Mozilla.IoT.WebThing.Properties.String
             _minimum = minimum;
             _maximum = maximum;
             _enums = enums;
-            _pattern = new Regex?(pattern, RegexOptions.Compiled);
+            _pattern = pattern != null ? new Regex(pattern, RegexOptions.Compiled) : null;
         }
 
         public object GetValue() 

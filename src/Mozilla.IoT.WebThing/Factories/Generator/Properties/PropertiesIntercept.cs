@@ -35,10 +35,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         
         public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
         {
-            var thingType = thing.GetType();
             var propertyName = propertyAttribute?.Name ?? propertyInfo.Name;
 
-            var isReadOnly = !propertyInfo.CanWrite || !propertyInfo.GetMethod.IsPublic ||
+            var isReadOnly = !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic ||
                              (propertyAttribute != null && propertyAttribute.IsReadOnly);
 
             var getter = GetGetMethod(propertyInfo);
@@ -49,10 +48,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                 return;
             }
 
+            var validation = ToValidation(propertyAttribute);
+
             var setter = GetSetMethod(propertyInfo);
             var propertyType = propertyInfo.PropertyType.GetUnderlyingType();
-            var isNullable = (propertyType ==  typeof(string) && propertyType.IsNullable()) 
-                             && (propertyAttribute == null || propertyAttribute.Enum.Contains(null));
+            var isNullable = propertyType ==  typeof(string) || propertyInfo.PropertyType.IsNullable() || validation.HasNullValueOnEnum;
 
             IProperty property;
             
@@ -63,48 +63,46 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             else if (propertyType == typeof(string))
             {
                 property = new PropertyString(thing, getter, setter, isNullable,
-                    propertyAttribute?.MinimumLengthValue, propertyAttribute?.MaximumLengthValue, propertyAttribute?.Pattern,
-                    propertyAttribute?.Enum?.Select(Convert.ToString).ToArray());
+                    validation.MinimumLength, validation.MaximumLength, validation.Pattern,
+                    validation.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray());
             }
             else if (propertyType == typeof(Guid))
             {
                 property = new PropertyGuid(thing, getter, setter, isNullable,
-                    propertyAttribute?.Enum?.Select(x=> Guid.Parse(x.ToString())).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(x=> Guid.Parse(x.ToString())).ToArray());
             }
             else if (propertyType == typeof(TimeSpan))
             {
                 property = new PropertyTimeSpan(thing, getter, setter, isNullable,
-                    propertyAttribute?.Enum?.Select(x=> TimeSpan.Parse(x.ToString())).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(x=> TimeSpan.Parse(x.ToString())).ToArray());
             }
             else if (propertyType == typeof(DateTime))
             {
                 property = new PropertyDateTime(thing, getter, setter, isNullable,
-                    propertyAttribute?.Enum?.Select(Convert.ToDateTime).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(Convert.ToDateTime).ToArray());
             }
             else if (propertyType == typeof(DateTimeOffset))
             {
                 property = new PropertyDateTimeOffset(thing, getter, setter, isNullable,
-                    propertyAttribute?.Enum?.Select(x => DateTimeOffset.Parse(x.ToString())).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString())).ToArray());
             }
             else
             {
-                var minimum = propertyAttribute?.MinimumValue;
-                var maximum = propertyAttribute?.MaximumValue;
-                var multipleOf = propertyAttribute?.MultipleOfValue;
-                var enums = propertyAttribute?.Enum;
-
-                if(propertyAttribute != null)
+                var minimum = validation.Minimum;
+                var maximum = validation.Maximum;
+                var multipleOf = validation.MultipleOf;
+                var enums = validation.Enums?.Where(x => x != null);
+                
+                if(validation.ExclusiveMinimum.HasValue)
                 {
-                    if(propertyAttribute.ExclusiveMinimumValue.HasValue)
-                    {
-                        minimum = propertyAttribute.ExclusiveMinimumValue.Value + 1;
-                    }
-
-                    if(propertyAttribute.ExclusiveMaximumValue.HasValue)
-                    {
-                        minimum = propertyAttribute.ExclusiveMaximumValue.Value - 1;
-                    }
+                    minimum = validation.ExclusiveMinimum.Value + 1;
                 }
+
+                if(validation.ExclusiveMaximum.HasValue)
+                {
+                    maximum = validation.ExclusiveMaximum.Value - 1;
+                }
+                
 
                 if(propertyType == typeof(byte))
                 {
@@ -208,6 +206,15 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             }
             
             Properties.Add(propertyName, property);
+            
+            static Validation ToValidation(ThingPropertyAttribute? validation)
+            {
+                return new Validation(validation?.MinimumValue, validation?.MaximumValue,
+                    validation?.ExclusiveMinimumValue, validation?.ExclusiveMaximumValue,
+                    validation?.MultipleOfValue,
+                    validation?.MinimumLengthValue, validation?.MaximumLengthValue,
+                    validation?.Pattern, validation?.Enum);
+            }
         }
         
         private static Func<object, object> GetGetMethod(PropertyInfo property)
