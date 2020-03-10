@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.WebSockets;
+using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing

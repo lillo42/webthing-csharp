@@ -13,10 +13,11 @@ namespace Mozilla.IoT.WebThing.Properties.Number
         private readonly bool _isNullable;
         private readonly byte? _minimum;
         private readonly byte? _maximum;
+        private readonly byte? _multipleOf;
         private readonly byte[]? _enums;
 
         public PropertyByte(Thing thing, Func<Thing, object> getter, Action<Thing, object> setter, 
-             bool isNullable, byte? minimum, byte? maximum, byte[]? enums)
+             bool isNullable, byte? minimum, byte? maximum, byte? multipleOf, byte[]? enums)
         {
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
             _getter = getter ?? throw new ArgumentNullException(nameof(getter));
@@ -24,6 +25,7 @@ namespace Mozilla.IoT.WebThing.Properties.Number
             _isNullable = isNullable;
             _minimum = minimum;
             _maximum = maximum;
+            _multipleOf = multipleOf;
             _enums = enums;
         }
 
@@ -54,6 +56,11 @@ namespace Mozilla.IoT.WebThing.Properties.Number
             }
             
             if (_maximum.HasValue && value > _maximum.Value)
+            {
+                return SetPropertyResult.InvalidValue;
+            }
+
+            if (_multipleOf.HasValue && value % _multipleOf.Value != 0)
             {
                 return SetPropertyResult.InvalidValue;
             }

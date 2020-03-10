@@ -3,30 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 using Mozilla.IoT.WebThing.Properties;
 using Mozilla.IoT.WebThing.Properties.Boolean;
 using Mozilla.IoT.WebThing.Properties.String;
+using Mozilla.IoT.WebThing.Properties.Number;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
     public class PropertiesIntercept : IPropertyIntercept
     {
-        private readonly ThingOption _option;
-        private readonly ModuleBuilder _moduleBuilder;
-
         public Dictionary<string, IProperty> Properties { get; }
         
-        public PropertiesIntercept(ThingOption option, ModuleBuilder moduleBuilder)
+        public PropertiesIntercept(ThingOption option)
         {
-            _option = option ?? throw new ArgumentNullException(nameof(option));
-            _moduleBuilder = moduleBuilder ?? throw new ArgumentNullException(nameof(moduleBuilder));
             Properties = option.IgnoreCase ? new Dictionary<string, IProperty>(StringComparer.InvariantCultureIgnoreCase) 
                 : new Dictionary<string, IProperty>();
         }
@@ -49,7 +41,6 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             var isReadOnly = !propertyInfo.CanWrite || !propertyInfo.GetMethod.IsPublic ||
                              (propertyAttribute != null && propertyAttribute.IsReadOnly);
 
-
             var getter = GetGetMethod(propertyInfo);
 
             if (isReadOnly)
@@ -63,7 +54,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             var isNullable = (propertyType ==  typeof(string) && propertyType.IsNullable()) 
                              && (propertyAttribute == null || propertyAttribute.Enum.Contains(null));
 
-            IProperty property = null;
+            IProperty property;
             
             if(propertyType == typeof(bool))
             {
@@ -94,6 +85,126 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             {
                 property = new PropertyDateTimeOffset(thing, getter, setter, isNullable,
                     propertyAttribute?.Enum?.Select(x => DateTimeOffset.Parse(x.ToString())).ToArray());
+            }
+            else
+            {
+                var minimum = propertyAttribute?.MinimumValue;
+                var maximum = propertyAttribute?.MaximumValue;
+                var multipleOf = propertyAttribute?.MultipleOfValue;
+                var enums = propertyAttribute?.Enum;
+
+                if(propertyAttribute != null)
+                {
+                    if(propertyAttribute.ExclusiveMinimumValue.HasValue)
+                    {
+                        minimum = propertyAttribute.ExclusiveMinimumValue.Value + 1;
+                    }
+
+                    if(propertyAttribute.ExclusiveMaximumValue.HasValue)
+                    {
+                        minimum = propertyAttribute.ExclusiveMaximumValue.Value - 1;
+                    }
+                }
+
+                if(propertyType == typeof(byte))
+                {
+                    var min = minimum.HasValue ? new byte?(Convert.ToByte(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new byte?(Convert.ToByte(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+
+                    property = new PropertyByte(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToByte).ToArray());
+                }
+                else if(propertyType == typeof(sbyte))
+                {
+                    var min = minimum.HasValue ? new sbyte?(Convert.ToSByte(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new sbyte?(Convert.ToSByte(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new sbyte?(Convert.ToSByte(multipleOf.Value)) : null;
+
+                    property = new PropertySByte(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToSByte).ToArray());
+                }
+                else if(propertyType == typeof(short))
+                {
+                    var min = minimum.HasValue ? new short?(Convert.ToInt16(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new short?(Convert.ToInt16(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new short?(Convert.ToInt16(multipleOf.Value)) : null;
+                    
+                    property = new PropertyShort(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToInt16).ToArray());
+                }
+                else if(propertyType == typeof(ushort))
+                {
+                    var min = minimum.HasValue ? new ushort?(Convert.ToUInt16(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new ushort?(Convert.ToUInt16(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+
+                    property = new PropertyUShort(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToUInt16).ToArray());
+                }
+                else if(propertyType == typeof(int))
+                {
+                    var min = minimum.HasValue ? new int?(Convert.ToInt32(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new int?(Convert.ToInt32(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new int?(Convert.ToInt32(multipleOf.Value)) : null;
+
+                    property = new PropertyInt(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToInt32).ToArray());
+                }
+                else if(propertyType == typeof(uint))
+                {
+                    var min = minimum.HasValue ? new uint?(Convert.ToUInt32(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new uint?(Convert.ToUInt32(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new uint?(Convert.ToUInt32(multipleOf.Value)) : null;
+
+                    property = new PropertyUInt(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToUInt32).ToArray());
+                }
+                else if(propertyType == typeof(long))
+                {
+                    var min = minimum.HasValue ? new long?(Convert.ToInt64(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new long?(Convert.ToInt64(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new long?(Convert.ToInt64(multipleOf.Value)) : null;
+
+                    property = new PropertyLong(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToInt64).ToArray());
+                }
+                else if(propertyType == typeof(ulong))
+                {
+                    var min = minimum.HasValue ? new ulong?(Convert.ToUInt64(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new ulong?(Convert.ToUInt64(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+
+                    property = new PropertyULong(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToUInt64).ToArray());
+                }
+                else if(propertyType == typeof(float))
+                {
+                    var min = minimum.HasValue ? new float?(Convert.ToSingle(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new float?(Convert.ToSingle(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new float?(Convert.ToSingle(multipleOf.Value)) : null;
+
+                    property = new PropertyFloat(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToSingle).ToArray());
+                }
+                else if(propertyType == typeof(double))
+                {
+                    var min = minimum.HasValue ? new double?(Convert.ToDouble(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new double?(Convert.ToDouble(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new double?(Convert.ToDouble(multipleOf.Value)) : null;
+
+                    property = new PropertyDouble(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToDouble).ToArray());
+                }
+                else
+                {
+                    var min = minimum.HasValue ? new decimal?(Convert.ToDecimal(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new decimal?(Convert.ToDecimal(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new decimal?(Convert.ToDecimal(multipleOf.Value)) : null;
+
+                    property = new PropertyDecimal(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToDecimal).ToArray());
+                }
             }
             
             Properties.Add(propertyName, property);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Text.Json;
 
@@ -13,10 +13,11 @@ namespace Mozilla.IoT.WebThing.Properties.Number
         private readonly bool _isNullable;
         private readonly int? _minimum;
         private readonly int? _maximum;
+        private readonly int? _multipleOf;
         private readonly int[]? _enums;
 
         public PropertyInt(Thing thing, Func<Thing, object> getter, Action<Thing, object> setter, 
-             bool isNullable, int? minimum, int? maximum, int[]? enums)
+             bool isNullable, int? minimum, int? maximum, int? multipleOf, int[]? enums)
         {
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
             _getter = getter ?? throw new ArgumentNullException(nameof(getter));
@@ -24,6 +25,7 @@ namespace Mozilla.IoT.WebThing.Properties.Number
             _isNullable = isNullable;
             _minimum = minimum;
             _maximum = maximum;
+            _multipleOf = multipleOf;
             _enums = enums;
         }
 
@@ -54,6 +56,11 @@ namespace Mozilla.IoT.WebThing.Properties.Number
             }
             
             if (_maximum.HasValue && value > _maximum.Value)
+            {
+                return SetPropertyResult.InvalidValue;
+            }
+
+            if (_multipleOf.HasValue && value % _multipleOf.Value != 0)
             {
                 return SetPropertyResult.InvalidValue;
             }

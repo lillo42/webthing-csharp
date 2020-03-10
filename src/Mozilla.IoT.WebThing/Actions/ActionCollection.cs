@@ -1,46 +1,48 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.Json;
 
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Actions
 {
-    public abstract class ActionCollection : IEnumerable<ActionInfo>
+    public class ActionCollection : IEnumerable<ActionInfo>
     {
         private readonly ConcurrentDictionary<Guid, ActionInfo> _actions;
+        private readonly InfoConvert _inputConvert;
+        private readonly IActionInfoFactory _actionInfoFactory;
+
         public event EventHandler<ActionInfo>? Change;
-        protected abstract Type GetActionInfoType();
-        
-        protected ActionCollection()
+
+        public ActionCollection(InfoConvert inputConvert, IActionInfoFactory actionInfoFactory)
         {
+            _actionInfoFactory = actionInfoFactory ?? throw new ArgumentNullException(nameof(actionInfoFactory));
+            _inputConvert = inputConvert;
             _actions = new ConcurrentDictionary<Guid, ActionInfo>();
         }
 
-
-        protected abstract bool IsValid(ActionInfo info);
-
-        private ActionInfo Convert(JsonElement element) 
-            => (ActionInfo)JsonSerializer.Deserialize(element.GetRawText(), GetActionInfoType());
-
         public ActionInfo? Add(JsonElement element)
         {
-            if (!element.TryGetProperty("input", out var input))
-            {
-                return null;
-            }
-            
-            var action = Convert(input);
-            
-            if (IsValid(action))
-            {
-                _actions.TryAdd(action.GetId(), action);
-                return action;
-            }
-
             return null;
         }
-        
+
+        public bool TryAdd(JsonElement element, out ActionInfo? info)
+        {
+            info = null;
+            if (!element.TryGetProperty("input", out var inputProperty))
+            {
+                return false;
+            }
+
+            if (!_inputConvert.TryConvert(inputProperty, out var inputValues))
+            {
+                return false;
+            }
+
+            info = _actionInfoFactory.CreateActionInfo(inputValues);
+            return _actions.TryAdd(info.GetId(), info);
+        }
+
         public bool TryGetValue(Guid id, out ActionInfo? action)
             => _actions.TryGetValue(id, out action);
         
