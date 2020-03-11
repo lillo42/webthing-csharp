@@ -35,6 +35,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             generator.Emit(OpCodes.Ldloca_S, local.LocalIndex);
             generator.Emit(OpCodes.Initobj, local.LocalType);
             generator.Emit(OpCodes.Ldloc_0);
+            generator.Emit(OpCodes.Ret);
         }
         
         public static void Return(this ILGenerator generator, LocalBuilder local,  ConstructorInfo constructor)
@@ -42,6 +43,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             generator.Emit(OpCodes.Ldloca_S, local.LocalIndex);
             generator.Emit(OpCodes.Newobj, constructor);
             generator.Emit(OpCodes.Ldloc_0);
+            generator.Emit(OpCodes.Ret);
         }
         #endregion
 
@@ -78,6 +80,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
         }
         
+        
         #endregion
 
         #region Cast
@@ -112,7 +115,7 @@ namespace Mozilla.IoT.WebThing.Extensions
         {
             generator.Emit(OpCodes.Ldarg_0);
             generator.EmitCall(OpCodes.Call, getInput, null);
-            generator.EmitCall(OpCodes.Callvirt, getInput, null);
+            generator.EmitCall(OpCodes.Callvirt, getValue, null);
         }
 
         #endregion

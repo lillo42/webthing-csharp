@@ -28,8 +28,11 @@ namespace Mozilla.IoT.WebThing.Actions
                 {
                     return false;
                 }
-
-                input.Add(properties.Name, value);
+                
+                if (!input.TryAdd(properties.Name, value))
+                {
+                    return false;
+                }
             }
 
             foreach (var (property, parameter) in _actionParameters)

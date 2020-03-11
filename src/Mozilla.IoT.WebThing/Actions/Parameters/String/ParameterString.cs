@@ -17,7 +17,7 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
             _minimum = minimum;
             _maximum = maximum;
             _enums = enums;
-            _pattern = new Regex(pattern, RegexOptions.Compiled);
+            _pattern = pattern != null ? new Regex(pattern, RegexOptions.Compiled) : null;
         }
 
         public bool CanBeNull { get; }

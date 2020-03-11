@@ -17,7 +17,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 
             if (type == typeof(string)
                 || type == typeof(DateTime)
-                || type == typeof(DateTimeOffset))
+                || type == typeof(DateTimeOffset)
+                || type == typeof(Guid)
+                || type == typeof(TimeSpan))
             {
                 return JsonType.String;
             }

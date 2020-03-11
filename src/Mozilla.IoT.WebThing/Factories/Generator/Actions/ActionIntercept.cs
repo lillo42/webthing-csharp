@@ -49,8 +49,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var thingType = thing.GetType();
             
             var inputBuilder = CreateInput(action);
-            var actionInfoBuilder = CreateActionInfo(action, inputBuilder, thingType, name);
-            var factory = CreateActionInfoFactory(actionInfoBuilder, inputBuilder);
+            var (actionInfoBuilder, inputProperty) = CreateActionInfo(action, inputBuilder, thingType, name);
+            var factory = CreateActionInfoFactory(actionInfoBuilder, inputBuilder, inputProperty);
             var parameters = GetParameters(action);
             
             Actions.Add(name, new ActionCollection(new InfoConvert(parameters), (IActionInfoFactory)Activator.CreateInstance(factory)));
@@ -72,13 +72,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             return inputBuilder;
         }
 
-        private TypeBuilder CreateActionInfo(MethodInfo action, TypeBuilder inputType, Type thingType, string actionName)
+        private (TypeBuilder, PropertyBuilder) CreateActionInfo(MethodInfo action, TypeBuilder inputType, Type thingType, string actionName)
         {
             var actionInfo = _moduleBuilder.DefineType($"{thingType.Name}{action.Name}ActionInfo",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
                 typeof(ActionInfo));
             
-             var input = CreateProperty(actionInfo, "input", inputType);
+            var input = CreateProperty(actionInfo, "input", inputType);
             
             var getProperty = actionInfo.DefineMethod(nameof(ActionInfo.GetActionName), 
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, 
@@ -88,18 +88,19 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             
             CreateInternalExecuteAsync(action, actionInfo, inputType, input, thingType);
             actionInfo.CreateType();
-            return actionInfo;
+            return (actionInfo, input);
         }
 
-        private TypeBuilder CreateActionInfoFactory(TypeBuilder actionInfo, TypeBuilder inputType)
+        private TypeBuilder CreateActionInfoFactory(TypeBuilder actionInfo, TypeBuilder inputType, PropertyInfo inputProperty)
         {
             var actionInfoFactory = _moduleBuilder.DefineType($"{actionInfo.Name}Factory",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
                 null, new []{ typeof(IActionInfoFactory) });
 
             var createMethod = actionInfoFactory.DefineMethod(nameof(IActionInfoFactory.CreateActionInfo),
-                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot,
-                CallingConventions.Standard, typeof(ActionInfo), 
+                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
+                CallingConventions.Standard, 
+                typeof(ActionInfo), 
                 new[] {typeof(Dictionary<string, object>)});
 
             var generator = createMethod.GetILGenerator();
@@ -112,6 +113,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 generator.SetProperty(property);
             }
             
+            generator.Call(inputProperty.SetMethod);
             generator.Emit(OpCodes.Ret);
 
             actionInfoFactory.CreateType();
@@ -121,7 +123,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
         private static void CreateInternalExecuteAsync(MethodInfo action, TypeBuilder actionInfo, TypeBuilder input, PropertyBuilder inputProperty, Type thingType)
         {
             var execute = actionInfo.DefineMethod("InternalExecuteAsync",
-                MethodAttributes.Family | MethodAttributes.ReuseSlot | MethodAttributes.Virtual | MethodAttributes.HideBySig,
+                MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual,
                     typeof(ValueTask), new [] { typeof(Thing), typeof(IServiceProvider) });
 
             var generator = execute.GetILGenerator();
@@ -131,7 +133,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             
             var inputProperties = input.GetProperties();
             var counter = 0;
-
+            
             foreach (var parameter in action.GetParameters())
             {
                 if (parameter.GetCustomAttribute<FromServicesAttribute>() != null)

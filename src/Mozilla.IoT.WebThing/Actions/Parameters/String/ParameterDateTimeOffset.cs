@@ -40,7 +40,7 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
             }
 
             value = jsonValue;
-            return false;
+            return true;
         }
     }
 }
