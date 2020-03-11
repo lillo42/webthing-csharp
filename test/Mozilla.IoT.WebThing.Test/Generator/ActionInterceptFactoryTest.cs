@@ -142,7 +142,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
         [Theory]
         [ClassData(typeof(SyncNonNullableInvalidType))]
-        public void CallActionSyncNoNullableInvalidType(object[] values)
+        public void CallActionSyncNoNullableInvalidType(object @bool, object @byte, object @sbyte, object @short,
+            object @ushort, object @int, object @uint, object @long, object @ulong, object @float, object @double,
+            object @decimal, object @string, object dateTime, object dateTimeOffset, object guid, object timeSpan)
         {
             var thing = new SyncAction();
             CodeGeneratorFactory.Generate(thing, new[] { _factory });
@@ -151,23 +153,23 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
             var json = JsonSerializer.Deserialize<JsonElement>($@"{{ 
                     ""input"": {{
-                        ""bool"": {values[0]},
-                        ""byte"": {values[1]},
-                        ""sbyte"": {values[2]},
-                        ""short"": {values[3]},
-                        ""ushort"": {values[4]},
-                        ""int"": {values[5]},
-                        ""uint"": {values[6]},
-                        ""long"": {values[7]},
-                        ""ulong"": {values[8]},
-                        ""float"": {values[9]},
-                        ""double"": {values[10]},
-                        ""decimal"": {values[11]},
-                        ""string"": {values[12]},
-                        ""dateTime"": {values[13]},
-                        ""dateTimeOffset"": {values[14]},
-                        ""guid"": {values[15]},
-                        ""timeSpan"": {values[16]}
+                        ""bool"": {@bool},
+                        ""byte"": {@byte},
+                        ""sbyte"": {@sbyte},
+                        ""short"": {@short},
+                        ""ushort"": {@ushort},
+                        ""int"": {@int},
+                        ""uint"": {@uint},
+                        ""long"": {@long},
+                        ""ulong"": {@ulong},
+                        ""float"": {@float},
+                        ""double"": {@double},
+                        ""decimal"": {@decimal},
+                        ""string"": {@string},
+                        ""dateTime"": {@dateTime},
+                        ""dateTimeOffset"": {@dateTimeOffset},
+                        ""guid"": {@guid},
+                        ""timeSpan"": {@timeSpan}
                 }} 
             }}");
 
@@ -175,8 +177,104 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             action.Should().BeNull();
             thing.Values.Should().BeEmpty();
         }
+        
+        [Fact]
+        public void CallActionSyncNoNullableWithValidationValid()
+        {
+            var thing = new SyncAction();
+            CodeGeneratorFactory.Generate(thing, new[] { _factory });
+            _factory.Actions.Should().ContainKey(nameof(SyncAction.NoNullableAttribute));
+
+            var @byte = (byte)10;
+            var @sbyte = (sbyte)10;
+            var @short = (short)10;
+            var @ushort = (ushort)10;
+            var @int = (int)10;
+            var @uint = (uint)10;
+            var @long = (long)10;
+            var @ulong = (ulong)10;
+            var @float = (float)10;
+            var @double = (double)10;
+            var @decimal = (decimal)10;
+
+            var @string = _fixture.Create<string>();
+            var mail = "test@test.com";
 
 
+            var json = JsonSerializer.Deserialize<JsonElement>($@"{{ 
+                    ""input"": {{
+                        ""byte"": {@byte},
+                        ""sbyte"": {@sbyte},
+                        ""short"": {@short},
+                        ""ushort"": {@ushort},
+                        ""int"": {@int},
+                        ""uint"": {@uint},
+                        ""long"": {@long},
+                        ""ulong"": {@ulong},
+                        ""float"": {@float},
+                        ""double"": {@double},
+                        ""decimal"": {@decimal},
+                        ""string"": ""{@string}"",
+                        ""mail"": ""{mail}""
+                }} 
+            }}");
+
+            _factory.Actions[nameof(SyncAction.NoNullableAttribute)].TryAdd(json, out var action).Should().BeTrue();
+            action.Should().NotBeNull();
+            var result = action.ExecuteAsync(thing, _provider);
+            result.IsCompleted.Should().BeTrue();
+            thing.Values.Should().NotBeEmpty();
+            thing.Values.Should().HaveCount(13);
+            thing.Values.Should().BeEquivalentTo(new Dictionary<string, object>
+            {
+                [nameof(@byte)] = @byte,
+                [nameof(@sbyte)] = @sbyte,
+                [nameof(@short)] = @short,
+                [nameof(@ushort)] = @ushort,
+                [nameof(@int)] = @int,
+                [nameof(@uint)] = @uint,
+                [nameof(@long)] = @long,
+                [nameof(@ulong)] = @ulong,
+                [nameof(@float)] = @float,
+                [nameof(@double)] = @double,
+                [nameof(@decimal)] = @decimal,
+                [nameof(@string)] = @string,
+                [nameof(@mail)] = @mail
+            });
+        }
+
+        [Theory]
+        [ClassData(typeof(SyncNonNullableAttributeInvalidType))]
+        public void CallActionSyncNoNullableWithValidationInvalid(byte @byte, sbyte @sbyte, short @short, ushort @ushort, 
+            int @int, uint @uint, long @long, ulong @ulong, float @float, double @double, decimal @decimal,
+            string @string, string @mail)
+        {
+            var thing = new SyncAction();
+            CodeGeneratorFactory.Generate(thing, new[] { _factory });
+            _factory.Actions.Should().ContainKey(nameof(SyncAction.NoNullableAttribute));
+            
+            var json = JsonSerializer.Deserialize<JsonElement>($@"{{ 
+                    ""input"": {{
+                        ""byte"": {@byte},
+                        ""sbyte"": {@sbyte},
+                        ""short"": {@short},
+                        ""ushort"": {@ushort},
+                        ""int"": {@int},
+                        ""uint"": {@uint},
+                        ""long"": {@long},
+                        ""ulong"": {@ulong},
+                        ""float"": {@float},
+                        ""double"": {@double},
+                        ""decimal"": {@decimal},
+                        ""string"": ""{@string}"",
+                        ""mail"": ""{mail}""
+                }} 
+            }}");
+
+            _factory.Actions[nameof(SyncAction.NoNullableAttribute)].TryAdd(json, out var action).Should().BeFalse();
+            action.Should().BeNull();
+        }
+        
         [Fact]
         public void CallActionSyncNullableValid()
         {
@@ -414,18 +512,18 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             }
 
             public void NoNullableAttribute(
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]byte @byte,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]sbyte @sbyte,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]short @short,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]ushort @ushort,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]int @int,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]uint @uint,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]long @long,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]ulong @ulong,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]float @float,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]double @double,
-                [ThingParameter(Minimum = 0, Maximum = 100, MultipleOf = 2)]decimal @decimal,
-                [ThingParameter(MinimumLength = 1, MaximumLength = 36)]string @string,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]byte @byte,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]sbyte @sbyte,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]short @short,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]ushort @ushort,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]int @int,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]uint @uint,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]long @long,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]ulong @ulong,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]float @float,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]double @double,
+                [ThingParameter(Minimum = 1, Maximum = 100, MultipleOf = 2)]decimal @decimal,
+                [ThingParameter(MinimumLength = 1, MaximumLength = 40)]string @string,
                 [ThingParameter(Pattern = @"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$")]string mail)
             {
                 Values.Add(nameof(@byte), @byte);
@@ -440,6 +538,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 Values.Add(nameof(@double), @double);
                 Values.Add(nameof(@decimal), @decimal);
                 Values.Add(nameof(@string), @string);
+                Values.Add(nameof(mail), @mail);
             }
 
             public void NullableWithNotAttribute(
@@ -500,8 +599,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                     $@"""{_fixture.Create<DateTimeOffset>():O}""", $@"""{_fixture.Create<Guid>()}""",
                     $@"""{_fixture.Create<TimeSpan>()}"""
                 };
-
-
+                
                 for (var i = 0; i < 17; i++)
                 {
                     var result = new object[right.Length];
@@ -516,12 +614,8 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                         result[i] = $@"""{_fixture.Create<string>()}""";
                     }
 
-                    yield return new object[]
-                    {
-                        result
-                    };
+                    yield return result;
                 }
-
 
                 for (var i = 0; i < 17; i++)
                 {
@@ -535,10 +629,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
                     result[i] = "null";
 
-                    yield return new object[]
-                    {
-                        result
-                    };
+                    yield return result;
                 }
 
                 for (var i = 13; i < 17; i++)
@@ -548,11 +639,58 @@ namespace Mozilla.IoT.WebThing.Test.Generator
 
                     result[i] = $@"""{_fixture.Create<bool>()}""";
                     
-                    yield return new object[]
-                    {
-                        result
-                    };
+                    yield return result;
                 }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+                => GetEnumerator();
+        }
+        
+        public class SyncNonNullableAttributeInvalidType : IEnumerable<object[]>
+        {
+            private readonly Fixture _fixture = new Fixture();
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                var right = new object[]
+                {
+                    (byte)10, (sbyte)10, (short)10, (ushort)10, (int)10, (uint)10, (long)10, (ulong)10,
+                    (float)10, (double)10, (decimal)10,
+                    _fixture.Create<string>(), "test@test.com"
+                };
+
+                object[] result = null;
+                for (var i = 0; i < 11; i++)
+                {
+                    result = new object[right.Length];
+                    Array.Copy(right, 0, result, 0, right.Length);
+                    result[i] = 0;
+                    yield return result;
+                    
+                    result[i] = 101 + i;
+                    yield return result;
+                    
+                    result[i] = i;
+                    if (i % 2 == 0)
+                    {
+                        result[i] = i + 1;
+                    }
+                    yield return result;
+                }
+
+
+                result = new object[right.Length];
+                Array.Copy(right, 0, result, 0, right.Length);
+                result[11] = string.Empty;
+                yield return result;
+                result[11] = _fixture.Create<string>() + _fixture.Create<string>();
+                yield return result;
+                result = new object[right.Length];
+                Array.Copy(right, 0, result, 0, right.Length);
+                result[12] = string.Empty;
+                yield return result;
+                result[12] = _fixture.Create<string>();
+                yield return result;
             }
 
             IEnumerator IEnumerable.GetEnumerator()
