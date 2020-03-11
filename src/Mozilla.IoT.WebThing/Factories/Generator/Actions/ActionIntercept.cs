@@ -228,7 +228,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
 
                     if (validation.ExclusiveMaximum.HasValue)
                     {
-                        minimum = validation.ExclusiveMaximum.Value - 1;
+                        maximum = validation.ExclusiveMaximum.Value - 1;
                     }
 
                     if (parameterType == typeof(byte))
