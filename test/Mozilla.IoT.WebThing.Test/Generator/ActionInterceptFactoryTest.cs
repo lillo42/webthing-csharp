@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using AutoFixture;
@@ -61,7 +62,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         }
         
         [Fact]
-        public void SyncAction_NotAttribute_NoNullable()
+        public void CallActionSyncNoNullableValid()
         {
             var thing = new SyncAction(); 
             CodeGeneratorFactory.Generate(thing, new []{ _factory });
@@ -137,6 +138,41 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             });
         }
 
+        [Theory]
+        [ClassData(typeof(SyncNonNullableInvalidType))]
+        public void CallActionSyncNoNullableInvalidType(object[] values)
+        {
+            var thing = new SyncAction(); 
+            CodeGeneratorFactory.Generate(thing, new []{ _factory });
+            _factory.Actions.Should().ContainKey(nameof(SyncAction.NotAttribute));
+            
+            
+            var json = JsonSerializer.Deserialize<JsonElement>($@"{{ 
+                    ""input"": {{
+                        ""bool"": {values[0]},
+                        ""byte"": {values[1]},
+                        ""sbyte"": {values[2]},
+                        ""short"": {values[3]},
+                        ""ushort"": {values[4]},
+                        ""int"": {values[5]},
+                        ""uint"": {values[6]},
+                        ""long"": {values[7]},
+                        ""ulong"": {values[8]},
+                        ""float"": {values[9]},
+                        ""double"": {values[10]},
+                        ""decimal"": {values[11]},
+                        ""string"": {values[12]},
+                        ""dateTime"": {values[13]},
+                        ""dateTimeOffset"": {values[14]},
+                        ""guid"": {values[15]},
+                        ""timeSpan"": {values[16]}
+                }} 
+            }}");
+            
+            _factory.Actions[nameof(SyncAction.NotAttribute)].TryAdd(json, out var action).Should().BeFalse();
+            action.Should().BeNull();
+            thing.Values.Should().BeEmpty();
+        }
 
         #region Thing
 
@@ -200,6 +236,62 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 Values.Add(nameof(@timeSpan), @timeSpan);
                 Values.Add(nameof(@guid), @guid);
             }
+        }
+
+        #endregion
+
+        #region Data Generator
+
+        public class SyncNonNullableInvalidType : IEnumerable<object[]>
+        {
+            private readonly Fixture _fixture = new Fixture();
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                yield return new object[] 
+                {  
+                    _fixture.Create<int>(), 
+                    _fixture.Create<byte>(),
+                    _fixture.Create<sbyte>(),
+                    _fixture.Create<short>(),
+                    _fixture.Create<ushort>(),
+                    _fixture.Create<int>(),
+                    _fixture.Create<uint>(),
+                    _fixture.Create<long>(),
+                    _fixture.Create<ulong>(),
+                    _fixture.Create<float>(),
+                    _fixture.Create<double>(),
+                    _fixture.Create<decimal>(), 
+                    $@"""{_fixture.Create<string>()}""",
+                    $@"""{_fixture.Create<DateTime>():O}""",
+                    $@"""{_fixture.Create<DateTimeOffset>():O}""",
+                    $@"""{_fixture.Create<Guid>()}""", 
+                    $@"""{_fixture.Create<TimeSpan>()}""", 
+                };
+                
+                yield return new object[] 
+                {  
+                    _fixture.Create<bool>(), 
+                    $@"""{_fixture.Create<string>()}""",
+                    _fixture.Create<sbyte>(),
+                    _fixture.Create<short>(),
+                    _fixture.Create<ushort>(),
+                    _fixture.Create<int>(),
+                    _fixture.Create<uint>(),
+                    _fixture.Create<long>(),
+                    _fixture.Create<ulong>(),
+                    _fixture.Create<float>(),
+                    _fixture.Create<double>(),
+                    _fixture.Create<decimal>(), 
+                    $@"""{_fixture.Create<string>()}""",
+                    $@"""{_fixture.Create<DateTime>():O}""",
+                    $@"""{_fixture.Create<DateTimeOffset>():O}""",
+                    $@"""{_fixture.Create<Guid>()}""", 
+                    $@"""{_fixture.Create<TimeSpan>()}"""
+                };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() 
+                => GetEnumerator();
         }
 
         #endregion
