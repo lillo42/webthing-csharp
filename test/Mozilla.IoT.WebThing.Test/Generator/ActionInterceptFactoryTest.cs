@@ -82,6 +82,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             var @string = _fixture.Create<string>();
             var dateTime = _fixture.Create<DateTime>();
+            var dateTimeOffset = _fixture.Create<DateTimeOffset>();
             var guid = _fixture.Create<Guid>();
             var timeSpan = _fixture.Create<TimeSpan>();
             
@@ -102,6 +103,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                         ""decimal"": {@decimal},
                         ""string"": ""{@string}"",
                         ""dateTime"": ""{@dateTime:O}"",
+                        ""dateTimeOffset"": ""{@dateTimeOffset:O}"",
                         ""guid"": ""{@guid}"",
                         ""timeSpan"": ""{@timeSpan}""
                 }} 
@@ -112,7 +114,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             var result = action.ExecuteAsync(thing, _provider);
             result.IsCompleted.Should().BeTrue();
             thing.Values.Should().NotBeEmpty();
-            thing.Values.Should().HaveCount(16);
+            thing.Values.Should().HaveCount(17);
             thing.Values.Should().BeEquivalentTo(new Dictionary<string, object>
             {
                 [nameof(@bool)] = @bool,
@@ -129,6 +131,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 [nameof(@decimal)] = @decimal,
                 [nameof(@string)] = @string,
                 [nameof(@dateTime)] = @dateTime,
+                [nameof(@dateTimeOffset)] = @dateTimeOffset,
                 [nameof(@timeSpan)] = @timeSpan,
                 [nameof(@guid)] = @guid
             });
@@ -175,6 +178,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 decimal @decimal,
                 string @string,
                 DateTime @dateTime,
+                DateTimeOffset @dateTimeOffset,
                 TimeSpan @timeSpan,
                 Guid @guid)
             {
@@ -192,6 +196,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 Values.Add(nameof(@decimal), @decimal);
                 Values.Add(nameof(@string), @string);
                 Values.Add(nameof(@dateTime), @dateTime);
+                Values.Add(nameof(@dateTimeOffset), @dateTimeOffset);
                 Values.Add(nameof(@timeSpan), @timeSpan);
                 Values.Add(nameof(@guid), @guid);
             }
