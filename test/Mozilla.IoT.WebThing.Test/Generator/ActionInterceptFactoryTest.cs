@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -447,6 +449,67 @@ namespace Mozilla.IoT.WebThing.Test.Generator
         }
         #endregion
 
+        #region Async
+
+        [Fact]
+        public async Task Execute()
+        {
+            var thing = new AsyncAction();
+            CodeGeneratorFactory.Generate(thing, new[] { _factory });
+            _factory.Actions.Should().ContainKey(nameof(AsyncAction.Execute));
+            var json = JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": {} }");
+            _factory.Actions[nameof(AsyncAction.Execute)].TryAdd(json, out var action).Should().BeTrue();
+            action.Should().NotBeNull();
+            var result = action.ExecuteAsync(thing, _provider);
+            result.IsCompleted.Should().BeFalse();
+            action.Status.Should().Be(Status.Executing);
+            await result;
+            action.Status.Should().Be(Status.Completed);
+            
+            thing.Values.Should().HaveCount(1);
+            thing.Values.Should().HaveElementAt(0, nameof(AsyncAction.Execute));
+        }
+        
+        [Fact]
+        public async Task ExecuteWithCancellationToken()
+        {
+            var thing = new AsyncAction();
+            CodeGeneratorFactory.Generate(thing, new[] { _factory });
+            _factory.Actions.Should().ContainKey(nameof(AsyncAction.ExecuteWithCancellationToken));
+            var json = JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": {} }");
+            _factory.Actions[nameof(AsyncAction.ExecuteWithCancellationToken)].TryAdd(json, out var action).Should().BeTrue();
+            action.Should().NotBeNull();
+            var result = action.ExecuteAsync(thing, _provider);
+            action.Status.Should().Be(Status.Executing);
+            result.IsCompleted.Should().BeFalse();
+            await result;
+            action.Status.Should().Be(Status.Completed);
+            
+            thing.Values.Should().HaveCount(1);
+            thing.Values.Should().HaveElementAt(0, nameof(AsyncAction.ExecuteWithCancellationToken));
+        }
+        
+        [Fact]
+        public async Task ExecuteToCancel()
+        {
+            var thing = new AsyncAction();
+            CodeGeneratorFactory.Generate(thing, new[] { _factory });
+            _factory.Actions.Should().ContainKey(nameof(AsyncAction.ExecuteToCancel));
+            var json = JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": {} }");
+            _factory.Actions[nameof(AsyncAction.ExecuteToCancel)].TryAdd(json, out var action).Should().BeTrue();
+            action.Should().NotBeNull();
+            var result = action.ExecuteAsync(thing, _provider);
+            action.Status.Should().Be(Status.Executing);
+            result.IsCompleted.Should().BeFalse();
+            action.Cancel();
+            await result;
+            action.Status.Should().Be(Status.Completed);
+            
+            thing.Values.Should().HaveCount(1);
+            thing.Values.Should().HaveElementAt(0, nameof(AsyncAction.ExecuteToCancel));
+        }
+
+        #endregion
 
         #region Thing
 
@@ -577,6 +640,37 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 Values.Add(nameof(@dateTimeOffset), @dateTimeOffset);
                 Values.Add(nameof(@timeSpan), @timeSpan);
                 Values.Add(nameof(@guid), @guid);
+            }
+        }
+        
+        public class AsyncAction : Thing
+        {
+            public override string Name => "async-action";
+            
+            public List<string> Values { get; } = new List<string>();
+
+            public async Task Execute()
+            {
+                await Task.Delay(1_000);
+                Values.Add(nameof(Execute));
+            }
+            
+            public async Task ExecuteWithCancellationToken(CancellationToken cancellation)
+            {
+                await Task.Delay(1_000, cancellation);
+                Values.Add(nameof(ExecuteWithCancellationToken));
+            }
+            
+            public async Task ExecuteToCancel(CancellationToken cancellation)
+            {
+                try
+                {
+                    await Task.Delay(3_000, cancellation).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Values.Add(nameof(ExecuteToCancel));
+                }
             }
         }
 

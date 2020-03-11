@@ -38,11 +38,9 @@ namespace Mozilla.IoT.WebThing.Extensions
             generator.Emit(OpCodes.Ret);
         }
         
-        public static void Return(this ILGenerator generator, LocalBuilder local,  ConstructorInfo constructor)
+        public static void Return(this ILGenerator generator,  ConstructorInfo constructor)
         {
-            generator.Emit(OpCodes.Ldloca_S, local.LocalIndex);
             generator.Emit(OpCodes.Newobj, constructor);
-            generator.Emit(OpCodes.Ldloc_0);
             generator.Emit(OpCodes.Ret);
         }
         #endregion

@@ -127,8 +127,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                     typeof(ValueTask), new [] { typeof(Thing), typeof(IServiceProvider) });
 
             var generator = execute.GetILGenerator();
+
+            LocalBuilder valueTask = null;
+            if (action.ReturnType != typeof(Task))
+            {
+                valueTask = generator.DeclareLocal(typeof(ValueTask));
+            }
             
-            var valueTask = generator.DeclareLocal(typeof(ValueTask));
             generator.CastFirstArg(thingType);
             
             var inputProperties = input.GetProperties();
@@ -152,13 +157,17 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             }
             
             generator.Call(action);
-            if (action.ReturnType == typeof(void))
+            if (action.ReturnType == typeof(ValueTask))
             {
-               generator.Return(valueTask);
+               generator.Emit(OpCodes.Ret);
             }
             else if(action.ReturnType == typeof(Task))
             {
-                generator.Return(valueTask, s_valueTask);
+                generator.Return(s_valueTask);
+            }
+            else
+            {
+                generator.Return(valueTask);
             }
         }
 

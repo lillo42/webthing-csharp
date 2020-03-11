@@ -72,7 +72,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 logger.LogInformation("Going to execute {actionName} action with {id} Id. [Name: {thingName}]", action.GetActionName(), action.GetId(), thingName);
                 
-                action.ExecuteAsync(thing, service)
+                _ = action.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
             }
             
