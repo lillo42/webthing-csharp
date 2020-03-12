@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
@@ -537,6 +538,35 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             _factory.Actions[nameof(SyncAction.NoNullableAttributeExclusive)].TryAdd(json, out var action).Should().BeFalse();
             action.Should().BeNull();
         }
+
+        [Fact]
+        public void FromService()
+        {
+            var thing = new SyncAction();
+            CodeGeneratorFactory.Generate(thing, new[] { _factory });
+            _factory.Actions.Should().ContainKey(nameof(SyncAction.FromService));
+
+            var json = JsonSerializer.Deserialize<JsonElement>(@"{{ ""input"": {{ }} }}");
+
+            var foo = Substitute.For<IFoo>();
+            var fooText = _fixture.Create<string>();
+            foo.Text.Returns(fooText);
+
+            _provider.GetService(typeof(IFoo))
+                .Returns(foo);
+
+            _factory.Actions[nameof(SyncAction.FromService)].TryAdd(json, out var action).Should().BeTrue();
+            action.Should().NotBeNull();
+            var result = action.ExecuteAsync(thing, _provider);
+            result.IsCompleted.Should().BeTrue();
+            action.Status.Should().Be(Status.Completed);
+            thing.Values.Should().NotBeEmpty();
+            thing.Values.Should().HaveCount(1);
+            thing.Values.Should().BeEquivalentTo(new Dictionary<string, object>
+            {
+                [nameof(foo)] = fooText
+            });
+        }
         #endregion
 
         #region Async
@@ -757,6 +787,11 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                 Values.Add(nameof(@timeSpan), @timeSpan);
                 Values.Add(nameof(@guid), @guid);
             }
+
+            public void FromService([FromServices] IFoo foo)
+            {
+                Values.Add(nameof(foo), foo.Text);
+            }
         }
         
         public class AsyncAction : Thing
@@ -788,6 +823,11 @@ namespace Mozilla.IoT.WebThing.Test.Generator
                     Values.Add(nameof(ExecuteToCancel));
                 }
             }
+        }
+        
+        public interface IFoo
+        {
+            string Text { get; set; }
         }
 
         #endregion
