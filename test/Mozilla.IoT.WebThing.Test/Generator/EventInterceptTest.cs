@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
+using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
@@ -34,7 +35,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
-                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());
 
             var @int = _fixture.Create<int>();
@@ -77,7 +78,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
-                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());
 
             var @int = _fixture.Create<int>();
@@ -97,7 +98,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
-                new Dictionary<string, ActionContext>(),
+                new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());
 
             var @int = _fixture.Create<int>();

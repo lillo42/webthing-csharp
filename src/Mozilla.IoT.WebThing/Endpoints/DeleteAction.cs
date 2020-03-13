@@ -31,8 +31,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            var option = service.GetRequiredService<JsonSerializerOptions>();
-            
             var actionName = context.GetRouteData<string>("action");
             var id = Guid.Parse(context.GetRouteData<string>("id"));
 
@@ -43,7 +41,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            if (!actionContext.Actions.TryRemove(id, out var actionInfo))
+            if (!actionContext.TryRemove(id, out var actionInfo))
             {
                 logger.LogInformation("{actionName} Action with {id} id not found in {thingName}", actionName, id, thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;

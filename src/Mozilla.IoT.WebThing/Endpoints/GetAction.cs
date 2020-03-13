@@ -36,13 +36,13 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
             {
-                logger.LogInformation("Action not found. [Thing: {name}][Action: {action}]", thingName, actionName);
+                logger.LogInformation("{action} action not found. [Thing: {name}]", actionName, thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
             
-            logger.LogInformation("Action found. [Thing: {name}][Action: {action}]", thingName, actionName);
-            await context.WriteBodyAsync(HttpStatusCode.OK, actionContext.Actions, option)
+            logger.LogInformation("{action} action found. [Thing: {name}]", actionName, thingName);
+            await context.WriteBodyAsync(HttpStatusCode.OK, actionContext, option)
                 .ConfigureAwait(false);
         }
     }

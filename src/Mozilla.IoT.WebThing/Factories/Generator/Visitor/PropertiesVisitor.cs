@@ -55,6 +55,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
                 return false;
             }
 
+            type = type.GetUnderlyingType();
+
             return type == typeof(string)
                    || type == typeof(bool)
                    || type == typeof(int)
@@ -70,21 +72,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
                    || type == typeof(decimal)
                    || type == typeof(DateTime)
                    || type == typeof(DateTimeOffset)
-                   || type == typeof(bool?)
-                   || type == typeof(int?)
-                   || type == typeof(byte?)
-                   || type == typeof(short?)
-                   || type == typeof(long?)
-                   || type == typeof(sbyte?)
-                   || type == typeof(uint?)
-                   || type == typeof(ulong?)
-                   || type == typeof(ushort?)
-                   || type == typeof(double?)
-                   || type == typeof(float?)
-                   || type == typeof(decimal?)
-                   || type == typeof(DateTime?)
-                   || type == typeof(DateTimeOffset?);
-    }
+                   || type == typeof(Guid)
+                   || type == typeof(TimeSpan);
+        }
         
         private static bool IsThingProperty(string name)
             => name == nameof(Thing.Context)

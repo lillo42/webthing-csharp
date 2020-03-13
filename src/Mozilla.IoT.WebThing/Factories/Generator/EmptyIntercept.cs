@@ -23,7 +23,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             
         }
         
-        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
+        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
         {
             
         }

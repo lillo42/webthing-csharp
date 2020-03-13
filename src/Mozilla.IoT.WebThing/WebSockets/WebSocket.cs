@@ -160,7 +160,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             foreach (var (_, actionContext) in thing.ThingContext.Actions)
             {
-                actionContext.Actions.Change += observer.OnActionChange;
+                actionContext.Change += observer.OnActionChange;
             }
         }
 
@@ -171,7 +171,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             foreach (var (_, actionContext) in thing.ThingContext.Actions)
             {
-                actionContext.Actions.Change -= observer.OnActionChange;
+                actionContext.Change -= observer.OnActionChange;
             }
         }
         

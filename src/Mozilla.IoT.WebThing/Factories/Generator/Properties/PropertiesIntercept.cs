@@ -1,31 +1,27 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
+using Mozilla.IoT.WebThing.Properties;
+using Mozilla.IoT.WebThing.Properties.Boolean;
+using Mozilla.IoT.WebThing.Properties.String;
+using Mozilla.IoT.WebThing.Properties.Number;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
     public class PropertiesIntercept : IPropertyIntercept
     {
-        private readonly ThingOption _option;
-        private readonly ModuleBuilder _moduleBuilder;
-
         public Dictionary<string, IProperty> Properties { get; }
         
-        public PropertiesIntercept(ThingOption option, ModuleBuilder moduleBuilder)
+        public PropertiesIntercept(ThingOption option)
         {
-            _option = option ?? throw new ArgumentNullException(nameof(option));
-            _moduleBuilder = moduleBuilder ?? throw new ArgumentNullException(nameof(moduleBuilder));
             Properties = option.IgnoreCase ? new Dictionary<string, IProperty>(StringComparer.InvariantCultureIgnoreCase) 
                 : new Dictionary<string, IProperty>();
         }
-
         
         public void Before(Thing thing)
         {
@@ -37,274 +33,216 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             
         }
         
-        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? thingPropertyAttribute)
+        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
         {
-            var thingType = thing.GetType();
-            var propertyName = thingPropertyAttribute?.Name ?? propertyInfo.Name;
-            var typeBuilder = _moduleBuilder.DefineType($"{propertyInfo.Name}{thingType.Name}PropertyThing",
-                TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.SequentialLayout | TypeAttributes.BeforeFieldInit |  TypeAttributes.AnsiClass,
-                typeof(ValueType), new []{ typeof(IProperty<>).MakeGenericType(propertyInfo.PropertyType) });
+            var propertyName = propertyAttribute?.Name ?? propertyInfo.Name;
 
-            var isReadOnly = typeof(IsReadOnlyAttribute).GetConstructors()[0];
-            typeBuilder.SetCustomAttribute(new CustomAttributeBuilder(isReadOnly, new object?[0]));
-            
-            
-            var thingField = typeBuilder.DefineField("_thing", thing.GetType(), FieldAttributes.Private | FieldAttributes.InitOnly);
-            
-            CreateConstructor(typeBuilder, thingField, thingType);
-            CreateGetValue(typeBuilder, propertyInfo, thingField, propertyName);
-            CreateSetValidation(typeBuilder, propertyInfo, thingPropertyAttribute, thingField);
+            var isReadOnly = !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic ||
+                             (propertyAttribute != null && propertyAttribute.IsReadOnly);
 
-            var propertyType = typeBuilder.CreateType();
-            Properties.Add(_option.PropertyNamingPolicy.ConvertName(propertyName), 
-                (IProperty)Activator.CreateInstance(propertyType, thing));
-        }
+            var getter = GetGetMethod(propertyInfo);
 
-        private static void CreateConstructor(TypeBuilder typeBuilder, FieldBuilder field, Type thingType)
-        {
-            var constructor = typeBuilder.DefineConstructor(MethodAttributes.Public, 
-                CallingConventions.Standard, new[] {typeof(Thing)});
-            var generator = constructor.GetILGenerator();
-            
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldarg_1);
-            generator.Emit(OpCodes.Castclass, thingType);
-            generator.Emit(OpCodes.Stfld, field);
-            generator.Emit(OpCodes.Ret);
-        }
-        private static void CreateGetValue(TypeBuilder typeBuilder, PropertyInfo property, FieldBuilder thingField, string propertyName)
-        {
-            var getValueMethod = typeBuilder.DefineMethod(nameof(IProperty.GetValue), 
-                MethodAttributes.Public | MethodAttributes.Final |  MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
-                property.PropertyType, Type.EmptyTypes);
-
-            var generator = getValueMethod.GetILGenerator();
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldfld, thingField);
-            generator.EmitCall(OpCodes.Callvirt, property.GetMethod, null);
-            generator.Emit(OpCodes.Ret);
-            
-            var getMethod = typeBuilder.DefineMethod($"get_{propertyName}", 
-                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
-                property.PropertyType, Type.EmptyTypes);
-            
-            generator = getMethod.GetILGenerator();
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldfld, thingField);
-            generator.EmitCall(OpCodes.Callvirt, property.GetMethod, null);
-            generator.Emit(OpCodes.Ret);
-
-            var getProperty = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, property.PropertyType, null);
-            getProperty.SetGetMethod(getMethod);
-        }
-
-        private static void CreateSetValidation(TypeBuilder typeBuilder, PropertyInfo property,
-            ThingPropertyAttribute? propertyValidation, FieldBuilder thingField)
-        {
-            var setValue = typeBuilder.DefineMethod(nameof(IProperty.SetValue),
-                MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot |
-                MethodAttributes.Virtual,
-                typeof(SetPropertyResult), new[] {typeof(JsonElement)});
-
-            var generator = setValue.GetILGenerator();
-
-            if (!property.CanWrite || !property.SetMethod.IsPublic ||
-                (propertyValidation != null && propertyValidation.IsReadOnly))
+            if (isReadOnly)
             {
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.ReadOnly);
-                generator.Emit(OpCodes.Ret);
+                Properties.Add(propertyName, new PropertyReadOnly(thing, getter));
                 return;
             }
 
-            var propertyType = property.PropertyType.GetUnderlyingType();
-            var jsonElement = generator.DeclareLocal(typeof(JsonElement));
-            var local = generator.DeclareLocal(propertyType);
-            var nullable = local;
-            if (property.PropertyType.IsNullable())
+            var validation = ToValidation(propertyAttribute);
+
+            var setter = GetSetMethod(propertyInfo);
+            var propertyType = propertyInfo.PropertyType.GetUnderlyingType();
+            var isNullable = propertyType ==  typeof(string) || propertyInfo.PropertyType.IsNullable() || validation.HasNullValueOnEnum;
+
+            IProperty property;
+            
+            if(propertyType == typeof(bool))
             {
-                nullable = generator.DeclareLocal(property.PropertyType);
+                property = new PropertyBoolean(thing, getter, setter, isNullable);
             }
-
-            generator.Emit(OpCodes.Ldarg_1);
-            generator.Emit(OpCodes.Stloc_0);
-            generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-
-            var getter = new JsonElementReaderILGenerator(generator);
-            var validator = ToValidation(propertyValidation);
-
-            var next = generator.DefineLabel();
-            if (propertyType == typeof(string))
+            else if (propertyType == typeof(string))
             {
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.Null);
-                generator.Emit(OpCodes.Bne_Un_S, next);
-
-                if (validator.HasValidation)
-                {
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                    generator.Emit(OpCodes.Ret);
-                }
-                else
-                {
-                    generator.Emit(OpCodes.Ldarg_0);
-                    generator.Emit(OpCodes.Ldfld, thingField);
-                    generator.Emit(OpCodes.Ldnull);
-                    generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-                    generator.Emit(OpCodes.Ret);
-                }
-
-                generator.MarkLabel(next);
-                next = generator.DefineLabel();
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.String);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.Get(propertyType);
-                generator.Emit(OpCodes.Stloc_S, local.LocalIndex);
+                property = new PropertyString(thing, getter, setter, isNullable,
+                    validation.MinimumLength, validation.MaximumLength, validation.Pattern,
+                    validation.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray());
             }
-            else if (propertyType == typeof(bool))
+            else if (propertyType == typeof(Guid))
             {
-                if (property.PropertyType.IsNullable())
-                {
-                    getter.GetValueKind();
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.Null);
-                    generator.Emit(OpCodes.Bne_Un_S, next);
-
-                    generator.Emit(OpCodes.Ldarg_0);
-                    generator.Emit(OpCodes.Ldfld, thingField);
-                    generator.Emit(OpCodes.Ldloca_S, nullable.LocalIndex);
-                    generator.Emit(OpCodes.Initobj, nullable.LocalType);
-                    generator.Emit(OpCodes.Ldloc_S, nullable.LocalIndex);
-                    generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-                    generator.Emit(OpCodes.Ret);
-
-                    generator.MarkLabel(next);
-                    next = generator.DefineLabel();
-
-                    generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                }
-
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (byte)JsonValueKind.True);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, (byte)JsonValueKind.False);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                getter.Get(propertyType);
-                generator.Emit(OpCodes.Stloc_S, local.LocalIndex);
+                property = new PropertyGuid(thing, getter, setter, isNullable,
+                    validation.Enums?.Where(x => x != null).Select(x=> Guid.Parse(x.ToString())).ToArray());
+            }
+            else if (propertyType == typeof(TimeSpan))
+            {
+                property = new PropertyTimeSpan(thing, getter, setter, isNullable,
+                    validation.Enums?.Where(x => x != null).Select(x=> TimeSpan.Parse(x.ToString())).ToArray());
+            }
+            else if (propertyType == typeof(DateTime))
+            {
+                property = new PropertyDateTime(thing, getter, setter, isNullable,
+                    validation.Enums?.Where(x => x != null).Select(Convert.ToDateTime).ToArray());
+            }
+            else if (propertyType == typeof(DateTimeOffset))
+            {
+                property = new PropertyDateTimeOffset(thing, getter, setter, isNullable,
+                    validation.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString())).ToArray());
             }
             else
             {
-                if (property.PropertyType.IsNullable())
+                var minimum = validation.Minimum;
+                var maximum = validation.Maximum;
+                var multipleOf = validation.MultipleOf;
+                var enums = validation.Enums?.Where(x => x != null);
+                
+                if(validation.ExclusiveMinimum.HasValue)
                 {
-                    getter.GetValueKind();
-                    generator.Emit(OpCodes.Ldc_I4_S, (int)JsonValueKind.Null);
-                    generator.Emit(OpCodes.Bne_Un_S, next);
-
-                    if (validator.HasValidation)
-                    {
-                        generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                        generator.Emit(OpCodes.Ret);
-                    }
-                    else
-                    {
-                        generator.Emit(OpCodes.Ldarg_0);
-                        generator.Emit(OpCodes.Ldfld, thingField);
-                        generator.Emit(OpCodes.Ldloca_S, nullable.LocalIndex);
-                        generator.Emit(OpCodes.Initobj, nullable.LocalType);
-                        generator.Emit(OpCodes.Ldloc_S, nullable.LocalIndex);
-                        generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-
-                        generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-                        generator.Emit(OpCodes.Ret);
-                    }
-
-                    generator.MarkLabel(next);
-                    next = generator.DefineLabel();
-
-                    generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
+                    minimum = validation.ExclusiveMinimum.Value + 1;
                 }
 
-                var isDate = propertyType == typeof(DateTime) || propertyType == typeof(DateTimeOffset);
-                getter.GetValueKind();
-                generator.Emit(OpCodes.Ldc_I4_S, isDate ? (byte)JsonValueKind.String : (byte)JsonValueKind.Number);
-                generator.Emit(OpCodes.Beq_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
-                next = generator.DefineLabel();
-
-                generator.Emit(OpCodes.Ldloca_S, jsonElement.LocalIndex);
-                generator.Emit(OpCodes.Ldloca_S, local.LocalIndex);
-                getter.TryGet(propertyType);
-                generator.Emit(OpCodes.Brtrue_S, next);
-
-                generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                generator.Emit(OpCodes.Ret);
-
-                generator.MarkLabel(next);
-            }
-
-            if (validator.HasValidation)
-            {
-                Label? validationMark = null;
-                var validationGeneration = new ValidationGeneration(generator, typeBuilder);
-                validationGeneration.AddValidation(propertyType, validator,
-                    () => generator.Emit(OpCodes.Ldloc_S, local.LocalIndex), () =>
-                    {
-                        generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.InvalidValue);
-                        generator.Emit(OpCodes.Ret);
-                    }, ref validationMark);
-
-                if (validationMark.HasValue)
+                if(validation.ExclusiveMaximum.HasValue)
                 {
-                    generator.MarkLabel(validationMark.Value);
+                    maximum = validation.ExclusiveMaximum.Value - 1;
+                }
+                
+
+                if(propertyType == typeof(byte))
+                {
+                    var min = minimum.HasValue ? new byte?(Convert.ToByte(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new byte?(Convert.ToByte(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+
+                    property = new PropertyByte(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToByte).ToArray());
+                }
+                else if(propertyType == typeof(sbyte))
+                {
+                    var min = minimum.HasValue ? new sbyte?(Convert.ToSByte(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new sbyte?(Convert.ToSByte(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new sbyte?(Convert.ToSByte(multipleOf.Value)) : null;
+
+                    property = new PropertySByte(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToSByte).ToArray());
+                }
+                else if(propertyType == typeof(short))
+                {
+                    var min = minimum.HasValue ? new short?(Convert.ToInt16(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new short?(Convert.ToInt16(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new short?(Convert.ToInt16(multipleOf.Value)) : null;
+                    
+                    property = new PropertyShort(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToInt16).ToArray());
+                }
+                else if(propertyType == typeof(ushort))
+                {
+                    var min = minimum.HasValue ? new ushort?(Convert.ToUInt16(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new ushort?(Convert.ToUInt16(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+
+                    property = new PropertyUShort(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToUInt16).ToArray());
+                }
+                else if(propertyType == typeof(int))
+                {
+                    var min = minimum.HasValue ? new int?(Convert.ToInt32(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new int?(Convert.ToInt32(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new int?(Convert.ToInt32(multipleOf.Value)) : null;
+
+                    property = new PropertyInt(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToInt32).ToArray());
+                }
+                else if(propertyType == typeof(uint))
+                {
+                    var min = minimum.HasValue ? new uint?(Convert.ToUInt32(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new uint?(Convert.ToUInt32(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new uint?(Convert.ToUInt32(multipleOf.Value)) : null;
+
+                    property = new PropertyUInt(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToUInt32).ToArray());
+                }
+                else if(propertyType == typeof(long))
+                {
+                    var min = minimum.HasValue ? new long?(Convert.ToInt64(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new long?(Convert.ToInt64(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new long?(Convert.ToInt64(multipleOf.Value)) : null;
+
+                    property = new PropertyLong(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToInt64).ToArray());
+                }
+                else if(propertyType == typeof(ulong))
+                {
+                    var min = minimum.HasValue ? new ulong?(Convert.ToUInt64(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new ulong?(Convert.ToUInt64(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+
+                    property = new PropertyULong(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToUInt64).ToArray());
+                }
+                else if(propertyType == typeof(float))
+                {
+                    var min = minimum.HasValue ? new float?(Convert.ToSingle(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new float?(Convert.ToSingle(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new float?(Convert.ToSingle(multipleOf.Value)) : null;
+
+                    property = new PropertyFloat(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToSingle).ToArray());
+                }
+                else if(propertyType == typeof(double))
+                {
+                    var min = minimum.HasValue ? new double?(Convert.ToDouble(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new double?(Convert.ToDouble(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new double?(Convert.ToDouble(multipleOf.Value)) : null;
+
+                    property = new PropertyDouble(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToDouble).ToArray());
+                }
+                else
+                {
+                    var min = minimum.HasValue ? new decimal?(Convert.ToDecimal(minimum.Value)) : null;
+                    var max = maximum.HasValue ? new decimal?(Convert.ToDecimal(maximum.Value)) : null;
+                    var multi = multipleOf.HasValue ? new decimal?(Convert.ToDecimal(multipleOf.Value)) : null;
+
+                    property = new PropertyDecimal(thing, getter, setter, isNullable, 
+                        min, max, multi, enums?.Select(Convert.ToDecimal).ToArray());
                 }
             }
-
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldfld, thingField);
-            generator.Emit(OpCodes.Ldloc_S, local.LocalIndex);
             
-            if (property.PropertyType.IsNullable())
+            Properties.Add(propertyName, property);
+            
+            static Validation ToValidation(ThingPropertyAttribute? validation)
             {
-                var constructor = nullable.LocalType.GetConstructors().Last();
-                generator.Emit(OpCodes.Newobj, constructor);
+                return new Validation(validation?.MinimumValue, validation?.MaximumValue,
+                    validation?.ExclusiveMinimumValue, validation?.ExclusiveMaximumValue,
+                    validation?.MultipleOfValue,
+                    validation?.MinimumLengthValue, validation?.MaximumLengthValue,
+                    validation?.Pattern, validation?.Enum);
             }
+        }
+        
+        private static Func<object, object> GetGetMethod(PropertyInfo property)
+        {
+            var instance = Expression.Parameter(typeof(object), "instance");
+            var instanceCast = property.DeclaringType.IsValueType ? 
+                Expression.Convert(instance, property.DeclaringType) : Expression.TypeAs(instance, property.DeclaringType);
             
-            generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
-            generator.Emit(OpCodes.Ldc_I4_S, (int)SetPropertyResult.Ok);
-            generator.Emit(OpCodes.Ret);
+            var call = Expression.Call(instanceCast, property.GetGetMethod());
+            var typeAs = Expression.TypeAs(call, typeof(object));
 
-            static Validation ToValidation(ThingPropertyAttribute propertyValidation)
-                => new Validation(propertyValidation?.MinimumValue, propertyValidation?.MaximumValue,
-                    propertyValidation?.ExclusiveMinimumValue, propertyValidation?.ExclusiveMaximumValue,
-                    propertyValidation?.MultipleOfValue,
-                    propertyValidation?.MinimumLengthValue, propertyValidation?.MaximumLengthValue,
-                    propertyValidation?.Pattern, propertyValidation?.Enum);
+            return Expression.Lambda<Func<object, object>>(typeAs, instance).Compile();
+        }
+        
+        private static Action<object, object> GetSetMethod(PropertyInfo property)
+        {
+            var instance = Expression.Parameter(typeof(object), "instance");
+            var value = Expression.Parameter(typeof(object), "value");
+
+            // value as T is slightly faster than (T)value, so if it's not a value type, use that
+            var instanceCast = property.DeclaringType.IsValueType ? 
+                Expression.Convert(instance, property.DeclaringType) : Expression.TypeAs(instance, property.DeclaringType);
+            
+            var valueCast = property.PropertyType.IsValueType ? 
+                Expression.Convert(value, property.PropertyType) : Expression.TypeAs(value, property.PropertyType);
+
+            var call = Expression.Call(instanceCast, property.GetSetMethod(), valueCast);
+            return Expression.Lambda<Action<object, object>>(call, new[] {instance, value}).Compile();
         }
     }
 }
