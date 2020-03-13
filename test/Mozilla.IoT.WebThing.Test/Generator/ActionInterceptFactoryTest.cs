@@ -546,7 +546,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             CodeGeneratorFactory.Generate(thing, new[] { _factory });
             _factory.Actions.Should().ContainKey(nameof(SyncAction.FromService));
 
-            var json = JsonSerializer.Deserialize<JsonElement>(@"{{ ""input"": {{ }} }}");
+            var json = JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": { } }");
 
             var foo = Substitute.For<IFoo>();
             var fooText = _fixture.Create<string>();
