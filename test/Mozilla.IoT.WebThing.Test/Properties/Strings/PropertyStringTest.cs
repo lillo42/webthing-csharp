@@ -69,6 +69,16 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
         }
         
         [Fact]
+        public void SetNoNullableWithValuePattern()
+        {
+            var property = CreateProperty(pattern: @"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$");
+            const string value = "test@test.com";
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
+            property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.Ok);
+            _thing.String.Should().Be(value);
+        }
+        
+        [Fact]
         public void SetNoNullableWithMinLength()
         {
             var property = CreateProperty(minimum: 1);
@@ -148,6 +158,14 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
             property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.InvalidValue);
             
             jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": null }}");
+            property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.InvalidValue);
+        }
+        
+        [Fact]
+        public void TrySetNoNullableWithValuePattern()
+        {
+            var property = CreateProperty(pattern: @"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<string>()}"" }}");
             property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.InvalidValue);
         }
 

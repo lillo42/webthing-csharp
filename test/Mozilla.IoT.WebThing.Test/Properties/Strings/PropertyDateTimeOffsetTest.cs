@@ -30,7 +30,7 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
         {
             var value = _fixture.Create<DateTimeOffset>();
             var property = CreateNoNullable();
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value:O}"" }}");
             property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.Ok);
             _thing.DateTimeOffset.Should().Be(value);
         }
@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
             var property = CreateNoNullable(values);
             foreach (var value in values)
             {
-                var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
+                var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value:O}"" }}");
                 property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.Ok);
                 _thing.DateTimeOffset.Should().Be(value);
             }
@@ -63,7 +63,7 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
         {
             var value = type == typeof(int) ? _fixture.Create<int>().ToString() : $@"""{_fixture.Create<string>()}""";
             var property = CreateNoNullable();
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {value} }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {value:O} }}");
             property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.InvalidValue);
         }
         
@@ -72,7 +72,7 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
         {
             var values = _fixture.Create<DateTimeOffset[]>();
             var property = CreateNoNullable(values);
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<DateTimeOffset>()}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<DateTimeOffset>():O}"" }}");
             property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.InvalidValue);
         }
         #endregion
@@ -90,7 +90,7 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
         {
             var value = _fixture.Create<DateTimeOffset>();
             var property = CreateNullable();
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value:O}"" }}");
             property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.Ok);
             _thing.NullableDateTimeOffset.Should().NotBeNull();
             _thing.NullableDateTimeOffset.Should().Be(value);
@@ -112,7 +112,7 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
             var property = CreateNullable(values);
             foreach (var value in values)
             {
-                var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
+                var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value:O}"" }}");
                 property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.Ok);
                 _thing.NullableDateTimeOffset.Should().Be(value);
             }
@@ -134,7 +134,7 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
         {
             var values = _fixture.Create<DateTimeOffset[]>();
             var property = CreateNullable(values);
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<DateTimeOffset>()}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<DateTimeOffset>():O}"" }}");
             property.SetValue(jsonElement.GetProperty("input")).Should().Be(SetPropertyResult.InvalidValue);
         }
         
