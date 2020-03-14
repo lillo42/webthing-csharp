@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
+using Mozilla.IoT.WebThing.Events;
 using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test

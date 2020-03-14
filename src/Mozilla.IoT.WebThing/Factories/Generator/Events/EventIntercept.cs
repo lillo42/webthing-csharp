@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Mozilla.IoT.WebThing.Attributes;
+using Mozilla.IoT.WebThing.Events;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 

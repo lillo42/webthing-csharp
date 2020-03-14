@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Events;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {

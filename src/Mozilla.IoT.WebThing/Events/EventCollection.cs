@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Events
 {
     public class EventCollection
     {
