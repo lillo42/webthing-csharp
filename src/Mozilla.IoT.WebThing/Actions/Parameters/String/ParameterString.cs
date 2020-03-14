@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
                 return false;
             }
 
-            if (_enums != null && _enums.Length > 0 && !_enums.Contains(value))
+            if (_enums != null && _enums.Length > 0 && !_enums.Contains(jsonValue))
             {
                 return false;
             }
