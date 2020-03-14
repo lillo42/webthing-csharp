@@ -1,6 +1,6 @@
 using System;
 
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Events
 {
     public class Event
     {
