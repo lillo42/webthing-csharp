@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
-namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
+namespace Mozilla.IoT.WebThing.AcceptanceTest.WebSockets
 {
     public class Action
     {

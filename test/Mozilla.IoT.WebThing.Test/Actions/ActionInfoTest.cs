@@ -126,9 +126,9 @@ namespace Mozilla.IoT.WebThing.Test.Actions
         }
         
         [Fact]
-        public void StatusChange()
+        public async Task StatusChange()
         {
-            var counter = 1;
+            var counter = 0;
             var action = new VoidActionInfo();
             
             action.GetId().Should().NotBeEmpty();
@@ -138,7 +138,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
 
             action.StatusChanged += OnStatusChange;
             
-            action.ExecuteAsync(Substitute.For<Thing>(), _provider);
+            await action.ExecuteAsync(Substitute.For<Thing>(), _provider);
             
             action.TimeCompleted.Should().NotBeNull();
             action.Status.Should().Be(Status.Completed);
@@ -155,8 +155,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                 ((ActionInfo)sender).Status.Should().Be((Status)counter++);
             }
         }
-        
-        
+
         public class VoidActionInfo : ActionInfo
         {
             public List<string> Logs { get; } = new List<string>();

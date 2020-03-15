@@ -37,6 +37,10 @@ namespace Mozilla.IoT.WebThing.Actions
             inputValues ??= new Dictionary<string, object>();
 
             info = _actionInfoFactory.CreateActionInfo(inputValues);
+            if (info == null)
+            {
+                return false;
+            }
             info.StatusChanged += OnStatusChange;
             
             return _actions.TryAdd(info.GetId(), info);

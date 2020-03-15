@@ -88,7 +88,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                 .TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>());
 
             _factory
-                .DidNotReceive()
+                .Received(1)
                 .CreateActionInfo(Arg.Any<Dictionary<string, object>>());
         }
         
@@ -230,7 +230,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
 
             actionInfo.ExecuteAsync(Substitute.For<Thing>(), provider);
             
-            counter.Should().Be(2);
+            counter.Should().Be(3);
 
             counter = 0;
 
