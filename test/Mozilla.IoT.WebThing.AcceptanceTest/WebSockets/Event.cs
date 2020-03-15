@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
+namespace Mozilla.IoT.WebThing.AcceptanceTest.WebSockets
 {
     public class Event
     {
@@ -26,7 +26,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             _client = host.GetTestServer().CreateClient();
             _webSocketClient = host.GetTestServer().CreateWebSocketClient();
 
-            _uri = new UriBuilder(_client.BaseAddress) {Scheme = "ws", Path = "/things/event"}.Uri;
+            _uri = new UriBuilder(_client.BaseAddress) {Scheme = "ws", Path = "/things/lamp"}.Uri;
         }
 
         [Theory]
@@ -90,7 +90,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync($"/things/event/events/{@event}", source.Token)
+            var response = await _client.GetAsync($"/things/lamp/events/{@event}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();

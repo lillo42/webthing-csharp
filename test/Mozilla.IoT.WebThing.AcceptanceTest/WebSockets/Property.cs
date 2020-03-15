@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
+namespace Mozilla.IoT.WebThing.AcceptanceTest.WebSockets
 {
     public class Property
     {
@@ -27,7 +27,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             _uri =  new UriBuilder(_client.BaseAddress)
             {
                 Scheme = "ws",
-                Path = "/things/web-socket-property"
+                Path = "/things/lamp"
             }.Uri;
         }
         
@@ -49,7 +49,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {{
     ""messageType"": ""setProperty"",
     ""data"": {{
-        ""{property}"": {value.ToString().ToLower()}
+        ""{property}"": {value.ToString()?.ToLower()}
     }}
 }}"), WebSocketMessageType.Text, true,
                     source.Token)
@@ -74,13 +74,13 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {{
     ""messageType"": ""propertyStatus"",
     ""data"": {{
-        ""{property}"": {value.ToString().ToLower()}
+        ""{property}"": {value.ToString()?.ToLower()}
     }}
 }}"));
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync($"/things/web-socket-property/properties/{property}", source.Token)
+            var response = await _client.GetAsync($"/things/lamp/properties/{property}", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -93,14 +93,13 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Type.Should().Be(JTokenType.Object);
             FluentAssertions.Json.JsonAssertionExtensions
                 .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value.ToString().ToLower()}  }}"));
+                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value.ToString()?.ToLower()}  }}"));
         }
         
         [Theory]
-        [InlineData("brightness", -1, 0,  "Invalid property value")]
-        [InlineData("brightness", 101, 0, "Invalid property value")]
-        [InlineData("reader", 50, 0, "Read-only property")]
-        public async Task SetPropertiesInvalidValue(string property, object value, object defaultValue, string errorMessage)
+        [InlineData("brightness", -1, "Invalid property value")]
+        [InlineData("brightness", 101, "Invalid property value")]
+        public async Task SetPropertiesInvalidValue(string property, object value, string errorMessage)
         {
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
@@ -116,7 +115,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
 {{
     ""messageType"": ""setProperty"",
     ""data"": {{
-        ""{property}"": {value.ToString().ToLower()}
+        ""{property}"": {value.ToString()?.ToLower()}
     }}
 }}"), WebSocketMessageType.Text, true,
                    source.Token)
@@ -147,7 +146,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync($"/things/web-socket-property/properties/{property}", source.Token)
+            var response = await _client.GetAsync($"/things/lamp/properties/{property}", source.Token)
                 .ConfigureAwait(false);
             response.IsSuccessStatusCode.Should().BeTrue();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -157,9 +156,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Object);
-            FluentAssertions.Json.JsonAssertionExtensions
-                .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {defaultValue.ToString().ToLower()} }}"));
+            json[property].Value<int>().Should().BeInRange(0, 10);
         }
     }
 }

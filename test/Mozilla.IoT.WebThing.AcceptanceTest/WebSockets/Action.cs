@@ -30,7 +30,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             var uri =  new UriBuilder(client.BaseAddress)
             {
                 Scheme = "ws",
-                Path = "/things/action"
+                Path = "/things/lamp"
             }.Uri;
             
             var source = new CancellationTokenSource();
@@ -78,7 +78,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Data.Fade.Input.Should().NotBeNull();
             json.Data.Fade.Input.Level.Should().Be(level);
             json.Data.Fade.Input.Duration.Should().Be(duration);
-            json.Data.Fade.Href.Should().StartWith("/things/action/actions/fade/");
+            json.Data.Fade.Href.Should().StartWith("/things/lamp/actions/fade/");
             json.Data.Fade.Status.Should().Be("pending");
             json.Data.Fade.TimeRequested.Should().BeBefore(DateTime.UtcNow);
             json.Data.Fade.TimeCompleted.Should().BeNull();
@@ -101,7 +101,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Data.Fade.Input.Should().NotBeNull();
             json.Data.Fade.Input.Level.Should().Be(level);
             json.Data.Fade.Input.Duration.Should().Be(duration);
-            json.Data.Fade.Href.Should().StartWith("/things/action/actions/fade/");
+            json.Data.Fade.Href.Should().StartWith("/things/lamp/actions/fade/");
             json.Data.Fade.Status.Should().Be("executing");
             json.Data.Fade.TimeRequested.Should().BeBefore(DateTime.UtcNow);
             json.Data.Fade.TimeCompleted.Should().BeNull();
@@ -125,7 +125,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             json.Data.Fade.Input.Should().NotBeNull();
             json.Data.Fade.Input.Level.Should().Be(level);
             json.Data.Fade.Input.Duration.Should().Be(duration);
-            json.Data.Fade.Href.Should().StartWith("/things/action/actions/fade/");
+            json.Data.Fade.Href.Should().StartWith("/things/lamp/actions/fade/");
             json.Data.Fade.Status.Should().Be("completed");
             json.Data.Fade.TimeRequested.Should().BeBefore(DateTime.UtcNow);
             json.Data.Fade.TimeCompleted.Should().NotBeNull();
@@ -133,7 +133,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await client.GetAsync($"/things/action/actions/fade", source.Token)
+            var response = await client.GetAsync($"/things/lamp/actions/fade", source.Token)
                 .ConfigureAwait(false);
             var message = await response.Content.ReadAsStringAsync();
             var json2 = JsonConvert.DeserializeObject<List<Http.Action.Fade>>(message, new JsonSerializerSettings
@@ -141,7 +141,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebScokets
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
             
-            json2[0].Href.Should().StartWith("/things/action/actions/fade/");
+            json2[0].Href.Should().StartWith("/things/lamp/actions/fade/");
             json2[0].Status.Should().NotBeNullOrEmpty();
             json2[0].Status.Should().Be("completed");
             json2[0].TimeRequested.Should().BeBefore(DateTime.UtcNow);

@@ -53,7 +53,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
                     new Dictionary<string, object>
                     {
-                        [_options.GetPropertyName(property.PropertyName)] = data
+                        [_options.GetPropertyName(property.PropertyName)] = data.GetValue()
                     }),
                 _options);
             
