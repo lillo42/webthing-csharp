@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Attributes;
 
@@ -51,9 +52,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             
         }
         
-        public Task LongRun()
+        public Task LongRun(CancellationToken cancellationToken)
         {
-            return Task.Delay(3_000);
+            return Task.Delay(3_000, cancellationToken);
         }
     }
 }

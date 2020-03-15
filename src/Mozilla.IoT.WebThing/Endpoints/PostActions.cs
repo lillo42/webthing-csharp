@@ -30,7 +30,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            context.Request.EnableBuffering();
             var jsonOption = service.GetRequiredService<JsonSerializerOptions>();
             var option = service.GetRequiredService<ThingOption>();
             
@@ -48,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     return;
                 }
 
-                if (actions.TryAdd(property.Value, out var action))
+                if (!actions.TryAdd(property.Value, out var action))
                 {
                     logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;

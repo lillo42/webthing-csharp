@@ -20,19 +20,21 @@ namespace Mozilla.IoT.WebThing.Actions
             _inputConvert = inputConvert;
             _actions = new ConcurrentDictionary<Guid, ActionInfo>();
         }
-        
+
         public bool TryAdd(JsonElement element, out ActionInfo? info)
         {
             info = null;
-            if (!element.TryGetProperty("input", out var inputProperty))
+            Dictionary<string, object>? inputValues = null;
+            if (element.TryGetProperty("input", out var inputProperty))
             {
-                return false;
+                if (inputProperty.ValueKind == JsonValueKind.Object 
+                    && !_inputConvert.TryConvert(inputProperty, out inputValues))
+                {
+                    return false;
+                }
             }
 
-            if (!_inputConvert.TryConvert(inputProperty, out var inputValues))
-            {
-                return false;
-            }
+            inputValues ??= new Dictionary<string, object>();
 
             info = _actionInfoFactory.CreateActionInfo(inputValues);
             info.StatusChanged += OnStatusChange;
