@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.WebSockets;
 
@@ -31,6 +32,10 @@ namespace Microsoft.Extensions.DependencyInjection
                     PropertyNamingPolicy = opt.PropertyNamingPolicy,
                     DictionaryKeyPolicy = opt.PropertyNamingPolicy,
                     PropertyNameCaseInsensitive = opt.IgnoreCase,
+                    Converters =
+                    {
+                        new StatusConverter()
+                    },
                     IgnoreNullValues = true
                 };
             });

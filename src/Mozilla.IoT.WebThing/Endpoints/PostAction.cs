@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
@@ -55,7 +56,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     return;
                 }
 
-                if (actions.TryAdd(property.Value, out var action))
+                if (!actions.TryAdd(property.Value, out var action))
                 {
                     logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;

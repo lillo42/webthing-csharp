@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Actions
 {
     public abstract class ActionInfo
     {
@@ -16,7 +16,7 @@ namespace Mozilla.IoT.WebThing
         public DateTime TimeRequested { get; } = DateTime.UtcNow;
         public DateTime? TimeCompleted { get; private set; } = null;
         
-        private Status _status;
+        private Status _status = Status.Pending;
 
         public Status Status
         {
@@ -32,6 +32,7 @@ namespace Mozilla.IoT.WebThing
 
         public async Task ExecuteAsync(Thing thing, IServiceProvider provider)
         {
+            Status = Status.Pending;
             var logger = provider.GetRequiredService<ILogger<ActionInfo>>();
             logger.LogInformation("Going to execute {actionName}", GetActionName());
             Status = Status.Executing;

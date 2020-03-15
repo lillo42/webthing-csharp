@@ -29,7 +29,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
 
-            var response = await _client.GetAsync("/things/event/events", source.Token)
+            var response = await _client.GetAsync("/things/lamp/events", source.Token)
                 .ConfigureAwait(false);
 
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -48,7 +48,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 source = new CancellationTokenSource();
                 source.CancelAfter(s_timeout);
             
-                response = await _client.GetAsync("/things/event/events", source.Token)
+                response = await _client.GetAsync("/things/lamp/events", source.Token)
                     .ConfigureAwait(false);
             
                 response.IsSuccessStatusCode.Should().BeTrue();
@@ -83,7 +83,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync("/things/event/events/overheated", source.Token)
+            var response = await _client.GetAsync("/things/lamp/events/overheated", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeTrue();
@@ -102,7 +102,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
                 source = new CancellationTokenSource();
                 source.CancelAfter(s_timeout);
             
-                response = await _client.GetAsync("/things/event/events", source.Token)
+                response = await _client.GetAsync("/things/lamp/events", source.Token)
                     .ConfigureAwait(false);
             
                 response.IsSuccessStatusCode.Should().BeTrue();
@@ -135,7 +135,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             
-            var response = await _client.GetAsync("/things/event/events/aaaaa", source.Token)
+            var response = await _client.GetAsync("/things/lamp/events/aaaaa", source.Token)
                 .ConfigureAwait(false);
             
             response.IsSuccessStatusCode.Should().BeFalse();

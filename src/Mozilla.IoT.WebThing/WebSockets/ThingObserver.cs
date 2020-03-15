@@ -5,6 +5,8 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Events;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -51,7 +53,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
                     new Dictionary<string, object>
                     {
-                        [_options.GetPropertyName(property.PropertyName)] = data
+                        [_options.GetPropertyName(property.PropertyName)] = data.GetValue()
                     }),
                 _options);
             

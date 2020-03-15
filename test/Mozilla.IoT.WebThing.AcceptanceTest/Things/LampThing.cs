@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Mozilla.IoT.WebThing.Attributes;
 
@@ -6,6 +7,15 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
 {
     public class LampThing : Thing
     {
+        public LampThing()
+        {
+            Task.Factory.StartNew(() =>
+            {
+                Task.Delay(3_000).GetAwaiter().GetResult();
+                var overheated = Overheated;
+                overheated?.Invoke(this, 0);
+            }, TaskCreationOptions.LongRunning);
+        }
         public override string Name => "lamp";
         public override string Title => "My Lamp";
         public override string Description => "A web connected lamp";
@@ -51,9 +61,9 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
             
         }
         
-        public Task LongRun()
+        public Task LongRun(CancellationToken cancellationToken)
         {
-            return Task.Delay(3_000);
+            return Task.Delay(3_000, cancellationToken);
         }
     }
 }

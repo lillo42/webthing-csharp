@@ -70,9 +70,16 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Object);
-            FluentAssertions.Json.JsonAssertionExtensions
+            if (value is int)
+            {
+                json[property].Value<int>().Should().BeInRange(0, 10);
+            }
+            else
+            {
+                FluentAssertions.Json.JsonAssertionExtensions
                 .Should(json)
                     .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {value.ToString().ToLower()}  }}"));
+            }
         }
         
         [Fact]
@@ -165,9 +172,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Object);
-            FluentAssertions.Json.JsonAssertionExtensions
-                .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {defaultValue.ToString().ToLower()}  }}"));
+            var propertyValue = json[property].Value<int>();
+            propertyValue.Should().BeInRange(0, 10);
         }
         
         [Fact]

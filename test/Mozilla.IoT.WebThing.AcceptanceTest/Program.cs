@@ -16,7 +16,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest
                 {
                     logger.ClearProviders()
                         .AddConsole()
-                        .AddFilter("*", LogLevel.Debug);
+                        .AddFilter("*", LogLevel.Information);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

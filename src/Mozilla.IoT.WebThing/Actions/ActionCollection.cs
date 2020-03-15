@@ -9,32 +9,40 @@ namespace Mozilla.IoT.WebThing.Actions
     public class ActionCollection : IEnumerable<ActionInfo>
     {
         private readonly ConcurrentDictionary<Guid, ActionInfo> _actions;
-        private readonly InfoConvert _inputConvert;
+        private readonly ActionInfoConvert _inputConvert;
         private readonly IActionInfoFactory _actionInfoFactory;
 
         public event EventHandler<ActionInfo>? Change;
 
-        public ActionCollection(InfoConvert inputConvert, IActionInfoFactory actionInfoFactory)
+        public ActionCollection(ActionInfoConvert inputConvert, IActionInfoFactory actionInfoFactory)
         {
             _actionInfoFactory = actionInfoFactory ?? throw new ArgumentNullException(nameof(actionInfoFactory));
             _inputConvert = inputConvert;
             _actions = new ConcurrentDictionary<Guid, ActionInfo>();
         }
-        
+
         public bool TryAdd(JsonElement element, out ActionInfo? info)
         {
             info = null;
-            if (!element.TryGetProperty("input", out var inputProperty))
+            Dictionary<string, object>? inputValues = null;
+            if (element.TryGetProperty("input", out var inputProperty))
             {
-                return false;
+                if (inputProperty.ValueKind == JsonValueKind.Object 
+                    && !_inputConvert.TryConvert(inputProperty, out inputValues))
+                {
+                    return false;
+                }
             }
 
-            if (!_inputConvert.TryConvert(inputProperty, out var inputValues))
-            {
-                return false;
-            }
+            inputValues ??= new Dictionary<string, object>();
 
             info = _actionInfoFactory.CreateActionInfo(inputValues);
+            if (info == null)
+            {
+                return false;
+            }
+            info.StatusChanged += OnStatusChange;
+            
             return _actions.TryAdd(info.GetId(), info);
         }
 

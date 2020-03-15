@@ -51,7 +51,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             {
                 WriteIndented = false,
                 IgnoreNullValues = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
 
             var converter = new ConverterInterceptorFactory(thing, optionsJson);

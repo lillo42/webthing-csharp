@@ -31,7 +31,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     continue;
                 }
 
-                if (actions.TryAdd(property.Value, out var action))
+                if (!actions.TryAdd(property.Value, out var action))
                 {
                     _logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", property.Name, thing.Name);
                     socket.SendAsync(s_errorMessage, WebSocketMessageType.Text, true, cancellationToken)

@@ -8,8 +8,7 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.Boolean
         {
             CanBeNull = isNullable;
         }
-
-
+        
         public bool CanBeNull { get; }
 
         public bool TryGetValue(JsonElement element, out object? value)

@@ -26,11 +26,10 @@ namespace Mozilla.IoT.WebThing.Extensions
                             DictionaryKeyPolicy = PropertyNamingPolicy,
                             IgnoreReadOnlyProperties = false,
                             IgnoreNullValues = false,
-                            Converters =
-                            {
-                                new ThingConverter(this)
-                            }
                         };
+
+                        _options.Converters.Add(new ThingConverter(this));
+                        _options.Converters.Add(new StatusConverter());
                     }
                 }
             }
