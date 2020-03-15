@@ -165,9 +165,8 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             var json = JToken.Parse(message);
             
             json.Type.Should().Be(JTokenType.Object);
-            FluentAssertions.Json.JsonAssertionExtensions
-                .Should(json)
-                .BeEquivalentTo(JToken.Parse($@"{{ ""{property}"": {defaultValue.ToString().ToLower()}  }}"));
+            var propertyValue = json[property].Value<int>();
+            propertyValue.Should().BeInRange(0, 10);
         }
         
         [Fact]
