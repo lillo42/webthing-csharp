@@ -20,7 +20,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
         private readonly int _parameterValue;
         private readonly IActionParameter _parameter;
         private readonly Dictionary<string, IActionParameter> _parameters;
-        private readonly ActionInfoConvert _convert;
+        private readonly DictionaryInputConvert _convert;
         private readonly ActionCollection _collection;
 
         public ActionCollectionTest()
@@ -41,7 +41,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                 }} 
             }}");
             
-            _convert = new ActionInfoConvert(_parameters); 
+            _convert = new DictionaryInputConvert(_parameters); 
             _collection = new ActionCollection(_convert, _factory);
         }
 

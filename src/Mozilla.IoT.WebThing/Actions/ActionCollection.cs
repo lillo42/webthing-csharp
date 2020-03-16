@@ -13,7 +13,7 @@ namespace Mozilla.IoT.WebThing.Actions
     public class ActionCollection : IEnumerable<ActionInfo>
     {
         private readonly ConcurrentDictionary<Guid, ActionInfo> _actions;
-        private readonly ActionInfoConvert _inputConvert;
+        private readonly DictionaryInputConvert _inputConvert;
         private readonly IActionInfoFactory _actionInfoFactory;
 
         /// <summary>
@@ -24,9 +24,9 @@ namespace Mozilla.IoT.WebThing.Actions
         /// <summary>
         /// Initialize a new instance of <see cref="ActionCollection"/>.
         /// </summary>
-        /// <param name="inputConvert">The <see cref="ActionInfoConvert"/>.</param>
+        /// <param name="inputConvert">The <see cref="DictionaryInputConvert"/>.</param>
         /// <param name="actionInfoFactory">The <see cref="IActionInfoFactory"/>.</param>
-        public ActionCollection(ActionInfoConvert inputConvert, IActionInfoFactory actionInfoFactory)
+        public ActionCollection(DictionaryInputConvert inputConvert, IActionInfoFactory actionInfoFactory)
         {
             _actionInfoFactory = actionInfoFactory ?? throw new ArgumentNullException(nameof(actionInfoFactory));
             _inputConvert = inputConvert;
@@ -46,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Actions
             if (element.TryGetProperty("input", out var inputProperty))
             {
                 if (inputProperty.ValueKind == JsonValueKind.Object 
-                    && !_inputConvert.TryConvert(inputProperty, out inputValues))
+                    && !_inputConvert.TryConvert(inputProperty, out inputValues!))
                 {
                     return false;
                 }
@@ -54,7 +54,7 @@ namespace Mozilla.IoT.WebThing.Actions
 
             inputValues ??= new Dictionary<string, object>();
 
-            info = _actionInfoFactory.CreateActionInfo(inputValues);
+            info = _actionInfoFactory.CreateActionInfo(inputValues!);
             if (info == null)
             {
                 return false;

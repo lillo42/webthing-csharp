@@ -53,7 +53,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var factory = CreateActionInfoFactory(actionInfoBuilder, inputBuilder, inputProperty);
             var parameters = GetParameters(action);
             
-            Actions.Add(name, new ActionCollection(new ActionInfoConvert(parameters), (IActionInfoFactory)Activator.CreateInstance(factory)));
+            Actions.Add(name, new ActionCollection(new DictionaryInputConvert(parameters), (IActionInfoFactory)Activator.CreateInstance(factory)));
         }
 
         private TypeBuilder CreateInput(MethodInfo action)
