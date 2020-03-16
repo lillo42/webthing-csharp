@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
+using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {

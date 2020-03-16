@@ -67,7 +67,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 actions
             });
 
-            thing.ThingContext = new Context(converter.Create(), 
+            thing.ThingContext = new ThingContext(converter.Create(), 
                 events.Events,
                 actions.Actions,
                 properties.Properties);

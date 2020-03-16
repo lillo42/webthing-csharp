@@ -5,16 +5,27 @@ using System.Text.RegularExpressions;
 
 namespace Mozilla.IoT.WebThing.Properties.String
 {
+    /// <summary>
+    /// Represent <see cref="DateTime"/> property.
+    /// </summary>
     public readonly struct PropertyDateTime : IProperty
     {
         private readonly Thing _thing;
-        private readonly Func<Thing, object> _getter;
-        private readonly Action<Thing, object> _setter;
+        private readonly Func<Thing, object?> _getter;
+        private readonly Action<Thing, object?> _setter;
 
         private readonly bool _isNullable;
         private readonly DateTime[]? _enums;
 
-        public PropertyDateTime(Thing thing, Func<Thing, object> getter, Action<Thing, object> setter, 
+        /// <summary>
+        /// Initialize a new instance of <see cref="PropertyDateTime"/>.
+        /// </summary>
+        /// <param name="thing">The <see cref="Thing"/>.</param>
+        /// <param name="getter">The method to get property.</param>
+        /// <param name="setter">The method to set property.</param>
+        /// <param name="isNullable">If property accepted null value.</param>
+        /// <param name="enums">The possible values that property could have.</param>
+        public PropertyDateTime(Thing thing, Func<Thing, object?> getter, Action<Thing, object?> setter, 
              bool isNullable, DateTime[]? enums)
         {
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
@@ -24,9 +35,18 @@ namespace Mozilla.IoT.WebThing.Properties.String
             _enums = enums;
         }
 
-        public object GetValue() 
+        /// <summary>
+        /// Get value of thing
+        /// </summary>
+        /// <returns>Value of property thing</returns>
+        public object? GetValue() 
             => _getter(_thing);
 
+        /// <summary>
+        /// Set value of thing
+        /// </summary>
+        /// <param name="element">Input value, from buffer</param>
+        /// <returns>The <see cref="SetPropertyResult"/>></returns>
         public SetPropertyResult SetValue(JsonElement element)
         {
             if (_isNullable && element.ValueKind == JsonValueKind.Null)

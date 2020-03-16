@@ -1,4 +1,4 @@
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Properties
 {
     public enum SetPropertyResult
     {

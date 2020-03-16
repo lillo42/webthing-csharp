@@ -4,6 +4,9 @@ using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Properties.Number
 {
+    /// <summary>
+    /// Represent <see cref="uint"/> property.
+    /// </summary>
     public readonly struct PropertyUInt : IProperty
     {
         private readonly Thing _thing;
@@ -16,6 +19,17 @@ namespace Mozilla.IoT.WebThing.Properties.Number
         private readonly uint? _multipleOf;
         private readonly uint[]? _enums;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="PropertyUInt"/>.
+        /// </summary>
+        /// <param name="thing">The <see cref="Thing"/>.</param>
+        /// <param name="getter">The method to get property.</param>
+        /// <param name="setter">The method to set property.</param>
+        /// <param name="isNullable">If property accepted null value.</param>
+        /// <param name="minimum">The minimum value to be assign.</param>
+        /// <param name="maximum">The maximum value to be assign.</param>
+        /// <param name="multipleOf">The multiple of value to be assign.</param>
+        /// <param name="enums">The possible values that property could have.</param>
         public PropertyUInt(Thing thing, Func<Thing, object> getter, Action<Thing, object> setter, 
              bool isNullable, uint? minimum, uint? maximum, uint? multipleOf, uint[]? enums)
         {
@@ -29,9 +43,18 @@ namespace Mozilla.IoT.WebThing.Properties.Number
             _enums = enums;
         }
 
-        public object GetValue() 
+        /// <summary>
+        /// Get value of thing
+        /// </summary>
+        /// <returns>Value of property thing</returns>
+        public object? GetValue() 
             => _getter(_thing);
 
+        /// <summary>
+        /// Set value of thing
+        /// </summary>
+        /// <param name="element">Input value, from buffer</param>
+        /// <returns>The <see cref="SetPropertyResult"/>></returns>
         public SetPropertyResult SetValue(JsonElement element)
         {
             if (_isNullable && element.ValueKind == JsonValueKind.Null)

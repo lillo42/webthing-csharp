@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public class ThingObserverResolver
     {
-        public ThingObserver Observer { get; set; } = default!;
+        internal ThingObserver Observer { get; set; } = default!;
     }
 
 }

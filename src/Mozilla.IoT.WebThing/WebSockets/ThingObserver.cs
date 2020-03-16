@@ -10,14 +10,15 @@ using Mozilla.IoT.WebThing.Events;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public class ThingObserver
+    
+    internal class ThingObserver
     {
         private readonly ILogger<ThingObserver> _logger;
         private readonly Thing _thing;
         private readonly JsonSerializerOptions _options;
         private readonly System.Net.WebSockets.WebSocket _socket;
         private readonly CancellationToken _cancellation;
-
+        
         public ThingObserver(ILogger<ThingObserver> logger, 
             JsonSerializerOptions options, 
             System.Net.WebSockets.WebSocket socket, 
@@ -45,7 +46,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
-
+        
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
         {
             var data = _thing.ThingContext.Properties[property.PropertyName];
@@ -60,10 +61,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
-
+        
         public async void OnActionChange(object sender, ActionInfo action)
         {
-            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.Status);
+            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.ActionStatus);
             await _socket.SendAsync(
                     JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("actionStatus",new Dictionary<string, object>
                     {
@@ -73,5 +74,4 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 .ConfigureAwait(false);
         }
     }
-    
 }

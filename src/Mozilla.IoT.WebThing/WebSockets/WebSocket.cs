@@ -123,7 +123,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                         using var scope = service.CreateScope();
                         scope.ServiceProvider.GetRequiredService<ThingObserverResolver>().Observer = observer;
-                        await action.ExecuteAsync(socket, thing, data, jsonOptions, scope.ServiceProvider, cancellation)
+                        await action.ExecuteAsync(socket, thing, data, scope.ServiceProvider, cancellation)
                             .ConfigureAwait(false);
 
                         messageTypeString = string.Empty;

@@ -8,6 +8,7 @@ using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Properties;
+using Mozilla.IoT.WebThing.Properties;
 using Mozilla.IoT.WebThing.Test.Extensions;
 using Xunit;
 
