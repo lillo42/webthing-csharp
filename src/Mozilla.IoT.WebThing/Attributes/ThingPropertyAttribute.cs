@@ -2,7 +2,7 @@
 
 namespace Mozilla.IoT.WebThing.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class ThingPropertyAttribute : Attribute
     {
         public string? Name { get; set; }

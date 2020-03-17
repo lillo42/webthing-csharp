@@ -25,21 +25,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        /// <summary>
-        /// The Action name. This value should be unique.
-        /// </summary>
+        /// <inheritdoc/>
         public string Action => "setProperty";
 
-        
-        /// <summary>
-        /// Execute this action when web socket request action where action name match with <see cref="Action"/>
-        /// </summary>
-        /// <param name="socket">The <see cref="WebSocket"/> origin of this action.</param>
-        /// <param name="thing">The <see cref="Thing"/> associated with action.</param>
-        /// <param name="data">The <see cref="JsonElement"/> request with this action.</param>
-        /// <param name="provider">The <see cref="IServiceProvider"/> for this action. Every request is generate new scope.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data, 
             IServiceProvider provider, CancellationToken cancellationToken)
         {

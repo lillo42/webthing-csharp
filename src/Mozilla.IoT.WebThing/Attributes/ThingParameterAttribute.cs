@@ -2,16 +2,31 @@ using System;
 
 namespace Mozilla.IoT.WebThing.Attributes
 {
-    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = true)]
+    /// <summary>
+    /// Action parameter information.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Parameter)]
     public class ThingParameterAttribute : Attribute
     {
+        /// <summary>
+        /// Action parameter title.
+        /// </summary>
         public string? Title { get; set; }
+        
+        /// <summary>
+        /// Action parameter description.
+        /// </summary>
         public string? Description { get; set; }
+        
+        /// <summary>
+        /// Unit of Action parameter.
+        /// </summary>
         public string? Unit { get; set; }
         internal double? MinimumValue { get; private set; }
 
         /// <summary>
-        /// Validates only if the instance is greater than or exactly equal to "minimum"
+        /// Minimum accepts value.
+        /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
         public double Minimum
         {
@@ -22,7 +37,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         internal double? MaximumValue { get; private set; }
 
         /// <summary>
-        ///  Validates only if the instance is less than or exactly equal to "maximum"
+        /// Maximum accepts value.
+        /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
         public double Maximum
         {
@@ -33,7 +49,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         internal int? MultipleOfValue { get; set; }
 
         /// <summary>
-        /// Valid only if it has a value strictly less than (not equal to) "exclusiveMaximum".
+        /// Multiple of accepts value.
+        /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
         public int MultipleOf
         {
@@ -44,7 +61,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         internal double? ExclusiveMinimumValue { get; set; }
         
         /// <summary>
-        /// Valid only if it has a value strictly less than (not equal to) "exclusiveMaximum".
+        /// Exclusive minimum (less than and not equal) accepts value.
+        /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
         public double ExclusiveMinimum
         {
@@ -55,7 +73,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         internal double? ExclusiveMaximumValue { get; set; }
         
         /// <summary>
-        /// Valid only if it has a value strictly greater than (not equal to) "exclusiveMinimum"
+        /// Exclusive maximum (great than and not equal) accepts value.
+        /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
         public double ExclusiveMaximum
         {
@@ -65,6 +84,11 @@ namespace Mozilla.IoT.WebThing.Attributes
         
         
         internal int? MinimumLengthValue { get; set; }
+        
+        /// <summary>
+        /// Minimum string length accepts.
+        /// This property should be use only for string.
+        /// </summary>
         public int MinimumLength
         {
             get => MinimumLengthValue.GetValueOrDefault();
@@ -72,14 +96,27 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
 
         internal int? MaximumLengthValue { get; set; }
+        
+        /// <summary>
+        /// Maximum string length accepts.
+        /// This property should be use only for string.
+        /// </summary>
         public int MaximumLength
         {
             get => MaximumLengthValue.GetValueOrDefault();
             set => MaximumLengthValue = value;
         }
         
+        
+        /// <summary>
+        /// Pattern this action parameter must have.
+        /// This property should be use only for string.
+        /// </summary>
         public string? Pattern { get; set; }
         
+        /// <summary>
+        /// Possible value this action parameter should have.
+        /// </summary>
         public object[]? Enum { get; set; }
     }
 }

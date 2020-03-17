@@ -22,10 +22,7 @@ namespace Mozilla.IoT.WebThing.Properties
             _getter = getter ?? throw new ArgumentNullException(nameof(getter));
         }
 
-        /// <summary>
-        /// Get value of thing
-        /// </summary>
-        /// <returns>Value of property thing</returns>
+        /// <inheritdoc/>
         public object? GetValue() 
             => _getter(_thing);
 
