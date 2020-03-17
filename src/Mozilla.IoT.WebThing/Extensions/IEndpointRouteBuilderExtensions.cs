@@ -8,8 +8,16 @@ using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class IEndpointRouteBuilderExtensions
     {
+        /// <summary>
+        /// Map Things endpoints.
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public static void MapThings(this IEndpointRouteBuilder endpoint)
         {
             if (endpoint == null)
