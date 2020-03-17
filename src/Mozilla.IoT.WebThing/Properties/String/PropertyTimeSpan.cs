@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace Mozilla.IoT.WebThing.Properties.String
 {
@@ -36,18 +35,11 @@ namespace Mozilla.IoT.WebThing.Properties.String
             _enums = enums;
         }
 
-        /// <summary>
-        /// Get value of thing
-        /// </summary>
-        /// <returns>Value of property thing</returns>
+        /// <inheritdoc/>
         public object? GetValue() 
             => _getter(_thing);
 
-        /// <summary>
-        /// Set value of thing
-        /// </summary>
-        /// <param name="element">Input value, from buffer</param>
-        /// <returns>The <see cref="SetPropertyResult"/>></returns>
+        /// <inheritdoc/>
         public SetPropertyResult SetValue(JsonElement element)
         {
             if (_isNullable && element.ValueKind == JsonValueKind.Null)

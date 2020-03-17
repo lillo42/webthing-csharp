@@ -30,7 +30,7 @@ namespace Mozilla.IoT.WebThing.Properties.String
         /// <param name="minimum">The minimum length of string to be assign.</param>
         /// <param name="maximum">The maximum length of string to be assign.</param>
         /// <param name="pattern">The pattern of string to be assign.</param>
-        /// <param name="enums">The possible values that property could have.</param>
+        /// <param name="enums">The possible values this property could have.</param>
         public PropertyString(Thing thing, Func<Thing, object?> getter, Action<Thing, object?> setter, 
              bool isNullable, int? minimum, int? maximum, string? pattern, string[]? enums)
         {
@@ -44,18 +44,11 @@ namespace Mozilla.IoT.WebThing.Properties.String
             _pattern = pattern != null ? new Regex(pattern, RegexOptions.Compiled) : null;
         }
 
-        /// <summary>
-        /// Get value of thing
-        /// </summary>
-        /// <returns>Value of property thing</returns>
+        /// <inheritdoc/>
         public object? GetValue() 
             => _getter(_thing);
 
-        /// <summary>
-        /// Set value of thing
-        /// </summary>
-        /// <param name="element">Input value, from buffer</param>
-        /// <returns>The <see cref="SetPropertyResult"/>></returns>
+        /// <inheritdoc/>
         public SetPropertyResult SetValue(JsonElement element)
         {
             if (_isNullable && element.ValueKind == JsonValueKind.Null)

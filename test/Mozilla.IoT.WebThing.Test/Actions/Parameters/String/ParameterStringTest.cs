@@ -3,7 +3,6 @@ using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Actions.Parameters.String;
-using Mozilla.IoT.WebThing.Properties.String;
 using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String

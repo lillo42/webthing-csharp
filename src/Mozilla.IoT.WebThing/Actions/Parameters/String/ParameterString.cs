@@ -4,6 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace Mozilla.IoT.WebThing.Actions.Parameters.String
 {
+    /// <summary>
+    /// Represent <see cref="string"/> action parameter.
+    /// </summary>
     public readonly struct ParameterString : IActionParameter
     {
         private readonly int? _minimum;
@@ -11,6 +14,14 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
         private readonly string[]? _enums;
         private readonly Regex? _pattern;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="ParameterString"/>.
+        /// </summary>
+        /// <param name="isNullable">If action parameter accepted null value.</param>
+        /// <param name="minimum">The minimum length of string to be assign.</param>
+        /// <param name="maximum">The maximum length of string to be assign.</param>
+        /// <param name="pattern">The pattern of string to be assign.</param>
+        /// <param name="enums">The possible values this action parameter could have.</param>
         public ParameterString(bool isNullable, int? minimum, int? maximum, string? pattern, string[]? enums)
         {
             CanBeNull = isNullable;
@@ -20,8 +31,10 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
             _pattern = pattern != null ? new Regex(pattern, RegexOptions.Compiled) : null;
         }
 
+        /// <inheritdoc/>
         public bool CanBeNull { get; }
 
+        /// <inheritdoc/>
         public bool TryGetValue(JsonElement element, out object? value)
         {
             value = null;

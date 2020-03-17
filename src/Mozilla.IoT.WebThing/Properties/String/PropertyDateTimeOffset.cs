@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace Mozilla.IoT.WebThing.Properties.String
 {
@@ -24,7 +23,7 @@ namespace Mozilla.IoT.WebThing.Properties.String
         /// <param name="getter">The method to get property.</param>
         /// <param name="setter">The method to set property.</param>
         /// <param name="isNullable">If property accepted null value.</param>
-        /// <param name="enums">The possible values that property could have.</param>
+        /// <param name="enums">The possible values this property could have.</param>
         public PropertyDateTimeOffset(Thing thing, Func<Thing, object?> getter, Action<Thing, object?> setter, 
              bool isNullable, DateTimeOffset[]? enums)
         {
@@ -35,18 +34,11 @@ namespace Mozilla.IoT.WebThing.Properties.String
             _enums = enums;
         }
 
-        /// <summary>
-        /// Get value of thing
-        /// </summary>
-        /// <returns>Value of property thing</returns>
+        /// <inheritdoc/>
         public object? GetValue() 
             => _getter(_thing);
 
-        /// <summary>
-        /// Set value of thing
-        /// </summary>
-        /// <param name="element">Input value, from buffer</param>
-        /// <returns>The <see cref="SetPropertyResult"/>></returns>
+        /// <inheritdoc/>
         public SetPropertyResult SetValue(JsonElement element)
         {
             if (_isNullable && element.ValueKind == JsonValueKind.Null)
