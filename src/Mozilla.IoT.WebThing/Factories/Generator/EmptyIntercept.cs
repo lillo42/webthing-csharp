@@ -18,7 +18,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         {
         }
 
-        public void Intercept(Thing thing, MethodInfo action, ThingActionAttribute? actionInfo)
+        public void Intercept(Thing thing, MethodInfo action, ThingActionAttribute? actionInformation)
         {
             
         }

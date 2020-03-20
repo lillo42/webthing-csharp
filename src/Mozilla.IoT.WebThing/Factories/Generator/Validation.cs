@@ -2,6 +2,9 @@
 
 namespace Mozilla.IoT.WebThing.Factories.Generator
 {
+    /// <summary>
+    /// Represent property/parameter validation
+    /// </summary>
     public readonly struct Validation
     {
         public Validation(double? minimum, double? maximum,
@@ -19,16 +22,54 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             Enums = enums;
         }
 
+        /// <summary>
+        /// Minimum value.
+        /// </summary>
         public double? Minimum { get; }
+        
+        /// <summary>
+        /// Maximum value.
+        /// </summary>
         public double? Maximum { get; }
+        
+        /// <summary>
+        /// Exclusive minimum value.
+        /// </summary>
         public double? ExclusiveMinimum { get; }
+        
+        /// <summary>
+        /// Exclusive maximum value.
+        /// </summary>
         public double? ExclusiveMaximum { get; }
+        
+        /// <summary>
+        /// Multiple of value.
+        /// </summary>
         public double? MultipleOf { get; }
+        
+        /// <summary>
+        /// Minimum length value.
+        /// </summary>
         public int? MinimumLength { get; }
+        
+        /// <summary>
+        /// Maximum length value.
+        /// </summary>
         public int? MaximumLength { get; }
+        
+        /// <summary>
+        /// String pattern value.
+        /// </summary>
         public string? Pattern { get; }
+        
+        /// <summary>
+        /// Possible values.
+        /// </summary>
         public object[]? Enums { get; }
 
+        /// <summary>
+        /// If has validation or all value are null.
+        /// </summary>
         public bool HasValidation
             => Minimum.HasValue
                || Maximum.HasValue
@@ -40,6 +81,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || Pattern != null
                || (Enums != null && Enums.Length > 0);
 
+        /// <summary>
+        /// If Enum has null value.
+        /// </summary>
         public bool HasNullValueOnEnum
             => Enums != null && Enums.Contains(null);
     }
