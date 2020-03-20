@@ -6,10 +6,17 @@ using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Events
 {
+    /// <inheritdoc/> 
     public class EventInterceptFactory : IInterceptorFactory
     {
         private readonly EventIntercept _intercept;
+        private readonly EmptyIntercept _empty;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="EventInterceptFactory"/>.
+        /// </summary>
+        /// <param name="thing"></param>
+        /// <param name="options"></param>
         public EventInterceptFactory(Thing thing, ThingOption options)
         {
             var thingType = thing.GetType();
@@ -17,19 +24,37 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
                 null, TypeAttributes.AutoClass | TypeAttributes.Class | TypeAttributes.Public);
             
             _intercept = new EventIntercept(builder, options);
+            _empty = new EmptyIntercept();
         }
 
+        /// <summary>
+        /// The <see cref="EventCollection"/> created, map by action name.
+        /// </summary>
         public Dictionary<string, EventCollection> Events => _intercept.Events;
 
+        /// <summary>
+        /// Return the <see cref="EmptyIntercept"/>.
+        /// </summary>
+        /// <returns>The <see cref="EmptyIntercept"/>.</returns>
         public IThingIntercept CreateThingIntercept()
-            => new EmptyIntercept();
+            => _empty;
 
+        
+        /// <summary>
+        /// Return the <see cref="EmptyIntercept"/>.
+        /// </summary>
+        /// <returns>The <see cref="EmptyIntercept"/>.</returns>
         public IPropertyIntercept CreatePropertyIntercept()
-            => new EmptyIntercept();
+            => _empty;
 
+        /// <summary>
+        /// Return the <see cref="EmptyIntercept"/>.
+        /// </summary>
+        /// <returns>The <see cref="EmptyIntercept"/>.</returns>
         public IActionIntercept CreatActionIntercept()
-            => new EmptyIntercept();
+            => _empty;
 
+        /// <inheritdoc /> 
         public IEventIntercept CreatEventIntercept()
             => _intercept;
     }

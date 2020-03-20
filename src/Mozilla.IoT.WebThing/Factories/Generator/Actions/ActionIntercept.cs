@@ -27,7 +27,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
         private readonly ThingOption _option;
         
         /// <summary>
-        /// The <see cref="ActionCollection"/> Create, map by action name.
+        /// The <see cref="ActionCollection"/> created, map by action name.
         /// </summary>
         public  Dictionary<string, ActionCollection> Actions { get; }
 
