@@ -3,10 +3,17 @@ using Mozilla.IoT.WebThing.Attributes;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Intercepts
 {
-    public interface IPropertyIntercept
+    /// <summary>
+    /// Intercept <see cref="Thing"/> property.
+    /// </summary>
+    public interface IPropertyIntercept : IIntercept
     {
-        void Before(Thing thing);
-        void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute);
-        void After(Thing thing);
+        /// <summary>
+        /// Intercept <see cref="Thing"/> property.
+        /// </summary>
+        /// <param name="thing">The <see cref="Thing"/>.</param>
+        /// <param name="propertyInfo">The property intercept.</param>
+        /// <param name="propertyAttribute">The <see cref="ThingPropertyAttribute"/>.</param>
+        void Visit(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute);
     }
 }

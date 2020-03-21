@@ -7,6 +7,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
     /// </summary>
     public readonly struct Validation
     {
+        /// <summary>
+        /// Initialize a new instance of <see cref="Validation"/>.
+        /// </summary>
+        /// <param name="minimum">The minimum value.</param>
+        /// <param name="maximum">The maximum value.</param>
+        /// <param name="exclusiveMinimum">The exclusive minimum value.</param>
+        /// <param name="exclusiveMaximum">The exclusive maximum value.</param>
+        /// <param name="multipleOf">The multiple of value.</param>
+        /// <param name="minimumLength">The minimum length value.</param>
+        /// <param name="maximumLength">The maximum length value.</param>
+        /// <param name="pattern">The pattern value.</param>
+        /// <param name="enums">The enums values.</param>
         public Validation(double? minimum, double? maximum,
             double? exclusiveMinimum, double? exclusiveMaximum, double? multipleOf,
             int? minimumLength, int? maximumLength, string? pattern, object[]? enums)

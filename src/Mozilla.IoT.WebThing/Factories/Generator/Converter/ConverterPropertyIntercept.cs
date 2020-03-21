@@ -37,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
         }
 
-        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
+        public void Visit(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
         {
             if (!_isObjectStart)
             {

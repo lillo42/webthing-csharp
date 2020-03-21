@@ -15,8 +15,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
         /// <summary>
         /// Initialize a new instance of <see cref="EventInterceptFactory"/>.
         /// </summary>
-        /// <param name="thing"></param>
-        /// <param name="options"></param>
+        /// <param name="thing">The <see cref="Thing"/>.</param>
+        /// <param name="options">The <see cref="ThingOption"/>.</param>
         public EventInterceptFactory(Thing thing, ThingOption options)
         {
             var thingType = thing.GetType();
