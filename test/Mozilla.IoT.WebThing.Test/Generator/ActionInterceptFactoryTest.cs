@@ -396,7 +396,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             action.Should().NotBeNull();
             var result = action.ExecuteAsync(thing, _provider);
             result.IsCompleted.Should().BeTrue();
-            action.ActionStatus.Should().Be(ActionStatus.Completed);
+            action.Status.Should().Be(ActionStatus.Completed);
             thing.Values.Should().NotBeEmpty();
             thing.Values.Should().HaveCount(1);
             thing.Values.Should().BeEquivalentTo(new Dictionary<string, object>
@@ -419,9 +419,9 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             action.Should().NotBeNull();
             var result = action.ExecuteAsync(thing, _provider);
             result.IsCompleted.Should().BeFalse();
-            action.ActionStatus.Should().Be(ActionStatus.Executing);
+            action.Status.Should().Be(ActionStatus.Executing);
             await result;
-            action.ActionStatus.Should().Be(ActionStatus.Completed);
+            action.Status.Should().Be(ActionStatus.Completed);
             
             thing.Values.Should().HaveCount(1);
             thing.Values.Should().HaveElementAt(0, nameof(AsyncAction.Execute));
@@ -437,10 +437,10 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             _factory.Actions[nameof(AsyncAction.ExecuteWithCancellationToken)].TryAdd(json, out var action).Should().BeTrue();
             action.Should().NotBeNull();
             var result = action.ExecuteAsync(thing, _provider);
-            action.ActionStatus.Should().Be(ActionStatus.Executing);
+            action.Status.Should().Be(ActionStatus.Executing);
             result.IsCompleted.Should().BeFalse();
             await result;
-            action.ActionStatus.Should().Be(ActionStatus.Completed);
+            action.Status.Should().Be(ActionStatus.Completed);
             
             thing.Values.Should().HaveCount(1);
             thing.Values.Should().HaveElementAt(0, nameof(AsyncAction.ExecuteWithCancellationToken));
@@ -456,11 +456,11 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             _factory.Actions[nameof(AsyncAction.ExecuteToCancel)].TryAdd(json, out var action).Should().BeTrue();
             action.Should().NotBeNull();
             var result = action.ExecuteAsync(thing, _provider);
-            action.ActionStatus.Should().Be(ActionStatus.Executing);
+            action.Status.Should().Be(ActionStatus.Executing);
             result.IsCompleted.Should().BeFalse();
             action.Cancel();
             await result;
-            action.ActionStatus.Should().Be(ActionStatus.Completed);
+            action.Status.Should().Be(ActionStatus.Completed);
             
             thing.Values.Should().HaveCount(1);
             thing.Values.Should().HaveElementAt(0, nameof(AsyncAction.ExecuteToCancel));

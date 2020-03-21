@@ -34,17 +34,17 @@ namespace Mozilla.IoT.WebThing.Actions
         /// </summary>
         public DateTime? TimeCompleted { get; private set; } = null;
         
-        private ActionStatus _actionStatus = ActionStatus.Pending;
+        private ActionStatus _status = ActionStatus.Pending;
 
         /// <summary>
-        /// The <see cref="ActionStatus"/> of action.
+        /// The <see cref="Status"/> of action.
         /// </summary>
-        public ActionStatus ActionStatus
+        public ActionStatus Status
         {
-            get => _actionStatus;
+            get => _status;
             private set
             {
-                _actionStatus = value;
+                _status = value;
                 StatusChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -65,10 +65,10 @@ namespace Mozilla.IoT.WebThing.Actions
         /// <returns>Execute task async.</returns>
         public async Task ExecuteAsync(Thing thing, IServiceProvider provider)
         {
-            ActionStatus = ActionStatus.Pending;
+            Status = ActionStatus.Pending;
             var logger = provider.GetRequiredService<ILogger<ActionInfo>>();
             logger.LogInformation("Going to execute {actionName}. [Thing: {thingName}]", GetActionName(), thing.Name);
-            ActionStatus = ActionStatus.Executing;
+            Status = ActionStatus.Executing;
 
             try
             {
@@ -83,7 +83,7 @@ namespace Mozilla.IoT.WebThing.Actions
             }
             
             TimeCompleted = DateTime.UtcNow;
-            ActionStatus = ActionStatus.Completed;
+            Status = ActionStatus.Completed;
         }
         
         /// <summary>

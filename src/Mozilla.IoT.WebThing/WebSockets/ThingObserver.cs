@@ -69,7 +69,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         
         public async void OnActionChange(object sender, ActionInfo action)
         {
-            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.ActionStatus);
+            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.Status);
             await _socket.SendAsync(
                     JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("actionStatus",new Dictionary<string, object>
                     {
