@@ -20,7 +20,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset)
                 || type == typeof(Guid)
-                || type == typeof(TimeSpan))
+                || type == typeof(TimeSpan)
+                || type.IsEnum)
             {
                 return JsonType.String;
             }

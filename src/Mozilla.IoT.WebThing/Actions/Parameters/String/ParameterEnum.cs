@@ -1,28 +1,27 @@
-using System.Linq;
+using System;
 using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Actions.Parameters.String
 {
     /// <summary>
-    /// Represent <see cref="char"/> action parameter.
+    /// Represent <see cref="Enum"/> action parameter.
     /// </summary>
-    public readonly struct ParameterChar : IActionParameter
+    /// <typeparam name="TEnum"></typeparam>
+    public readonly struct ParameterEnum : IActionParameter
     {
-        
-        private readonly char[]? _enums;
+        private readonly Type _enumType;
 
         /// <summary>
-        /// Initialize a new instance of <see cref="ParameterChar"/>.
+        /// Initialize a new instance of <see cref="ParameterDateTime"/>.
         /// </summary>
         /// <param name="isNullable">If action parameter accepts null value.</param>
-        /// <param name="enums">The possible values this action parameter can have.</param>
-        public ParameterChar(bool isNullable, char[]? enums)
+        /// <param name="enumType">The enum type.</param>
+        public ParameterEnum(bool isNullable, Type enumType)
         {
             CanBeNull = isNullable;
-            _enums = enums;
+            _enumType = enumType;
         }
-        
-        
+
         /// <inheritdoc/>
         public bool CanBeNull { get; }
 
@@ -40,20 +39,11 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
                 return false;
             }
 
-            var @string = element.GetString();
-
-            if (@string.Length != 1)
+            if(!Enum.TryParse(_enumType, element.GetString(), true, out var jsonValue))
             {
                 return false;
             }
-
-            var jsonValue = @string[0];
             
-            if (_enums != null && _enums.Length > 0 &&  !_enums.Contains(jsonValue))
-            {
-                return false;
-            }
-
             value = jsonValue;
             return true;
         }

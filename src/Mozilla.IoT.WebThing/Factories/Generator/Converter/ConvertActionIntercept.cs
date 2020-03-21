@@ -93,6 +93,16 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         _jsonWriter.PropertyWithNullableValue("Title", parameterActionInfo.Title);
                         _jsonWriter.PropertyWithNullableValue("Description", parameterActionInfo.Description);
                         _jsonWriter.PropertyWithNullableValue("Unit", parameterActionInfo.Unit);
+                        
+                        var enums = parameterActionInfo.Enum;
+                        if (parameterType.IsEnum && (enums == null || enums.Length == 0))
+                        {
+                            var values = parameterType.GetEnumValues();
+                            enums = new object[values.Length];
+                            values.CopyTo(enums, 0);
+                        }
+                        _jsonWriter.PropertyEnum("@enum", parameterType, enums);
+                        
                         if (jsonType == JsonType.Number || jsonType == JsonType.Integer)
                         {
                             _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.Minimum), parameterType,

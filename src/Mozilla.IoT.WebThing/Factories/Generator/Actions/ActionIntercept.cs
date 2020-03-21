@@ -205,6 +205,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 {
                     actionParameter = new ParameterChar(isNullable, validation.Enums?.Where(x => x != null).Select(Convert.ToChar).ToArray());
                 }
+                else if (parameterType.IsEnum)
+                {
+                    actionParameter = new ParameterEnum(isNullable, parameterType);
+                }
                 else if (parameterType == typeof(Guid))
                 {
                     actionParameter = new ParameterGuid(isNullable,

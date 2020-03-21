@@ -74,7 +74,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
                    || type == typeof(DateTime)
                    || type == typeof(DateTimeOffset)
                    || type == typeof(Guid)
-                   || type == typeof(TimeSpan);
+                   || type == typeof(TimeSpan) 
+                   || type.IsEnum;
         }
         
         private static bool IsThingProperty(string name)
