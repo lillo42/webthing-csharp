@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     PropertyNameCaseInsensitive = opt.IgnoreCase,
                     Converters =
                     {
-                        new StatusConverter()
+                        new ActionStatusConverter()
                     },
                     IgnoreNullValues = true
                 };

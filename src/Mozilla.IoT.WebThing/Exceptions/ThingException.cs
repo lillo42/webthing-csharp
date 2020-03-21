@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace Mozilla.IoT.WebThing.Exceptions
 {
@@ -12,16 +11,6 @@ namespace Mozilla.IoT.WebThing.Exceptions
         /// Initialize a new instance of <see cref="ThingException"/>.
         /// </summary>
         public ThingException()
-        {
-        }
-
-        /// <summary>
-        /// Initialize a new instance of <see cref="ThingException"/>.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="context"></param>
-        protected ThingException(SerializationInfo? info, StreamingContext context) 
-            : base(info, context)
         {
         }
 

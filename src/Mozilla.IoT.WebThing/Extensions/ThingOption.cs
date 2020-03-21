@@ -53,7 +53,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                         };
 
                         _options.Converters.Add(new ThingConverter(this));
-                        _options.Converters.Add(new StatusConverter());
+                        _options.Converters.Add(new ActionStatusConverter());
                     }
                 }
             }
