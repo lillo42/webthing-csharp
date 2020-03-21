@@ -71,7 +71,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 }
             }
             
-            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object> {[propertyName] = property.GetValue() }, jsonOptions)
+            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object?> {[propertyName] = property.GetValue() }, jsonOptions)
                 .ConfigureAwait(false);
         }
     }

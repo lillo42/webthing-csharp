@@ -9,13 +9,13 @@ namespace Mozilla.IoT.WebThing.Extensions
 {
     internal static class ILGeneratorExtensions
     {
-        private static readonly MethodInfo s_getService = typeof(IServiceProvider).GetMethod(nameof(IServiceProvider.GetService));
-        private static readonly MethodInfo s_getTypeFromHandle = typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle));
+        private static readonly MethodInfo s_getService = typeof(IServiceProvider).GetMethod(nameof(IServiceProvider.GetService))!;
+        private static readonly MethodInfo s_getTypeFromHandle = typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle))!;
 
-        private static readonly PropertyInfo s_getSource = typeof(ActionInfo).GetProperty("Source", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly PropertyInfo s_getToken = typeof(CancellationTokenSource).GetProperty(nameof(CancellationTokenSource.Token), BindingFlags.Public | BindingFlags.Instance);
+        private static readonly PropertyInfo s_getSource = typeof(ActionInfo).GetProperty("Source", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        private static readonly PropertyInfo s_getToken = typeof(CancellationTokenSource).GetProperty(nameof(CancellationTokenSource.Token), BindingFlags.Public | BindingFlags.Instance)!;
 
-        private static readonly MethodInfo s_getItem = typeof(Dictionary<string, object>).GetMethod("get_Item");
+        private static readonly MethodInfo s_getItem = typeof(Dictionary<string, object>).GetMethod("get_Item")!;
         
         #region Return
         public static void Return(this ILGenerator generator, string value)
@@ -76,7 +76,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             {
                 generator.Emit(OpCodes.Unbox_Any, property.PropertyType);
             }
-            generator.EmitCall(OpCodes.Callvirt, property.SetMethod, null);
+            generator.EmitCall(OpCodes.Callvirt, property.SetMethod!, null);
         }
         
         
@@ -106,8 +106,8 @@ namespace Mozilla.IoT.WebThing.Extensions
         public static void LoadCancellationToken(this ILGenerator generator)
         {
             generator.Emit(OpCodes.Ldarg_0);
-            generator.EmitCall(OpCodes.Call, s_getSource.GetMethod, null);
-            generator.EmitCall(OpCodes.Callvirt, s_getToken.GetMethod, null);
+            generator.EmitCall(OpCodes.Call, s_getSource.GetMethod!, null);
+            generator.EmitCall(OpCodes.Callvirt, s_getToken.GetMethod!, null);
         }
         
         public static void LoadFromInput(this ILGenerator generator, MethodInfo getInput, MethodInfo getValue)
@@ -123,7 +123,7 @@ namespace Mozilla.IoT.WebThing.Extensions
 
         public static void Call(this ILGenerator generator, MethodInfo method)
         {
-            if (method.DeclaringType.IsClass)
+            if (method.DeclaringType!.IsClass)
             {
                 generator.EmitCall(OpCodes.Callvirt, method, null);
             }

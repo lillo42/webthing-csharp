@@ -1,6 +1,6 @@
-namespace Mozilla.IoT.WebThing
+namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
 {
-    public enum JsonType
+    internal enum JsonType
     {
         String,
         Integer,

@@ -9,7 +9,6 @@ namespace Mozilla.IoT.WebThing.Factories
     {
         public static void Generate(Thing thing, IEnumerable<IInterceptorFactory> factories)
         {
-            // ReSharper disable once PossibleMultipleEnumeration
             var thingVisitor = factories
                 .Select(x => x.CreateThingIntercept())
                 .ToArray();
@@ -19,11 +18,8 @@ namespace Mozilla.IoT.WebThing.Factories
                 intercept.Before(thing);
             }
             
-            // ReSharper disable once PossibleMultipleEnumeration
             VisitProperties(thing, factories);
-            // ReSharper disable once PossibleMultipleEnumeration
             VisitActions(thing, factories);
-            // ReSharper disable once PossibleMultipleEnumeration
             VisitEvents(thing, factories);
             
             foreach (var intercept in thingVisitor)

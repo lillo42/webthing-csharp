@@ -16,12 +16,13 @@ namespace Mozilla.IoT.WebThing.Actions
         /// The <see cref="CancellationTokenSource"/> to cancel action when ask by <see cref="CancellationToken"/>. 
         /// </summary>
         protected CancellationTokenSource Source { get; } = new CancellationTokenSource();
+
         internal Thing? Thing { get; set; }
-        
+
         /// <summary>
         /// The href of action.
         /// </summary>
-        public string Href { get; set; }
+        public string Href { get; set; } = string.Empty;
 
         /// <summary>
         /// The time when action was requested.

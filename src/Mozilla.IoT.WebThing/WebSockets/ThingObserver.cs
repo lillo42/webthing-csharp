@@ -34,8 +34,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
         
         public IEnumerable<string> EventsBind { get; } = new HashSet<string>();
         
-        public async void OnEvenAdded(object sender, Event @event)
+        public async void OnEvenAdded(object? sender, Event @event)
         {
+            if (sender == null)
+            {
+                return;
+            }
+            
             _logger.LogInformation("Event add received, going to notify Web Socket");
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("event", 
                     new Dictionary<string, object>

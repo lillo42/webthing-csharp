@@ -20,7 +20,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
 
             foreach (var @event in events)
             {
-                var args = @event.EventHandlerType.GetGenericArguments();
+                var args = @event.EventHandlerType!.GetGenericArguments();
                 if (args.Length > 1)
                 {
                     continue;

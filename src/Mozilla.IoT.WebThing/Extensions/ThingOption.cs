@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Extensions
         /// </summary>
         public JsonNamingPolicy PropertyNamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
 
-        private JsonSerializerOptions _options;
+        private JsonSerializerOptions? _options;
         private readonly object _locker = new object();
         
         internal JsonSerializerOptions ToJsonSerializerOptions()
@@ -58,7 +58,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 }
             }
 
-            return _options;
+            return _options!;
         }
     }
 }
