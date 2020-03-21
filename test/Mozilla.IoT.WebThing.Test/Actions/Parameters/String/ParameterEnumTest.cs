@@ -65,7 +65,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         public void TrySetNoNullableWithEnumValue()
         {
             var property = CreateNoNullable();
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<char>()}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<string>()}"" }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out _).Should().BeFalse();
         }
         #endregion
