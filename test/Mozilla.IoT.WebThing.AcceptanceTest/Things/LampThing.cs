@@ -11,9 +11,12 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Things
         {
             Task.Factory.StartNew(() =>
             {
-                Task.Delay(3_000).GetAwaiter().GetResult();
-                var overheated = Overheated;
-                overheated?.Invoke(this, 0);
+                while (true)
+                {
+                    Task.Delay(3_000).GetAwaiter().GetResult();
+                    var overheated = Overheated;
+                    overheated?.Invoke(this, 0);
+                }
             }, TaskCreationOptions.LongRunning);
         }
         public override string Name => "lamp";
