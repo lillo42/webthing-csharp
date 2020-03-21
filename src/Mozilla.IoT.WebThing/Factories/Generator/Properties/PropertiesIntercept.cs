@@ -77,6 +77,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
                     validation.MinimumLength, validation.MaximumLength, validation.Pattern,
                     validation.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray()!);
             }
+            else if (propertyType == typeof(char))
+            {
+                property = new PropertyChar(thing, getter, setter, isNullable, validation.Enums?.Where(x => x != null).Select(Convert.ToChar).ToArray());
+            }
             else if (propertyType == typeof(Guid))
             {
                 property = new PropertyGuid(thing, getter, setter, isNullable,

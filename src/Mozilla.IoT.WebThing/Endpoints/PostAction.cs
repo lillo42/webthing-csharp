@@ -79,7 +79,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             if (actionsToExecute.Count == 1)
             {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First.Value, jsonOption)
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First!.Value, jsonOption)
                     .ConfigureAwait(false);
             }
             else

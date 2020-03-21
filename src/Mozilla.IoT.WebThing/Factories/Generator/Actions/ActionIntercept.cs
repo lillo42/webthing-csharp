@@ -199,27 +199,31 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 {
                     actionParameter = new ParameterString(isNullable,
                         validation.MinimumLength, validation.MaximumLength, validation.Pattern,
-                        validation.Enums?.Select(Convert.ToString).ToArray()!);
+                        validation.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray()!);
+                }
+                else if (parameterType == typeof(char))
+                {
+                    actionParameter = new ParameterChar(isNullable, validation.Enums?.Where(x => x != null).Select(Convert.ToChar).ToArray());
                 }
                 else if (parameterType == typeof(Guid))
                 {
                     actionParameter = new ParameterGuid(isNullable,
-                        validation.Enums?.Select(x => Guid.Parse(x.ToString()!)).ToArray());
+                        validation.Enums?.Where(x => x != null).Select(x => Guid.Parse(x.ToString()!)).ToArray());
                 }
                 else if (parameterType == typeof(TimeSpan))
                 {
                     actionParameter = new ParameterTimeSpan(isNullable,
-                        validation.Enums?.Select(x => TimeSpan.Parse(x.ToString()!)).ToArray());
+                        validation.Enums?.Where(x => x != null).Select(x => TimeSpan.Parse(x.ToString()!)).ToArray());
                 }
                 else if (parameterType == typeof(DateTime))
                 {
                     actionParameter = new ParameterDateTime(isNullable,
-                        validation.Enums?.Select(Convert.ToDateTime).ToArray());
+                        validation.Enums?.Where(x => x != null).Select(Convert.ToDateTime).ToArray());
                 }
                 else if (parameterType == typeof(DateTimeOffset))
                 {
                     actionParameter = new ParameterDateTimeOffset(isNullable,
-                        validation.Enums?.Select(x => DateTimeOffset.Parse(x.ToString()!)).ToArray());
+                        validation.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString()!)).ToArray());
                 }
                 else
                 {
@@ -245,7 +249,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterByte(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToByte).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToByte).ToArray());
                     }
                     else if (parameterType == typeof(sbyte))
                     {
@@ -254,7 +258,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new sbyte?(Convert.ToSByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterSByte(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToSByte).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToSByte).ToArray());
                     }
                     else if (parameterType == typeof(short))
                     {
@@ -263,7 +267,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new short?(Convert.ToInt16(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterShort(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToInt16).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToInt16).ToArray());
                     }
                     else if (parameterType == typeof(ushort))
                     {
@@ -272,7 +276,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterUShort(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToUInt16).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToUInt16).ToArray());
                     }
                     else if (parameterType == typeof(int))
                     {
@@ -281,7 +285,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new int?(Convert.ToInt32(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterInt(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToInt32).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToInt32).ToArray());
                     }
                     else if (parameterType == typeof(uint))
                     {
@@ -290,7 +294,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new uint?(Convert.ToUInt32(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterUInt(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToUInt32).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToUInt32).ToArray());
                     }
                     else if (parameterType == typeof(long))
                     {
@@ -299,7 +303,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new long?(Convert.ToInt64(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterLong(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToInt64).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToInt64).ToArray());
                     }
                     else if (parameterType == typeof(ulong))
                     {
@@ -308,7 +312,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterULong(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToUInt64).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToUInt64).ToArray());
                     }
                     else if (parameterType == typeof(float))
                     {
@@ -317,7 +321,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new float?(Convert.ToSingle(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterFloat(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToSingle).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToSingle).ToArray());
                     }
                     else if (parameterType == typeof(double))
                     {
@@ -326,7 +330,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new double?(Convert.ToDouble(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterDouble(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToDouble).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToDouble).ToArray());
                     }
                     else
                     {
@@ -335,7 +339,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                         var multi = multipleOf.HasValue ? new decimal?(Convert.ToDecimal(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterDecimal(isNullable,
-                            min, max, multi, enums?.Select(Convert.ToDecimal).ToArray());
+                            min, max, multi, enums?.Where(x => x != null).Select(Convert.ToDecimal).ToArray());
                     }
                 }
 

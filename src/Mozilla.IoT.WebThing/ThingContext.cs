@@ -33,6 +33,9 @@ namespace Mozilla.IoT.WebThing
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
         }
 
+        /// <summary>
+        /// The <see cref="IThingConverter"/>.
+        /// </summary>
         public IThingConverter Converter { get; }
         
         /// <summary>
