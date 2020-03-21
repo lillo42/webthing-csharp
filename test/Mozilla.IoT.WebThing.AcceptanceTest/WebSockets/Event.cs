@@ -71,6 +71,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.WebSockets
             
             obj.GetValue("messageType", StringComparison.OrdinalIgnoreCase).Type.Should()
                 .Be(JTokenType.String);
+            
             obj.GetValue("messageType", StringComparison.OrdinalIgnoreCase).Value<string>().Should()
                 .Be("event");
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using Mozilla.IoT.WebThing.Attributes;
 using static Mozilla.IoT.WebThing.Const;
 
@@ -15,8 +16,12 @@ namespace Mozilla.IoT.WebThing
 
         internal Uri Prefix { get; set; } = default!;
 
+        /// <summary>
+        /// Context of Property, Event and Action of thing
+        /// </summary>
         [ThingProperty(Ignore = true)]
-        public Context ThingContext { get; set; } = default!;
+        [JsonIgnore]
+        public ThingContext ThingContext { get; set; } = default!;
         
         /// <summary>
         /// URI for a schema repository which defines standard schemas for common "types" of device capabilities.
@@ -48,6 +53,11 @@ namespace Mozilla.IoT.WebThing
 
         #endregion
 
+        /// <summary>
+        /// Determine <see cref="Thing"/> the specified object is equal to current object.
+        /// </summary>
+        /// <param name="other">The <see cref="Thing"/> to comparer with current object.</param>
+        /// <returns>A <see cref="bool"/> indicating if the passed in object obj is Equal to this.</returns>
         public bool Equals(Thing other)
         {
             if (ReferenceEquals(null, other))
@@ -65,6 +75,11 @@ namespace Mozilla.IoT.WebThing
                    && Description == other.Description;
         }
 
+        /// <summary>
+        /// Determine whatever the specified object is equal to current object.
+        /// </summary>
+        /// <param name="obj">The <see cref="object"/> to comparer with current object.</param>
+        /// <returns>A <see cref="bool"/> indicating if the passed in object obj is Equal to this.</returns>
         public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
@@ -85,14 +100,23 @@ namespace Mozilla.IoT.WebThing
             return Equals((Thing) obj);
         }
 
+        /// <summary>
+        /// Get Hashcode.
+        /// </summary>
+        /// <returns>HashCode</returns>
         public override int GetHashCode() 
             => HashCode.Combine(Context, Title, Description);
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// When Property Change.
+        /// </summary>
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName]string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        /// <summary>
+        /// Invoke event <see cref="PropertyChanged"/>
+        /// </summary>
+        /// <param name="propertyName">Name of Property that has changed.</param>
+        protected virtual void OnPropertyChanged([CallerMemberName]string? propertyName = null) 
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

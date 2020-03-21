@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -70,7 +71,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 }
             }
             
-            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object> {[propertyName] = property.GetValue() }, jsonOptions)
+            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object?> {[propertyName] = property.GetValue() }, jsonOptions)
                 .ConfigureAwait(false);
         }
     }

@@ -9,19 +9,29 @@ using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Events
 {
+    /// <inheritdoc /> 
     public class EventIntercept : IEventIntercept
     {
+        /// <summary>
+        /// The <see cref="EventCollection"/> created, map by action name.
+        /// </summary>
         public Dictionary<string, EventCollection> Events { get; }
+        
         private readonly Queue<EventInfo> _eventToBind = new Queue<EventInfo>();
 
         private readonly ConstructorInfo _createThing = typeof(Event).GetConstructors(BindingFlags.Public | BindingFlags.Instance)[0];
         private readonly MethodInfo _getContext = typeof(Thing).GetProperty(nameof(Thing.ThingContext))?.GetMethod!;
-        private readonly MethodInfo _getEvent = typeof(Context).GetProperty(nameof(Context.Events))?.GetMethod!;
+        private readonly MethodInfo _getEvent = typeof(ThingContext).GetProperty(nameof(ThingContext.Events))?.GetMethod!;
         private readonly MethodInfo _getItem = typeof(Dictionary<string, EventCollection>).GetMethod("get_Item")!;
         private readonly MethodInfo _addItem = typeof(EventCollection).GetMethod(nameof(EventCollection.Enqueue))!;
         private readonly ThingOption _options;
         private readonly TypeBuilder _builder;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="EventIntercept"/>.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="options"></param>
         public EventIntercept(TypeBuilder builder, ThingOption options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -31,11 +41,13 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
                 : new Dictionary<string, EventCollection>();
         }
 
+        /// <inheritdoc />
         public void Before(Thing thing)
         {
             
         }
 
+        /// <inheritdoc />
         public void After(Thing thing)
         {
             var type = _builder.CreateType()!;
@@ -46,6 +58,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Events
             }
         }
 
+        /// <inheritdoc />
         public void Visit(Thing thing, EventInfo @event, ThingEventAttribute? eventInfo)
         {
             _eventToBind.Enqueue(@event);

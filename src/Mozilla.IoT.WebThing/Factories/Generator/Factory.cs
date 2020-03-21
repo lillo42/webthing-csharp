@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator
 {
-    internal class Factory
+    internal static class Factory
     {
         public static TypeBuilder CreateTypeBuilder(string typeName, string baseName, Type? @interface, TypeAttributes typeAttributes)
         {

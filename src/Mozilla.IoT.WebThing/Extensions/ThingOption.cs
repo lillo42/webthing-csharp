@@ -3,16 +3,40 @@ using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
+    /// <summary>
+    /// The thing option.
+    /// </summary>
     public class ThingOption
     {
+        /// <summary>
+        /// Max size of <see cref="Events.EventCollection"/>.
+        /// The default value is 10.
+        /// </summary>
         public int MaxEventSize { get; set; } = 10;
+        
+        /// <summary>
+        /// If should ignore case to deserialize.
+        /// The default value is true.
+        /// </summary>
         public bool IgnoreCase { get; set; } = true;
+        
+        /// <summary>
+        /// If when serialize thing should serialize for use thing adapter.
+        /// The default value is false.
+        /// </summary>
         public bool UseThingAdapterUrl { get; set; }
+        
+        /// <summary>
+        /// Specifies the policy used to convert a property's name on an object to another format, such as camel-casing.
+        /// The resulting property name is expected to match the JSON payload during deserialization, and
+        /// will be used when writing the property name during serialization.
+        /// </summary>
         public JsonNamingPolicy PropertyNamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
 
-        private JsonSerializerOptions _options;
+        private JsonSerializerOptions? _options;
         private readonly object _locker = new object();
-        public JsonSerializerOptions ToJsonSerializerOptions()
+        
+        internal JsonSerializerOptions ToJsonSerializerOptions()
         {
             if (_options == null)
             {
@@ -29,12 +53,12 @@ namespace Mozilla.IoT.WebThing.Extensions
                         };
 
                         _options.Converters.Add(new ThingConverter(this));
-                        _options.Converters.Add(new StatusConverter());
+                        _options.Converters.Add(new ActionStatusConverter());
                     }
                 }
             }
 
-            return _options;
+            return _options!;
         }
     }
 }

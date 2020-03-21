@@ -31,7 +31,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
             logger.LogInformation("Found Thing with {counter} properties. [Thing: {name}]", thing.ThingContext.Properties.Count, thing.Name);
             
-            var properties = new Dictionary<string, object>();
+            var properties = new Dictionary<string, object?>();
             
             foreach (var (propertyName, property) in thing.ThingContext.Properties)
             {

@@ -2,6 +2,7 @@
 using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
+using Mozilla.IoT.WebThing.Properties;
 using Mozilla.IoT.WebThing.Properties.Number;
 using Xunit;
 

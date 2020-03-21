@@ -3,15 +3,25 @@ using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Properties.Boolean
 {
+    /// <summary>
+    /// Represent <see cref="bool"/> property.
+    /// </summary>
     public readonly struct PropertyBoolean : IProperty
     {
         private readonly Thing _thing;
-        private readonly Func<Thing, object> _getter;
-        private readonly Action<Thing, object> _setter;
+        private readonly Func<Thing, object?> _getter;
+        private readonly Action<Thing, object?> _setter;
 
         private readonly bool _isNullable;
 
-        public PropertyBoolean(Thing thing, Func<Thing, object> getter, Action<Thing, object> setter, bool isNullable)
+        /// <summary>
+        /// Initialize a new instance of <see cref="PropertyBoolean"/>.
+        /// </summary>
+        /// <param name="thing">The <see cref="Thing"/>.</param>
+        /// <param name="getter">The method to get property.</param>
+        /// <param name="setter">The method to set property.</param>
+        /// <param name="isNullable">If property accepts null value.</param>
+        public PropertyBoolean(Thing thing, Func<Thing, object?> getter, Action<Thing, object?> setter, bool isNullable)
         {
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
             _getter = getter ?? throw new ArgumentNullException(nameof(getter));
@@ -19,9 +29,11 @@ namespace Mozilla.IoT.WebThing.Properties.Boolean
             _isNullable = isNullable;
         }
 
-        public object GetValue() 
+        /// <inheritdoc/>
+        public object? GetValue() 
             => _getter(_thing);
 
+        /// <inheritdoc/>
         public SetPropertyResult SetValue(JsonElement element)
         {
             if (_isNullable && element.ValueKind == JsonValueKind.Null)

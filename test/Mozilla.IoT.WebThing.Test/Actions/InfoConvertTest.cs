@@ -13,13 +13,13 @@ namespace Mozilla.IoT.WebThing.Test.Actions
     {
         private readonly Fixture _fixture;
         private readonly Dictionary<string, IActionParameter> _parameters;
-        private readonly ActionInfoConvert _convert;
+        private readonly DictionaryInputConvert _convert;
 
         public ActionInfoConvertTest()
         {
             _fixture = new Fixture();
             _parameters = new Dictionary<string, IActionParameter>(StringComparer.InvariantCultureIgnoreCase);
-            _convert = new ActionInfoConvert(_parameters);
+            _convert = new DictionaryInputConvert(_parameters);
         }
 
         [Fact]

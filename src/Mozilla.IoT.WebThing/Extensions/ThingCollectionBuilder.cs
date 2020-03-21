@@ -11,15 +11,17 @@ using Mozilla.IoT.WebThing.Factories.Generator.Properties;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
+    /// <inheritdoc />
     public class ThingCollectionBuilder : IThingCollectionBuilder
     {
         private readonly IServiceCollection _service;
 
-        public ThingCollectionBuilder(IServiceCollection service)
+        internal ThingCollectionBuilder(IServiceCollection service)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
+        /// <inheritdoc />
         public IThingCollectionBuilder AddThing<T>() 
             where T : Thing
         {
@@ -27,7 +29,8 @@ namespace Mozilla.IoT.WebThing.Extensions
             _service.AddSingleton(ConfigureThing<T>);
             return this;
         }
-
+        
+        /// <inheritdoc />
         public IThingCollectionBuilder AddThing<T>(T thing) 
             where T : Thing
         {
@@ -67,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 actions
             });
 
-            thing.ThingContext = new Context(converter.Create(), 
+            thing.ThingContext = new ThingContext(converter.Create(), 
                 events.Events,
                 actions.Actions,
                 properties.Properties);

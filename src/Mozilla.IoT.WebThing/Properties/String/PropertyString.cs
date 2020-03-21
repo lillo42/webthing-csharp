@@ -5,19 +5,33 @@ using System.Text.RegularExpressions;
 
 namespace Mozilla.IoT.WebThing.Properties.String
 {
+    /// <summary>
+    /// Represent <see cref="string"/> property.
+    /// </summary>
     public readonly struct PropertyString : IProperty
     {
         private readonly Thing _thing;
-        private readonly Func<Thing, object> _getter;
-        private readonly Action<Thing, object> _setter;
+        private readonly Func<Thing, object?> _getter;
+        private readonly Action<Thing, object?> _setter;
 
         private readonly bool _isNullable;
         private readonly int? _minimum;
         private readonly int? _maximum;
         private readonly string[]? _enums;
-        private readonly Regex _pattern;
+        private readonly Regex? _pattern;
 
-        public PropertyString(Thing thing, Func<Thing, object> getter, Action<Thing, object> setter, 
+        /// <summary>
+        /// Initialize a new instance of <see cref="PropertyString"/>.
+        /// </summary>
+        /// <param name="thing">The <see cref="Thing"/>.</param>
+        /// <param name="getter">The method to get property.</param>
+        /// <param name="setter">The method to set property.</param>
+        /// <param name="isNullable">If property accepted null value.</param>
+        /// <param name="minimum">The minimum length of string to be assign.</param>
+        /// <param name="maximum">The maximum length of string to be assign.</param>
+        /// <param name="pattern">The pattern of string to be assign.</param>
+        /// <param name="enums">The possible values this property could have.</param>
+        public PropertyString(Thing thing, Func<Thing, object?> getter, Action<Thing, object?> setter, 
              bool isNullable, int? minimum, int? maximum, string? pattern, string[]? enums)
         {
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
@@ -30,9 +44,11 @@ namespace Mozilla.IoT.WebThing.Properties.String
             _pattern = pattern != null ? new Regex(pattern, RegexOptions.Compiled) : null;
         }
 
-        public object GetValue() 
+        /// <inheritdoc/>
+        public object? GetValue() 
             => _getter(_thing);
 
+        /// <inheritdoc/>
         public SetPropertyResult SetValue(JsonElement element)
         {
             if (_isNullable && element.ValueKind == JsonValueKind.Null)

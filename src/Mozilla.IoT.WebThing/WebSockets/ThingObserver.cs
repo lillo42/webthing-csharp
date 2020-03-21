@@ -10,14 +10,15 @@ using Mozilla.IoT.WebThing.Events;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public class ThingObserver
+    
+    internal class ThingObserver
     {
         private readonly ILogger<ThingObserver> _logger;
         private readonly Thing _thing;
         private readonly JsonSerializerOptions _options;
         private readonly System.Net.WebSockets.WebSocket _socket;
         private readonly CancellationToken _cancellation;
-
+        
         public ThingObserver(ILogger<ThingObserver> logger, 
             JsonSerializerOptions options, 
             System.Net.WebSockets.WebSocket socket, 
@@ -33,8 +34,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
         
         public IEnumerable<string> EventsBind { get; } = new HashSet<string>();
         
-        public async void OnEvenAdded(object sender, Event @event)
+        public async void OnEvenAdded(object? sender, Event @event)
         {
+            if (sender == null)
+            {
+                return;
+            }
+            
             _logger.LogInformation("Event add received, going to notify Web Socket");
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("event", 
                     new Dictionary<string, object>
@@ -45,7 +51,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
-
+        
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
         {
             var data = _thing.ThingContext.Properties[property.PropertyName];
@@ -60,7 +66,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
-
+        
         public async void OnActionChange(object sender, ActionInfo action)
         {
             _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.Status);
@@ -73,5 +79,4 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 .ConfigureAwait(false);
         }
     }
-    
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -17,16 +16,26 @@ using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
 {
+    /// <inheritdoc />
     public class ActionIntercept : IActionIntercept
     {
         private const MethodAttributes s_getSetAttributes =
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
-        private static readonly ConstructorInfo s_valueTask = typeof(ValueTask).GetConstructor(new[] {typeof(Task)});
+        private static readonly ConstructorInfo s_valueTask = typeof(ValueTask).GetConstructor(new[] {typeof(Task)})!;
         private readonly ModuleBuilder _moduleBuilder;
         private readonly ThingOption _option;
+        
+        /// <summary>
+        /// The <see cref="ActionCollection"/> created, map by action name.
+        /// </summary>
         public  Dictionary<string, ActionCollection> Actions { get; }
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="ActionIntercept"/>.
+        /// </summary>
+        /// <param name="moduleBuilder"></param>
+        /// <param name="option"></param>
         public ActionIntercept(ModuleBuilder moduleBuilder, ThingOption option)
         {
             _option = option;
@@ -35,17 +44,20 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 : new Dictionary<string, ActionCollection>();
         }
 
+        /// <inheritdoc/> 
         public void Before(Thing thing)
         {
         }
 
+        /// <inheritdoc/> 
         public void After(Thing thing)
         {
         }
 
-        public void Intercept(Thing thing, MethodInfo action, ThingActionAttribute? actionInfo)
+        /// <inheritdoc/> 
+        public void Intercept(Thing thing, MethodInfo action, ThingActionAttribute? actionInformation)
         {
-            var name = actionInfo?.Name ?? action.Name;
+            var name = actionInformation?.Name ?? action.Name;
             var thingType = thing.GetType();
             
             var inputBuilder = CreateInput(action);
@@ -53,7 +65,8 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             var factory = CreateActionInfoFactory(actionInfoBuilder, inputBuilder, inputProperty);
             var parameters = GetParameters(action);
             
-            Actions.Add(name, new ActionCollection(new ActionInfoConvert(parameters), (IActionInfoFactory)Activator.CreateInstance(factory)));
+            Actions.Add(name, new ActionCollection(new DictionaryInputConvert(parameters), 
+                (IActionInfoFactory)Activator.CreateInstance(factory)!));
         }
 
         private TypeBuilder CreateInput(MethodInfo action)
@@ -91,7 +104,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             return (actionInfo, input);
         }
 
-        private TypeBuilder CreateActionInfoFactory(TypeBuilder actionInfo, TypeBuilder inputType, PropertyInfo inputProperty)
+        private TypeBuilder CreateActionInfoFactory(Type actionInfo, Type inputType, PropertyInfo inputProperty)
         {
             var actionInfoFactory = _moduleBuilder.DefineType($"{actionInfo.Name}Factory",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
@@ -113,27 +126,20 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 generator.SetProperty(property);
             }
             
-            generator.Call(inputProperty.SetMethod);
+            generator.Call(inputProperty.SetMethod!);
             generator.Emit(OpCodes.Ret);
 
             actionInfoFactory.CreateType();
             return actionInfoFactory;
         }
 
-        private static void CreateInternalExecuteAsync(MethodInfo action, TypeBuilder actionInfo, TypeBuilder input, PropertyBuilder inputProperty, Type thingType)
+        private static void CreateInternalExecuteAsync(MethodInfo action, TypeBuilder actionInfo, TypeBuilder input, PropertyInfo inputProperty, Type thingType)
         {
             var execute = actionInfo.DefineMethod("InternalExecuteAsync",
                 MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.Virtual,
                     typeof(ValueTask), new [] { typeof(Thing), typeof(IServiceProvider) });
 
             var generator = execute.GetILGenerator();
-
-            LocalBuilder valueTask = null;
-            if (action.ReturnType != typeof(Task))
-            {
-                valueTask = generator.DeclareLocal(typeof(ValueTask));
-            }
-            
             generator.CastFirstArg(thingType);
             
             var inputProperties = input.GetProperties();
@@ -152,7 +158,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 else
                 {
                     var property = inputProperties[counter++];
-                    generator.LoadFromInput(inputProperty.GetMethod, property.GetMethod);
+                    generator.LoadFromInput(inputProperty.GetMethod!, property.GetMethod!);
                 }
             }
             
@@ -167,6 +173,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
             }
             else
             {
+                var valueTask = generator.DeclareLocal(typeof(ValueTask));
                 generator.Return(valueTask);
             }
         }
@@ -192,17 +199,17 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 {
                     actionParameter = new ParameterString(isNullable,
                         validation.MinimumLength, validation.MaximumLength, validation.Pattern,
-                        validation.Enums?.Select(Convert.ToString).ToArray());
+                        validation.Enums?.Select(Convert.ToString).ToArray()!);
                 }
                 else if (parameterType == typeof(Guid))
                 {
                     actionParameter = new ParameterGuid(isNullable,
-                        validation.Enums?.Select(x => Guid.Parse(x.ToString())).ToArray());
+                        validation.Enums?.Select(x => Guid.Parse(x.ToString()!)).ToArray());
                 }
                 else if (parameterType == typeof(TimeSpan))
                 {
                     actionParameter = new ParameterTimeSpan(isNullable,
-                        validation.Enums?.Select(x => TimeSpan.Parse(x.ToString())).ToArray());
+                        validation.Enums?.Select(x => TimeSpan.Parse(x.ToString()!)).ToArray());
                 }
                 else if (parameterType == typeof(DateTime))
                 {
@@ -212,7 +219,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
                 else if (parameterType == typeof(DateTimeOffset))
                 {
                     actionParameter = new ParameterDateTimeOffset(isNullable,
-                        validation.Enums?.Select(x => DateTimeOffset.Parse(x.ToString())).ToArray());
+                        validation.Enums?.Select(x => DateTimeOffset.Parse(x.ToString()!)).ToArray());
                 }
                 else
                 {
@@ -223,116 +230,116 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Actions
 
                     if (validation.ExclusiveMinimum.HasValue)
                     {
-                        minimum = validation.ExclusiveMinimum.Value + 1;
+                        minimum = validation.ExclusiveMinimum!.Value + 1;
                     }
 
                     if (validation.ExclusiveMaximum.HasValue)
                     {
-                        maximum = validation.ExclusiveMaximum.Value - 1;
+                        maximum = validation.ExclusiveMaximum!.Value - 1;
                     }
 
                     if (parameterType == typeof(byte))
                     {
-                        var min = minimum.HasValue ? new byte?(Convert.ToByte(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new byte?(Convert.ToByte(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new byte?(Convert.ToByte(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new byte?(Convert.ToByte(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterByte(isNullable,
                             min, max, multi, enums?.Select(Convert.ToByte).ToArray());
                     }
                     else if (parameterType == typeof(sbyte))
                     {
-                        var min = minimum.HasValue ? new sbyte?(Convert.ToSByte(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new sbyte?(Convert.ToSByte(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new sbyte?(Convert.ToSByte(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new sbyte?(Convert.ToSByte(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new sbyte?(Convert.ToSByte(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new sbyte?(Convert.ToSByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterSByte(isNullable,
                             min, max, multi, enums?.Select(Convert.ToSByte).ToArray());
                     }
                     else if (parameterType == typeof(short))
                     {
-                        var min = minimum.HasValue ? new short?(Convert.ToInt16(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new short?(Convert.ToInt16(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new short?(Convert.ToInt16(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new short?(Convert.ToInt16(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new short?(Convert.ToInt16(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new short?(Convert.ToInt16(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterShort(isNullable,
                             min, max, multi, enums?.Select(Convert.ToInt16).ToArray());
                     }
                     else if (parameterType == typeof(ushort))
                     {
-                        var min = minimum.HasValue ? new ushort?(Convert.ToUInt16(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new ushort?(Convert.ToUInt16(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new ushort?(Convert.ToUInt16(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new ushort?(Convert.ToUInt16(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterUShort(isNullable,
                             min, max, multi, enums?.Select(Convert.ToUInt16).ToArray());
                     }
                     else if (parameterType == typeof(int))
                     {
-                        var min = minimum.HasValue ? new int?(Convert.ToInt32(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new int?(Convert.ToInt32(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new int?(Convert.ToInt32(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new int?(Convert.ToInt32(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new int?(Convert.ToInt32(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new int?(Convert.ToInt32(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterInt(isNullable,
                             min, max, multi, enums?.Select(Convert.ToInt32).ToArray());
                     }
                     else if (parameterType == typeof(uint))
                     {
-                        var min = minimum.HasValue ? new uint?(Convert.ToUInt32(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new uint?(Convert.ToUInt32(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new uint?(Convert.ToUInt32(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new uint?(Convert.ToUInt32(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new uint?(Convert.ToUInt32(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new uint?(Convert.ToUInt32(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterUInt(isNullable,
                             min, max, multi, enums?.Select(Convert.ToUInt32).ToArray());
                     }
                     else if (parameterType == typeof(long))
                     {
-                        var min = minimum.HasValue ? new long?(Convert.ToInt64(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new long?(Convert.ToInt64(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new long?(Convert.ToInt64(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new long?(Convert.ToInt64(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new long?(Convert.ToInt64(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new long?(Convert.ToInt64(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterLong(isNullable,
                             min, max, multi, enums?.Select(Convert.ToInt64).ToArray());
                     }
                     else if (parameterType == typeof(ulong))
                     {
-                        var min = minimum.HasValue ? new ulong?(Convert.ToUInt64(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new ulong?(Convert.ToUInt64(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new ulong?(Convert.ToUInt64(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new ulong?(Convert.ToUInt64(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterULong(isNullable,
                             min, max, multi, enums?.Select(Convert.ToUInt64).ToArray());
                     }
                     else if (parameterType == typeof(float))
                     {
-                        var min = minimum.HasValue ? new float?(Convert.ToSingle(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new float?(Convert.ToSingle(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new float?(Convert.ToSingle(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new float?(Convert.ToSingle(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new float?(Convert.ToSingle(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new float?(Convert.ToSingle(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterFloat(isNullable,
                             min, max, multi, enums?.Select(Convert.ToSingle).ToArray());
                     }
                     else if (parameterType == typeof(double))
                     {
-                        var min = minimum.HasValue ? new double?(Convert.ToDouble(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new double?(Convert.ToDouble(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new double?(Convert.ToDouble(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new double?(Convert.ToDouble(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new double?(Convert.ToDouble(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new double?(Convert.ToDouble(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterDouble(isNullable,
                             min, max, multi, enums?.Select(Convert.ToDouble).ToArray());
                     }
                     else
                     {
-                        var min = minimum.HasValue ? new decimal?(Convert.ToDecimal(minimum.Value)) : null;
-                        var max = maximum.HasValue ? new decimal?(Convert.ToDecimal(maximum.Value)) : null;
-                        var multi = multipleOf.HasValue ? new decimal?(Convert.ToDecimal(multipleOf.Value)) : null;
+                        var min = minimum.HasValue ? new decimal?(Convert.ToDecimal(minimum!.Value)) : null;
+                        var max = maximum.HasValue ? new decimal?(Convert.ToDecimal(maximum!.Value)) : null;
+                        var multi = multipleOf.HasValue ? new decimal?(Convert.ToDecimal(multipleOf!.Value)) : null;
 
                         actionParameter = new ParameterDecimal(isNullable,
                             min, max, multi, enums?.Select(Convert.ToDecimal).ToArray());
                     }
                 }
 
-                parameters.Add(parameter.Name, actionParameter);
+                parameters.Add(parameter.Name!, actionParameter);
             }
 
             return parameters;

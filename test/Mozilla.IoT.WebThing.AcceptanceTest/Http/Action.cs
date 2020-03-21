@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.TestHost;
+using Mozilla.IoT.WebThing.Actions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -212,7 +213,7 @@ namespace Mozilla.IoT.WebThing.AcceptanceTest.Http
             
             json.Href.Should().StartWith("/things/lamp/actions/longRun/");
             json.Status.Should().NotBeNullOrEmpty();
-            json.Status.Should().Be(Status.Completed.ToString().ToLower());
+            json.Status.Should().Be(ActionStatus.Completed.ToString().ToLower());
             json.TimeRequested.Should().BeBefore(DateTime.UtcNow);
             json.TimeCompleted.Should().NotBeNull();
             json.TimeCompleted.Should().BeBefore(DateTime.UtcNow);

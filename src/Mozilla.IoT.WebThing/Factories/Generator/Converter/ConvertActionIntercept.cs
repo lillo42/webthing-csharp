@@ -40,7 +40,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             }
         }
 
-        public void Intercept(Thing thing, MethodInfo action, ThingActionAttribute? actionInfo)
+        public void Intercept(Thing thing, MethodInfo action, ThingActionAttribute? actionInformation)
         {
             if (!_isObjectStart)
             {
@@ -48,15 +48,15 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _isObjectStart = true;
             }
 
-            var name = actionInfo?.Name ?? action.Name;
+            var name = actionInformation?.Name ?? action.Name;
 
             _jsonWriter.StartObject(name);
 
-            if (actionInfo != null)
+            if (actionInformation != null)
             {
-                _jsonWriter.PropertyWithNullableValue("Title", actionInfo.Title);
-                _jsonWriter.PropertyWithNullableValue("Description", actionInfo.Description);
-                _jsonWriter.PropertyType("@type", actionInfo.Type);
+                _jsonWriter.PropertyWithNullableValue("Title", actionInformation.Title);
+                _jsonWriter.PropertyWithNullableValue("Description", actionInformation.Description);
+                _jsonWriter.PropertyType("@type", actionInformation.Type);
             }
 
             var parameters = action.GetParameters();
@@ -123,10 +123,10 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _jsonWriter.EndObject();
                 _jsonWriter.EndObject();
             }
-            else if (actionInfo?.Type != null)
+            else if (actionInformation?.Type != null)
             {
                 _jsonWriter.StartObject("Input");
-                _jsonWriter.PropertyType("@type", actionInfo.Type);
+                _jsonWriter.PropertyType("@type", actionInformation.Type);
                 _jsonWriter.EndObject();
             }
 

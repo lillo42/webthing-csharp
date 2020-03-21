@@ -4,18 +4,28 @@ using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Actions.Parameters.String
 {
+    /// <summary>
+    /// Represent <see cref="Guid"/> action parameter.
+    /// </summary>
     public readonly struct ParameterGuid : IActionParameter
     {
         private readonly Guid[]? _enums;
 
+        /// <summary>
+        /// Initialize a new instance of <see cref="ParameterDateTime"/>.
+        /// </summary>
+        /// <param name="isNullable">If action parameter accepts null value.</param>
+        /// <param name="enums">The possible values this action parameter can have.</param>
         public ParameterGuid(bool isNullable, Guid[]? enums)
         {
             CanBeNull = isNullable;
             _enums = enums;
         }
 
+        /// <inheritdoc/>
         public bool CanBeNull { get; }
 
+        /// <inheritdoc/>
         public bool TryGetValue(JsonElement element, out object? value)
         {
             value = null;
@@ -29,7 +39,7 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
                 return false;
             }
 
-            if (!Guid.TryParse(element.GetString(), out var jsonValue))
+            if (!element.TryGetGuid(out var jsonValue))
             {
                 return false;
             }

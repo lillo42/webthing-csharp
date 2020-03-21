@@ -8,6 +8,7 @@ using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Factories.Generator.Events;
+using Mozilla.IoT.WebThing.Properties;
 using NSubstitute;
 using Xunit;
 
@@ -33,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             CodeGeneratorFactory.Generate(thing, new []{ eventFactory });
             
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
+            thing.ThingContext = new ThingContext(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
                 new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());
@@ -76,7 +77,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             CodeGeneratorFactory.Generate(thing, new []{ eventFactory });
             
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
+            thing.ThingContext = new ThingContext(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
                 new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());
@@ -96,7 +97,7 @@ namespace Mozilla.IoT.WebThing.Test.Generator
             
             CodeGeneratorFactory.Generate(thing, new []{ eventFactory });
             
-            thing.ThingContext = new Context(Substitute.For<IThingConverter>(),
+            thing.ThingContext = new ThingContext(Substitute.For<IThingConverter>(),
                 eventFactory.Events,
                 new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());

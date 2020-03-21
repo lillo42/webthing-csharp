@@ -13,31 +13,42 @@ using Mozilla.IoT.WebThing.Properties.Number;
 
 namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
 {
+    /// <inheritdoc /> 
     public class PropertiesIntercept : IPropertyIntercept
     {
+        /// <summary>
+        /// The <see cref="IProperty"/> created, map by action name.
+        /// </summary>
         public Dictionary<string, IProperty> Properties { get; }
         
+        /// <summary>
+        /// Initialize a new instance of <see cref="PropertiesIntercept"/>.
+        /// </summary>
+        /// <param name="option">The <see cref="ThingOption"/>.</param>
         public PropertiesIntercept(ThingOption option)
         {
             Properties = option.IgnoreCase ? new Dictionary<string, IProperty>(StringComparer.InvariantCultureIgnoreCase) 
                 : new Dictionary<string, IProperty>();
         }
         
+        /// <inheritdoc /> 
         public void Before(Thing thing)
         {
             
         }
         
+        /// <inheritdoc /> 
         public void After(Thing thing)
         {
             
         }
         
-        public void Intercept(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
+        /// <inheritdoc /> 
+        public void Visit(Thing thing, PropertyInfo propertyInfo, ThingPropertyAttribute? propertyAttribute)
         {
             var propertyName = propertyAttribute?.Name ?? propertyInfo.Name;
 
-            var isReadOnly = !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic ||
+            var isReadOnly = !propertyInfo.CanWrite || !propertyInfo.SetMethod!.IsPublic ||
                              (propertyAttribute != null && propertyAttribute.IsReadOnly);
 
             var getter = GetGetMethod(propertyInfo);
@@ -64,17 +75,17 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             {
                 property = new PropertyString(thing, getter, setter, isNullable,
                     validation.MinimumLength, validation.MaximumLength, validation.Pattern,
-                    validation.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray()!);
             }
             else if (propertyType == typeof(Guid))
             {
                 property = new PropertyGuid(thing, getter, setter, isNullable,
-                    validation.Enums?.Where(x => x != null).Select(x=> Guid.Parse(x.ToString())).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(x=> Guid.Parse(x.ToString()!)).ToArray());
             }
             else if (propertyType == typeof(TimeSpan))
             {
                 property = new PropertyTimeSpan(thing, getter, setter, isNullable,
-                    validation.Enums?.Where(x => x != null).Select(x=> TimeSpan.Parse(x.ToString())).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(x=> TimeSpan.Parse(x.ToString()!)).ToArray());
             }
             else if (propertyType == typeof(DateTime))
             {
@@ -84,7 +95,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             else if (propertyType == typeof(DateTimeOffset))
             {
                 property = new PropertyDateTimeOffset(thing, getter, setter, isNullable,
-                    validation.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString())).ToArray());
+                    validation.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString()!)).ToArray());
             }
             else
             {
@@ -220,7 +231,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
         private static Func<object, object> GetGetMethod(PropertyInfo property)
         {
             var instance = Expression.Parameter(typeof(object), "instance");
-            var instanceCast = property.DeclaringType.IsValueType ? 
+            var instanceCast = property.DeclaringType!.IsValueType ? 
                 Expression.Convert(instance, property.DeclaringType) : Expression.TypeAs(instance, property.DeclaringType);
             
             var call = Expression.Call(instanceCast, property.GetGetMethod());
@@ -229,20 +240,20 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Properties
             return Expression.Lambda<Func<object, object>>(typeAs, instance).Compile();
         }
         
-        private static Action<object, object> GetSetMethod(PropertyInfo property)
+        private static Action<object, object?> GetSetMethod(PropertyInfo property)
         {
             var instance = Expression.Parameter(typeof(object), "instance");
             var value = Expression.Parameter(typeof(object), "value");
 
             // value as T is slightly faster than (T)value, so if it's not a value type, use that
-            var instanceCast = property.DeclaringType.IsValueType ? 
+            var instanceCast = property.DeclaringType!.IsValueType ? 
                 Expression.Convert(instance, property.DeclaringType) : Expression.TypeAs(instance, property.DeclaringType);
             
             var valueCast = property.PropertyType.IsValueType ? 
                 Expression.Convert(value, property.PropertyType) : Expression.TypeAs(value, property.PropertyType);
 
             var call = Expression.Call(instanceCast, property.GetSetMethod(), valueCast);
-            return Expression.Lambda<Action<object, object>>(call, new[] {instance, value}).Compile();
+            return Expression.Lambda<Action<object, object>>(call, new[] {instance, value}).Compile()!;
         }
     }
 }

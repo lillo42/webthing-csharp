@@ -5,25 +5,30 @@ using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Converts
 {
+    /// <inheritdoc />
     public class ThingConverter : JsonConverter<Thing>
     {
-
         private readonly ThingOption _option;
+        
+         /// <inheritdoc />
         public ThingConverter(ThingOption option)
         {
             _option = option;
         }
         
+        /// <inheritdoc />
         public override bool CanConvert(Type typeToConvert)
         {
             return typeToConvert == typeof(Thing) || typeToConvert.IsSubclassOf(typeof(Thing));
         }
 
+        /// <inheritdoc />
         public override Thing Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc /> 
         public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options)
         {
             if (writer == null)

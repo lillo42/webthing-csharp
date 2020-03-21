@@ -37,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
 
                 foreach (var intercept in intercepts)
                 {
-                    intercept.Intercept(thing, property, information);
+                    intercept.Visit(thing, property, information);
                 }
             }
             
