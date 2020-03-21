@@ -49,6 +49,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 };
             });
 
+            service.AddScoped<ThingObservableResolver>();
+            service.AddScoped(provider => provider.GetService<ThingObservableResolver>().Observer);
+            
             service.AddSingleton<IWebSocketAction, RequestAction>();
             service.AddSingleton<IWebSocketAction, AddEventSubscription>();
             service.AddSingleton<IWebSocketAction, SetThingProperty>();
@@ -69,4 +72,8 @@ namespace Microsoft.Extensions.DependencyInjection
         }
     }
 
+    internal class ThingObservableResolver
+    {
+        public ThingObserver? Observer { get; set; }
+    }
 }
