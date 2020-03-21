@@ -58,6 +58,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Visitor
             type = type.GetUnderlyingType();
 
             return type == typeof(string)
+                   || type == typeof(char)
                    || type == typeof(bool)
                    || type == typeof(int)
                    || type == typeof(byte)

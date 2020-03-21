@@ -20,10 +20,10 @@ namespace Mozilla.IoT.WebThing.Test.Properties.Strings
         }
         
         #region No Nullable
-        private PropertyDateTimeOffset CreateNoNullable(DateTimeOffset[]? enums = null)
+        private PropertyDateTimeOffset CreateNoNullable(DateTimeOffset[] enums = null)
             => new PropertyDateTimeOffset(_thing, 
                 thing => ((DateTimeOffsetThing)thing).DateTimeOffset,
-                (thing, value) => ((DateTimeOffsetThing)thing).DateTimeOffset = (DateTimeOffset)value,
+                (thing, value) => ((DateTimeOffsetThing)thing).DateTimeOffset = (DateTimeOffset)value!,
                 false, enums);
 
         [Fact]

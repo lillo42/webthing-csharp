@@ -56,7 +56,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                 _jsonWriter.PropertyType("@type", eventInfo.Type);
             }
                 
-            _jsonWriter.PropertyWithNullableValue("type", GetJsonType(GetEventType(@event.EventHandlerType)).ToString().ToLower());
+            _jsonWriter.PropertyWithNullableValue("type", GetJsonType(GetEventType(@event.EventHandlerType)).ToString()!.ToLower());
                 
             _jsonWriter.StartArray("Links");
             _jsonWriter.StartObject();

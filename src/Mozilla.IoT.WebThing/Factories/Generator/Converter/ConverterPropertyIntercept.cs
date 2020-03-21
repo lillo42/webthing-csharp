@@ -61,20 +61,20 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     propertyAttribute.Title);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Description),
                     propertyAttribute.Description);
-                var readOnly = propertyAttribute.IsReadOnly || !propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic;
+                var readOnly = propertyAttribute.IsReadOnly || !propertyInfo.CanWrite || !propertyInfo.SetMethod!.IsPublic;
                 _jsonWriter.PropertyWithNullableValue("ReadOnly", readOnly);
 
                 if (propertyAttribute.IsWriteOnlyValue.HasValue)
                 {
                     _jsonWriter.PropertyWithNullableValue("WriteOnly", propertyAttribute.IsWriteOnlyValue.Value);
                 }
-                else if(!propertyInfo.CanRead || !propertyInfo.GetMethod.IsPublic)
+                else if(!propertyInfo.CanRead || !propertyInfo.GetMethod!.IsPublic)
                 {
                     _jsonWriter.PropertyWithNullableValue("WriteOnly", true);
                 }
                 
                 
-                _jsonWriter.PropertyWithNullableValue("Type", jsonType.ToString().ToLower());
+                _jsonWriter.PropertyWithNullableValue("Type", jsonType.ToString()!.ToLower());
                 _jsonWriter.PropertyEnum("@enum", propertyType, propertyAttribute.Enum);
                 _jsonWriter.PropertyWithNullableValue(nameof(ThingPropertyAttribute.Unit), propertyAttribute.Unit);
                 _jsonWriter.PropertyType("@type", propertyAttribute.Type);
@@ -98,18 +98,18 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         propertyAttribute.MinimumLengthValue);
                     _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MaximumLength), propertyType,
                         propertyAttribute.MaximumLengthValue);
-                    _jsonWriter.PropertyString(nameof(ThingPropertyAttribute.Pattern), propertyType,
+                    _jsonWriter.PropertyString(nameof(ThingPropertyAttribute.Pattern),
                         propertyAttribute.Pattern);
                 }
             }
             else
             {
-                if (!propertyInfo.CanWrite || !propertyInfo.SetMethod.IsPublic)
+                if (!propertyInfo.CanWrite || !propertyInfo.SetMethod!.IsPublic)
                 {
                     _jsonWriter.PropertyWithNullableValue("ReadOnly", true);
                 }
                 
-                if (!propertyInfo.CanRead || !propertyInfo.GetMethod.IsPublic)
+                if (!propertyInfo.CanRead || !propertyInfo.GetMethod!.IsPublic)
                 {
                     _jsonWriter.PropertyWithNullableValue("WriteOnly", true);
                 }

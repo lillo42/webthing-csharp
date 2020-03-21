@@ -48,6 +48,9 @@ namespace Mozilla.IoT.WebThing.Attributes
         /// </summary>
         internal bool? IsWriteOnlyValue { get; set; }
 
+        /// <summary>
+        /// If property is write-only.
+        /// </summary>
         public bool IsWriteOnly
         {
             get => IsWriteOnlyValue.GetValueOrDefault();

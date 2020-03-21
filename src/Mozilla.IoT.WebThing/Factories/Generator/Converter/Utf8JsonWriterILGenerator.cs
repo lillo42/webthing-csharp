@@ -395,7 +395,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                     }
                     else
                     {
-                        var value = Convert.ToString(@enum);
+                        var value = Convert.ToString(@enum)!;
                         if (!set.Add(value))
                         {
                             continue;
@@ -647,7 +647,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             EndArray();
         }
         
-        public void PropertyString(string propertyName, Type propertyType, string? value)
+        public void PropertyString(string propertyName, string? value)
         {
             if (value == null)
             {

@@ -85,7 +85,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                         throw new ArgumentException();
                     }
 
-                    _jsonWriter.PropertyWithValue("Type", jsonType.ToString().ToLower());
+                    _jsonWriter.PropertyWithValue("Type", jsonType.ToString()!.ToLower());
                     var parameterActionInfo = parameter.GetCustomAttribute<ThingParameterAttribute>();
 
                     if (parameterActionInfo != null)
@@ -112,7 +112,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
                                 parameterActionInfo.MinimumLengthValue);
                             _jsonWriter.PropertyNumber(nameof(ThingPropertyAttribute.MaximumLength), parameterType,
                                 parameterActionInfo.MaximumLengthValue);
-                            _jsonWriter.PropertyString(nameof(ThingPropertyAttribute.Pattern), parameterType,
+                            _jsonWriter.PropertyString(nameof(ThingPropertyAttribute.Pattern),
                                 parameterActionInfo.Pattern);
                         }
                     }

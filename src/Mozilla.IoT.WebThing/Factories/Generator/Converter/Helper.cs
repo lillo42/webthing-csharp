@@ -16,6 +16,7 @@ namespace Mozilla.IoT.WebThing.Factories.Generator.Converter
             type = Nullable.GetUnderlyingType(type) ?? type;
 
             if (type == typeof(string)
+                || type == typeof(char)
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset)
                 || type == typeof(Guid)

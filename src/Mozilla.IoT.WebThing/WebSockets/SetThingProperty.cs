@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         .ConfigureAwait(false);
                 }
 
-                switch (property.SetValue(jsonProperty.Value))
+                switch (property!.SetValue(jsonProperty.Value))
                 {
                     case SetPropertyResult.InvalidValue:
                     {

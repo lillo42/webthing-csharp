@@ -7,23 +7,23 @@ using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
 {
-    public class ParameterGuidTest
+    public class ParameterCharTest
     {
         private readonly Fixture _fixture;
 
-        public ParameterGuidTest()
+        public ParameterCharTest()
         {
             _fixture = new Fixture();
         }
         
         #region No Nullable
-        private static ParameterGuid CreateNoNullable(Guid[] enums = null)
-            => new ParameterGuid(false, enums);
+        private static ParameterChar CreateNoNullable(char[] enums = null)
+            => new ParameterChar(false, enums);
 
         [Fact]
         public void SetNoNullableWithValue()
         {
-            var value = _fixture.Create<Guid>();
+            var value = _fixture.Create<char>();
             var property = CreateNoNullable();
             var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out var jsonValue).Should().BeTrue();
@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         [Fact]
         public void SetNoNullableWithValueEnums()
         {
-            var values = _fixture.Create<Guid[]>();
+            var values = _fixture.Create<char[]>();
             var property = CreateNoNullable(values);
             foreach (var value in values)
             {
@@ -53,10 +53,10 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         
         [Theory]
         [InlineData(typeof(int))]
-        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(string))]
         public void TrySetNoNullableWitInvalidValue(Type type)
         {
-            var value = type == typeof(int) ? _fixture.Create<int>().ToString() : $@"""{_fixture.Create<DateTime>()}""";
+            var value = type == typeof(int) ? _fixture.Create<int>().ToString() : $@"""{_fixture.Create<string>()}""";
             var property = CreateNoNullable();
             var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {value} }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out _).Should().BeFalse();
@@ -65,22 +65,22 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         [Fact]
         public void TrySetNoNullableWithEnumValue()
         {
-            var values = _fixture.Create<Guid[]>();
+            var values = _fixture.Create<char[]>();
             var property = CreateNoNullable(values);
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<Guid>()}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<char>()}"" }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out _).Should().BeFalse();
         }
         #endregion
         
         #region Nullable
         
-        private static ParameterGuid CreateNullable(Guid[] enums = null)
-            => new ParameterGuid(true, enums);
+        private static ParameterChar CreateNullable(char[] enums = null)
+            => new ParameterChar(true, enums);
 
         [Fact]
         public void SetNullableWithValue()
         {
-            var value = _fixture.Create<Guid>();
+            var value = _fixture.Create<char>();
             var property = CreateNullable();
             var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out var jsonValue).Should().BeTrue();
@@ -99,7 +99,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         [Fact]
         public void SetNullableWithValueEnums()
         {
-            var values = _fixture.Create<Guid[]>();
+            var values = _fixture.Create<char[]>();
             var property = CreateNullable(values);
             foreach (var value in values)
             {
@@ -111,10 +111,10 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         
         [Theory]
         [InlineData(typeof(int))]
-        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(string))]
         public void TrySetNullableWitInvalidValue(Type type)
         {
-            var value = type == typeof(int) ? _fixture.Create<int>().ToString() : $@"""{_fixture.Create<DateTime>()}""";
+            var value = type == typeof(int) ? _fixture.Create<int>().ToString() : $@"""{_fixture.Create<string>()}""";
             var property = CreateNullable();
             var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {value} }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out _).Should().BeFalse();
@@ -123,9 +123,9 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         [Fact]
         public void TrySetNullableWitInvalidValueAndNotHaveValueInEnum()
         {
-            var values = _fixture.Create<Guid[]>();
+            var values = _fixture.Create<char[]>();
             var property = CreateNullable(values);
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<Guid>()}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<char>()}"" }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out _).Should().BeFalse();
         }
         

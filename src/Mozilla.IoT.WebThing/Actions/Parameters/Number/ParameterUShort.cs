@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace Mozilla.IoT.WebThing.Actions.Parameters.Number
 {
     /// <summary>
-    /// Represent <see cref="ushor"/> action parameter.
+    /// Represent <see cref="ushort"/> action parameter.
     /// </summary>
     public readonly struct ParameterUShort : IActionParameter
     {
