@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -55,6 +57,10 @@ namespace Microsoft.Extensions.DependencyInjection
             service.AddSingleton<IWebSocketAction, RequestAction>();
             service.AddSingleton<IWebSocketAction, AddEventSubscription>();
             service.AddSingleton<IWebSocketAction, SetThingProperty>();
+
+            service.AddTransient<IThingContextFactory, ThingContextFactory>();
+            service.AddTransient<IThingResponseBuilder, ThingResponseBuilder>();
+            service.AddTransient<IEventBuilder, EventBuilder>();
             
             service.AddSingleton(provider =>
             {

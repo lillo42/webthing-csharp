@@ -17,10 +17,22 @@ namespace Mozilla.IoT.WebThing.Extensions
 
         private static readonly MethodInfo s_getItem = typeof(Dictionary<string, object>).GetMethod("get_Item")!;
         
+        private static readonly Type s_stringArray = typeof(string[]);
+        private static readonly Type s_link = typeof(Link);
+        private static readonly ConstructorInfo s_linkerConstructor = typeof(Link).GetConstructors()[1];
+        
         #region Return
-        public static void Return(this ILGenerator generator, string value)
+        public static void Return(this ILGenerator generator, string? value)
         {
-            generator.Emit(OpCodes.Ldstr, value);
+            if (value == null)
+            {
+                generator.Emit(OpCodes.Ldnull);
+            }
+            else
+            {
+                generator.Emit(OpCodes.Ldstr, value);
+            }
+            
             generator.Emit(OpCodes.Ret);
         }
         
@@ -145,6 +157,48 @@ namespace Mozilla.IoT.WebThing.Extensions
             }
             
             generator.Emit(OpCodes.Newobj, constructor);
+        }
+
+
+        public static void NewObj(this ILGenerator generator, FieldBuilder field, ConstructorInfo constructor)
+        {
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Newobj, constructor);
+            generator.Emit(OpCodes.Stfld, field);
+        }
+        #endregion
+
+        #region Array
+
+        public static void NewLinkArray(this ILGenerator generator, FieldBuilder field, string href, string rel)
+        {
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldc_I4_1);
+            generator.Emit(OpCodes.Newarr, s_link);
+            generator.Emit(OpCodes.Dup);
+            generator.Emit(OpCodes.Ldc_I4_0);
+            generator.Emit(OpCodes.Ldstr,href);
+            generator.Emit(OpCodes.Ldstr, rel);
+            generator.Emit(OpCodes.Newobj,s_linkerConstructor);
+            generator.Emit(OpCodes.Stelem,s_link);
+            generator.Emit(OpCodes.Stfld, field);
+        }
+
+        public static void NewStringArray(this ILGenerator generator, FieldBuilder field, string[] values)
+        {
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldc_I4_S, values.Length);
+            generator.Emit(OpCodes.Newarr, s_stringArray);
+                
+            for (var i = 0; i < values.Length; i++)
+            {
+                generator.Emit(OpCodes.Dup);
+                generator.Emit(OpCodes.Ldc_I4_S, i);
+                generator.Emit(OpCodes.Ldstr, values[i]);
+                generator.Emit(OpCodes.Stelem_Ref);
+            }
+                
+            generator.Emit(OpCodes.Stfld, field);
         }
 
         #endregion
