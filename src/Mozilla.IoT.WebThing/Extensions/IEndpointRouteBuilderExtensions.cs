@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
-            endpoint.CreateApplicationBuilder().UseMiddleware<ThingAdapterMiddleware>();
+            endpoint.CreateApplicationBuilder()
+                .UseMiddleware<ThingAdapterMiddleware>();
             
             endpoint.MapGet("/", GetAllThings.InvokeAsync);
             endpoint.MapGet("/things", GetAllThings.InvokeAsync);

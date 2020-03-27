@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
@@ -61,8 +62,11 @@ namespace Microsoft.Extensions.DependencyInjection
             service.AddTransient<IThingContextFactory, ThingContextFactory>();
             service.AddTransient<IThingResponseBuilder, ThingResponseBuilder>();
             service.AddTransient<IEventBuilder, EventBuilder>();
+            service.AddTransient<IActionBuilder, ActionBuilder>();
             service.AddTransient<IPropertyBuilder, PropertyBuilder>();
+            
             service.AddSingleton<IPropertyFactory, PropertyFactory>();
+            service.AddSingleton<IActionParameterFactory, ActionParameterFactory>();
 
             
             service.AddSingleton(provider =>

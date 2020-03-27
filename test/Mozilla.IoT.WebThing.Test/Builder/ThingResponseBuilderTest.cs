@@ -59,7 +59,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         ""int"": {
             ""link"": [
                 {
-                    ""href"": ""/thing/event-thing/events/int"",
+                    ""href"": ""/things/event-thing/events/int"",
                     ""rel"": ""event""
                 }
             ]
@@ -70,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""unit"": ""milli"",
             ""link"": [
                 {
-                    ""href"": ""/thing/event-thing/events/test"",
+                    ""href"": ""/things/event-thing/events/test"",
                     ""rel"": ""event""
                 }
             ]
@@ -136,7 +136,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/bool"",
+                    ""href"": ""/things/property-thing/properties/bool"",
                     ""rel"": ""property""
                 }
             ]
@@ -146,7 +146,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/guid"",
+                    ""href"": ""/things/property-thing/properties/guid"",
                     ""rel"": ""property""
                 }
             ]
@@ -156,7 +156,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/timeSpan"",
+                    ""href"": ""/things/property-thing/properties/timeSpan"",
                     ""rel"": ""property""
                 }
             ]
@@ -166,7 +166,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/dateTime"",
+                    ""href"": ""/things/property-thing/properties/dateTime"",
                     ""rel"": ""property""
                 }
             ]
@@ -176,7 +176,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/dateTimeOffset"",
+                    ""href"": ""/things/property-thing/properties/dateTimeOffset"",
                     ""rel"": ""property""
                 }
             ]
@@ -186,7 +186,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/enum"",
+                    ""href"": ""/things/property-thing/properties/enum"",
                     ""rel"": ""property""
                 }
             ]
@@ -196,7 +196,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/string"",
+                    ""href"": ""/things/property-thing/properties/string"",
                     ""rel"": ""property""
                 }
             ]
@@ -206,7 +206,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/byte"",
+                    ""href"": ""/things/property-thing/properties/byte"",
                     ""rel"": ""property""
                 }
             ]
@@ -216,7 +216,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/sbyte"",
+                    ""href"": ""/things/property-thing/properties/sbyte"",
                     ""rel"": ""property""
                 }
             ]
@@ -226,7 +226,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/short"",
+                    ""href"": ""/things/property-thing/properties/short"",
                     ""rel"": ""property""
                 }
             ]
@@ -236,7 +236,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/ushort"",
+                    ""href"": ""/things/property-thing/properties/ushort"",
                     ""rel"": ""property""
                 }
             ]
@@ -246,7 +246,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/int"",
+                    ""href"": ""/things/property-thing/properties/int"",
                     ""rel"": ""property""
                 }
             ]
@@ -256,7 +256,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/uint"",
+                    ""href"": ""/things/property-thing/properties/uint"",
                     ""rel"": ""property""
                 }
             ]
@@ -266,7 +266,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/long"",
+                    ""href"": ""/things/property-thing/properties/long"",
                     ""rel"": ""property""
                 }
             ]
@@ -276,7 +276,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/ulong"",
+                    ""href"": ""/things/property-thing/properties/ulong"",
                     ""rel"": ""property""
                 }
             ]
@@ -286,7 +286,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/float"",
+                    ""href"": ""/things/property-thing/properties/float"",
                     ""rel"": ""property""
                 }
             ]
@@ -296,7 +296,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/double"",
+                    ""href"": ""/things/property-thing/properties/double"",
                     ""rel"": ""property""
                 }
             ]
@@ -306,7 +306,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ""isReadOnly"": false,
             ""link"": [
                 {
-                    ""href"": ""/thing/property-thing/properties/decimal"",
+                    ""href"": ""/things/property-thing/properties/decimal"",
                     ""rel"": ""property""
                 }
             ]
@@ -386,7 +386,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""isReadOnly"": false,
       ""link"": [
         {
-          ""href"": ""/thing/property-thing/properties/bool2"",
+          ""href"": ""/things/property-thing/properties/bool2"",
           ""rel"": ""property""
         }
       ]
@@ -396,7 +396,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""isReadOnly"": true,
       ""link"": [
         {
-          ""href"": ""/thing/property-thing/properties/guid2"",
+          ""href"": ""/things/property-thing/properties/guid2"",
           ""rel"": ""property""
         }
       ]
@@ -413,7 +413,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""enums"": [ ""test@outlook.com"", ""test@gmail.com"", ""test@tese.com""],
       ""link"": [
         {
-          ""href"": ""/thing/property-thing/properties/string2"",
+          ""href"": ""/things/property-thing/properties/string2"",
           ""rel"": ""property""
         }
       ]
@@ -429,7 +429,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""enums"": [1, 2, 3],
       ""link"": [
         {
-          ""href"": ""/thing/property-thing/properties/int2"",
+          ""href"": ""/things/property-thing/properties/int2"",
           ""rel"": ""property""
         }
       ]
@@ -445,7 +445,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""enums"": [1.1, 2.3 ,3],
       ""link"": [
         {
-          ""href"": ""/thing/property-thing/properties/double2"",
+          ""href"": ""/things/property-thing/properties/double2"",
           ""rel"": ""property""
         }
       ]
@@ -516,7 +516,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""noParameter"": {
         ""link"": [
           {
-            ""href"": ""/thing/action-thing/actions/noParameter"",
+            ""href"": ""/things/action-thing/actions/noParameter"",
             ""rel"": ""action""
           }
         ],
@@ -528,7 +528,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""withParameter"": {
         ""link"": [
           {
-            ""href"": ""/thing/action-thing/actions/withParameter"",
+            ""href"": ""/things/action-thing/actions/withParameter"",
             ""rel"": ""action""
           }
         ],
@@ -652,7 +652,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         ""description"": ""teste 2"",
         ""link"": [
           {
-            ""href"": ""/thing/action-thing/actions/test"",
+            ""href"": ""/things/action-thing/actions/test"",
             ""rel"": ""action""
           }
         ],
@@ -665,7 +665,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""withParameter"": {
         ""link"": [
           {
-            ""href"": ""/thing/action-thing/actions/withParameter"",
+            ""href"": ""/things/action-thing/actions/withParameter"",
             ""rel"": ""action""
           }
         ],

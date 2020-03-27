@@ -16,8 +16,8 @@ namespace Mozilla.IoT.WebThing.Factories
             Action<object, object?> setter, Func<object, object?> getter)
         {
             if(propertyType == typeof(bool))
-            {
-                 return new PropertyBoolean(thing, getter, setter, information.IsNullable);
+            { 
+                return new PropertyBoolean(thing, getter, setter, information.IsNullable);
             }
 
             if (propertyType == typeof(string))
