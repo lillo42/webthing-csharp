@@ -111,7 +111,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             AddTypeProperty(propertyInformation, attribute?.Type);
 
-            AddInformation(propertyInformation, information, ToJsonType(property.PropertyType));
+            AddInformation(propertyInformation, information, ToJsonType(property.PropertyType), true);
             var thingName = _option.PropertyNamingPolicy.ConvertName(_thing.Name);
             var propertyName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? property.Name);
             
@@ -206,13 +206,13 @@ namespace Mozilla.IoT.WebThing.Builders
                 parameterInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Unit)), attribute?.Unit);
             }
             
-            AddInformation(parameterInformation, information, ToJsonType(parameter.ParameterType));
+            AddInformation(parameterInformation, information, ToJsonType(parameter.ParameterType), false);
             var parameterName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? parameter.Name);
             
             _parameters.Add(parameterName, parameterInformation);
         }
 
-        private void AddInformation(Dictionary<string, object?> builder, Information information, JsonType jsonType)
+        private void AddInformation(Dictionary<string, object?> builder, Information information, JsonType jsonType, bool writeIsReadOnlu)
         {
             builder.Add("type", jsonType.ToString().ToLower());
             
@@ -220,9 +220,11 @@ namespace Mozilla.IoT.WebThing.Builders
             {
                 throw new InvalidOperationException($"Thing is null, call {nameof(SetThingOption)} before build");
             }
-            
-            
-            builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(Information.IsReadOnly)), information.IsReadOnly);
+
+            if (writeIsReadOnlu)
+            {
+                builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(Information.IsReadOnly)), information.IsReadOnly);
+            }
             
             switch(jsonType)
             {

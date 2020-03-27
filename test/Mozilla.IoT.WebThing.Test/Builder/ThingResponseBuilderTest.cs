@@ -51,7 +51,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             var response = _builder.Build();
             response.Should().NotBeNull();
 
-            var message = System.Text.Json.JsonSerializer.Serialize(response, response.GetType(), _option.ToJsonSerializerOptions());
+            var message = JsonSerializer.Serialize(response, response.GetType(), _option.ToJsonSerializerOptions());
             FluentAssertions.Json.JsonAssertionExtensions.Should(JToken.Parse(message))
                 .BeEquivalentTo(JToken.Parse(@"
 {
@@ -395,6 +395,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""type"": ""integer"",
       ""isReadOnly"": false,
       ""minimum"": 1,
+      ""maximum"": 100,
       ""enums"": [1, 2, 3],
       ""link"": [
         {
@@ -451,7 +452,300 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                     attribute.IsReadOnly, attribute.Name!, false);
             }
         }
+        
+        [Fact]
+        public void BuildWithActions()
+        {
+            var thing = new ActionThing();
+            
+            _builder
+                .SetThing(thing)
+                .SetThingOption(_option);
+            
+            Visit(thing.GetType());
+            
+            var response = _builder.Build();
+            response.Should().NotBeNull();
 
+            var message = JsonSerializer.Serialize(response, response.GetType(), _option.ToJsonSerializerOptions());
+            FluentAssertions.Json.JsonAssertionExtensions.Should(JToken.Parse(message))
+                .BeEquivalentTo(JToken.Parse(@"
+{
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""actions"": {
+      ""noParameter"": {
+        ""link"": [
+          {
+            ""href"": ""/thing/action-thing/actions/noParameter"",
+            ""rel"": ""action""
+          }
+        ],
+        ""input"": {
+          ""type"": ""object"",
+          ""properties"": {}
+        }
+      },
+      ""withParameter"": {
+        ""link"": [
+          {
+            ""href"": ""/thing/action-thing/actions/withParameter"",
+            ""rel"": ""action""
+          }
+        ],
+        ""input"": {
+          ""type"": ""object"",
+          ""properties"": {
+            ""bool"": {
+              ""type"": ""boolean""
+            },
+            ""guid"": {
+              ""type"": ""string""
+            },
+            ""timeSpan"": {
+              ""type"": ""string""
+            },
+            ""dateTime"": {
+              ""type"": ""string""
+            },
+            ""dateTimeOffset"": {
+              ""type"": ""string""
+            },
+            ""foo"": {
+              ""type"": ""string""
+            },
+            ""string"": {
+              ""type"": ""string""
+            },
+            ""byte"": {
+              ""type"": ""integer""
+            },
+            ""sbyte"": {
+              ""type"": ""integer""
+            },
+            ""short"": {
+              ""type"": ""integer""
+            },
+            ""ushort"": {
+              ""type"": ""integer""
+            },
+            ""int"": {
+              ""type"": ""integer""
+            },
+            ""uint"": {
+              ""type"": ""integer""
+            },
+            ""long"": {
+              ""type"": ""integer""
+            },
+            ""ulong"": {
+              ""type"": ""integer""
+            },
+            ""float"": {
+              ""type"": ""number""
+            },
+            ""double"": {
+              ""type"": ""number""
+            },
+            ""decimal"": {
+              ""type"": ""number""
+            }
+          }
+        }
+      }
+    }
+  }
+"));
+            
+            void Visit(Type thingType)
+            {
+                var methods = thingType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where( x => !x.IsSpecialName
+                                 && x.Name != nameof(Equals) && x.Name != nameof(GetType) 
+                                 && x.Name != nameof(GetHashCode) && x.Name != nameof(ToString));
+
+                foreach (var method in methods)
+                {
+                    _builder.Add(method, null);
+
+                    foreach (var parameter in method.GetParameters())
+                    {
+                        _builder.Add(parameter, null, new Information(null, null, null, null, null,
+                            null, null, null, null, false, 
+                            parameter.Name!, _fixture.Create<bool>()));
+                    }
+                }
+            }
+        }
+        
+        [Fact]
+        public void BuildWithActionsWithInformation()
+        {
+            var thing = new ActionThing();
+            
+            _builder
+                .SetThing(thing)
+                .SetThingOption(_option);
+            
+            Visit(thing.GetType());
+            
+            var response = _builder.Build();
+            response.Should().NotBeNull();
+
+            var message = JsonSerializer.Serialize(response, response.GetType(), _option.ToJsonSerializerOptions());
+            FluentAssertions.Json.JsonAssertionExtensions.Should(JToken.Parse(message))
+                .BeEquivalentTo(JToken.Parse(@"
+{
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""actions"": {
+      ""test"": {
+        ""title"": ""Ola"",
+        ""description"": ""teste 2"",
+        ""link"": [
+          {
+            ""href"": ""/thing/action-thing/actions/test"",
+            ""rel"": ""action""
+          }
+        ],
+        ""input"": {
+          ""@type"": ""ABC"",
+          ""type"": ""object"",
+          ""properties"": {}
+        }
+      },
+      ""withParameter"": {
+        ""link"": [
+          {
+            ""href"": ""/thing/action-thing/actions/withParameter"",
+            ""rel"": ""action""
+          }
+        ],
+        ""input"": {
+          ""@type"": [
+            ""ABC"",
+            ""DEF""
+          ],
+          ""type"": ""object"",
+          ""properties"": {
+            ""bool2"": {
+              ""title"": ""Boo Title"",
+              ""description"": ""Bool test"",
+              ""type"": ""boolean""
+            },
+            ""guid2"": {
+              ""type"": ""string""
+            },
+            ""timeSpan"": {
+              ""type"": ""string""
+            },
+            ""dateTime"": {
+              ""type"": ""string""
+            },
+            ""dateTimeOffset"": {
+              ""type"": ""string""
+            },
+            ""foo"": {
+              ""type"": ""string""
+            },
+            ""string2"": {
+              ""title"": ""String title"",
+              ""description"": ""String Description"",
+              ""type"": ""string"",
+              ""minimumLength"": 1,
+              ""maximumLength"": 100,
+              ""pattern"": ""^([a-zA-Z0-9_\\-\\.]\u002B)@([a-zA-Z0-9_\\-\\.]\u002B)\\.([a-zA-Z]{2,5})$"",
+              ""enums"": [
+                ""test@outlook.com"",
+                ""test@gmail.com"",
+                ""test@tese.com""
+              ]
+            },
+            ""byte"": {
+              ""type"": ""integer""
+            },
+            ""sbyte"": {
+              ""type"": ""integer""
+            },
+            ""short"": {
+              ""type"": ""integer""
+            },
+            ""ushort"": {
+              ""type"": ""integer""
+            },
+            ""int2"": {
+              ""title"": ""Int title"",
+              ""description"": ""int Description"",
+              ""type"": ""integer"",
+              ""minimum"": 1,
+              ""maximum"": 100,
+              ""enums"": [
+                1,
+                2,
+                3
+              ]
+            },
+            ""uint"": {
+              ""type"": ""integer""
+            },
+            ""long"": {
+              ""type"": ""integer""
+            },
+            ""ulong"": {
+              ""type"": ""integer""
+            },
+            ""float"": {
+              ""type"": ""number""
+            },
+            ""double2"": {
+              ""title"": ""Double title"",
+              ""description"": ""Double Description"",
+              ""type"": ""number"",
+              ""exclusiveMinimum"": 1,
+              ""exclusiveMaximum"": 100,
+              ""enums"": [
+                1.1,
+                2.3,
+                3
+              ]
+            },
+            ""decimal"": {
+              ""type"": ""number""
+            }
+          }
+        }
+      }
+    }
+  }
+"));
+            
+            void Visit(Type thingType)
+            {
+                var methods = thingType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where( x => !x.IsSpecialName
+                                 && x.Name != nameof(Equals) && x.Name != nameof(GetType) 
+                                 && x.Name != nameof(GetHashCode) && x.Name != nameof(ToString));
+
+                foreach (var method in methods)
+                {
+                    _builder.Add(method, method.GetCustomAttribute<ThingActionAttribute>());
+
+                    foreach (var parameter in method.GetParameters())
+                    {
+                        _builder.Add(parameter, parameter.GetCustomAttribute<ThingParameterAttribute>(), 
+                            ToInformation(parameter.GetCustomAttribute<ThingParameterAttribute>(), 
+                                parameter.Name));
+                    }
+                }
+            }
+            
+            Information ToInformation(ThingParameterAttribute attribute, string name)
+            {
+                return new Information(attribute?.MinimumValue, attribute?.MaximumValue, attribute?.ExclusiveMinimumValue, 
+                    attribute?.ExclusiveMaximumValue, attribute?.MultipleOfValue, attribute?.MinimumLengthValue,
+                    attribute?.MaximumLengthValue, attribute?.Pattern, attribute?.Enum, false, 
+                    attribute?.Name ?? name, _fixture.Create<bool>());
+            }
+        }
+        
         public class EventThing : Thing
         {
             public override string Name => "event-thing";
@@ -500,7 +794,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 Title = "Int title",
                 Description = "int Description",
                 Minimum = 1,
-                MaximumLength = 100,
+                Maximum = 100,
                 Enum = new object[]{ 1, 2, 3 },
                 Type = new[] { "ABC" })]
             public int Int { get; set; }
@@ -519,6 +813,45 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             public double Double { get; set; }
             public decimal Decimal { get; set; }
             #endregion
+        }
+        
+        public class ActionThing : Thing
+        {
+            public override string Name => "action-thing";
+
+            [ThingAction(Name = "test", Description = "teste 2", Title = "Ola", Type = new []{ "ABC" })]
+            public void NoParameter()
+            {
+                
+            }
+
+            [ThingAction(Type = new []{ "ABC", "DEF" })]
+            public void WithParameter(
+                [ThingParameter(Name = "bool2", Title = "Boo Title", Description = "Bool test")]bool @bool,
+                [ThingParameter(Name = "Guid2")]Guid guid,
+                TimeSpan timeSpan,
+                DateTime dateTime,
+                DateTimeOffset dateTimeOffset,
+                Foo foo,
+                [ThingParameter(Name = "String2", Title = "String title", Description = "String Description",
+                    MinimumLength = 1, MaximumLength = 100, Pattern = @"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$",
+                    Enum = new object[]{ "test@outlook.com", "test@gmail.com", "test@tese.com" })]string @string,
+                byte @byte,
+                sbyte @sbyte,
+                short @short,
+                ushort @ushort,
+                [ThingParameter(Name = "Int2", Title = "Int title", Description = "int Description",
+                    Minimum = 1, Maximum = 100, Enum = new object[]{ 1, 2, 3 })]int @int,
+                uint @uint,
+                long @long,
+                ulong @ulong,
+                float @float,
+                [ThingParameter(Name = "Double2", Title = "Double title", Description = "Double Description",
+                    ExclusiveMinimum = 1, ExclusiveMaximum = 100, Enum = new object[]{ 1.1, 2.3, 3 })]double @double,
+                decimal @decimal
+            )
+            {
+            }
         }
         
         public enum Foo
