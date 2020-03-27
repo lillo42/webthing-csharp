@@ -4,6 +4,7 @@ using System.Reflection;
 using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
@@ -31,9 +32,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         [Fact]
         public void TryAddWhenSetThingTypeIsNotCalled()
             => Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<MethodInfo>(),
-                new Information(null, null, null, null, null,
-                    null, null, null, null, _fixture.Create<bool>(), 
-                    _fixture.Create<string>(), _fixture.Create<bool>())));
+               Substitute.For<ThingActionAttribute>()));
         
         [Fact]
         public void TryBuildWhenIsNotSetSetThing() 
@@ -54,12 +53,8 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 .SetThingOption(new ThingOption());
 
             var method = typeof(ActionThing).GetMethod(nameof(ActionThing.NoParameter));
-            
-            var information = new Information(null, null, null, null, null,
-                null, null, null, null, false,
-                nameof(ActionThing.NoParameter), _fixture.Create<bool>());
-            
-            _builder.Add(method!, information);
+
+            _builder.Add(method!, null);
 
             var actions = _builder.Build();
             actions.Should().NotBeNull();
@@ -78,12 +73,8 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 .SetThingOption(new ThingOption());
 
             var method = typeof(ActionThing).GetMethod(nameof(ActionThing.WithParameter));
-            
-            var information = new Information(null, null, null, null, null,
-                null, null, null, null, false,
-                nameof(ActionThing.WithParameter), _fixture.Create<bool>());
-            
-            _builder.Add(method!, information);
+
+            _builder.Add(method!, null);
 
             var parameters = new List<(ParameterInfo, Information)>();
             
@@ -122,12 +113,8 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 .SetThingOption(new ThingOption());
 
             var withParameter = typeof(ActionThing).GetMethod(nameof(ActionThing.WithParameter));
-            
-            var informationWithNoParameter = new Information(null, null, null, null, null,
-                null, null, null, null, false,
-                nameof(ActionThing.WithParameter), _fixture.Create<bool>());
-            
-            _builder.Add(withParameter!, informationWithNoParameter);
+
+            _builder.Add(withParameter!, null);
 
             var parameters = new List<(ParameterInfo, Information)>();
             
@@ -146,12 +133,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             }
 
             var noParameter = typeof(ActionThing).GetMethod(nameof(ActionThing.NoParameter));
-            
-            var informationNoParameter = new Information(null, null, null, null, null,
-                null, null, null, null, false,
-                nameof(ActionThing.NoParameter), _fixture.Create<bool>());
-            
-            _builder.Add(noParameter!, informationNoParameter);
+            _builder.Add(noParameter!, null);
 
             
             var actions = _builder.Build();

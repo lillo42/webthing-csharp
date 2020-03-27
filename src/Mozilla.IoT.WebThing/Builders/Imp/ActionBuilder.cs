@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 
@@ -67,7 +68,7 @@ namespace Mozilla.IoT.WebThing.Builders
         }
 
         /// <inheritdoc /> 
-        public void Add(MethodInfo action, Information information)
+        public void Add(MethodInfo action, ThingActionAttribute? attribute)
         {
             if (_thingType == null || _module == null)
             {
@@ -91,7 +92,7 @@ namespace Mozilla.IoT.WebThing.Builders
             }
             
             _parameters.Clear();
-            _name = information.Name ?? action.Name;
+            _name = attribute?.Name ?? action.Name;
             _action = action;
             _input = _module.DefineType($"{action.Name}Input", TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass);
         }

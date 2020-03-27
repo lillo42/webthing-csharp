@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Factories.Generator.Converter;
 
 namespace Mozilla.IoT.WebThing.Builders
 {

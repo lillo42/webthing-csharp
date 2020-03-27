@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Properties;
 
@@ -39,7 +40,7 @@ namespace Mozilla.IoT.WebThing.Builders
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="information">The <see cref="Information"/> about action.</param>
-        void Add(MethodInfo action, Information information);
+        void Add(MethodInfo action, ThingActionAttribute? information);
         
         /// <summary>
         /// Add property.

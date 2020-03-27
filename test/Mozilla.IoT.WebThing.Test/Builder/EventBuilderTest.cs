@@ -6,7 +6,6 @@ using FluentAssertions;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Builders;
-using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Properties;
 using NSubstitute;
@@ -65,7 +64,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             events.Should().ContainKey(nameof(EventThing.Int));
 
             _thing.ThingContext = new ThingContext(
-                Substitute.For<IThingConverter>(),
+                new Dictionary<string, object>(), 
                 events,
                 new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());
@@ -96,7 +95,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             events.Should().ContainKey("test");
 
             _thing.ThingContext = new ThingContext(
-                Substitute.For<IThingConverter>(),
+                new Dictionary<string, object>(), 
                 events,
                 new Dictionary<string, ActionCollection>(),
                 new Dictionary<string, IProperty>());
