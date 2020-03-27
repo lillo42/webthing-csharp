@@ -1,13 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Factories;
-using Mozilla.IoT.WebThing.Factories.Generator.Actions;
-using Mozilla.IoT.WebThing.Factories.Generator.Converter;
-using Mozilla.IoT.WebThing.Factories.Generator.Events;
-using Mozilla.IoT.WebThing.Factories.Generator.Intercepts;
-using Mozilla.IoT.WebThing.Factories.Generator.Properties;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
@@ -50,30 +43,9 @@ namespace Mozilla.IoT.WebThing.Extensions
         {
             var thing = provider.GetRequiredService<T>();
             var option = provider.GetRequiredService<ThingOption>();
-            var optionsJson = new JsonSerializerOptions
-            {
-                WriteIndented = false,
-                IgnoreNullValues = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            };
-
-            var converter = new ConverterInterceptorFactory(thing, optionsJson);
-            var properties = new PropertiesInterceptFactory(option);
-            var events = new EventInterceptFactory(thing, option);
-            var actions = new ActionInterceptFactory(option);
-                
-            CodeGeneratorFactory.Generate(thing, new List<IInterceptorFactory>()
-            {
-                converter,
-                properties, 
-                events,
-                actions
-            });
-
-            thing.ThingContext = new ThingContext(converter.Create(), 
-                events.Events,
-                actions.Actions,
-                properties.Properties);
+            var factory = provider.GetRequiredService<IThingContextFactory>();
+            
+            thing.ThingContext = factory.Create(thing, option);
             
             return thing;
             

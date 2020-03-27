@@ -18,25 +18,25 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// Initialize a new instance of <see cref="ThingContext"/>.
         /// </summary>
-        /// <param name="converter"></param>
+        /// <param name="response"></param>
         /// <param name="events">The <see cref="Dictionary{TKey,TValue}"/> with events associated with thing.</param>
         /// <param name="actions">The <see cref="Dictionary{TKey,TValue}"/> with actions associated with thing.</param>
         /// <param name="properties">The <see cref="Dictionary{TKey,TValue}"/> with properties associated with thing.</param>
-        public ThingContext(IThingConverter converter, 
+        public ThingContext(Dictionary<string, object?> response, 
             Dictionary<string, EventCollection> events,
             Dictionary<string, ActionCollection> actions, 
             Dictionary<string, IProperty> properties)
         {
-            Converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            Response = response ?? throw new ArgumentNullException(nameof(response));
             Events = events ?? throw new ArgumentNullException(nameof(events));
             Actions = actions ?? throw new ArgumentNullException(nameof(actions));
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
         }
 
         /// <summary>
-        /// The <see cref="IThingConverter"/>.
+        /// The Response.
         /// </summary>
-        public IThingConverter Converter { get; }
+        public Dictionary<string, object?> Response { get; }
         
         /// <summary>
         /// The properties associated with thing.
