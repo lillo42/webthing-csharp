@@ -76,7 +76,17 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ]
         }
     },
-    ""@context"": ""https://iot.mozilla.org/schemas""
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""links"": [{
+        ""href"": ""properties"",
+        ""rel"": ""/things/event-thing/properties""
+      },{
+        ""href"": ""events"",
+        ""rel"": ""/things/event-thing/events""
+      },{
+        ""href"": ""actions"",
+        ""rel"": ""/things/event-thing/actions""
+    }]
 }
 "));
             
@@ -302,7 +312,17 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             ]
         }
     },
-    ""@context"": ""https://iot.mozilla.org/schemas""
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""links"": [{
+        ""href"": ""properties"",
+        ""rel"": ""/things/property-thing/properties""
+      },{
+        ""href"": ""events"",
+        ""rel"": ""/things/property-thing/events""
+      },{
+        ""href"": ""actions"",
+        ""rel"": ""/things/property-thing/actions""
+    }]
 }
 "));
             
@@ -348,7 +368,17 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 .BeEquivalentTo(JToken.Parse(@"
 {
   ""@context"": ""https://iot.mozilla.org/schemas"",
-  ""properties"": {
+   ""links"": [{
+        ""href"": ""properties"",
+        ""rel"": ""/things/property-thing/properties""
+      },{
+        ""href"": ""events"",
+        ""rel"": ""/things/property-thing/events""
+      },{
+        ""href"": ""actions"",
+        ""rel"": ""/things/property-thing/actions""
+   }],
+   ""properties"": {
     ""bool2"": {
       ""title"": ""Boo Title"",
       ""description"": ""Bool test"",
@@ -472,6 +502,16 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 .BeEquivalentTo(JToken.Parse(@"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""links"": [{
+        ""href"": ""properties"",
+        ""rel"": ""/things/action-thing/properties""
+      },{
+        ""href"": ""events"",
+        ""rel"": ""/things/action-thing/events""
+      },{
+        ""href"": ""actions"",
+        ""rel"": ""/things/action-thing/actions""
+    }],
     ""actions"": {
       ""noParameter"": {
         ""link"": [
@@ -596,6 +636,16 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 .BeEquivalentTo(JToken.Parse(@"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""links"": [{
+        ""href"": ""properties"",
+        ""rel"": ""/things/action-thing/properties""
+      },{
+        ""href"": ""events"",
+        ""rel"": ""/things/action-thing/events""
+      },{
+        ""href"": ""actions"",
+        ""rel"": ""/things/action-thing/actions""
+    }],
     ""actions"": {
       ""test"": {
         ""title"": ""Ola"",
