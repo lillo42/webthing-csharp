@@ -1,14 +1,16 @@
 ﻿using System.Linq;
 
-namespace Mozilla.IoT.WebThing.Factories.Generator
+namespace Mozilla.IoT.WebThing.Builders
 {
     /// <summary>
     /// Represent property/parameter validation
     /// </summary>
-    public readonly struct Validation
+    public readonly struct Information
     {
+        private readonly bool _isNullable;
+
         /// <summary>
-        /// Initialize a new instance of <see cref="Validation"/>.
+        /// Initialize a new instance of <see cref="Information"/>.
         /// </summary>
         /// <param name="minimum">The minimum value.</param>
         /// <param name="maximum">The maximum value.</param>
@@ -20,9 +22,12 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         /// <param name="pattern">The pattern value.</param>
         /// <param name="enums">The enums values.</param>
         /// <param name="isReadOnly">Is is read-only</param>
-        public Validation(double? minimum, double? maximum,
+        /// <param name="name">The name</param>
+        /// <param name="isNullable"></param>
+        public Information(double? minimum, double? maximum,
             double? exclusiveMinimum, double? exclusiveMaximum, double? multipleOf,
-            int? minimumLength, int? maximumLength, string? pattern, object[]? enums)
+            int? minimumLength, int? maximumLength, string? pattern, object[]? enums,
+            bool isReadOnly, string name, bool isNullable)
         {
             Minimum = minimum;
             Maximum = maximum;
@@ -33,8 +38,17 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
             MaximumLength = maximumLength;
             Pattern = pattern;
             Enums = enums;
+            IsReadOnly = isReadOnly;
+            Name = name;
+            _isNullable = isNullable;
         }
 
+        
+        /// <summary>
+        /// The name.
+        /// </summary>
+        public string Name { get; }
+        
         /// <summary>
         /// Minimum value.
         /// </summary>
@@ -79,6 +93,11 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
         /// Possible values.
         /// </summary>
         public object[]? Enums { get; }
+        
+        /// <summary>
+        /// If is Read-only
+        /// </summary>
+        public bool IsReadOnly { get; }
 
         /// <summary>
         /// If has validation or all value are null.
@@ -95,9 +114,9 @@ namespace Mozilla.IoT.WebThing.Factories.Generator
                || (Enums != null && Enums.Length > 0);
 
         /// <summary>
-        /// If Enum has null value.
+        /// IsNullable.
         /// </summary>
-        public bool HasNullValueOnEnum
-            => Enums != null && Enums.Contains(null!);
+        public bool IsNullable
+            => IsNullable || (Enums != null && Enums.Contains(null!));
     }
 }

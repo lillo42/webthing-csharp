@@ -13,13 +13,19 @@ namespace Mozilla.IoT.WebThing.Extensions
         /// The default value is 10.
         /// </summary>
         public int MaxEventSize { get; set; } = 10;
-        
+
         /// <summary>
         /// If should ignore case to deserialize.
         /// The default value is true.
         /// </summary>
         public bool IgnoreCase { get; set; } = true;
-        
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IgnoreNullValues { get; set; } = true;
+
         /// <summary>
         /// If when serialize thing should serialize for use thing adapter.
         /// The default value is false.
@@ -32,6 +38,8 @@ namespace Mozilla.IoT.WebThing.Extensions
         /// will be used when writing the property name during serialization.
         /// </summary>
         public JsonNamingPolicy PropertyNamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
+        
+        internal bool WriteIndented { get; set; }
 
         private JsonSerializerOptions? _options;
         private readonly object _locker = new object();
@@ -49,11 +57,13 @@ namespace Mozilla.IoT.WebThing.Extensions
                             PropertyNamingPolicy = PropertyNamingPolicy,
                             DictionaryKeyPolicy = PropertyNamingPolicy,
                             IgnoreReadOnlyProperties = false,
-                            IgnoreNullValues = false,
+                            IgnoreNullValues = IgnoreNullValues,
+                            WriteIndented = WriteIndented,
+                            Converters =
+                            {
+                                new ActionStatusConverter()
+                            }
                         };
-
-                        _options.Converters.Add(new ThingConverter(this));
-                        _options.Converters.Add(new ActionStatusConverter());
                     }
                 }
             }

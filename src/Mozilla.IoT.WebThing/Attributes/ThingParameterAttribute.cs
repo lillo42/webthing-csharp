@@ -9,6 +9,11 @@ namespace Mozilla.IoT.WebThing.Attributes
     public class ThingParameterAttribute : Attribute
     {
         /// <summary>
+        /// Action parameter name.
+        /// </summary>
+        public string? Name { get; set; }
+        
+        /// <summary>
         /// Action parameter title.
         /// </summary>
         public string? Title { get; set; }

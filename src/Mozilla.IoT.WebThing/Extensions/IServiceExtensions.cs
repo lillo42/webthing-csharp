@@ -61,6 +61,9 @@ namespace Microsoft.Extensions.DependencyInjection
             service.AddTransient<IThingContextFactory, ThingContextFactory>();
             service.AddTransient<IThingResponseBuilder, ThingResponseBuilder>();
             service.AddTransient<IEventBuilder, EventBuilder>();
+            service.AddTransient<IPropertyBuilder, PropertyBuilder>();
+            service.AddSingleton<IPropertyFactory, PropertyFactory>();
+
             
             service.AddSingleton(provider =>
             {

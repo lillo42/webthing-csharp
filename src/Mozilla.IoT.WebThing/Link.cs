@@ -3,7 +3,7 @@ namespace Mozilla.IoT.WebThing
     /// <summary>
     /// 
     /// </summary>
-    public class Link
+    public readonly struct Link
     {
         /// <summary>
         /// 
