@@ -32,13 +32,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
             
-            if (thing.Prefix == null)
-            {
-                logger.LogDebug("Thing without prefix. [Thing: {name}]", thing.Name);
-                thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
-                    context.Request.Host));
-            }
-            
             logger.LogInformation("Found 1 Thing. [Thing: {name}]", thing.Name);
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;

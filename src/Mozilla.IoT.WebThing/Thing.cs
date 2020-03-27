@@ -13,9 +13,7 @@ namespace Mozilla.IoT.WebThing
     public abstract class Thing : INotifyPropertyChanged, IEquatable<Thing>
     {
         #region Properties
-
-        internal Uri Prefix { get; set; } = default!;
-
+        
         /// <summary>
         /// Context of Property, Event and Action of thing
         /// </summary>

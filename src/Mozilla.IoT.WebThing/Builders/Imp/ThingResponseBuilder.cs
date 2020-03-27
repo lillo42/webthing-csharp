@@ -17,11 +17,17 @@ namespace Mozilla.IoT.WebThing.Builders
         private readonly Dictionary<string, object> _actions = new Dictionary<string, object>();
 
         private Dictionary<string, object?>? _parameters;
+        private string _thingName = string.Empty;
 
         /// <inheritdoc />
         public IThingResponseBuilder SetThing(Thing thing)
         {
             _thing = thing;
+
+            if (_option != null)
+            {
+                _thingName = _option.PropertyNamingPolicy.ConvertName(_thing.Name);
+            }
             return this;
         }
 
@@ -29,6 +35,12 @@ namespace Mozilla.IoT.WebThing.Builders
         public IThingResponseBuilder SetThingOption(ThingOption option)
         {
             _option = option;
+            
+            if (_thing != null)
+            {
+                _thingName = _option.PropertyNamingPolicy.ConvertName(_thing.Name);
+            }
+            
             return this;
         }
 
@@ -66,13 +78,12 @@ namespace Mozilla.IoT.WebThing.Builders
 
                 AddTypeProperty(information, eventInfo.Type);
             }
-
-            var thingName = _option.PropertyNamingPolicy.ConvertName(_thing.Name);
+            
             var eventName = _option.PropertyNamingPolicy.ConvertName(eventInfo?.Name ?? @event.Name);
             
             information.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
             {
-                new Link($"/thing/{thingName}/events/{eventName}", "event")
+                new Link($"/thing/{_thingName}/events/{eventName}", "event")
             });
             
             _events.Add(eventName, information);
@@ -111,12 +122,11 @@ namespace Mozilla.IoT.WebThing.Builders
             AddTypeProperty(propertyInformation, attribute?.Type);
 
             AddInformation(propertyInformation, information, ToJsonType(property.PropertyType), true);
-            var thingName = _option.PropertyNamingPolicy.ConvertName(_thing.Name);
             var propertyName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? property.Name);
             
             propertyInformation.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
             {
-                new Link($"/thing/{thingName}/properties/{propertyName}", "property")
+                new Link($"/thing/{_thingName}/properties/{propertyName}", "property")
             });
             
             _properties.Add(propertyName, propertyInformation);
@@ -135,7 +145,6 @@ namespace Mozilla.IoT.WebThing.Builders
                 throw new InvalidOperationException($"ThingOption is null, call {nameof(SetThingOption)}");
             }
             
-            var thingName = _option.PropertyNamingPolicy.ConvertName(_thing.Name);
             var propertyName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? action.Name);
             
             var actionInformation = new Dictionary<string, object?>();
@@ -152,7 +161,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             actionInformation.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
             {
-                new Link($"/thing/{thingName}/actions/{propertyName}", "action")
+                new Link($"/thing/{_thingName}/actions/{propertyName}", "action")
             });
             
             var input = new Dictionary<string, object?>();
@@ -401,7 +410,16 @@ namespace Mozilla.IoT.WebThing.Builders
             {
                 result.Add(_option.PropertyNamingPolicy.ConvertName("Actions"), _actions);
             }
+            
 
+            var links = new List<Link>(4)
+            {
+                new Link("properties", $"/things/{_thingName}/properties"),
+                new Link("events", $"/things/{_thingName}/events"),
+                new Link("actions", $"/things/{_thingName}/actions")
+            };
+            
+            result.Add(_option.PropertyNamingPolicy.ConvertName("Links"), links);
             return result;
         }
     }
