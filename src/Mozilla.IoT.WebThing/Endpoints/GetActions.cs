@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -36,7 +35,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             foreach (var actions in thing.ThingContext.Actions)
             {
-                foreach (var value in actions.Value.Actions)
+                foreach (var value in actions.Value)
                 {
                     result.AddLast(new Dictionary<string, object> {[actions.Key] = value});
                 }

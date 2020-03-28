@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(ThingAppTargetFrameworks)</TargetFramework>
     <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

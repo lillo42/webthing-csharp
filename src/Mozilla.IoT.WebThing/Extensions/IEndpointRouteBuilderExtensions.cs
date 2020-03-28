@@ -4,12 +4,21 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing;
 using Mozilla.IoT.WebThing.Endpoints;
+using Mozilla.IoT.WebThing.Middlewares;
 using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Microsoft.AspNetCore.Routing
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class IEndpointRouteBuilderExtensions
     {
+        /// <summary>
+        /// Map Things endpoints.
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public static void MapThings(this IEndpointRouteBuilder endpoint)
         {
             if (endpoint == null)
@@ -17,6 +26,9 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
+            endpoint.CreateApplicationBuilder()
+                .UseMiddleware<ThingAdapterMiddleware>();
+            
             endpoint.MapGet("/", GetAllThings.InvokeAsync);
             endpoint.MapGet("/things", GetAllThings.InvokeAsync);
             endpoint.MapGet("/things/{name}",  context => context.WebSockets.IsWebSocketRequest 

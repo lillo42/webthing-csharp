@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -29,39 +30,48 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            var property = context.GetRouteData<string>("property");
+            var propertyName = context.GetRouteData<string>("property");
             
-            logger.LogInformation("Going to set property {propertyName}", property);
+            logger.LogInformation("Going to set property {propertyName}", propertyName);
 
             var jsonOptions = service.GetRequiredService<JsonSerializerOptions>();
             
-            var json = await context.FromBodyAsync<JsonElement>(jsonOptions)
+            var jsonElement = await context.FromBodyAsync<JsonElement>(jsonOptions)
                 .ConfigureAwait(false);
-            
-            var result = thing.ThingContext.Properties.SetProperty(property, json.GetProperty(property));
-            
-            if (result == SetPropertyResult.NotFound)
+
+            if (!thing.ThingContext.Properties.TryGetValue(propertyName, out var property))
             {
-                logger.LogInformation("Property not found. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                logger.LogInformation("Property not found. [Thing: {thingName}][Property: {propertyName}]", thing.Name, propertyName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-            
-            if (result == SetPropertyResult.InvalidValue)
-            {
-                logger.LogInformation("Property with Invalid. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                return;
-            }
-            
-            if (result == SetPropertyResult.ReadOnly)
-            {
-                logger.LogInformation("Read-Only Property. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                return;
-            }
 
-            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Properties.GetProperties(property), jsonOptions)
+            var jsonProperties = jsonElement.EnumerateObject();
+            foreach (var jsonProperty in jsonProperties)
+            {
+                if (propertyName.Equals(jsonProperty.Name))
+                {
+                    switch (property.SetValue(jsonProperty.Value))
+                    {
+                        case SetPropertyResult.InvalidValue:
+                            logger.LogInformation("Property with Invalid. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                            return;
+                        case SetPropertyResult.ReadOnly:
+                            logger.LogInformation("Read-Only Property. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                            return;
+                    }
+                }
+                else
+                {
+                    logger.LogInformation("Invalid property. [Thing: {thingName}][Excepted property: {propertyName}][Actual property: {currentPropertyName}]", thing.Name, propertyName, jsonProperty.Name);
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return;
+                }
+            }
+            
+            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object?> {[propertyName] = property.GetValue() }, jsonOptions)
                 .ConfigureAwait(false);
         }
     }

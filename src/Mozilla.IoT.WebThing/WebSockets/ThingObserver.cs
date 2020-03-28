@@ -6,17 +6,19 @@ using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Events;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    public class ThingObserver
+    
+    internal class ThingObserver
     {
         private readonly ILogger<ThingObserver> _logger;
         private readonly Thing _thing;
         private readonly JsonSerializerOptions _options;
         private readonly System.Net.WebSockets.WebSocket _socket;
         private readonly CancellationToken _cancellation;
-
+        
         public ThingObserver(ILogger<ThingObserver> logger, 
             JsonSerializerOptions options, 
             System.Net.WebSockets.WebSocket socket, 
@@ -30,46 +32,56 @@ namespace Mozilla.IoT.WebThing.WebSockets
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
         }
         
-        public HashSet<string> EventsBind { get; } = new HashSet<string>();
+        public IEnumerable<string> EventsBind { get; } = new HashSet<string>();
         
-        public async void OnEvenAdded(object sender, Event @event)
+        public async void OnEvenAdded(object? sender, Event @event)
         {
+            if (sender == null)
+            {
+                return;
+            }
+            
             _logger.LogInformation("Event add received, going to notify Web Socket");
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("event", 
-                    new Dictionary<string, object>
+                    new Dictionary<string, object?>
                     {
-                        [sender.ToString()] = @event
+                        [sender.ToString()!] = @event
                     }), _options);
             
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
-
+        
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
         {
-            var data = _thing.ThingContext.Properties.GetProperties(property.PropertyName);
-            _logger.LogInformation("Event add received, going to notify Web Socket");
+            var data = _thing.ThingContext.Properties[property.PropertyName];
+            _logger.LogInformation("Property changed, going to notify via Web Socket. [Property: {propertyName}]", property.PropertyName);
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
-                    new Dictionary<string, object>
+                    new Dictionary<string, object?>
                     {
-                        [_options.GetPropertyName(property.PropertyName)] = data[property.PropertyName]
+                        [_options.GetPropertyName(property.PropertyName)] = data.GetValue()
                     }),
                 _options);
             
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
-
-        public async void OnActionChange(object sender, ActionInfo action)
+        
+        public async void OnActionChange(object? sender, ActionInfo action)
         {
+            if (sender == null)
+            {
+                return;
+            }
+            
+            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.Status);
             await _socket.SendAsync(
                     JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("actionStatus",new Dictionary<string, object>
                     {
-                        [ action.GetActionName()] = action
+                        [action.GetActionName()] = action
                     }), _options),
                     WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
     }
-    
 }

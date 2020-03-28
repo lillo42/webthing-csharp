@@ -30,53 +30,48 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            context.Request.EnableBuffering();
             var jsonOption = service.GetRequiredService<JsonSerializerOptions>();
             var option = service.GetRequiredService<ThingOption>();
             
-            var actions =  await context.FromBodyAsync<Dictionary<string, JsonElement>>(jsonOption)
+            var jsonAction =  await context.FromBodyAsync<JsonElement>(jsonOption)
                 .ConfigureAwait(false);
             
             var actionsToExecute = new LinkedList<ActionInfo>();
-            foreach (var (actionName, json) in actions)
+
+            foreach (var property in jsonAction.EnumerateObject())
             {
-                if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actionContext))
+                if (!thing.ThingContext.Actions.TryGetValue(property.Name, out var actions))
                 {
                     logger.LogInformation("{actionName} Action not found in {thingName}", actions, thingName);
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     return;
                 }
-                
-                logger.LogTrace("{actionName} Action found. [Name: {thingName}]", actions, thingName);
-                var action = (ActionInfo)JsonSerializer.Deserialize(json.GetRawText(),
-                    actionContext.ActionType, jsonOption);
-                
-                if (!action.IsValid())
+
+                if (!actions.TryAdd(property.Value, out var action))
                 {
                     logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", actions, thingName);
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return;
                 }
-
-                actionsToExecute.AddLast(action); 
+                
                 action.Thing = thing;
                 var namePolicy = option.PropertyNamingPolicy;
-                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{action.Id}";
+                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(action.GetActionName())}/{action.GetId()}";
+
+                actionsToExecute.AddLast(action);
+
             }
             
             foreach (var actionInfo in actionsToExecute)
             {
                 logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", actionInfo.GetActionName(), thingName);
-                
-                thing.ThingContext.Actions[actionInfo.GetActionName()].Actions.Add(actionInfo.Id, actionInfo);
-                
-                actionInfo.ExecuteAsync(thing, service)
+                _ = actionInfo.ExecuteAsync(thing, service)
                     .ConfigureAwait(false);
             }
             
             if (actionsToExecute.Count == 1)
             {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First.Value, jsonOption)
+                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First!.Value, jsonOption)
                     .ConfigureAwait(false);
             }
             else

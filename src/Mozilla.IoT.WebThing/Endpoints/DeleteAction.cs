@@ -2,13 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Converts;
-using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -31,8 +28,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            var option = service.GetRequiredService<JsonSerializerOptions>();
-            
             var actionName = context.GetRouteData<string>("action");
             var id = Guid.Parse(context.GetRouteData<string>("id"));
 
@@ -43,7 +38,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
 
-            if (!actionContext.Actions.TryRemove(id, out var actionInfo))
+            if (!actionContext.TryRemove(id, out var actionInfo))
             {
                 logger.LogInformation("{actionName} Action with {id} id not found in {thingName}", actionName, id, thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;

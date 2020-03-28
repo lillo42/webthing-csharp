@@ -122,8 +122,8 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         }
 
                         using var scope = service.CreateScope();
-                        scope.ServiceProvider.GetRequiredService<ThingObserverResolver>().Observer = observer;
-                        await action.ExecuteAsync(socket, thing, data, jsonOptions, scope.ServiceProvider, cancellation)
+                        scope.ServiceProvider.GetRequiredService<ThingObservableResolver>().Observer = observer;
+                        await action.ExecuteAsync(socket, thing, data, scope.ServiceProvider, cancellation)
                             .ConfigureAwait(false);
 
                         messageTypeString = string.Empty;
@@ -160,7 +160,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             foreach (var (_, actionContext) in thing.ThingContext.Actions)
             {
-                actionContext.Actions.Change += observer.OnActionChange;
+                actionContext.Change += observer.OnActionChange;
             }
         }
 
@@ -171,7 +171,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             foreach (var (_, actionContext) in thing.ThingContext.Actions)
             {
-                actionContext.Actions.Change -= observer.OnActionChange;
+                actionContext.Change -= observer.OnActionChange;
             }
         }
         

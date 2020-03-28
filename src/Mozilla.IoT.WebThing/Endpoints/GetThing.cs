@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
@@ -31,13 +30,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
-            }
-            
-            if (thing.Prefix == null)
-            {
-                logger.LogDebug("Thing without prefix. [Thing: {name}]", thing.Name);
-                thing.Prefix = new Uri(UriHelper.BuildAbsolute(context.Request.Scheme, 
-                    context.Request.Host));
             }
             
             logger.LogInformation("Found 1 Thing. [Thing: {name}]", thing.Name);
