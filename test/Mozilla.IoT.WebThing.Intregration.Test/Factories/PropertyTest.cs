@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
+using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Properties;
 using Newtonsoft.Json.Linq;
@@ -544,7 +545,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             
             if(type == typeof(sbyte))
             {
-                TestInvalidValidProperty<byte>(() => 
+                TestInvalidValidProperty<sbyte>(() => 
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
                         .GetProperty("input"));
                 return;
@@ -686,7 +687,6 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             thing.Value.Should().Be(defaultValue);
             context.Properties[nameof(NullablePropertyThing<T>.Value)].GetValue().Should().Be(defaultValue);
         }
-
         #endregion
         
         public class StructPropertyThing<T> : Thing
@@ -701,10 +701,9 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         public class NullablePropertyThing<T> : Thing
         {
             public override string Name => "property-thing";
-
             public T Value { get; set; }
         }
-        
+
         public enum Foo
         {
             A,
