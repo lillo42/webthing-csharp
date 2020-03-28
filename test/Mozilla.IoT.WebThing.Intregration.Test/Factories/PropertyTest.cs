@@ -20,6 +20,8 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         [InlineData(typeof(DateTime))]
         [InlineData(typeof(DateTimeOffset))]
         [InlineData(typeof(char))]
+        [InlineData(typeof(Foo))]
+        [InlineData(typeof(string))]
         [InlineData(typeof(byte))]
         [InlineData(typeof(sbyte))]
         [InlineData(typeof(short))]
@@ -35,7 +37,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         {
             if(type == typeof(bool))
             {
-                TestResponseProperty<bool>("boolean");
+                TestResponseStructProperty<bool>("boolean");
                 return;
             }
 
@@ -44,31 +46,43 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             if(type == typeof(Guid))
             {
                 
-                TestResponseProperty<Guid>("string");
+                TestResponseStructProperty<Guid>("string");
                 return;
             }
             
             if(type == typeof(DateTime))
             {
-                TestResponseProperty<DateTime>("string");
+                TestResponseStructProperty<DateTime>("string");
                 return;
             }
             
             if(type == typeof(DateTimeOffset))
             {
-                TestResponseProperty<DateTimeOffset>("string");
+                TestResponseStructProperty<DateTimeOffset>("string");
                 return;
             }
             
             if(type == typeof(TimeSpan))
             {
-                TestResponseProperty<TimeSpan>("string");
+                TestResponseStructProperty<TimeSpan>("string");
                 return;
             }
             
             if(type == typeof(char))
             {
-                TestResponseProperty<char>("string");
+                TestResponseStructProperty<char>("string");
+                return;
+            }
+            
+            if(type == typeof(string))
+            {
+                TestResponseNullableProperty<string>("string");
+                return;
+            }
+            
+            if(type == typeof(string))
+            {
+                TestResponseNullableProperty<string>("string");
                 return;
             }
             
@@ -78,49 +92,49 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             if(type == typeof(byte))
             {
-                TestResponseProperty<byte>("integer");
+                TestResponseStructProperty<byte>("integer");
                 return;
             }
             
             if(type == typeof(sbyte))
             {
-                TestResponseProperty<sbyte>("integer");
+                TestResponseStructProperty<sbyte>("integer");
                 return;
             }
             
             if(type == typeof(short))
             {
-                TestResponseProperty<short>("integer");;
+                TestResponseStructProperty<short>("integer");;
                 return;
             }
             
             if(type == typeof(ushort))
             {
-                TestResponseProperty<ushort>("integer");
+                TestResponseStructProperty<ushort>("integer");
                 return;
             }
             
             if(type == typeof(int))
             {
-                TestResponseProperty<int>("integer");
+                TestResponseStructProperty<int>("integer");
                 return;
             }
             
             if(type == typeof(uint))
             {
-                TestResponseProperty<uint>("integer");
+                TestResponseStructProperty<uint>("integer");
                 return;
             }
             
             if(type == typeof(long))
             {
-                TestResponseProperty<long>("integer");
+                TestResponseStructProperty<long>("integer");
                 return;
             }
             
             if(type == typeof(long))
             {
-                TestResponseProperty<ulong>("integer");
+                TestResponseStructProperty<ulong>("integer");
                 return;
             }
 
@@ -130,76 +144,46 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             if(type == typeof(float))
             {
-                TestResponseProperty<float>("number");
+                TestResponseStructProperty<float>("number");
                 return;
             }
             
             if(type == typeof(double))
             {
-                TestResponseProperty<double>("number");
+                TestResponseStructProperty<double>("number");
                 return;
             }
             
             if(type == typeof(decimal))
             {
-                TestResponseProperty<decimal>("number");
+                TestResponseStructProperty<decimal>("number");
                 return;
             }
 
             #endregion
         }
 
-        private void TestResponseProperty<T>(string type)
+        private void TestResponseStructProperty<T>(string type)
             where T : struct
         {
-            var thing = new PropertyThing<T>();
+            TestResponseProperty<StructPropertyThing<T>>(type, string.Format(RESPONSE_WITH_NULLABLE, type, 
+                typeof(T).IsEnum ? $@" ""enums"": [""{string.Join(@""" , """, typeof(T).GetEnumNames()) }""] " : string.Empty));
+        }
+
+        private void TestResponseNullableProperty<T>(string type) 
+            => TestResponseProperty<NullablePropertyThing<T>>(type, string.Format(RESPONSE_WITHOUT_NULLABLE, type, string.Empty));
+
+        private void TestResponseProperty<T>(string type, string response)
+            where T : Thing, new()
+        {
+            var thing = new T();
             var context = Factory.Create(thing, new ThingOption());
             
             var message = JsonSerializer.Serialize(context.Response,
                 new ThingOption().ToJsonSerializerOptions());
 
             FluentAssertions.Json.JsonAssertionExtensions.Should(JToken.Parse(message))
-                .BeEquivalentTo(JToken.Parse($@"
-{{
-  ""@context"": ""https://iot.mozilla.org/schemas"",
-  ""properties"": {{
-    ""value"": {{
-      ""type"": ""{type}"",
-      ""isReadOnly"": false,
-      ""link"": [
-        {{
-          ""href"": ""/things/property-thing/properties/value"",
-          ""rel"": ""property""
-        }}
-      ]
-    }},
-    ""nullableValue"": {{
-      ""type"": ""{type}"",
-      ""isReadOnly"": false,
-      ""link"": [
-        {{
-          ""href"": ""/things/property-thing/properties/nullableValue"",
-          ""rel"": ""property""
-        }}
-      ]
-    }}
-  }},
-  ""links"": [
-    {{
-      ""href"": ""properties"",
-      ""rel"": ""/things/property-thing/properties""
-    }},
-    {{
-      ""href"": ""events"",
-      ""rel"": ""/things/property-thing/events""
-    }},
-    {{
-      ""href"": ""actions"",
-      ""rel"": ""/things/property-thing/actions""
-    }}
-  ]
-}}
-"));
+                .BeEquivalentTo(JToken.Parse(response));
         }
 
         #endregion
@@ -214,6 +198,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         [InlineData(typeof(DateTimeOffset))]
         [InlineData(typeof(Foo))]
         [InlineData(typeof(char))]
+        [InlineData(typeof(string))]
         [InlineData(typeof(byte))]
         [InlineData(typeof(sbyte))]
         [InlineData(typeof(short))]
@@ -280,6 +265,14 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             if(type == typeof(Foo))
             {
                 TestValidProperty<Foo>(x => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(string))
+            {
+                TestValidNullableProperty<string>(x => 
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x}"" }}")
                         .GetProperty("input"));
                 return;
@@ -388,7 +381,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         private void TestValidProperty<T>(Func<T, JsonElement> createJsonElement)
             where T : struct
         {
-            var thing = new PropertyThing<T>();
+            var thing = new StructPropertyThing<T>();
             var context = Factory.Create(thing, new ThingOption());
             
             thing.ThingContext = context;
@@ -398,31 +391,305 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             context.Properties.Should().NotBeEmpty();
             context.Properties.Should().HaveCount(2);
-            context.Properties.Should().ContainKey(nameof(PropertyThing<T>.Value));
-            context.Properties.Should().ContainKey(nameof(PropertyThing<T>.NullableValue));
+            context.Properties.Should().ContainKey(nameof(StructPropertyThing<T>.Value));
+            context.Properties.Should().ContainKey(nameof(StructPropertyThing<T>.NullableValue));
 
             var value = Fixture.Create<T>();
             var jsonElement = createJsonElement(value);
             
-            context.Properties[nameof(PropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(StructPropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.Value.Should().Be(value);
-            context.Properties[nameof(PropertyThing<T>.Value)].GetValue().Should().Be(value);
+            context.Properties[nameof(StructPropertyThing<T>.Value)].GetValue().Should().Be(value);
             
-            context.Properties[nameof(PropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
-            thing.Value.Should().Be(value);
-            context.Properties[nameof(PropertyThing<T>.NullableValue)].GetValue().Should().Be(value);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            thing.NullableValue.Should().Be(value);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].GetValue().Should().Be(value);
             
             jsonElement =  JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": null }").GetProperty("input");
-            context.Properties[nameof(PropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.NullableValue.Should().BeNull();
-            context.Properties[nameof(PropertyThing<T>.NullableValue)].GetValue().Should().BeNull();
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].GetValue().Should().BeNull();
+        }
+        
+        private void TestValidNullableProperty<T>(Func<T, JsonElement> createJsonElement)
+        {
+            var thing = new NullablePropertyThing<T>();
+            var context = Factory.Create(thing, new ThingOption());
+            
+            thing.ThingContext = context;
+            
+            context.Actions.Should().BeEmpty();
+            context.Events.Should().BeEmpty();
+
+            context.Properties.Should().NotBeEmpty();
+            context.Properties.Should().HaveCount(1);
+            context.Properties.Should().ContainKey(nameof(NullablePropertyThing<T>.Value));
+
+            var value = Fixture.Create<T>();
+            var jsonElement = createJsonElement(value);
+            
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            thing.Value.Should().Be(value);
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].GetValue().Should().Be(value);
+
+            jsonElement =  JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": null }").GetProperty("input");
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            thing.Value.Should().BeNull();
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].GetValue().Should().BeNull();
+        }
+
+        #endregion
+
+        #region Invalid Property
+
+        [Theory]
+        [InlineData(typeof(bool))]
+        [InlineData(typeof(Guid))]
+        [InlineData(typeof(TimeSpan))]
+        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(DateTimeOffset))]
+        [InlineData(typeof(Foo))]
+        [InlineData(typeof(char))]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(byte))]
+        [InlineData(typeof(sbyte))]
+        [InlineData(typeof(short))]
+        [InlineData(typeof(ushort))]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(uint))]
+        [InlineData(typeof(long))]
+        [InlineData(typeof(ulong))]
+        [InlineData(typeof(float))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(decimal))]
+        public void InvalidProperty(Type type)
+        {
+            if(type == typeof(bool))
+            {
+                TestInvalidValidProperty<bool>(() =>
+                JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                    .GetProperty("input"));
+                return;
+            }
+
+            #region String
+
+            if(type == typeof(Guid))
+            {
+                TestInvalidValidProperty<Guid>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<DateTime>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(DateTime))
+            {
+                TestInvalidValidProperty<DateTime>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(DateTimeOffset))
+            {
+                TestInvalidValidProperty<DateTimeOffset>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(TimeSpan))
+            {
+                TestInvalidValidProperty<TimeSpan>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(char))
+            {
+                TestInvalidValidProperty<char>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(Foo))
+            {
+                TestInvalidValidProperty<Foo>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(string))
+            {
+                TestInvalidNullableProperty<string>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {Fixture.Create<int>()} }}")
+                        .GetProperty("input"));
+                return;
+            }
+
+            #endregion
+
+            #region Integer
+
+            if(type == typeof(byte))
+            {
+                TestInvalidValidProperty<byte>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {Fixture.Create<bool>().ToString().ToLower()} }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(sbyte))
+            {
+                TestInvalidValidProperty<byte>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(short))
+            {
+                TestInvalidValidProperty<short>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(ushort))
+            {
+                TestInvalidValidProperty<ushort>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(int))
+            {
+                TestInvalidValidProperty<int>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(uint))
+            {
+                TestInvalidValidProperty<uint>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(long))
+            {
+                TestInvalidValidProperty<long>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(ulong))
+            {
+                TestInvalidValidProperty<ulong>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+
+            #endregion
+
+            #region Number
+
+            if(type == typeof(float))
+            {
+                TestInvalidValidProperty<float>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(double))
+            {
+                TestInvalidValidProperty<double>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+            
+            if(type == typeof(decimal))
+            {
+                TestInvalidValidProperty<decimal>(() => 
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
+                        .GetProperty("input"));
+                return;
+            }
+
+            #endregion
+        }
+        
+        private void TestInvalidValidProperty<T>(Func<JsonElement> createJsonElement)
+            where T : struct
+        {
+            var thing = new StructPropertyThing<T>();
+            var context = Factory.Create(thing, new ThingOption());
+            
+            thing.ThingContext = context;
+            
+            context.Actions.Should().BeEmpty();
+            context.Events.Should().BeEmpty();
+
+            context.Properties.Should().NotBeEmpty();
+            context.Properties.Should().HaveCount(2);
+            context.Properties.Should().ContainKey(nameof(StructPropertyThing<T>.Value));
+            context.Properties.Should().ContainKey(nameof(StructPropertyThing<T>.NullableValue));
+
+            var value = Fixture.Create<T>();
+            var jsonElement = createJsonElement();
+            
+            var defaultValue = Fixture.Create<T>();
+            thing.Value = defaultValue;
+            context.Properties[nameof(StructPropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
+            thing.Value.Should().NotBe(value);
+            thing.Value.Should().Be(defaultValue);
+            context.Properties[nameof(StructPropertyThing<T>.Value)].GetValue().Should().Be(defaultValue);
+
+            thing.NullableValue = defaultValue;
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
+            thing.NullableValue.Should().NotBe(value);
+            thing.NullableValue.Should().Be(defaultValue);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].GetValue().Should().Be(defaultValue);
+        }
+        
+        private void TestInvalidNullableProperty<T>(Func<JsonElement> createJsonElement)
+        {
+            var thing = new NullablePropertyThing<T>();
+            var context = Factory.Create(thing, new ThingOption());
+            
+            thing.ThingContext = context;
+            
+            context.Actions.Should().BeEmpty();
+            context.Events.Should().BeEmpty();
+
+            context.Properties.Should().NotBeEmpty();
+            context.Properties.Should().HaveCount(1);
+            context.Properties.Should().ContainKey(nameof(NullablePropertyThing<T>.Value));
+
+            var value = Fixture.Create<T>();
+            var jsonElement = createJsonElement();
+
+            var defaultValue = Fixture.Create<T>();
+            thing.Value = defaultValue;
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
+            thing.Value.Should().NotBe(value);
+            thing.Value.Should().Be(defaultValue);
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].GetValue().Should().Be(defaultValue);
         }
 
         #endregion
         
-        
-        
-        public class PropertyThing<T> : Thing
+        public class StructPropertyThing<T> : Thing
             where T : struct
         {
             public override string Name => "property-thing";
@@ -431,11 +698,91 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             public T? NullableValue { get; set; }
         }
         
+        public class NullablePropertyThing<T> : Thing
+        {
+            public override string Name => "property-thing";
+
+            public T Value { get; set; }
+        }
+        
         public enum Foo
         {
             A,
             Bar,
             C
         }
+
+        private const string RESPONSE_WITH_NULLABLE = @"{{
+  ""@context"": ""https://iot.mozilla.org/schemas"",
+  ""properties"": {{
+    ""value"": {{
+      ""type"": ""{0}"",
+      ""isReadOnly"": false,
+      {1}
+      ""link"": [
+        {{
+          ""href"": ""/things/property-thing/properties/value"",
+          ""rel"": ""property""
+        }}
+      ]
+    }},
+    ""nullableValue"": {{
+      ""type"": ""{0}"",
+      ""isReadOnly"": false,
+      {1}
+      ""link"": [
+        {{
+          ""href"": ""/things/property-thing/properties/nullableValue"",
+          ""rel"": ""property""
+        }}
+      ]
+    }}
+  }},
+  ""links"": [
+    {{
+      ""href"": ""properties"",
+      ""rel"": ""/things/property-thing/properties""
+    }},
+    {{
+      ""href"": ""events"",
+      ""rel"": ""/things/property-thing/events""
+    }},
+    {{
+      ""href"": ""actions"",
+      ""rel"": ""/things/property-thing/actions""
+    }}
+  ]
+}}";
+        
+        private const string RESPONSE_WITHOUT_NULLABLE = @"{{
+  ""@context"": ""https://iot.mozilla.org/schemas"",
+  ""properties"": {{
+    ""value"": {{
+      ""type"": ""{0}"",
+      ""isReadOnly"": false,
+      {1}
+      ""link"": [
+        {{
+          ""href"": ""/things/property-thing/properties/value"",
+          ""rel"": ""property""
+        }}
+      ]
+    }}
+  }},
+  ""links"": [
+    {{
+      ""href"": ""properties"",
+      ""rel"": ""/things/property-thing/properties""
+    }},
+    {{
+      ""href"": ""events"",
+      ""rel"": ""/things/property-thing/events""
+    }},
+    {{
+      ""href"": ""actions"",
+      ""rel"": ""/things/property-thing/actions""
+    }}
+  ]
+}}";
     }
 }

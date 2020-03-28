@@ -201,7 +201,7 @@ namespace Mozilla.IoT.WebThing.Factories
         {
             if (type.IsEnum)
             {
-                var enumValues = type.GetEnumValues();
+                var enumValues = type.GetEnumNames();
                 var result = new object[enumValues.Length];
                 Array.Copy(enumValues, 0, result, 0, result.Length);
                 return result;
