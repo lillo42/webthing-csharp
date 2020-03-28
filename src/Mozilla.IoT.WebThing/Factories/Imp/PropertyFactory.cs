@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Properties;
 using Mozilla.IoT.WebThing.Properties.Boolean;
@@ -15,9 +16,10 @@ namespace Mozilla.IoT.WebThing.Factories
         public IProperty Create(Type propertyType, Information information, Thing thing, 
             Action<object, object?> setter, Func<object, object?> getter)
         {
+            propertyType = propertyType.GetUnderlyingType();
             if(propertyType == typeof(bool))
-            {
-                 return new PropertyBoolean(thing, getter, setter, information.IsNullable);
+            { 
+                return new PropertyBoolean(thing, getter, setter, information.IsNullable);
             }
 
             if (propertyType == typeof(string))

@@ -9,16 +9,6 @@ namespace Mozilla.IoT.WebThing
         /// 
         /// </summary>
         /// <param name="href"></param>
-        public Link(string href)
-        {
-            Href = href;
-            Rel = null;
-        }
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="href"></param>
         /// <param name="rel"></param>
         public Link(string href, string? rel)
         {

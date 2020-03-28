@@ -98,25 +98,12 @@ namespace Mozilla.IoT.WebThing.Builders
         /// If is Read-only
         /// </summary>
         public bool IsReadOnly { get; }
-
-        /// <summary>
-        /// If has validation or all value are null.
-        /// </summary>
-        public bool HasValidation
-            => Minimum.HasValue
-               || Maximum.HasValue
-               || ExclusiveMinimum.HasValue
-               || ExclusiveMaximum.HasValue
-               || MultipleOf.HasValue
-               || MinimumLength.HasValue
-               || MaximumLength.HasValue
-               || Pattern != null
-               || (Enums != null && Enums.Length > 0);
+        
 
         /// <summary>
         /// IsNullable.
         /// </summary>
         public bool IsNullable
-            => IsNullable || (Enums != null && Enums.Contains(null!));
+            => _isNullable || (Enums != null && Enums.Contains(null!));
     }
 }

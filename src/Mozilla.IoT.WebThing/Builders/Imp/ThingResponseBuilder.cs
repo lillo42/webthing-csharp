@@ -83,7 +83,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             information.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
             {
-                new Link($"/thing/{_thingName}/events/{eventName}", "event")
+                new Link($"/things/{_thingName}/events/{eventName}", "event")
             });
             
             _events.Add(eventName, information);
@@ -126,7 +126,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             propertyInformation.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
             {
-                new Link($"/thing/{_thingName}/properties/{propertyName}", "property")
+                new Link($"/things/{_thingName}/properties/{propertyName}", "property")
             });
             
             _properties.Add(propertyName, propertyInformation);
@@ -161,7 +161,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             actionInformation.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
             {
-                new Link($"/thing/{_thingName}/actions/{propertyName}", "action")
+                new Link($"/things/{_thingName}/actions/{propertyName}", "action")
             });
             
             var input = new Dictionary<string, object?>();
