@@ -1,11 +1,6 @@
-using System;
 using AutoFixture;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Mozilla.IoT.WebThing.Attributes;
-using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
-using Xunit;
 
 namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 {

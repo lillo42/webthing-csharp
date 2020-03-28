@@ -118,7 +118,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             
             action.Cancel();
 
-            await Task.Delay(100);
+            await Task.Delay(200);
             action.TimeCompleted.Should().NotBeNull();
             action.Status.Should().Be(ActionStatus.Completed);
 

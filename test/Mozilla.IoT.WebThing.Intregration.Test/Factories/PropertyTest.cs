@@ -2,7 +2,6 @@ using System;
 using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
-using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Properties;
 using Newtonsoft.Json.Linq;

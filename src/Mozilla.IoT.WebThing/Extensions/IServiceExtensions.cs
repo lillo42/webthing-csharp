@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;

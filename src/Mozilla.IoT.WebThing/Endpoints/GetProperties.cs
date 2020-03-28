@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -29,6 +30,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
             }
+            
             logger.LogInformation("Found Thing with {counter} properties. [Thing: {name}]", thing.ThingContext.Properties.Count, thing.Name);
             
             var properties = new Dictionary<string, object?>();
@@ -41,7 +43,9 @@ namespace Mozilla.IoT.WebThing.Endpoints
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, properties, service.GetRequiredService<JsonSerializerOptions>());
+            return JsonSerializer.SerializeAsync(context.Response.Body, properties, 
+                service.GetRequiredService<ThingOption>()
+                    .ToJsonSerializerOptions());
         }
     }
 }
