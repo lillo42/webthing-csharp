@@ -75,7 +75,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
     ""int"": {
       ""link"": [
         {
-          ""href"": ""/thing/event-thing/events/int"",
+          ""href"": ""/things/event-thing/events/int"",
           ""rel"": ""event""
         }
       ]
@@ -86,7 +86,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
       ""unit"": ""Something"",
       ""link"": [
         {
-          ""href"": ""/thing/event-thing/events/other"",
+          ""href"": ""/things/event-thing/events/other"",
           ""rel"": ""event""
         }
       ]
