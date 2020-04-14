@@ -6,7 +6,7 @@ using Mozilla.IoT.WebThing.Extensions;
 namespace Mozilla.IoT.WebThing.Builders
 {
     /// <summary>
-    /// Create <see cref="ThingResponse"/>.
+    /// Create <see cref="Dictionary{TKey,TValue}"/>.
     /// </summary>
     public interface IThingResponseBuilder
     {
@@ -36,8 +36,8 @@ namespace Mozilla.IoT.WebThing.Builders
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="attribute"></param>
-        /// <param name="information">The <see cref="Information"/> about property</param>
-        void Add(PropertyInfo property, ThingPropertyAttribute? attribute, Information information);
+        /// <param name="jsonSchema">The <see cref="JsonSchema"/> about property</param>
+        void Add(PropertyInfo property, ThingPropertyAttribute? attribute, JsonSchema jsonSchema);
         
         /// <summary>
         /// Add action.
@@ -51,13 +51,13 @@ namespace Mozilla.IoT.WebThing.Builders
         /// </summary>
         /// <param name="parameter">The parameter.</param>
         /// <param name="attribute"></param>
-        /// <param name="information">The <see cref="Information"/> about parameter</param>
-        void Add(ParameterInfo parameter, ThingParameterAttribute? attribute, Information information);
+        /// <param name="jsonSchema">The <see cref="JsonSchema"/> about parameter</param>
+        void Add(ParameterInfo parameter, ThingParameterAttribute? attribute, JsonSchema jsonSchema);
 
         /// <summary>
-        /// Build the <see cref="ThingResponse"/>.
+        /// Build the <see cref="Dictionary{TKey,TValue}"/>.
         /// </summary>
-        /// <returns>New <see cref="ThingResponse"/>.</returns>
+        /// <returns>New <see cref="Dictionary{TKey,TValue}"/>.</returns>
         Dictionary<string, object?> Build();
     }
 }

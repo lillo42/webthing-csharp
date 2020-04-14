@@ -7,7 +7,6 @@ using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Properties;
 using NSubstitute;
 using Xunit;
 
@@ -67,7 +66,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 new Dictionary<string, object>(), 
                 events,
                 new Dictionary<string, ActionCollection>(),
-                new Dictionary<string, IProperty>());
+                new Dictionary<string, IThingProperty>());
             
             var value = _fixture.Create<int>();
             _thing.Invoke(value);
@@ -98,7 +97,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 new Dictionary<string, object>(), 
                 events,
                 new Dictionary<string, ActionCollection>(),
-                new Dictionary<string, IProperty>());
+                new Dictionary<string, IThingProperty>());
             
             var value = _fixture.Create<string>();
             _thing.Invoke(value);

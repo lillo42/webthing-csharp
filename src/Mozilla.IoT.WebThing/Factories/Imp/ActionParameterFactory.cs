@@ -12,69 +12,69 @@ namespace Mozilla.IoT.WebThing.Factories
     public class ActionParameterFactory : IActionParameterFactory
     {
         /// <inheritdoc/>
-        public IActionParameter Create(Type parameterType, Information information)
+        public IActionParameter Create(Type parameterType, JsonSchema jsonSchema)
         {
             if (parameterType == typeof(bool))
             {
-                return new ParameterBoolean(information.IsNullable);
+                return new ParameterBoolean(jsonSchema.IsNullable);
             }
 
             if (parameterType == typeof(string))
             {
-                return new ParameterString(information.IsNullable,
-                    information.MinimumLength, information.MaximumLength, information.Pattern,
-                    information.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray()!);
+                return new ParameterString(jsonSchema.IsNullable,
+                    jsonSchema.MinimumLength, jsonSchema.MaximumLength, jsonSchema.Pattern,
+                    jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToString).ToArray()!);
             }
 
             if (parameterType == typeof(char))
             {
-                return new ParameterChar(information.IsNullable,
-                    information.Enums?.Where(x => x != null).Select(Convert.ToChar).ToArray());
+                return new ParameterChar(jsonSchema.IsNullable,
+                    jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToChar).ToArray());
             }
 
             if (parameterType.IsEnum)
             {
-                return new ParameterEnum(information.IsNullable, parameterType);
+                return new ParameterEnum(jsonSchema.IsNullable, parameterType);
             }
 
             if (parameterType == typeof(Guid))
             {
-                return new ParameterGuid(information.IsNullable,
-                    information.Enums?.Where(x => x != null).Select(x => Guid.Parse(x.ToString()!)).ToArray());
+                return new ParameterGuid(jsonSchema.IsNullable,
+                    jsonSchema.Enums?.Where(x => x != null).Select(x => Guid.Parse(x.ToString()!)).ToArray());
             }
 
             if (parameterType == typeof(TimeSpan))
             {
-                return new ParameterTimeSpan(information.IsNullable,
-                    information.Enums?.Where(x => x != null).Select(x => TimeSpan.Parse(x.ToString()!)).ToArray());
+                return new ParameterTimeSpan(jsonSchema.IsNullable,
+                    jsonSchema.Enums?.Where(x => x != null).Select(x => TimeSpan.Parse(x.ToString()!)).ToArray());
             }
 
             if (parameterType == typeof(DateTime))
             {
-                return new ParameterDateTime(information.IsNullable,
-                    information.Enums?.Where(x => x != null).Select(Convert.ToDateTime).ToArray());
+                return new ParameterDateTime(jsonSchema.IsNullable,
+                    jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToDateTime).ToArray());
             }
 
             if (parameterType == typeof(DateTimeOffset))
             {
-                return new ParameterDateTimeOffset(information.IsNullable,
-                    information.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString()!)).ToArray());
+                return new ParameterDateTimeOffset(jsonSchema.IsNullable,
+                    jsonSchema.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString()!)).ToArray());
             }
             else
             {
-                var minimum = information.Minimum;
-                var maximum = information.Maximum;
-                var multipleOf = information.MultipleOf;
-                var enums = information.Enums;
+                var minimum = jsonSchema.Minimum;
+                var maximum = jsonSchema.Maximum;
+                var multipleOf = jsonSchema.MultipleOf;
+                var enums = jsonSchema.Enums;
 
-                if (information.ExclusiveMinimum.HasValue)
+                if (jsonSchema.ExclusiveMinimum.HasValue)
                 {
-                    minimum = information.ExclusiveMinimum!.Value + 1;
+                    minimum = jsonSchema.ExclusiveMinimum!.Value + 1;
                 }
 
-                if (information.ExclusiveMaximum.HasValue)
+                if (jsonSchema.ExclusiveMaximum.HasValue)
                 {
-                    maximum = information.ExclusiveMaximum!.Value - 1;
+                    maximum = jsonSchema.ExclusiveMaximum!.Value - 1;
                 }
 
                 if (parameterType == typeof(byte))
@@ -83,7 +83,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new byte?(Convert.ToByte(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
-                    return new ParameterByte(information.IsNullable,
+                    return new ParameterByte(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToByte).ToArray());
                 }
                 
@@ -93,7 +93,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new sbyte?(Convert.ToSByte(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new sbyte?(Convert.ToSByte(multipleOf!.Value)) : null;
 
-                    return new ParameterSByte(information.IsNullable,
+                    return new ParameterSByte(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToSByte).ToArray());
                 }
                 
@@ -103,7 +103,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new short?(Convert.ToInt16(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new short?(Convert.ToInt16(multipleOf!.Value)) : null;
 
-                    return new ParameterShort(information.IsNullable,
+                    return new ParameterShort(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToInt16).ToArray());
                 }
                 
@@ -113,7 +113,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new ushort?(Convert.ToUInt16(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
-                    return new ParameterUShort(information.IsNullable,
+                    return new ParameterUShort(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToUInt16).ToArray());
                 }
                 
@@ -123,7 +123,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new int?(Convert.ToInt32(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new int?(Convert.ToInt32(multipleOf!.Value)) : null;
 
-                    return new ParameterInt(information.IsNullable,
+                    return new ParameterInt(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToInt32).ToArray());
                 }
                 
@@ -133,7 +133,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new uint?(Convert.ToUInt32(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new uint?(Convert.ToUInt32(multipleOf!.Value)) : null;
 
-                    return new ParameterUInt(information.IsNullable,
+                    return new ParameterUInt(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToUInt32).ToArray());
                 } 
                 
@@ -143,7 +143,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new long?(Convert.ToInt64(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new long?(Convert.ToInt64(multipleOf!.Value)) : null;
 
-                    return new ParameterLong(information.IsNullable,
+                    return new ParameterLong(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToInt64).ToArray());
                 }
                 
@@ -153,7 +153,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new ulong?(Convert.ToUInt64(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new byte?(Convert.ToByte(multipleOf!.Value)) : null;
 
-                    return new ParameterULong(information.IsNullable,
+                    return new ParameterULong(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToUInt64).ToArray());
                 }
                 
@@ -163,7 +163,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new float?(Convert.ToSingle(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new float?(Convert.ToSingle(multipleOf!.Value)) : null;
 
-                    return new ParameterFloat(information.IsNullable,
+                    return new ParameterFloat(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToSingle).ToArray());
                 }
                 
@@ -173,7 +173,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new double?(Convert.ToDouble(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new double?(Convert.ToDouble(multipleOf!.Value)) : null;
 
-                    return new ParameterDouble(information.IsNullable,
+                    return new ParameterDouble(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToDouble).ToArray());
                 }
                 else
@@ -182,7 +182,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     var max = maximum.HasValue ? new decimal?(Convert.ToDecimal(maximum!.Value)) : null;
                     var multi = multipleOf.HasValue ? new decimal?(Convert.ToDecimal(multipleOf!.Value)) : null;
 
-                    return new ParameterDecimal(information.IsNullable,
+                    return new ParameterDecimal(jsonSchema.IsNullable,
                         min, max, multi, enums?.Where(x => x != null).Select(Convert.ToDecimal).ToArray());
                 }
             }

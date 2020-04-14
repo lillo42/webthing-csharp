@@ -1,4 +1,5 @@
 using System;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Attributes
 {
@@ -6,7 +7,7 @@ namespace Mozilla.IoT.WebThing.Attributes
     /// Action parameter information.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter)]
-    public class ThingParameterAttribute : Attribute
+    public class ThingParameterAttribute : Attribute, IJsonSchema
     {
         /// <summary>
         /// Action parameter name.
@@ -27,7 +28,22 @@ namespace Mozilla.IoT.WebThing.Attributes
         /// Unit of Action parameter.
         /// </summary>
         public string? Unit { get; set; }
-        internal double? MinimumValue { get; private set; }
+        
+        /// <inheritdoc/>
+        bool? IJsonSchema.IsReadOnly { get; set; }
+        
+        /// <inheritdoc/>
+        bool? IJsonSchema.IsWriteOnly { get; set; }
+        
+        /// <inheritdoc/>
+        public object[]? Enum { get; set; }
+
+        private decimal? _minimum;
+        decimal? IJsonSchema.Minimum
+        {
+            get => _minimum;
+            set => _minimum = value;
+        }
 
         /// <summary>
         /// Minimum accepts value.
@@ -35,60 +51,84 @@ namespace Mozilla.IoT.WebThing.Attributes
         /// </summary>
         public double Minimum
         {
-            get => MinimumValue ?? 0;
-            set => MinimumValue = value;
+            get => Convert.ToDouble(_minimum);
+            set => _minimum = Convert.ToDecimal(value);
         }
         
-        internal double? MaximumValue { get; private set; }
-
-        /// <summary>
-        /// Maximum accepts value.
-        /// This property should be use only for number(int, long, double, byte and etc).
-        /// </summary>
-        public double Maximum
+        private decimal? _maximum;
+        decimal? IJsonSchema.Maximum
         {
-            get => MaximumValue ?? 0;
-            set => MaximumValue = value;
+            get => _maximum;
+            set => _maximum = value;
         }
-
-        internal int? MultipleOfValue { get; set; }
-
+        
         /// <summary>
         /// Multiple of accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        public int MultipleOf
+        public double Maximum 
         {
-            get => MultipleOfValue ?? 0;
-            set => MultipleOfValue = value;
+            get => Convert.ToDouble(_maximum);
+            set => _maximum = Convert.ToDecimal(value);
         }
         
-        internal double? ExclusiveMinimumValue { get; set; }
+        private decimal? _multipleOf;
+        decimal? IJsonSchema.MultipleOf
+        {
+            get => _multipleOf;
+            set => _multipleOf = value;
+        }
         
+        /// <summary>
+        /// Multiple of accepts value.
+        /// This property should be use only for number(int, long, double, byte and etc).
+        /// </summary>
+        public double MultipleOf
+        {
+            get => Convert.ToDouble(_multipleOf);
+            set => _multipleOf = Convert.ToDecimal(value);
+        }
+        
+        private decimal? _exclusiveMinimum;
+        decimal? IJsonSchema.ExclusiveMinimum
+        {
+            get => _exclusiveMinimum;
+            set => _exclusiveMinimum = value;
+        }
+
         /// <summary>
         /// Exclusive minimum (less than and not equal) accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        public double ExclusiveMinimum
+        public double ExclusiveMinimum 
         {
-            get => ExclusiveMinimumValue ?? 0;
-            set => ExclusiveMinimumValue = value;
+            get => Convert.ToDouble(_exclusiveMinimum);
+            set => _exclusiveMinimum = Convert.ToDecimal(value);
         }
         
-        internal double? ExclusiveMaximumValue { get; set; }
+        private decimal? _exclusiveMaximum;
+        decimal? IJsonSchema.ExclusiveMaximum
+        {
+            get => _exclusiveMaximum;
+            set => _exclusiveMaximum = value;
+        }
         
         /// <summary>
         /// Exclusive maximum (great than and not equal) accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        public double ExclusiveMaximum
+        public double ExclusiveMaximum 
         {
-            get => ExclusiveMaximumValue ?? 0;
-            set => ExclusiveMaximumValue = value;
+            get => Convert.ToDouble(_exclusiveMaximum);
+            set => _exclusiveMaximum = Convert.ToDecimal(value);
         }
         
-        
-        internal int? MinimumLengthValue { get; set; }
+        private int? _minimumLength;
+        int? IJsonSchema.MinimumLength
+        {
+            get => _minimumLength;
+            set => _minimumLength = value;
+        }
         
         /// <summary>
         /// Minimum string length accepts.
@@ -96,32 +136,79 @@ namespace Mozilla.IoT.WebThing.Attributes
         /// </summary>
         public int MinimumLength
         {
-            get => MinimumLengthValue.GetValueOrDefault();
-            set => MinimumLengthValue = value;
+            get => _minimumLength ?? 0;
+            set => _minimumLength = value;
+        }
+        
+        private int? _maximumLength;
+        int? IJsonSchema.MaximumLength
+        {
+            get => _maximumLength;
+            set => _maximumLength = value;
         }
 
-        internal int? MaximumLengthValue { get; set; }
-        
         /// <summary>
         /// Maximum string length accepts.
         /// This property should be use only for string.
         /// </summary>
         public int MaximumLength
         {
-            get => MaximumLengthValue.GetValueOrDefault();
-            set => MaximumLengthValue = value;
+            get => _maximumLength ?? 0;
+            set => _maximumLength = value;
         }
         
-        
-        /// <summary>
-        /// Pattern this action parameter must have.
-        /// This property should be use only for string.
-        /// </summary>
+        /// <inheritdoc/>
         public string? Pattern { get; set; }
         
+        private int? _minimumItems;
+        int? IJsonSchema.MinimumItems
+        {
+            get => _minimumItems;
+            set => _minimumItems = value;
+        }
+        
         /// <summary>
-        /// Possible value this action parameter should have.
+        /// Minimum array length accepts.
+        /// This property should be use only for collection.
         /// </summary>
-        public object[]? Enum { get; set; }
+        public int MinimumItems 
+        {
+            get => _minimumItems ?? 0;
+            set => _minimumItems = value;
+        }
+        
+        private int? _maximumItems;
+        int? IJsonSchema.MaximumItems
+        {
+            get => _maximumItems;
+            set => _maximumItems = value;
+        }
+        
+        /// <summary>
+        /// Maximum array length accepts.
+        /// This property should be use only for collection.
+        /// </summary>
+        public int MaximumItems 
+        {
+            get => _maximumItems ?? 0;
+            set => _maximumItems = value;
+        }
+        
+        private bool? _uniqueItems;
+        bool? IJsonSchema.UniqueItems
+        {
+            get => _uniqueItems;
+            set => _uniqueItems = value;
+        }
+        
+        /// <summary>
+        /// If array accepts only unique items.
+        /// This property should be use only for collection. 
+        /// </summary>
+        public bool UniqueItems 
+        {
+            get => _uniqueItems ?? false;
+            set => _uniqueItems = value;
+        }
     }
 }

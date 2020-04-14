@@ -98,15 +98,15 @@ namespace Mozilla.IoT.WebThing.Builders
         }
         
         /// <inheritdoc /> 
-        public void Add(ParameterInfo parameter, Information information)
+        public void Add(ParameterInfo parameter, JsonSchema jsonSchema)
         {
             if (_input == null)
             {
                 throw new InvalidOperationException($"ThingOption is null, call {nameof(Add)} before add");
             }
             
-            CreateProperty(_input, information.Name, parameter.ParameterType);
-            _parameters.Add(information.Name, _factory.Create(parameter.ParameterType, information));
+            CreateProperty(_input, jsonSchema.Name, parameter.ParameterType);
+            _parameters.Add(jsonSchema.Name, _factory.Create(parameter.ParameterType, jsonSchema));
         }
 
         private static System.Reflection.Emit.PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)

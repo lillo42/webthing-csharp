@@ -7,6 +7,7 @@ using FluentAssertions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Json;
 using Newtonsoft.Json.Linq;
 using NSubstitute;
 using Xunit;
@@ -331,12 +332,14 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 var properties = thingType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .Where(x => !IsThingProperty(x.Name));
 
+                var schema = Substitute.For<IJsonSchema>();
+                schema.Pattern.Returns((string)null);
+                
                 foreach (var property in properties)
                 {
                     _builder.Add(property, null, 
-                        new Information(null, null, null, null, null,
-                            null, null, null, null, false, 
-                            property.Name, _fixture.Create<bool>()));
+                        new JsonSchema(schema, null, property.PropertyType.ToJsonType(),
+                            property.Name!, _fixture.Create<bool>()));
                 }
             }
             
@@ -469,17 +472,13 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 foreach (var property in properties)
                 {
                     var attribute = property.GetCustomAttribute<ThingPropertyAttribute>();
-                    _builder.Add(property, attribute, ToInformation(attribute));
+                    _builder.Add(property, attribute, ToInformation(attribute, property.PropertyType.ToJsonType()));
                 }
             }
             
-            static Information ToInformation(ThingPropertyAttribute attribute)
+            static JsonSchema ToInformation(ThingPropertyAttribute attribute, JsonType jsonType)
             {
-                return new Information(attribute.MinimumValue, attribute.MaximumValue,
-                    attribute.ExclusiveMinimumValue, attribute.ExclusiveMaximumValue,
-                    attribute.MultipleOfValue, attribute.MinimumLengthValue, 
-                    attribute.MaximumLengthValue, attribute.Pattern, attribute.Enum, 
-                    attribute.IsReadOnly, attribute.Name!, false);
+                return new JsonSchema(attribute, attribute.Enum, jsonType, attribute.Name!, false);
             }
         }
         
@@ -607,11 +606,14 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 {
                     _builder.Add(method, null);
 
+                    var schema = Substitute.For<IJsonSchema>();
+                    schema.Pattern.Returns((string)null);
+                    
                     foreach (var parameter in method.GetParameters())
                     {
-                        _builder.Add(parameter, null, new Information(null, null, null, null, null,
-                            null, null, null, null, false, 
-                            parameter.Name!, _fixture.Create<bool>()));
+                        _builder.Add(parameter, null, 
+                            new JsonSchema(schema, null, parameter.ParameterType.ToJsonType(),
+                                parameter.Name!, _fixture.Create<bool>()));
                     }
                 }
             }
@@ -781,17 +783,16 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                     foreach (var parameter in method.GetParameters())
                     {
                         _builder.Add(parameter, parameter.GetCustomAttribute<ThingParameterAttribute>(), 
-                            ToInformation(parameter.GetCustomAttribute<ThingParameterAttribute>(), 
+                            ToInformation(parameter.GetCustomAttribute<ThingParameterAttribute>(),
+                                parameter.ParameterType.ToJsonType(),
                                 parameter.Name));
                     }
                 }
             }
             
-            Information ToInformation(ThingParameterAttribute attribute, string name)
+            JsonSchema ToInformation(ThingParameterAttribute attribute, JsonType jsonType, string name)
             {
-                return new Information(attribute?.MinimumValue, attribute?.MaximumValue, attribute?.ExclusiveMinimumValue, 
-                    attribute?.ExclusiveMaximumValue, attribute?.MultipleOfValue, attribute?.MinimumLengthValue,
-                    attribute?.MaximumLengthValue, attribute?.Pattern, attribute?.Enum, false, 
+                return new JsonSchema(attribute, attribute?.Enum, jsonType, 
                     attribute?.Name ?? name, _fixture.Create<bool>());
             }
         }

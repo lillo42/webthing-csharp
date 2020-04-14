@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Properties;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -34,11 +33,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             logger.LogInformation("Going to set property {propertyName}", propertyName);
 
-            var jsonOptions = service.GetRequiredService<JsonSerializerOptions>();
-            
-            var jsonElement = await context.FromBodyAsync<JsonElement>(jsonOptions)
-                .ConfigureAwait(false);
-
             if (!thing.ThingContext.Properties.TryGetValue(propertyName, out var property))
             {
                 logger.LogInformation("Property not found. [Thing: {thingName}][Property: {propertyName}]", thing.Name, propertyName);
@@ -46,12 +40,16 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            var jsonProperties = jsonElement.EnumerateObject();
+
+            var reader = service.GetRequiredService<IJsonReader>();
+
+            var jsonProperties =  await reader.GetValuesAsync()
+                .ConfigureAwait(false);
             foreach (var jsonProperty in jsonProperties)
             {
-                if (propertyName.Equals(jsonProperty.Name))
+                if (propertyName.Equals(jsonProperty.Key))
                 {
-                    switch (property.SetValue(jsonProperty.Value))
+                    switch (property.TrySetValue(jsonProperty.Value!))
                     {
                         case SetPropertyResult.InvalidValue:
                             logger.LogInformation("Property with Invalid. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
@@ -61,17 +59,25 @@ namespace Mozilla.IoT.WebThing.Endpoints
                             logger.LogInformation("Read-Only Property. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
                             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                             return;
+                        case SetPropertyResult.Ok:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
                 }
                 else
                 {
-                    logger.LogInformation("Invalid property. [Thing: {thingName}][Excepted property: {propertyName}][Actual property: {currentPropertyName}]", thing.Name, propertyName, jsonProperty.Name);
+                    logger.LogInformation("Invalid property. [Thing: {thingName}][Excepted property: {propertyName}][Actual property: {currentPropertyName}]", thing.Name, propertyName, jsonProperty.Key);
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     return;
                 }
             }
             
-            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object?> {[propertyName] = property.GetValue() }, jsonOptions)
+            context.StatusCodeResult(HttpStatusCode.OK);
+            
+            var writer = service.GetRequiredService<IJsonWriter>();
+            property.TryGetValue(out var value);
+            await writer.WriteAsync(new Dictionary<string, object?> {[propertyName] = value})
                 .ConfigureAwait(false);
         }
     }

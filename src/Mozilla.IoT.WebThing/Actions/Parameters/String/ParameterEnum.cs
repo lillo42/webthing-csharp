@@ -6,7 +6,6 @@ namespace Mozilla.IoT.WebThing.Actions.Parameters.String
     /// <summary>
     /// Represent <see cref="Enum"/> action parameter.
     /// </summary>
-    /// <typeparam name="TEnum"></typeparam>
     public readonly struct ParameterEnum : IActionParameter
     {
         private readonly Type _enumType;

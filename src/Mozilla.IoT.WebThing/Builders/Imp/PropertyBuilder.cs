@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
-using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing.Builders
 {
@@ -14,7 +13,7 @@ namespace Mozilla.IoT.WebThing.Builders
         private readonly IPropertyFactory _factory;
         private Thing? _thing;
         private ThingOption? _option;
-        private Dictionary<string, IProperty>? _properties;
+        private Dictionary<string, IThingProperty>? _properties;
 
         /// <summary>
         /// Initialize a new instance of <see cref="PropertyBuilder"/>.
@@ -37,12 +36,12 @@ namespace Mozilla.IoT.WebThing.Builders
         public IPropertyBuilder SetThingOption(ThingOption option)
         {
             _option = option;
-            _properties = new Dictionary<string, IProperty>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _properties = new Dictionary<string, IThingProperty>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
             return this;
         }
 
         /// <inheritdoc /> 
-        public void Add(PropertyInfo property, Information information)
+        public void Add(PropertyInfo property, JsonSchema jsonSchema)
         {
             if (_thing == null)
             {
@@ -55,17 +54,20 @@ namespace Mozilla.IoT.WebThing.Builders
             }
 
             var getter = GetGetMethod(property);
+            var propertyName = _option.PropertyNamingPolicy.ConvertName(jsonSchema.Name);
             
-            if (information.IsReadOnly)
+            if (jsonSchema.IsReadOnly)
             {
-                _properties.Add(_option.PropertyNamingPolicy.ConvertName(information.Name), new PropertyReadOnly(_thing, getter));
+                _properties.Add(propertyName, 
+                    new ThingProperty(_thing, jsonSchema.IsReadOnly, false, getter, 
+                    null, null, null, null));
                 return;
             }
             
             var setter = GetSetMethod(property);
             
-            _properties.Add(_option.PropertyNamingPolicy.ConvertName(information.Name), 
-                _factory.Create(property.PropertyType, information, _thing, setter, getter));
+            _properties.Add(_option.PropertyNamingPolicy.ConvertName(jsonSchema.Name), 
+                _factory.Create(property.PropertyType, jsonSchema, _thing, setter, getter));
 
             static Func<object, object?> GetGetMethod(PropertyInfo property)
             {
@@ -97,7 +99,7 @@ namespace Mozilla.IoT.WebThing.Builders
         }
 
         /// <inheritdoc /> 
-        public Dictionary<string, IProperty> Build()
+        public Dictionary<string, IThingProperty> Build()
         {
             if (_properties == null || _option == null)
             {

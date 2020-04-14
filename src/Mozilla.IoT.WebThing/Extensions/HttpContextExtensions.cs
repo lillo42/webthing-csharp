@@ -66,6 +66,13 @@ namespace Microsoft.AspNetCore.Http
             return result;
         }
 
+        public static void StatusCodeResult(this HttpContext context, HttpStatusCode statusCode)
+        {
+            context.Response.StatusCode = (int)statusCode;
+            context.Response.ContentType = Const.ContentType;
+            context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+        }
+
         public static async ValueTask WriteBodyAsync<T>(this HttpContext context, 
             HttpStatusCode statusCode, T value, 
             JsonSerializerOptions options, CancellationToken cancellationToken = default)

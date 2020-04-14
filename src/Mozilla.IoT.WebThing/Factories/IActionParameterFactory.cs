@@ -13,8 +13,8 @@ namespace Mozilla.IoT.WebThing.Factories
         /// Create new instance of <see cref="IActionParameter"/>.
         /// </summary>
         /// <param name="parameterType">The <see cref="Type"/> of parameter.</param>
-        /// <param name="information">The <see cref="Information"/>.</param>
+        /// <param name="jsonSchema">The <see cref="JsonSchema"/>.</param>
         /// <returns>Return new instance of <see cref="IActionParameter"/>.</returns>
-        IActionParameter Create(Type parameterType, Information information);
+        IActionParameter Create(Type parameterType, JsonSchema jsonSchema);
     }
 }

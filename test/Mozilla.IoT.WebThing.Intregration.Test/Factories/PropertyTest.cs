@@ -3,7 +3,6 @@ using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Properties;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -397,18 +396,21 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             var value = Fixture.Create<T>();
             var jsonElement = createJsonElement(value);
             
-            context.Properties[nameof(StructPropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(StructPropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.Value.Should().Be(value);
-            context.Properties[nameof(StructPropertyThing<T>.Value)].GetValue().Should().Be(value);
+            context.Properties[nameof(StructPropertyThing<T>.Value)].TryGetValue(out var getValue).Should().BeTrue();
+            getValue.Should().Be(value);
             
-            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.NullableValue.Should().Be(value);
-            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].GetValue().Should().Be(value);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].TryGetValue(out getValue).Should().BeTrue();
+            getValue.Should().Be(value);
             
             jsonElement =  JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": null }").GetProperty("input");
-            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.NullableValue.Should().BeNull();
-            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].GetValue().Should().BeNull();
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].TryGetValue(out getValue).Should().BeTrue();
+            getValue.Should().BeNull();
         }
         
         private void TestValidNullableProperty<T>(Func<T, JsonElement> createJsonElement)
@@ -428,14 +430,16 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             var value = Fixture.Create<T>();
             var jsonElement = createJsonElement(value);
             
-            context.Properties[nameof(NullablePropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.Value.Should().Be(value);
-            context.Properties[nameof(NullablePropertyThing<T>.Value)].GetValue().Should().Be(value);
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].TryGetValue(out var getValue).Should().BeTrue();
+            getValue.Should().Be(value);
 
             jsonElement =  JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": null }").GetProperty("input");
-            context.Properties[nameof(NullablePropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.Value.Should().BeNull();
-            context.Properties[nameof(NullablePropertyThing<T>.Value)].GetValue().Should().BeNull();
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].TryGetValue(out getValue).Should().BeTrue();
+            getValue.Should().BeNull();
         }
 
         #endregion
@@ -650,16 +654,18 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
             
             var defaultValue = Fixture.Create<T>();
             thing.Value = defaultValue;
-            context.Properties[nameof(StructPropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
+            context.Properties[nameof(StructPropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
             thing.Value.Should().NotBe(value);
             thing.Value.Should().Be(defaultValue);
-            context.Properties[nameof(StructPropertyThing<T>.Value)].GetValue().Should().Be(defaultValue);
+            context.Properties[nameof(StructPropertyThing<T>.Value)].TryGetValue(out var getValue).Should().BeTrue();
+            getValue.Should().Be(defaultValue);
 
             thing.NullableValue = defaultValue;
-            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].SetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
             thing.NullableValue.Should().NotBe(value);
             thing.NullableValue.Should().Be(defaultValue);
-            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].GetValue().Should().Be(defaultValue);
+            context.Properties[nameof(StructPropertyThing<T>.NullableValue)].TryGetValue(out getValue).Should().BeTrue();
+            getValue.Should().Be(defaultValue);
         }
         
         private void TestInvalidNullableProperty<T>(Func<JsonElement> createJsonElement)
@@ -681,10 +687,11 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             var defaultValue = Fixture.Create<T>();
             thing.Value = defaultValue;
-            context.Properties[nameof(NullablePropertyThing<T>.Value)].SetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
             thing.Value.Should().NotBe(value);
             thing.Value.Should().Be(defaultValue);
-            context.Properties[nameof(NullablePropertyThing<T>.Value)].GetValue().Should().Be(defaultValue);
+            context.Properties[nameof(NullablePropertyThing<T>.Value)].TryGetValue(out var getValue).Should().BeTrue();
+            getValue.Should().Be(defaultValue);
         }
         #endregion
         

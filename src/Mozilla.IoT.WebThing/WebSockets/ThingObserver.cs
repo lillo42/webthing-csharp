@@ -56,10 +56,15 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             var data = _thing.ThingContext.Properties[property.PropertyName];
             _logger.LogInformation("Property changed, going to notify via Web Socket. [Property: {propertyName}]", property.PropertyName);
+            if (!data.TryGetValue(out var value))
+            {
+                return;
+            }
+            
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
                     new Dictionary<string, object?>
                     {
-                        [_options.GetPropertyName(property.PropertyName)] = data.GetValue()
+                        [_options.GetPropertyName(property.PropertyName)] = value
                     }),
                 _options);
             

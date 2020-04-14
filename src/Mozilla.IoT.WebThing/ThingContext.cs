@@ -3,9 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using Mozilla.IoT.WebThing.Actions;
-using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Events;
-using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -25,7 +23,7 @@ namespace Mozilla.IoT.WebThing
         public ThingContext(Dictionary<string, object?> response, 
             Dictionary<string, EventCollection> events,
             Dictionary<string, ActionCollection> actions, 
-            Dictionary<string, IProperty> properties)
+            Dictionary<string, IThingProperty> properties)
         {
             Response = response ?? throw new ArgumentNullException(nameof(response));
             Events = events ?? throw new ArgumentNullException(nameof(events));
@@ -41,7 +39,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The properties associated with thing.
         /// </summary>
-        public Dictionary<string, IProperty> Properties { get; }
+        public Dictionary<string, IThingProperty> Properties { get; }
         
         /// <summary>
         /// The events associated with thing.

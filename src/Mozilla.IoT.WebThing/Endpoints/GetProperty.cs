@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -40,15 +40,20 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
             
             logger.LogInformation("Found Property. [Thing: {thingName}][Property: {propertyName}]", thing.Name, propertyName);
+            if (!property.TryGetValue(out var value))
+            {
+                logger.LogInformation("The Property is Write-only. [Thing: {thingName}][Property: {propertyName}]", thing.Name, propertyName);
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return Task.CompletedTask;
+            }
             
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = Const.ContentType;
+            context.StatusCodeResult(HttpStatusCode.OK);
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, new Dictionary<string, object?>
-                {
-                    [propertyName] = property.GetValue()
-                }, 
-                service.GetRequiredService<JsonSerializerOptions>());
+            var writer = service.GetRequiredService<IJsonWriter>();
+            return writer.WriteAsync(new Dictionary<string, object?>
+            {
+                [propertyName] = value
+            });
         }
     }
 }

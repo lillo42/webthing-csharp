@@ -8,6 +8,7 @@ using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
+using Mozilla.IoT.WebThing.Json;
 using NSubstitute;
 using Xunit;
 
@@ -62,7 +63,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             actions.Should().HaveCount(1);
             actions.Should().ContainKey(nameof(ActionThing.NoParameter));
 
-            _factory.DidNotReceive().Create(Arg.Any<Type>(), Arg.Any<Information>());
+            _factory.DidNotReceive().Create(Arg.Any<Type>(), Arg.Any<JsonSchema>());
         }
         
         [Fact]
@@ -76,13 +77,12 @@ namespace Mozilla.IoT.WebThing.Test.Builder
 
             _builder.Add(method!, null);
 
-            var parameters = new List<(ParameterInfo, Information)>();
+            var parameters = new List<(ParameterInfo, JsonSchema)>();
             
             foreach (var parameter in method.GetParameters())
             {
-                var info = new Information(null, null, null, null, null,
-                    null, null, null, null, false,
-                    parameter.Name!, _fixture.Create<bool>());
+                var info = new JsonSchema(Substitute.For<IJsonSchema>(), null, parameter.ParameterType.ToJsonType(),
+                    parameter.Name!, _fixture.Create<bool>());;
                 
                 parameters.Add((parameter, info));
                 _factory
@@ -116,12 +116,11 @@ namespace Mozilla.IoT.WebThing.Test.Builder
 
             _builder.Add(withParameter!, null);
 
-            var parameters = new List<(ParameterInfo, Information)>();
+            var parameters = new List<(ParameterInfo, JsonSchema)>();
             
             foreach (var parameter in withParameter.GetParameters())
             {
-                var info = new Information(null, null, null, null, null,
-                    null, null, null, null, false,
+                var info = new JsonSchema(Substitute.For<IJsonSchema>(), null, parameter.ParameterType.ToJsonType(),
                     parameter.Name!, _fixture.Create<bool>());
                 
                 parameters.Add((parameter, info));

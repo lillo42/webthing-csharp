@@ -7,6 +7,7 @@ using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
+using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -53,21 +54,30 @@ namespace Microsoft.Extensions.DependencyInjection
 
             service.AddScoped<ThingObservableResolver>();
             service.AddScoped(provider => provider.GetService<ThingObservableResolver>().Observer);
-            
-            service.AddSingleton<IWebSocketAction, RequestAction>();
-            service.AddSingleton<IWebSocketAction, AddEventSubscription>();
-            service.AddSingleton<IWebSocketAction, SetThingProperty>();
 
-            service.AddTransient<IThingContextFactory, ThingContextFactory>();
-            service.AddTransient<IThingResponseBuilder, ThingResponseBuilder>();
-            service.AddTransient<IEventBuilder, EventBuilder>();
-            service.AddTransient<IActionBuilder, ActionBuilder>();
-            service.AddTransient<IPropertyBuilder, PropertyBuilder>();
-            
-            service.AddSingleton<IPropertyFactory, PropertyFactory>();
-            service.AddSingleton<IActionParameterFactory, ActionParameterFactory>();
+            service.AddHttpContextAccessor();
+            service.TryAddSingleton<IWebSocketAction, RequestAction>();
+            service.TryAddSingleton<IWebSocketAction, AddEventSubscription>();
+            service.TryAddSingleton<IWebSocketAction, SetThingProperty>();
 
+            service.TryAddTransient<IThingContextFactory, ThingContextFactory>();
+            service.TryAddTransient<IThingResponseBuilder, ThingResponseBuilder>();
+            service.TryAddTransient<IEventBuilder, EventBuilder>();
+            service.TryAddTransient<IActionBuilder, ActionBuilder>();
+            service.TryAddTransient<IPropertyBuilder, PropertyBuilder>();
             
+            service.TryAddSingleton<IPropertyFactory, PropertyFactory>();
+            service.TryAddSingleton<IActionParameterFactory, ActionParameterFactory>();
+
+            service.TryAddScoped<SystemTextJson>();
+            service.TryAddScoped<IJsonReader>(provider => provider.GetRequiredService<SystemTextJson>());
+            service.TryAddScoped<IJsonWriter>(provider => provider.GetRequiredService<SystemTextJson>());
+
+            service.TryAddScoped<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
+            service.TryAddScoped<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
+            service.TryAddScoped<IConvertibleFactory, SystemTextJsonConvertible>();
+
+
             service.AddSingleton(provider =>
             {
                 var opt = provider.GetRequiredService<ThingOption>();

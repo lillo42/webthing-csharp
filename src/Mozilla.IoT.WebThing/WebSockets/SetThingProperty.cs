@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -47,7 +46,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         .ConfigureAwait(false);
                 }
 
-                switch (property!.SetValue(jsonProperty.Value))
+                switch (property!.TrySetValue(jsonProperty.Value))
                 {
                     case SetPropertyResult.InvalidValue:
                     {
