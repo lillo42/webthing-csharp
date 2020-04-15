@@ -8,82 +8,82 @@ namespace Mozilla.IoT.WebThing.Json
         /// <summary>
         /// If property is read-only.
         /// </summary>
-        bool? IsReadOnly { get; set; }
+        bool? IsReadOnly { get; }
         
         /// <summary>
         /// If property is write-only.
         /// </summary>
-        bool? IsWriteOnly { get; set; }
+        bool? IsWriteOnly { get; }
         
         /// <summary>
         /// Possible value this property should have.
         /// </summary>
-        object[]? Enum { get; set; }
+        object[]? Enum { get; }
         
         /// <summary>
         /// Minimum accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        decimal? Minimum { get; set; }
+        decimal? Minimum { get; }
         
         /// <summary>
         /// Multiple of accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        decimal? Maximum { get; set; }
+        decimal? Maximum { get; }
         
         /// <summary>
         /// Exclusive minimum (less than and not equal) accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        decimal? ExclusiveMinimum { get; set; }
+        decimal? ExclusiveMinimum { get; }
         
         /// <summary>
         /// Exclusive maximum (great than and not equal) accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        decimal? ExclusiveMaximum { get; set; }
+        decimal? ExclusiveMaximum { get; }
         
         /// <summary>
         /// Multiple of accepts value.
         /// This property should be use only for number(int, long, double, byte and etc).
         /// </summary>
-        decimal? MultipleOf { get; set; }
+        decimal? MultipleOf { get; }
         
         /// <summary>
         /// Minimum string length accepts.
         /// This property should be use only for string.
         /// </summary>
-        int? MinimumLength { get; set; }
+        int? MinimumLength { get; }
         
         /// <summary>
         /// Maximum string length accepts.
         /// This property should be use only for string.
         /// </summary>
-        int? MaximumLength { get; set; }
+        int? MaximumLength { get; }
         
         /// <summary>
         /// Pattern this action parameter must have.
         /// This property should be use only for string.
         /// </summary>
-        string? Pattern { get; set; }
+        string? Pattern { get; }
         
         /// <summary>
         /// Minimum array length accepts.
         /// This property should be use only for collection.
         /// </summary>
-        int? MinimumItems { get; set; }
+        int? MinimumItems { get; }
         
         /// <summary>
         /// Maximum array length accepts.
         /// This property should be use only for collection.
         /// </summary>
-        int? MaximumItems { get; set; }
+        int? MaximumItems { get; }
         
         /// <summary>
         /// If array accepts only unique items.
         /// This property should be use only for collection. 
         /// </summary>
-        bool? UniqueItems { get; set; }
+        bool? UniqueItems { get; }
     }
 }

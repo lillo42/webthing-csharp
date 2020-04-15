@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Builders;
-using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Factories
 {

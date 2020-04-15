@@ -28,22 +28,18 @@ namespace Mozilla.IoT.WebThing.Attributes
         /// Unit of Action parameter.
         /// </summary>
         public string? Unit { get; set; }
+
+        /// <inheritdoc/>
+        bool? IJsonSchema.IsReadOnly { get; } = null;
         
         /// <inheritdoc/>
-        bool? IJsonSchema.IsReadOnly { get; set; }
-        
-        /// <inheritdoc/>
-        bool? IJsonSchema.IsWriteOnly { get; set; }
+        bool? IJsonSchema.IsWriteOnly { get; } = null;
         
         /// <inheritdoc/>
         public object[]? Enum { get; set; }
 
         private decimal? _minimum;
-        decimal? IJsonSchema.Minimum
-        {
-            get => _minimum;
-            set => _minimum = value;
-        }
+        decimal? IJsonSchema.Minimum  => _minimum;
 
         /// <summary>
         /// Minimum accepts value.
@@ -56,11 +52,7 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private decimal? _maximum;
-        decimal? IJsonSchema.Maximum
-        {
-            get => _maximum;
-            set => _maximum = value;
-        }
+        decimal? IJsonSchema.Maximum  => _maximum;
         
         /// <summary>
         /// Multiple of accepts value.
@@ -73,11 +65,7 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private decimal? _multipleOf;
-        decimal? IJsonSchema.MultipleOf
-        {
-            get => _multipleOf;
-            set => _multipleOf = value;
-        }
+        decimal? IJsonSchema.MultipleOf => _multipleOf;
         
         /// <summary>
         /// Multiple of accepts value.
@@ -90,11 +78,7 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private decimal? _exclusiveMinimum;
-        decimal? IJsonSchema.ExclusiveMinimum
-        {
-            get => _exclusiveMinimum;
-            set => _exclusiveMinimum = value;
-        }
+        decimal? IJsonSchema.ExclusiveMinimum => _exclusiveMinimum;
 
         /// <summary>
         /// Exclusive minimum (less than and not equal) accepts value.
@@ -107,11 +91,7 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private decimal? _exclusiveMaximum;
-        decimal? IJsonSchema.ExclusiveMaximum
-        {
-            get => _exclusiveMaximum;
-            set => _exclusiveMaximum = value;
-        }
+        decimal? IJsonSchema.ExclusiveMaximum => _exclusiveMaximum;
         
         /// <summary>
         /// Exclusive maximum (great than and not equal) accepts value.
@@ -124,12 +104,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private int? _minimumLength;
-        int? IJsonSchema.MinimumLength
-        {
-            get => _minimumLength;
-            set => _minimumLength = value;
-        }
-        
+        int? IJsonSchema.MinimumLength  => _minimumLength;
+
         /// <summary>
         /// Minimum string length accepts.
         /// This property should be use only for string.
@@ -141,11 +117,7 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private int? _maximumLength;
-        int? IJsonSchema.MaximumLength
-        {
-            get => _maximumLength;
-            set => _maximumLength = value;
-        }
+        int? IJsonSchema.MaximumLength => _maximumLength;
 
         /// <summary>
         /// Maximum string length accepts.
@@ -161,12 +133,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         public string? Pattern { get; set; }
         
         private int? _minimumItems;
-        int? IJsonSchema.MinimumItems
-        {
-            get => _minimumItems;
-            set => _minimumItems = value;
-        }
-        
+        int? IJsonSchema.MinimumItems => _minimumItems;
+
         /// <summary>
         /// Minimum array length accepts.
         /// This property should be use only for collection.
@@ -178,11 +146,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private int? _maximumItems;
-        int? IJsonSchema.MaximumItems
-        {
-            get => _maximumItems;
-            set => _maximumItems = value;
-        }
+        int? IJsonSchema.MaximumItems => _maximumItems;
+        
         
         /// <summary>
         /// Maximum array length accepts.
@@ -195,12 +160,8 @@ namespace Mozilla.IoT.WebThing.Attributes
         }
         
         private bool? _uniqueItems;
-        bool? IJsonSchema.UniqueItems
-        {
-            get => _uniqueItems;
-            set => _uniqueItems = value;
-        }
-        
+        bool? IJsonSchema.UniqueItems => _uniqueItems;
+
         /// <summary>
         /// If array accepts only unique items.
         /// This property should be use only for collection. 
