@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             service.TryAddScoped<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
             service.TryAddScoped<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
-            service.TryAddScoped<IConvertibleFactory, SystemTextJsonConvertible>();
+            service.TryAddScoped<IConvertibleFactory, SystemTextJsonConvertibleFactory>();
 
 
             service.AddSingleton(provider =>

@@ -12,6 +12,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
     {
 
         #region Response
+
         [Theory]
         [InlineData(typeof(bool))]
         [InlineData(typeof(Guid))]
@@ -34,7 +35,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         [InlineData(typeof(decimal))]
         public void ResponseProperty(Type type)
         {
-            if(type == typeof(bool))
+            if (type == typeof(bool))
             {
                 TestResponseStructProperty<bool>("boolean");
                 return;
@@ -42,96 +43,97 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             #region String
 
-            if(type == typeof(Guid))
+            if (type == typeof(Guid))
             {
-                
+
                 TestResponseStructProperty<Guid>("string");
                 return;
             }
-            
-            if(type == typeof(DateTime))
+
+            if (type == typeof(DateTime))
             {
                 TestResponseStructProperty<DateTime>("string");
                 return;
             }
-            
-            if(type == typeof(DateTimeOffset))
+
+            if (type == typeof(DateTimeOffset))
             {
                 TestResponseStructProperty<DateTimeOffset>("string");
                 return;
             }
-            
-            if(type == typeof(TimeSpan))
+
+            if (type == typeof(TimeSpan))
             {
                 TestResponseStructProperty<TimeSpan>("string");
                 return;
             }
-            
-            if(type == typeof(char))
+
+            if (type == typeof(char))
             {
                 TestResponseStructProperty<char>("string");
                 return;
             }
-            
-            if(type == typeof(string))
+
+            if (type == typeof(string))
             {
                 TestResponseNullableProperty<string>("string");
                 return;
             }
-            
-            if(type == typeof(string))
+
+            if (type == typeof(string))
             {
                 TestResponseNullableProperty<string>("string");
                 return;
             }
-            
+
             #endregion
 
             #region Integer
 
-            if(type == typeof(byte))
+            if (type == typeof(byte))
             {
                 TestResponseStructProperty<byte>("integer");
                 return;
             }
-            
-            if(type == typeof(sbyte))
+
+            if (type == typeof(sbyte))
             {
                 TestResponseStructProperty<sbyte>("integer");
                 return;
             }
-            
-            if(type == typeof(short))
+
+            if (type == typeof(short))
             {
-                TestResponseStructProperty<short>("integer");;
+                TestResponseStructProperty<short>("integer");
+                ;
                 return;
             }
-            
-            if(type == typeof(ushort))
+
+            if (type == typeof(ushort))
             {
                 TestResponseStructProperty<ushort>("integer");
                 return;
             }
-            
-            if(type == typeof(int))
+
+            if (type == typeof(int))
             {
                 TestResponseStructProperty<int>("integer");
                 return;
             }
-            
-            if(type == typeof(uint))
+
+            if (type == typeof(uint))
             {
                 TestResponseStructProperty<uint>("integer");
                 return;
             }
-            
-            if(type == typeof(long))
+
+            if (type == typeof(long))
             {
                 TestResponseStructProperty<long>("integer");
                 return;
             }
-            
-            if(type == typeof(long))
+
+            if (type == typeof(long))
             {
                 TestResponseStructProperty<ulong>("integer");
                 return;
@@ -141,19 +143,19 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             #region Number
 
-            if(type == typeof(float))
+            if (type == typeof(float))
             {
                 TestResponseStructProperty<float>("number");
                 return;
             }
-            
-            if(type == typeof(double))
+
+            if (type == typeof(double))
             {
                 TestResponseStructProperty<double>("number");
                 return;
             }
-            
-            if(type == typeof(decimal))
+
+            if (type == typeof(decimal))
             {
                 TestResponseStructProperty<decimal>("number");
                 return;
@@ -165,19 +167,22 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         private void TestResponseStructProperty<T>(string type)
             where T : struct
         {
-            TestResponseProperty<StructPropertyThing<T>>(type, string.Format(RESPONSE_WITH_NULLABLE, type, 
-                typeof(T).IsEnum ? $@" ""enums"": [""{string.Join(@""" , """, typeof(T).GetEnumNames()) }""] " : string.Empty));
+            TestResponseProperty<StructPropertyThing<T>>(type, string.Format(RESPONSE_WITH_NULLABLE, type,
+                typeof(T).IsEnum
+                    ? $@" ""enums"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""] "
+                    : string.Empty));
         }
 
-        private void TestResponseNullableProperty<T>(string type) 
-            => TestResponseProperty<NullablePropertyThing<T>>(type, string.Format(RESPONSE_WITHOUT_NULLABLE, type, string.Empty));
+        private void TestResponseNullableProperty<T>(string type)
+            => TestResponseProperty<NullablePropertyThing<T>>(type,
+                string.Format(RESPONSE_WITHOUT_NULLABLE, type, string.Empty));
 
         private void TestResponseProperty<T>(string type, string response)
             where T : Thing, new()
         {
             var thing = new T();
             var context = Factory.Create(thing, new ThingOption());
-            
+
             var message = JsonSerializer.Serialize(context.Response,
                 new ThingOption().ToJsonSerializerOptions());
 
@@ -186,7 +191,7 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         }
 
         #endregion
-        
+
         #region Valid Property
 
         [Theory]
@@ -211,67 +216,67 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
         [InlineData(typeof(decimal))]
         public void ValidProperty(Type type)
         {
-            if(type == typeof(bool))
+            if (type == typeof(bool))
             {
-                TestValidProperty<bool>(x => 
-                JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x.ToString().ToLower()} }}")
-                    .GetProperty("input"));
+                TestValidProperty<bool>(x =>
+                    JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x.ToString().ToLower()} }}")
+                        .GetProperty("input"));
                 return;
             }
 
             #region String
 
-            if(type == typeof(Guid))
+            if (type == typeof(Guid))
             {
-                TestValidProperty<Guid>(x => 
+                TestValidProperty<Guid>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x}"" }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(DateTime))
+
+            if (type == typeof(DateTime))
             {
-                TestValidProperty<DateTime>(x => 
+                TestValidProperty<DateTime>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x:O}"" }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(DateTimeOffset))
+
+            if (type == typeof(DateTimeOffset))
             {
-                TestValidProperty<DateTimeOffset>(x => 
+                TestValidProperty<DateTimeOffset>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x:O}"" }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(TimeSpan))
+
+            if (type == typeof(TimeSpan))
             {
-                TestValidProperty<TimeSpan>(x => 
+                TestValidProperty<TimeSpan>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x}"" }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(char))
+
+            if (type == typeof(char))
             {
-                TestValidProperty<char>(x => 
+                TestValidProperty<char>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x}"" }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(Foo))
+
+            if (type == typeof(Foo))
             {
-                TestValidProperty<Foo>(x => 
+                TestValidProperty<Foo>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x}"" }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(string))
+
+            if (type == typeof(string))
             {
-                TestValidNullableProperty<string>(x => 
+                TestValidNullableProperty<string>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{x}"" }}")
                         .GetProperty("input"));
                 return;
@@ -281,65 +286,65 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             #region Integer
 
-            if(type == typeof(byte))
+            if (type == typeof(byte))
             {
-                TestValidProperty<byte>(x => 
+                TestValidProperty<byte>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(sbyte))
+
+            if (type == typeof(sbyte))
             {
-                TestValidProperty<byte>(x => 
+                TestValidProperty<byte>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(short))
+
+            if (type == typeof(short))
             {
-                TestValidProperty<short>(x => 
+                TestValidProperty<short>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(ushort))
+
+            if (type == typeof(ushort))
             {
-                TestValidProperty<ushort>(x => 
+                TestValidProperty<ushort>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(int))
+
+            if (type == typeof(int))
             {
-                TestValidProperty<int>(x => 
+                TestValidProperty<int>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(uint))
+
+            if (type == typeof(uint))
             {
-                TestValidProperty<uint>(x => 
+                TestValidProperty<uint>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(long))
+
+            if (type == typeof(long))
             {
-                TestValidProperty<long>(x => 
+                TestValidProperty<long>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(long))
+
+            if (type == typeof(long))
             {
-                TestValidProperty<uint>(x => 
+                TestValidProperty<uint>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
@@ -349,25 +354,25 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             #region Number
 
-            if(type == typeof(float))
+            if (type == typeof(float))
             {
-                TestValidProperty<float>(x => 
+                TestValidProperty<float>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(double))
+
+            if (type == typeof(double))
             {
-                TestValidProperty<double>(x => 
+                TestValidProperty<double>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
             }
-            
-            if(type == typeof(decimal))
+
+            if (type == typeof(decimal))
             {
-                TestValidProperty<decimal>(x => 
+                TestValidProperty<decimal>(x =>
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {x} }}")
                         .GetProperty("input"));
                 return;
@@ -375,7 +380,6 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
             #endregion
         }
-
 
         private void TestValidProperty<T>(Func<T, JsonElement> createJsonElement)
             where T : struct
@@ -448,11 +452,13 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
 
         [Theory]
         [InlineData(typeof(bool))]
+        
         [InlineData(typeof(Guid))]
         [InlineData(typeof(TimeSpan))]
         [InlineData(typeof(DateTime))]
         [InlineData(typeof(DateTimeOffset))]
         [InlineData(typeof(Foo))]
+        
         [InlineData(typeof(char))]
         [InlineData(typeof(string))]
         [InlineData(typeof(byte))]
@@ -628,6 +634,15 @@ namespace Mozilla.IoT.WebThing.Intregration.Test.Factories
                     JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
                         .GetProperty("input"));
                 return;
+            }
+
+            #endregion
+
+            #region Array
+
+            if (type == typeof(bool[]))
+            {
+                
             }
 
             #endregion

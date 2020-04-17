@@ -75,11 +75,11 @@ namespace System.Reflection
 
             return JsonType.Object;
         }
-        
+
         public static Code ToTypeCode(this Type type)
         {
             type = type.GetUnderlyingType();
-            
+
             if (type == typeof(bool))
             {
                 return Code.Boolean;
@@ -91,7 +91,7 @@ namespace System.Reflection
             {
                 return Code.Enum;
             }
-            
+
             if (type == typeof(string))
             {
                 return Code.String;
@@ -101,22 +101,22 @@ namespace System.Reflection
             {
                 return Code.Char;
             }
-            
+
             if (type == typeof(DateTime))
             {
                 return Code.DateTime;
             }
-            
+
             if (type == typeof(DateTimeOffset))
             {
                 return Code.DateTimeOffset;
             }
-            
+
             if (type == typeof(Guid))
             {
                 return Code.Guid;
             }
-            
+
             if (type == typeof(TimeSpan))
             {
                 return Code.TimeSpan;
@@ -130,52 +130,52 @@ namespace System.Reflection
             {
                 return Code.Int32;
             }
-            
+
             if (type == typeof(sbyte))
             {
                 return Code.SByte;
             }
-            
+
             if (type == typeof(byte))
             {
                 return Code.Byte;
             }
-            
+
             if (type == typeof(short))
             {
                 return Code.Int16;
             }
-            
+
             if (type == typeof(long))
             {
                 return Code.Int64;
             }
-            
+
             if (type == typeof(ushort))
             {
                 return Code.UInt16;
             }
-            
+
             if (type == typeof(uint))
             {
                 return Code.UInt32;
             }
-            
+
             if (type == typeof(ulong))
             {
                 return Code.UInt64;
             }
-            
+
             if (type == typeof(float))
             {
                 return Code.Float;
             }
-            
+
             if (type == typeof(double))
             {
                 return Code.Double;
             }
-            
+
             if (type == typeof(decimal))
             {
                 return Code.Decimal;
@@ -184,7 +184,8 @@ namespace System.Reflection
             #endregion
 
             if (type.IsArray
-                || type.GetInterfaces().Any(x => x == typeof(IEnumerable)))
+                || type.GetInterfaces().Any(x => x == typeof(IEnumerable))
+                || type == typeof(IEnumerable))
             {
                 return Code.Array;
             }

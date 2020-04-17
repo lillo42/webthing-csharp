@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +12,7 @@ using IConvertible = Mozilla.IoT.WebThing.Convertibles.IConvertible;
 namespace Mozilla.IoT.WebThing.Factories
 {
     /// <inheritdoc />
-    public class SystemTextJsonConvertible : IConvertibleFactory
+    public class SystemTextJsonConvertibleFactory : IConvertibleFactory
     {
         /// <inheritdoc />
         public IConvertible? Create(TypeCode typeCode, Type type)
@@ -50,35 +51,39 @@ namespace Mozilla.IoT.WebThing.Factories
                     var arrayType = type.GetCollectionType();
                     var convertible = Create(arrayType.ToTypeCode(), arrayType);
 
-                    var interfaces = type.GetInterfaces();
                     Type? convertibleType = null;
-                    if (interfaces.Any(x => x == typeof(ISet<>) || x == typeof(HashSet<>)))
+                    Type collectionType = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+                    
+                    if (collectionType == typeof(ISet<>)
+                        || collectionType == typeof(HashSet<>))
                     {
-                        convertibleType  = typeof(HashSetConvertible<>).MakeGenericType(arrayType);
+                        convertibleType = typeof(HashSetConvertible<>).MakeGenericType(arrayType);
                     }
-                    else if (interfaces.Any(x => x == typeof(ICollection<>) 
-                                                 || x == typeof(IEnumerable<>)
-                                                 || x == typeof(LinkedList<>)))
+                    else if (collectionType == typeof(IEnumerable<>) 
+                             || collectionType == typeof(ICollection<>) 
+                             || collectionType == typeof(IReadOnlyCollection<>) 
+                             || collectionType == typeof(LinkedList<>))
                     {
-                        convertibleType  = typeof(LinkedListConvertible<>).MakeGenericType(arrayType);
+                        convertibleType = typeof(LinkedListConvertible<>).MakeGenericType(arrayType);
                     }
-                    else if (interfaces.Any(x => x == typeof(IList<>) 
-                                                 || x == typeof(List<>)))
+                    else if (collectionType == typeof(IList<>)
+                             || collectionType == typeof(List<>)
+                             || collectionType == typeof(IReadOnlyList<>)
+                             || collectionType == typeof(IList))
                     {
-                        convertibleType  = typeof(ListConvertible<>).MakeGenericType(arrayType);
+                        convertibleType = typeof(ListConvertible<>).MakeGenericType(arrayType);
                     }
                     else
                     {
                         convertibleType  = typeof(ArrayConvertible<>).MakeGenericType(arrayType);
-                    }
-
+                    } 
+                    
                     if (convertibleType != null)
                     {
                         return (IConvertible)Activator.CreateInstance(convertibleType, convertible)!;
                     }
 
                     return null;
-                
                 case TypeCode.Object:
                     return ObjectConvertible.Instance;
                 default:

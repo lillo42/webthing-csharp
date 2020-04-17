@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Mozilla.IoT.WebThing.Json.Convertibles
+namespace Mozilla.IoT.WebThing.Json.Convertibles.String
 {
     /// <summary>
     /// Represent convertible/getter <see cref="string"/> from <see cref="JsonElement"/>.
