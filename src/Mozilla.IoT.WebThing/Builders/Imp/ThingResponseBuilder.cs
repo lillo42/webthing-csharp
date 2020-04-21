@@ -221,7 +221,7 @@ namespace Mozilla.IoT.WebThing.Builders
             _parameters.Add(parameterName, parameterInformation);
         }
 
-        private void AddInformation(Dictionary<string, object?> builder, JsonSchema jsonSchema, JsonType jsonType, bool writeIsReadOnlu)
+        private void AddInformation(Dictionary<string, object?> builder, JsonSchema jsonSchema, JsonType jsonType, bool writeIsReadOnly)
         {
             builder.Add("type", jsonType.ToString().ToLower());
             
@@ -230,9 +230,9 @@ namespace Mozilla.IoT.WebThing.Builders
                 throw new InvalidOperationException($"Thing is null, call {nameof(SetThingOption)} before build");
             }
 
-            if (writeIsReadOnlu)
+            if (writeIsReadOnly)
             {
-                builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.IsReadOnly)), jsonSchema.IsReadOnly);
+                builder.Add(_option.PropertyNamingPolicy.ConvertName("ReadOnly"), jsonSchema.IsReadOnly);
             }
             
             switch(jsonType)

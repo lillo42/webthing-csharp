@@ -14,6 +14,11 @@ namespace Mozilla.IoT.WebThing.Events
         private readonly int _maxSize;
 
         /// <summary>
+        /// Get the number of element in the <see cref="EventCollection"/>.
+        /// </summary>
+        public int Count => _events.Count;
+
+        /// <summary>
         /// On event is added
         /// </summary>
         public event EventHandler<Event>? Added; 
@@ -62,7 +67,7 @@ namespace Mozilla.IoT.WebThing.Events
         /// <returns>
         /// true if an element was removed and returned from the beginning of the <see cref="ConcurrentQueue{T}"/> successfully; otherwise, false.
         /// </returns>
-        public bool TryDequeue([MaybeNullWhen(false)]out Event? @event) 
+        public bool TryDequeue([NotNullWhen(true)]out Event? @event) 
             => _events.TryDequeue(out @event);
 
         /// <summary>

@@ -124,8 +124,11 @@ namespace Mozilla.IoT.WebThing.Factories
 
                 var propertyName = attribute?.Name ?? property.Name;
                 var isReadOnly = !property.CanWrite || !property.SetMethod!.IsPublic
-                                                    || (attribute != null && (attribute.IsReadOnly));
-                var isNullable = propertyType == typeof(string) || property.PropertyType.IsNullable();
+                                                    || (attribute != null && attribute.IsReadOnly);
+                
+                var isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable()
+                                                       || (attribute != null && attribute.IsNullable);
+                
                 var information = ToInformation(propertyName, isNullable, isReadOnly, propertyType, jsonType, attribute);
 
                 _property.Add(property, information);
@@ -194,6 +197,7 @@ namespace Mozilla.IoT.WebThing.Factories
 
         private static object[]? GetEnums(Type type, object[]? values)
         {
+            type = type.GetUnderlyingType();
             if (type.IsEnum)
             {
                 var enumValues = type.GetEnumNames();

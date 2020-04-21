@@ -34,6 +34,21 @@ namespace Mozilla.IoT.WebThing.Attributes
         
         /// <inheritdoc/>
         bool? IJsonSchema.IsWriteOnly { get; } = null;
+
+        /// <inheritdoc/>
+        bool? IJsonSchema.IsNullable => _isNullable;
+
+        private bool? _isNullable;
+
+
+        /// <summary>
+        /// If property is acceptance nullable value.
+        /// </summary>
+        public bool IsNullable
+        {
+            get => _isNullable.GetValueOrDefault();
+            set => _isNullable = value;
+        }
         
         /// <inheritdoc/>
         public object[]? Enum { get; set; }

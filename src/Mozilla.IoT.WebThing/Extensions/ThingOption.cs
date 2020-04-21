@@ -43,7 +43,7 @@ namespace Mozilla.IoT.WebThing.Extensions
 
         private JsonSerializerOptions? _options;
         private readonly object _locker = new object();
-        
+
         internal JsonSerializerOptions ToJsonSerializerOptions()
         {
             if (_options == null)

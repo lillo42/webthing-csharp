@@ -16,6 +16,11 @@ namespace Mozilla.IoT.WebThing.Json
         bool? IsWriteOnly { get; }
         
         /// <summary>
+        /// If property is acceptance nullable value.
+        /// </summary>
+        bool? IsNullable { get; }
+        
+        /// <summary>
         /// Possible value this property should have.
         /// </summary>
         object[]? Enum { get; }

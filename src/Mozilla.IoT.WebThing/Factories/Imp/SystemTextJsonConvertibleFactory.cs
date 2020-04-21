@@ -78,12 +78,7 @@ namespace Mozilla.IoT.WebThing.Factories
                         convertibleType  = typeof(ArrayConvertible<>).MakeGenericType(arrayType);
                     } 
                     
-                    if (convertibleType != null)
-                    {
-                        return (IConvertible)Activator.CreateInstance(convertibleType, convertible)!;
-                    }
-
-                    return null;
+                    return (IConvertible)Activator.CreateInstance(convertibleType, convertible)!;
                 case TypeCode.Object:
                     return ObjectConvertible.Instance;
                 default:
