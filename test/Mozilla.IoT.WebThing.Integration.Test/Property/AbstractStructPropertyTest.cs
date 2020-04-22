@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
         }
         
         [Fact]
-        public void ResponseProperty()
+        public void Serialize()
         {
             var type = typeof(T).ToJsonType().ToString().ToLower();
             var value = typeof(T).IsEnum

@@ -134,7 +134,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
     ""properties"": {
         ""bool"": {
             ""type"": ""boolean"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/bool"",
@@ -144,7 +144,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""guid"": {
             ""type"": ""string"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/guid"",
@@ -154,7 +154,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""timeSpan"": {
             ""type"": ""string"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/timeSpan"",
@@ -164,7 +164,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""dateTime"": {
             ""type"": ""string"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/dateTime"",
@@ -174,7 +174,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""dateTimeOffset"": {
             ""type"": ""string"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/dateTimeOffset"",
@@ -184,7 +184,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""enum"": {
             ""type"": ""string"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/enum"",
@@ -194,7 +194,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""string"": {
             ""type"": ""string"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/string"",
@@ -204,7 +204,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""byte"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/byte"",
@@ -214,7 +214,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""sbyte"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/sbyte"",
@@ -224,7 +224,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""short"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/short"",
@@ -234,7 +234,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""ushort"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/ushort"",
@@ -244,7 +244,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""int"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/int"",
@@ -254,7 +254,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""uint"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/uint"",
@@ -264,7 +264,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""long"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/long"",
@@ -274,7 +274,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""ulong"": {
             ""type"": ""integer"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/ulong"",
@@ -284,7 +284,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""float"": {
             ""type"": ""number"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/float"",
@@ -294,7 +294,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""double"": {
             ""type"": ""number"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/double"",
@@ -304,7 +304,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""decimal"": {
             ""type"": ""number"",
-            ""isReadOnly"": false,
+            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/decimal"",
@@ -386,7 +386,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""title"": ""Boo Title"",
       ""description"": ""Bool test"",
       ""type"": ""boolean"",
-      ""isReadOnly"": false,
+      ""readOnly"": false,
       ""link"": [
         {
           ""href"": ""/things/property-thing/properties/bool2"",
@@ -396,7 +396,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
     },
     ""guid2"": {
       ""type"": ""string"",
-      ""isReadOnly"": true,
+      ""readOnly"": true,
       ""link"": [
         {
           ""href"": ""/things/property-thing/properties/guid2"",
@@ -409,7 +409,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""description"": ""String Description"",
       ""@type"": [""ABC"",""DEF""],
       ""type"": ""string"",
-      ""isReadOnly"": false,
+      ""readOnly"": false,
       ""minimumLength"": 1,
       ""maximumLength"": 100,
       ""pattern"": ""^([a-zA-Z0-9_\\-\\.]\u002B)@([a-zA-Z0-9_\\-\\.]\u002B)\\.([a-zA-Z]{2,5})$"",
@@ -426,7 +426,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""description"": ""int Description"",
       ""@type"": ""ABC"",
       ""type"": ""integer"",
-      ""isReadOnly"": false,
+      ""readOnly"": false,
       ""minimum"": 1,
       ""maximum"": 100,
       ""enums"": [1, 2, 3],
@@ -442,7 +442,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""description"": ""Double Description"",
       ""@type"": ""ABC"",
       ""type"": ""number"",
-      ""isReadOnly"": false,
+      ""readOnly"": false,
       ""exclusiveMinimum"": 1,
       ""exclusiveMaximum"": 100,
       ""enums"": [1.1, 2.3 ,3],

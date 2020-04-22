@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using AutoFixture;
 using System.Text.Json;
+using FluentAssertions;
+using Mozilla.IoT.WebThing.Attributes;
+using Mozilla.IoT.WebThing.Extensions;
+using Xunit;
 
 namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
 {
@@ -18,13 +22,188 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
             {
                 JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{Fixture.Create<string>()}"" }}")
                     .GetProperty("input"),
-                JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {Fixture.Create<bool>().ToString().ToLower()} }}")
+                JsonSerializer
+                    .Deserialize<JsonElement>($@"{{ ""input"": {Fixture.Create<bool>().ToString().ToLower()} }}")
                     .GetProperty("input"),
                 JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {Fixture.Create<int>()} }}")
                     .GetProperty("input")
             };
-            
+
             return result.ToArray();
         }
+
+        [Theory]
+        [InlineData(nameof(CharThing.Value), 'A')]
+        [InlineData(nameof(CharThing.Value), 'B')]
+        [InlineData(nameof(CharThing.Value), 'C')]
+        [InlineData(nameof(CharThing.NotAcceptedNullableValue), 'D')]
+        [InlineData(nameof(CharThing.NotAcceptedNullableValue), 'E')]
+        [InlineData(nameof(CharThing.NotAcceptedNullableValue), 'F')]
+        [InlineData(nameof(CharThing.AcceptedNullableValue), 'G')]
+        [InlineData(nameof(CharThing.AcceptedNullableValue), 'H')]
+        [InlineData(nameof(CharThing.AcceptedNullableValue), 'I')]
+        [InlineData(nameof(CharThing.AcceptedNullableValue), null)]
+        [InlineData(nameof(CharThing.NonNullableValue), 'J')]
+        [InlineData(nameof(CharThing.NonNullableValue), 'K')]
+        [InlineData(nameof(CharThing.NonNullableValue), 'L')]
+        public void ValidPropertyWithEnum(string propertyName, char? value)
+        {
+            var jsonValue = value.HasValue ? $@" ""{value.Value}""" : "null";
+
+            var thing = new CharThing();
+            var context = Factory.Create(thing, new ThingOption());
+
+            thing.ThingContext = context;
+
+            context.Actions.Should().BeEmpty();
+            context.Events.Should().BeEmpty();
+
+            context.Properties.Should().NotBeEmpty();
+            context.Properties.Should().ContainKey(propertyName);
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {jsonValue} }}")
+                .GetProperty("input");
+
+            context.Properties[propertyName].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[propertyName].TryGetValue(out var getValue).Should().BeTrue();
+            getValue.Should().Be(value);
+        }
+
+
+        [Theory]
+        [InlineData(nameof(CharThing.Value), 'D')]
+        [InlineData(nameof(CharThing.Value), 'E')]
+        [InlineData(nameof(CharThing.Value), 'F')]
+        [InlineData(nameof(CharThing.NotAcceptedNullableValue), null)]
+        [InlineData(nameof(CharThing.NotAcceptedNullableValue), 'G')]
+        [InlineData(nameof(CharThing.NotAcceptedNullableValue), 'H')]
+        [InlineData(nameof(CharThing.NotAcceptedNullableValue), 'I')]
+        [InlineData(nameof(CharThing.AcceptedNullableValue), 'J')]
+        [InlineData(nameof(CharThing.AcceptedNullableValue), 'K')]
+        [InlineData(nameof(CharThing.AcceptedNullableValue), 'L')]
+        [InlineData(nameof(CharThing.NonNullableValue), null)]
+        public void InvalidPropertyValue(string propertyName, char? value)
+        {
+            var jsonValue = value.HasValue ? $@"""{value.Value}""" : "null";
+
+            var thing = new CharThing();
+            var context = Factory.Create(thing, new ThingOption());
+
+            thing.ThingContext = context;
+
+            context.Actions.Should().BeEmpty();
+            context.Events.Should().BeEmpty();
+
+            context.Properties.Should().NotBeEmpty();
+            context.Properties.Should().ContainKey(propertyName);
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {jsonValue} }}")
+                .GetProperty("input");
+
+            context.Properties[propertyName].TrySetValue(jsonElement).Should().Be(SetPropertyResult.InvalidValue);
+            context.Properties[propertyName].TryGetValue(out var getValue).Should().BeTrue();
+            getValue.Should().NotBe(value);
+        }
+        
+        [Fact]
+        public void SerializeCharThing()
+        {
+            TestResponseProperty<CharThing>(Serialize);
+        }
+
+        public class CharThing : Thing
+        {
+            public override string Name => "char-property";
+
+            [ThingProperty(Enum = new object[] { 'A', 'B', 'C' })]
+            public char Value { get; set; }
+
+            [ThingProperty(IsNullable = false)] 
+            public char? NonNullableValue { get; set; } = 'T';
+
+            [ThingProperty(Enum = new object[] {'D', 'E', 'F'})]
+            public char? NotAcceptedNullableValue { get; set; } = 'P';
+            
+            [ThingProperty(Enum = new object[] { null, 'G', 'H', 'I' })]
+            public char? AcceptedNullableValue { get; set; }
+        }
+        
+        private const string Serialize = @"
+{
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""properties"": {
+        ""value"": {
+            ""type"": ""string"",
+            ""readOnly"": false,
+            ""enums"": [
+                ""A"",
+                ""B"",
+                ""C""
+            ],
+            ""link"": [
+                {
+                    ""href"": ""/things/char-property/properties/value"",
+                    ""rel"": ""property""
+                }
+            ]
+        },
+        ""nonNullableValue"": {
+            ""type"": ""string"",
+            ""readOnly"": false,
+            ""link"": [
+                {
+                    ""href"": ""/things/char-property/properties/nonNullableValue"",
+                    ""rel"": ""property""
+                }
+            ]
+        },
+        ""notAcceptedNullableValue"": {
+            ""type"": ""string"",
+            ""readOnly"": false,
+            ""enums"": [
+                ""D"",
+                ""E"",
+                ""F""
+            ],
+            ""link"": [
+                {
+                    ""href"": ""/things/char-property/properties/notAcceptedNullableValue"",
+                    ""rel"": ""property""
+                }
+            ]
+        },
+        ""acceptedNullableValue"": {
+            ""type"": ""string"",
+            ""readOnly"": false,
+            ""enums"": [
+                null,
+                ""G"",
+                ""H"",
+                ""I""
+            ],
+            ""link"": [
+                {
+                    ""href"": ""/things/char-property/properties/acceptedNullableValue"",
+                    ""rel"": ""property""
+                }
+            ]
+        }
+    },
+    ""links"": [
+        {
+            ""href"": ""properties"",
+            ""rel"": ""/things/char-property/properties""
+        },
+        {
+            ""href"": ""events"",
+            ""rel"": ""/things/char-property/events""
+        },
+        {
+            ""href"": ""actions"",
+            ""rel"": ""/things/char-property/actions""
+        }
+    ]
+}
+";
     }
 }

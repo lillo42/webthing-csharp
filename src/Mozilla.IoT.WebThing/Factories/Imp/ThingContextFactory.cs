@@ -125,9 +125,27 @@ namespace Mozilla.IoT.WebThing.Factories
                 var propertyName = attribute?.Name ?? property.Name;
                 var isReadOnly = !property.CanWrite || !property.SetMethod!.IsPublic
                                                     || (attribute != null && attribute.IsReadOnly);
-                
-                var isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable()
-                                                       || (attribute != null && attribute.IsNullable);
+
+                bool isNullable;
+                if (attribute is IJsonSchema jsonSchema)
+                {
+                    if (jsonSchema.IsNullable.HasValue)
+                    {
+                        isNullable = jsonSchema.IsNullable.Value;
+                    }
+                    else if(jsonSchema.Enum != null)
+                    {
+                        isNullable = jsonSchema.Enum.Contains(null!);
+                    }
+                    else
+                    {
+                        isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();  
+                    }
+                }
+                else
+                {
+                    isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();   
+                }
                 
                 var information = ToInformation(propertyName, isNullable, isReadOnly, propertyType, jsonType, attribute);
 
