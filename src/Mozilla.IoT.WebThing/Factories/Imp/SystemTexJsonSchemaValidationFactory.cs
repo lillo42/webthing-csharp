@@ -21,20 +21,22 @@ namespace Mozilla.IoT.WebThing.Factories
                         jsonSchema.MaximumLength, jsonSchema.Pattern,
                         jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToString).ToHashSet()!);
                 case TypeCode.Char:
-                    return new ChardJsonSchemaValidation(jsonSchema.IsNullable, 
+                    return new ChardJsonSchemaValidation(jsonSchema.IsNullable,
                         jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToChar).ToHashSet()!);
                 case TypeCode.DateTime:
-                    return new DateTimeJsonSchemaValidation(jsonSchema.IsNullable, 
+                    return new DateTimeJsonSchemaValidation(jsonSchema.IsNullable,
                         jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToDateTime).ToHashSet()!);
                 case TypeCode.DateTimeOffset:
-                    return new DateTimeOffsetJsonSchemaValidation(jsonSchema.IsNullable, 
-                        jsonSchema.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString()!)).ToHashSet()!);
+                    return new DateTimeOffsetJsonSchemaValidation(jsonSchema.IsNullable,
+                        jsonSchema.Enums?.Where(x => x != null).Select(x => DateTimeOffset.Parse(x.ToString()!))
+                            .ToHashSet()!);
                 case TypeCode.Guid:
                     return new GuidJsonSchemaValidation(jsonSchema.IsNullable,
                         jsonSchema.Enums?.Where(x => x != null).Select(x => Guid.Parse(x.ToString()!)).ToHashSet()!);
                 case TypeCode.TimeSpan:
-                    return new TimeSpanJsonSchemaValidation(jsonSchema.IsNullable, 
-                        jsonSchema.Enums?.Where(x => x != null).Select(x => TimeSpan.Parse(x.ToString()!)).ToHashSet()!);
+                    return new TimeSpanJsonSchemaValidation(jsonSchema.IsNullable,
+                        jsonSchema.Enums?.Where(x => x != null).Select(x => TimeSpan.Parse(x.ToString()!))
+                            .ToHashSet()!);
                 case TypeCode.Enum:
                     return new EnumJsonSchemaValidation(jsonSchema.IsNullable);
                 case TypeCode.SByte:
@@ -48,8 +50,21 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.Float:
                 case TypeCode.Double:
                 case TypeCode.Decimal:
-                    return new NumberJsonSchemaValidation(jsonSchema.IsNullable, jsonSchema.Minimum,
-                        jsonSchema.Maximum, jsonSchema.MultipleOf,
+                    var min = jsonSchema.Minimum;
+                    var max = jsonSchema.Maximum;
+
+                    if (jsonSchema.ExclusiveMinimum.HasValue)
+                    {
+                        min = jsonSchema.ExclusiveMinimum.Value + 1; 
+                    }
+
+                    if (jsonSchema.ExclusiveMaximum.HasValue)
+                    {
+                        max = jsonSchema.ExclusiveMaximum.Value - 1;
+                    }
+
+                    return new NumberJsonSchemaValidation(jsonSchema.IsNullable, min, max, 
+                        jsonSchema.MultipleOf,
                         jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToDecimal).ToHashSet()!);
                 case TypeCode.Array:
                     return new ArrayJsonSchemaValidation(jsonSchema.IsNullable, 

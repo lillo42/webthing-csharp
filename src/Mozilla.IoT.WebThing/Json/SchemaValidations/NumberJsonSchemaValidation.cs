@@ -54,7 +54,7 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
                 return false;
             }
 
-            if (_multipleOf.HasValue && _multipleOf.Value % comparable != 0)
+            if (_multipleOf.HasValue && comparable % _multipleOf.Value != 0)
             {
                 return false;
             }
