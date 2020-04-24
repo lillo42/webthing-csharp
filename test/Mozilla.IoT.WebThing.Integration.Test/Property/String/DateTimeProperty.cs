@@ -108,7 +108,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         [Fact]
         public void SerializeDateTimeThing()
         {
-            TestResponseProperty<DateTimeThing>(Serialize);
+            TestResponseProperty<DateTimeThing>(ExpectedSerialize);
         }
         
         public class DateTimeThing : Thing
@@ -128,7 +128,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
             public DateTime? AcceptedNullableValue { get; set; }
         }
 
-        private const string Serialize = @"
+        private const string ExpectedSerialize = @"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""properties"": {

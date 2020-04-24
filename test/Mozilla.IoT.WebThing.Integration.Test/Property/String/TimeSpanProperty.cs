@@ -108,7 +108,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         [Fact]
         public void SerializeTimeSpanThing()
         {
-            TestResponseProperty<TimeSpanThing>(Serialize);
+            TestResponseProperty<TimeSpanThing>(ExpectedSerialize);
         }
         
         public class TimeSpanThing : Thing
@@ -128,7 +128,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
             public TimeSpan? AcceptedNullableValue { get; set; }
         }
 
-        private const string Serialize = @"
+        private const string ExpectedSerialize = @"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""properties"": {

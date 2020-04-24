@@ -109,7 +109,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         [Fact]
         public void SerializeGuidThing()
         {
-            TestResponseProperty<GuidThing>(Serialize);
+            TestResponseProperty<GuidThing>(ExpectedSerialize);
         }
         
         public class GuidThing : Thing
@@ -129,7 +129,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
             public Guid? AcceptedNullableValue { get; set; }
         }
 
-        private const string Serialize = @"
+        private const string ExpectedSerialize = @"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""properties"": {

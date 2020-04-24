@@ -108,7 +108,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         [Fact]
         public void SerializeCharThing()
         {
-            TestResponseProperty<CharThing>(Serialize);
+            TestResponseProperty<CharThing>(Expectederialize);
         }
 
         public class CharThing : Thing
@@ -128,7 +128,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
             public char? AcceptedNullableValue { get; set; }
         }
         
-        private const string Serialize = @"
+        private const string Expectederialize = @"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""properties"": {

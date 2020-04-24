@@ -123,7 +123,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         [Fact]
         public void SerializeNumberThing()
         { 
-            TestResponseProperty<NumberThing>(Serialize);
+            TestResponseProperty<NumberThing>(ExpectedSerialize);
         }
 
         public class NumberThing : Thing
@@ -152,7 +152,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
             public T? AcceptedNullableValue { get; set; }
         }
 
-        private readonly string Serialize = $@"
+        private readonly string ExpectedSerialize = $@"
 {{
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""properties"": {{

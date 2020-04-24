@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
         [Fact]
         public void ValidProperty()
         {
-            var thing = new PropertyThing<T>();
+            var thing = new PropertyThing();
             var context = Factory.Create(thing, new ThingOption());
         
             thing.ThingContext = context;
@@ -22,25 +22,25 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
 
             context.Properties.Should().NotBeEmpty();
             context.Properties.Should().HaveCount(1);
-            context.Properties.Should().ContainKey(nameof(PropertyThing<T>.Value));
+            context.Properties.Should().ContainKey(nameof(PropertyThing.Value));
 
             var value = Fixture.Create<T>();
             var jsonElement = CreateJson(value);
         
-            context.Properties[nameof(PropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(PropertyThing.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.Value.Should().Be(value);
-            context.Properties[nameof(PropertyThing<T>.Value)].TryGetValue(out var getValue).Should().BeTrue();
+            context.Properties[nameof(PropertyThing.Value)].TryGetValue(out var getValue).Should().BeTrue();
             getValue.Should().Be(value);
         
-            context.Properties[nameof(PropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(PropertyThing.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.Value.Should().Be(value);
-            context.Properties[nameof(PropertyThing<T>.Value)].TryGetValue(out getValue).Should().BeTrue();
+            context.Properties[nameof(PropertyThing.Value)].TryGetValue(out getValue).Should().BeTrue();
             getValue.Should().Be(value);
         
             jsonElement =  JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": null }").GetProperty("input");
-            context.Properties[nameof(PropertyThing<T>.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
+            context.Properties[nameof(PropertyThing.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.Value.Should().BeNull();
-            context.Properties[nameof(PropertyThing<T>.Value)].TryGetValue(out getValue).Should().BeTrue();
+            context.Properties[nameof(PropertyThing.Value)].TryGetValue(out getValue).Should().BeTrue();
             getValue.Should().BeNull();
         }
         
@@ -48,16 +48,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
         public void Serialize()
         {
             var type = typeof(T).ToJsonType().ToString().ToLower();
-            TestResponseProperty<PropertyThing<T>>(string.Format(RESPONSE, type,
+            TestResponseProperty<PropertyThing>(string.Format(RESPONSE, type,
                 typeof(T).IsEnum
                     ? $@" ""enums"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""] "
                     : string.Empty));
         }
         
         [Fact]
-        private void InvalidValidProperty()
+        public void InvalidValidProperty()
         {
-            var thing = new PropertyThing<T>();
+            var thing = new PropertyThing();
             var context = Factory.Create(thing, new ThingOption());
             
             thing.ThingContext = context;
@@ -66,8 +66,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
             context.Events.Should().BeEmpty();
 
             context.Properties.Should().NotBeEmpty();
-            context.Properties.Should().HaveCount(2);
-            context.Properties.Should().ContainKey(nameof(PropertyThing<T>.Value));
+            context.Properties.Should().ContainKey(nameof(PropertyThing.Value));
 
             var value = Fixture.Create<T>();
             var jsonElement = CreateInvalidJson();
@@ -76,15 +75,15 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
             thing.Value = defaultValue;
             foreach (var element in jsonElement)
             {
-                context.Properties[nameof(PropertyThing<T>.Value)].TrySetValue(element).Should().Be(SetPropertyResult.InvalidValue);
+                context.Properties[nameof(PropertyThing.Value)].TrySetValue(element).Should().Be(SetPropertyResult.InvalidValue);
                 thing.Value.Should().NotBe(value);
                 thing.Value.Should().Be(defaultValue);
-                context.Properties[nameof(PropertyThing<T>.Value)].TryGetValue(out var getValue).Should().BeTrue();
+                context.Properties[nameof(PropertyThing.Value)].TryGetValue(out var getValue).Should().BeTrue();
                 getValue.Should().Be(defaultValue);
             }
         }
         
-        public class PropertyThing<T> : Thing
+        public class PropertyThing : Thing
         {
             public override string Name => "property-thing";
             
