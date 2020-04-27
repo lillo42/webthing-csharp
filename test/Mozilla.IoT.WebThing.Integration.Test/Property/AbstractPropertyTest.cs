@@ -10,7 +10,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
 {
     public abstract class AbstractPropertyTest<T>
     {
-        protected  IThingContextFactory Factory { get; }
+        protected IThingContextFactory Factory { get; }
         protected Fixture Fixture { get; }
 
         public AbstractPropertyTest()

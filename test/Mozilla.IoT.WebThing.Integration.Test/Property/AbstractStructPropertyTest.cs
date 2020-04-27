@@ -39,7 +39,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
             context.Properties[nameof(PropertyThing.NullableValue)].TryGetValue(out getValue).Should().BeTrue();
             getValue.Should().Be(value);
         
-            jsonElement =  JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": null }").GetProperty("input");
+            jsonElement = JsonSerializer.Deserialize<JsonElement>(@"{ ""input"": null }").GetProperty("input");
             context.Properties[nameof(PropertyThing.NullableValue)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
             thing.NullableValue.Should().BeNull();
             context.Properties[nameof(PropertyThing.NullableValue)].TryGetValue(out getValue).Should().BeTrue();
