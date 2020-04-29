@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Mozilla.IoT.WebThing.Json.Convertibles;
 using Mozilla.IoT.WebThing.Json.Convertibles.String;
 
@@ -41,7 +42,8 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.Decimal:
                     return SystemTexJsonNumberConvertible.Instance;
                 case TypeCode.Array:
-                    return SystemTexJsonArrayConvertible.Instance;
+                    var arrayType = type.GetCollectionType();
+                    return new SystemTexJsonArrayConvertible(Create(arrayType.ToTypeCode(), arrayType));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
             }

@@ -1,3 +1,4 @@
+using System;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Json.SchemaValidations;
 
@@ -13,7 +14,8 @@ namespace Mozilla.IoT.WebThing.Factories
         /// </summary>
         /// <param name="typeCode"></param>
         /// <param name="jsonSchema">The <see cref="JsonSchema"/>.</param>
+        /// <param name="type">The <see cref="Type"/>.</param>
         /// <returns>New instance of <see cref="IJsonSchemaValidation"/>.</returns>
-        IJsonSchemaValidation Create(TypeCode typeCode, JsonSchema jsonSchema);
+        IJsonSchemaValidation Create(TypeCode typeCode, JsonSchema jsonSchema, Type type);
     }
 }

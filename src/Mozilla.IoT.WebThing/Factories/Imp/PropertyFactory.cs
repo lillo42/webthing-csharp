@@ -34,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Factories
             var code = propertyType.ToTypeCode();
 
             var jsonConvertible = _jsonConvertibleFactory.Create(code, propertyType);
-            var validation = _validationFactory.Create(code, jsonSchema);
+            var validation = _validationFactory.Create(code, jsonSchema, propertyType);
             
             switch (code)
             {

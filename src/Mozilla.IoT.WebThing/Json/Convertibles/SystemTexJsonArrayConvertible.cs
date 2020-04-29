@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Json.Convertibles
@@ -8,10 +9,16 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles
     public class SystemTexJsonArrayConvertible : SystemTexJsonConvertible
     {
         /// <summary>
-        /// Static Instance of <see cref="SystemTexJsonArrayConvertible"/>
+        /// 
         /// </summary>
-        public static SystemTexJsonArrayConvertible Instance { get; } = new SystemTexJsonArrayConvertible();
-        
+        /// <param name="convertible"></param>
+        public SystemTexJsonArrayConvertible(IJsonConvertible convertible)
+        {
+            _convertible = convertible ?? throw new ArgumentNullException(nameof(convertible));
+        }
+
+        private readonly IJsonConvertible _convertible;
+
         /// <inheritdoc/>
         protected override bool TryConvert(JsonElement source, out object? result)
         {
@@ -26,14 +33,13 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles
             var i = 0;
             foreach (var array in source.EnumerateArray())
             {
-                values[i] = array.ValueKind switch
+                if (!_convertible.TryConvert(array, out var value))
                 {
-                    JsonValueKind.String => array.GetString(),
-                    JsonValueKind.Number => array.GetDecimal(),
-                    JsonValueKind.True => true,
-                    JsonValueKind.False => false,
-                    _ => null
-                };
+                    result = null;
+                    return false;
+                }
+                
+                values[i] = value;
                 i++;
             }
 

@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using Mozilla.IoT.WebThing.Builders;
+using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.Json.SchemaValidations;
 using Mozilla.IoT.WebThing.Json.SchemaValidations.String;
 
@@ -10,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Factories
     public class SystemTexJsonSchemaValidationFactory : IJsonSchemaValidationFactory
     {
         /// <inheritdoc />
-        public IJsonSchemaValidation Create(TypeCode typeCode, JsonSchema jsonSchema)
+        public IJsonSchemaValidation Create(TypeCode typeCode, JsonSchema jsonSchema, Type type)
         {
             switch (typeCode)
             {
@@ -69,7 +71,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.Array:
                     return new ArrayJsonSchemaValidation(jsonSchema.IsNullable, 
                         jsonSchema.MinimumItems, jsonSchema.MaximumItems,
-                        jsonSchema.UniqueItems, null);
+                        jsonSchema.UniqueItems, type.GetCollectionType().ToJsonType());
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
             }

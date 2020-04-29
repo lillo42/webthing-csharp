@@ -91,7 +91,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
             _jsonConvertibleFactory.Create(code, notNullableType)
                 .Returns(jsonConvertible);
             
-            _jsonSchemaValidationFactory.Create(code, _jsonSchema)
+            _jsonSchemaValidationFactory.Create(code, _jsonSchema, Arg.Any<Type>())
                 .Returns(validation);
 
 
@@ -105,7 +105,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
             
             _jsonSchemaValidationFactory
                 .Received(1)
-                .Create(code, _jsonSchema);
+                .Create(code, _jsonSchema, Arg.Any<Type>());
 
             _convertibleFactory
                 .DidNotReceive()
@@ -159,7 +159,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
             _jsonConvertibleFactory.Create(code, notNullableType)
                 .Returns(jsonConvertible);
             
-            _jsonSchemaValidationFactory.Create(code, _jsonSchema)
+            _jsonSchemaValidationFactory.Create(code, _jsonSchema, Arg.Any<Type>())
                 .Returns(validation);
             
             _convertibleFactory
@@ -177,7 +177,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
             
             _jsonSchemaValidationFactory
                 .Received(1)
-                .Create(code, _jsonSchema);
+                .Create(code, _jsonSchema, Arg.Any<Type>());
 
             _convertibleFactory
                 .Received(1)

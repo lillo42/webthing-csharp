@@ -29,6 +29,18 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
         protected abstract JsonElement CreateJson(IEnumerable<T> values);
         protected abstract JsonElement[] CreateInvalidJson();
 
+        protected virtual List<T> CreateValue(int arrayLength)
+        {
+            var values = new List<T>(arrayLength);
+
+            for (var i = 0; i < arrayLength; i++)
+            {
+                values.Add(Fixture.Create<T>());
+            }
+
+            return values;
+        }
+ 
         #region Valid
         
         private void ValidProperty<TThing>(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue,
@@ -46,12 +58,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
             context.Properties.Should().NotBeEmpty();
             context.Properties.Should().ContainKey(propertyName);
 
-            var values = new List<T>(arrayLength);
-
-            for (var i = 0; i < arrayLength; i++)
-            {
-                values.Add(Fixture.Create<T>());
-            }
+            var values = CreateValue(arrayLength);
 
             if (uniqueItems)
             {

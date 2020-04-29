@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
         private readonly int? _minItems;
         private readonly int? _maxItems;
         private readonly bool _uniqueItem;
-        private readonly JsonType? _acceptedType;
+        private readonly JsonType _acceptedType;
 
         /// <summary>
         /// Initialize a new instance of <see cref="ArrayJsonSchemaValidation"/>.
@@ -22,7 +22,7 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
         /// <param name="maxItems">The maximum array length.</param>
         /// <param name="uniqueItem">Accepted only unique items</param>
         /// <param name="acceptedType">Accepted type.</param>
-        public ArrayJsonSchemaValidation(bool isNullable, int? minItems, int? maxItems, bool uniqueItem, JsonType? acceptedType)
+        public ArrayJsonSchemaValidation(bool isNullable, int? minItems, int? maxItems, bool uniqueItem, JsonType acceptedType)
         {
             _minItems = minItems;
             _maxItems = maxItems;
@@ -59,37 +59,6 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
                 var hash = new HashSet<object?>();
                 foreach (var data in comparable)
                 {
-                    if (data != null && _acceptedType != null)
-                    {
-                        switch (_acceptedType)
-                        {
-                            case JsonType.Boolean:
-                                if (!(data is bool))
-                                {
-                                    return false;
-                                }
-                                break;
-                            case JsonType.String:
-                                if (!(data is string))
-                                {
-                                    return false;
-                                }
-                                break;
-                            case JsonType.Integer:
-                            case JsonType.Number:
-                                if (!(data is decimal))
-                                {
-                                    return false;
-                                }
-                                break;
-                            case null:
-                            case JsonType.Array:
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-
                     if (!hash.Add(data))
                     {
                         return false;
@@ -98,46 +67,7 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
 
                 return true;
             }
-
-            if (_acceptedType == null)
-            {
-                return true;
-            }
             
-            foreach (var data in comparable)
-            {
-                if (data != null && _acceptedType != null)
-                {
-                    switch (_acceptedType)
-                    {
-                        case JsonType.Boolean:
-                            if (!(data is bool))
-                            {
-                                return false;
-                            }
-                            break;
-                        case JsonType.String:
-                            if (!(data is string))
-                            {
-                                return false;
-                            }
-                            break;
-                        case JsonType.Integer:
-                        case JsonType.Number:
-                            if (!(data is decimal))
-                            {
-                                return false;
-                            }
-                            break;
-                        case null:
-                        case JsonType.Array:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-            }
-
             return true;
         }
     }

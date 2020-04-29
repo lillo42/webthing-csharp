@@ -29,7 +29,6 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles.String
 
             result = value;
             return true;
-
         }
     }
 }
