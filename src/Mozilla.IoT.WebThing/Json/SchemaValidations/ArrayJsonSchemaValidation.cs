@@ -12,6 +12,7 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
         private readonly int? _minItems;
         private readonly int? _maxItems;
         private readonly bool _uniqueItem;
+        private readonly HashSet<object>? _enum;
         private readonly JsonType _acceptedType;
 
         /// <summary>
@@ -22,12 +23,15 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
         /// <param name="maxItems">The maximum array length.</param>
         /// <param name="uniqueItem">Accepted only unique items</param>
         /// <param name="acceptedType">Accepted type.</param>
-        public ArrayJsonSchemaValidation(bool isNullable, int? minItems, int? maxItems, bool uniqueItem, JsonType acceptedType)
+        /// <param name="enum">Accepted values.</param>
+        public ArrayJsonSchemaValidation(bool isNullable, int? minItems, int? maxItems, bool uniqueItem, 
+            JsonType acceptedType, HashSet<object>? @enum)
         {
             _minItems = minItems;
             _maxItems = maxItems;
             _uniqueItem = uniqueItem;
             _acceptedType = acceptedType;
+            _enum = @enum;
             _isNullable = isNullable;
         }
         
@@ -59,6 +63,11 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
                 var hash = new HashSet<object?>();
                 foreach (var data in comparable)
                 {
+                    if (_enum != null && !_enum.Contains(data))
+                    {
+                        return false;
+                    }
+                    
                     if (!hash.Add(data))
                     {
                         return false;
@@ -66,6 +75,17 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
                 }
 
                 return true;
+            }
+            
+            if (_enum != null)
+            {
+                foreach (var data in comparable)
+                {
+                    if (!_enum.Contains(data))
+                    {
+                        return false;
+                    }
+                }
             }
             
             return true;

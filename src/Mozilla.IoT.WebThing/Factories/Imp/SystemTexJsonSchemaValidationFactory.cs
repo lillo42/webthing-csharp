@@ -67,11 +67,13 @@ namespace Mozilla.IoT.WebThing.Factories
 
                     return new NumberJsonSchemaValidation(jsonSchema.IsNullable, min, max, 
                         jsonSchema.MultipleOf,
-                        jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToDecimal).ToHashSet()!);
+                        jsonSchema.Enums?.Where(x => x != null).Select(Convert.ToDecimal).ToHashSet());
+                
                 case TypeCode.Array:
                     return new ArrayJsonSchemaValidation(jsonSchema.IsNullable, 
                         jsonSchema.MinimumItems, jsonSchema.MaximumItems,
-                        jsonSchema.UniqueItems.GetValueOrDefault(), type.GetCollectionType().ToJsonType());
+                        jsonSchema.UniqueItems.GetValueOrDefault(), type.GetCollectionType().ToJsonType(),
+                        jsonSchema.Enums?.Where(x => x != null).ToHashSet());
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
             }
