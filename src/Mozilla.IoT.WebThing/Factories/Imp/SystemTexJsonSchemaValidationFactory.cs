@@ -71,7 +71,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.Array:
                     return new ArrayJsonSchemaValidation(jsonSchema.IsNullable, 
                         jsonSchema.MinimumItems, jsonSchema.MaximumItems,
-                        jsonSchema.UniqueItems, type.GetCollectionType().ToJsonType());
+                        jsonSchema.UniqueItems.GetValueOrDefault(), type.GetCollectionType().ToJsonType());
                 default:
                     throw new ArgumentOutOfRangeException(nameof(typeCode), typeCode, null);
             }

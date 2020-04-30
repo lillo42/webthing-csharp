@@ -146,9 +146,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     ""properties"": {
         ""minAndMax"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""minimumLength"": 1,
-            ""maximumLength"": 10,
+            ""minLength"": 1,
+            ""maxLength"": 10,
             ""link"": [
                 {
                     ""href"": ""/things/sting-property/properties/minAndMax"",
@@ -158,7 +157,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""mail"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""pattern"": ""^\\w\u002B@[a-zA-Z_]\u002B?\\.[a-zA-Z]{2,3}$"",
             ""link"": [
                 {
@@ -169,8 +167,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""enum"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""Lorem"",
                 ""ipsum etiam"",
                 ""nec litora placerat""
@@ -184,7 +181,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""nonNullableEnumValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/sting-property/properties/nonNullableEnumValue"",
@@ -194,8 +190,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""notAcceptedNullableEnumValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""viverra sem tempor vitae"",
                 ""donec nisi,"",
                 ""suspendisse""
@@ -209,8 +204,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""acceptedNullableEnumValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 null,
                 ""elit velit"",
                 ""erat eleifend integer enim"",

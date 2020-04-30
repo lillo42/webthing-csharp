@@ -134,8 +134,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     ""properties"": {
         ""value"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""00:00:10"",
                 ""00:00:20"",
                 ""00:00:50""
@@ -149,7 +148,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""nonNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/time-span-property/properties/nonNullableValue"",
@@ -159,8 +157,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""notAcceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""00:01:00"",
                 ""00:10:00"",
                 ""00:20:00""
@@ -174,8 +171,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""acceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 null,
                 ""01:00:00"",
                 ""10:00:00"",

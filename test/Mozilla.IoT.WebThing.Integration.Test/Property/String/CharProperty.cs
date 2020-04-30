@@ -10,6 +10,11 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
 {
     public class CharProperty : AbstractStructPropertyTest<char>
     {
+        protected override char CreateValue()
+        {
+            return Fixture.Create<string>()[0];
+        }
+
         protected override JsonElement CreateJson(char value)
         {
             return JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}")
@@ -134,8 +139,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     ""properties"": {
         ""value"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""A"",
                 ""B"",
                 ""C""
@@ -149,7 +153,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""nonNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/char-property/properties/nonNullableValue"",
@@ -159,8 +162,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""notAcceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""D"",
                 ""E"",
                 ""F""
@@ -174,8 +176,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""acceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 null,
                 ""G"",
                 ""H"",

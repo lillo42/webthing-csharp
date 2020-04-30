@@ -135,8 +135,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     ""properties"": {
         ""value"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""be5cdf5b-4c72-4db9-8646-d20ffb94caec"",
                 ""fb4d04e2-8e5a-4202-b0c5-d5fb5e68cfe2"",
                 ""035a29bb-bccd-4816-a4fd-3bdfd1e32acd""
@@ -150,7 +149,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""nonNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/guid-property/properties/nonNullableValue"",
@@ -160,8 +158,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""notAcceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""7539e439-fa4b-4f1f-8a75-7712a483ffa1"",
                 ""7526477b-d125-4a93-ab3d-5760bbd2d2f7"",
                 ""4af37617-7254-40df-8231-04055cf1c3a3""
@@ -175,8 +172,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""acceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 null,
                 ""34167747-61c6-4580-8e91-116071918690"",
                 ""b26958c9-da73-4987-b7cf-5a98f58acfe2"",

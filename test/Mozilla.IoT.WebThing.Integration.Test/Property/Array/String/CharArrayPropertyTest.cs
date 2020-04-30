@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -40,6 +41,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
+            Console.WriteLine(sb);
             return JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {sb} }}")
                 .GetProperty("input");
         }

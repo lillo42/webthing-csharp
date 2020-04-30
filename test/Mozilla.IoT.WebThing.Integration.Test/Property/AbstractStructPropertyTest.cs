@@ -10,6 +10,11 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
     public abstract class AbstractStructPropertyTest<T> : AbstractPropertyTest<T>
         where T : struct
     {
+        protected virtual T CreateValue()
+        {
+            return Fixture.Create<T>();
+        }
+        
         [Fact]
         public void ValidProperty()
         {
@@ -26,7 +31,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
             context.Properties.Should().ContainKey(nameof(PropertyThing.Value));
             context.Properties.Should().ContainKey(nameof(PropertyThing.NullableValue));
 
-            var value = Fixture.Create<T>();
+            var value = CreateValue();
             var jsonElement = CreateJson(value);
         
             context.Properties[nameof(PropertyThing.Value)].TrySetValue(jsonElement).Should().Be(SetPropertyResult.Ok);
@@ -51,7 +56,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
         {
             var type = typeof(T).ToJsonType().ToString().ToLower();
             var value = typeof(T).IsEnum
-                ? $@" ""enums"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""], "
+                ? $@" ""enum"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""], "
                 : string.Empty;
             TestResponseProperty<PropertyThing>(string.Format(RESPONSE, type, value));
         }
@@ -111,7 +116,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
   ""properties"": {{
     ""value"": {{
       ""type"": ""{0}"",
-      ""readOnly"": false,
       {1}
       ""link"": [
         {{
@@ -122,7 +126,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
     }},
     ""nullableValue"": {{
       ""type"": ""{0}"",
-      ""readOnly"": false,
       {1}
       ""link"": [
         {{

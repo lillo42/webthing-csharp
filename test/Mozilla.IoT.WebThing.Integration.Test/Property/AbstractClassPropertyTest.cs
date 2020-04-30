@@ -50,7 +50,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
             var type = typeof(T).ToJsonType().ToString().ToLower();
             TestResponseProperty<PropertyThing>(string.Format(RESPONSE, type,
                 typeof(T).IsEnum
-                    ? $@" ""enums"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""] "
+                    ? $@" ""enum"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""] "
                     : string.Empty));
         }
         
@@ -95,7 +95,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
   ""properties"": {{
     ""value"": {{
       ""type"": ""{0}"",
-      ""readOnly"": false,
       {1}
       ""link"": [
         {{

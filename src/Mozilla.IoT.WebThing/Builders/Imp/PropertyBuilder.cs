@@ -31,7 +31,6 @@ namespace Mozilla.IoT.WebThing.Builders
             return this;
         }
         
-
         /// <inheritdoc /> 
         public IPropertyBuilder SetThingOption(ThingOption option)
         {
@@ -56,11 +55,11 @@ namespace Mozilla.IoT.WebThing.Builders
             var getter = GetGetMethod(property);
             var propertyName = _option.PropertyNamingPolicy.ConvertName(jsonSchema.Name);
             
-            if (jsonSchema.IsReadOnly)
+            if (jsonSchema.IsReadOnly.GetValueOrDefault())
             {
                 _properties.Add(propertyName, 
-                    new ThingProperty(_thing, jsonSchema.IsReadOnly, false, getter, 
-                    null, null, null, null));
+                    new ThingProperty(_thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), 
+                        getter, null, null, null, null));
                 return;
             }
             

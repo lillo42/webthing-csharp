@@ -19,7 +19,7 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <param name="isNullable"></param>
         /// <param name="isReadOnly"></param>
         /// <param name="enums"></param>
-        public JsonSchema(IJsonSchema? schema, object[]? enums, JsonType jsonType, string name, bool isNullable, bool isReadOnly)
+        public JsonSchema(IJsonSchema? schema, object[]? enums, JsonType jsonType, string name, bool isNullable, bool? isReadOnly)
             : this(schema, enums, jsonType, name, isNullable)
         {
             IsReadOnly = isReadOnly;
@@ -35,21 +35,26 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <param name="isNullable"></param>
         public JsonSchema(IJsonSchema? schema, object[]? enums, JsonType jsonType, string name, bool isNullable)
         {
+            Name = name;
+            Enums = enums;
+            IsReadOnly = schema?.IsReadOnly;
+            IsWriteOnly = schema?.IsWriteOnly;
+            Deprecated = null;
+            
             Minimum = schema?.Minimum;
             Maximum = schema?.Maximum;
             ExclusiveMinimum = schema?.ExclusiveMinimum;
             ExclusiveMaximum = schema?.ExclusiveMaximum;
             MultipleOf = schema?.MultipleOf;
+            
             MinimumLength = schema?.MinimumLength;
             MaximumLength = schema?.MaximumLength;
             Pattern = schema?.Pattern;
-            Enums = enums;
-            IsReadOnly = schema?.IsReadOnly ?? false;
-            IsWriteOnly = schema?.IsWriteOnly ?? false;
+            
             MinimumItems = schema?.MinimumItems;
             MaximumItems = schema?.MaximumItems;
-            UniqueItems = schema?.UniqueItems ?? false;
-            Name = name;
+            UniqueItems = schema?.UniqueItems;
+            
             JsonType = jsonType;
             _isNullable = isNullable;
         }
@@ -108,12 +113,12 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <summary>
         /// If is Read-only
         /// </summary>
-        public bool IsReadOnly { get; }
+        public bool? IsReadOnly { get; }
         
         /// <summary>
         /// If is Write-only
         /// </summary>
-        public bool IsWriteOnly { get; }
+        public bool? IsWriteOnly { get; }
 
         /// <summary>
         /// Minimum array length accepts.
@@ -131,12 +136,18 @@ namespace Mozilla.IoT.WebThing.Builders
         /// If array accepts only unique items.
         /// This property should be use only for collection. 
         /// </summary>
-        public bool UniqueItems { get; }
+        public bool? UniqueItems { get; }
         
         /// <summary>
         /// 
         /// </summary>
         public JsonType JsonType { get; }
+
+
+        /// <summary>
+        /// Is a deprecated value
+        /// </summary>
+        public bool? Deprecated { get; }
         
         /// <summary>
         /// IsNullable.

@@ -123,10 +123,9 @@ namespace Mozilla.IoT.WebThing.Factories
                 }
 
                 var propertyName = attribute?.Name ?? property.Name;
-                var isReadOnly = !property.CanWrite || !property.SetMethod!.IsPublic
-                                                    || (attribute != null && attribute.IsReadOnly);
 
                 bool isNullable;
+                bool? isReadOnly = null;
                 if (attribute is IJsonSchema jsonSchema)
                 {
                     if (jsonSchema.IsNullable.HasValue)
@@ -141,10 +140,24 @@ namespace Mozilla.IoT.WebThing.Factories
                     {
                         isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();  
                     }
+
+                    if (jsonSchema.IsReadOnly.HasValue)
+                    {
+                        isReadOnly = jsonSchema.IsReadOnly.Value;
+                    }
+                    else if (!property.CanWrite || !property.SetMethod!.IsPublic)
+                    {
+                        isReadOnly = true;
+                    }
                 }
                 else
                 {
-                    isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();   
+                    isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();
+                    
+                    if (!property.CanWrite || !property.SetMethod!.IsPublic)
+                    {
+                        isReadOnly = true;
+                    }
                 }
                 
                 var information = ToInformation(propertyName, isNullable, isReadOnly, propertyType, jsonType, attribute);
@@ -153,7 +166,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 _response.Add(property, attribute, information);
             }
 
-            static JsonSchema ToInformation(string propertyName, bool isNullable, bool isReadOnly, 
+            static JsonSchema ToInformation(string propertyName, bool isNullable, bool? isReadOnly, 
                 Type properType, JsonType jsonType, IJsonSchema? attribute)
             {
                 return new JsonSchema(attribute, GetEnums(properType, attribute?.Enum), jsonType,  propertyName, isNullable, isReadOnly);

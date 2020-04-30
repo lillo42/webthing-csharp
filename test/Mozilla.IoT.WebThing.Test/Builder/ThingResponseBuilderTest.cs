@@ -134,7 +134,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
     ""properties"": {
         ""bool"": {
             ""type"": ""boolean"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/bool"",
@@ -144,7 +143,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""guid"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/guid"",
@@ -154,7 +152,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""timeSpan"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/timeSpan"",
@@ -164,7 +161,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""dateTime"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/dateTime"",
@@ -174,7 +170,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""dateTimeOffset"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/dateTimeOffset"",
@@ -184,7 +179,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""enum"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/enum"",
@@ -194,7 +188,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""string"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/string"",
@@ -204,7 +197,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""byte"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/byte"",
@@ -214,7 +206,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""sbyte"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/sbyte"",
@@ -224,7 +215,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""short"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/short"",
@@ -234,7 +224,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""ushort"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/ushort"",
@@ -244,7 +233,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""int"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/int"",
@@ -254,7 +242,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""uint"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/uint"",
@@ -264,7 +251,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""long"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/long"",
@@ -274,7 +260,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""ulong"": {
             ""type"": ""integer"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/ulong"",
@@ -284,7 +269,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""float"": {
             ""type"": ""number"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/float"",
@@ -294,7 +278,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""double"": {
             ""type"": ""number"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/double"",
@@ -304,7 +287,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         },
         ""decimal"": {
             ""type"": ""number"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/property-thing/properties/decimal"",
@@ -386,7 +368,6 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""title"": ""Boo Title"",
       ""description"": ""Bool test"",
       ""type"": ""boolean"",
-      ""readOnly"": false,
       ""link"": [
         {
           ""href"": ""/things/property-thing/properties/bool2"",
@@ -409,11 +390,10 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""description"": ""String Description"",
       ""@type"": [""ABC"",""DEF""],
       ""type"": ""string"",
-      ""readOnly"": false,
-      ""minimumLength"": 1,
-      ""maximumLength"": 100,
+      ""minLength"": 1,
+      ""maxLength"": 100,
       ""pattern"": ""^([a-zA-Z0-9_\\-\\.]\u002B)@([a-zA-Z0-9_\\-\\.]\u002B)\\.([a-zA-Z]{2,5})$"",
-      ""enums"": [ ""test@outlook.com"", ""test@gmail.com"", ""test@tese.com""],
+      ""enum"": [ ""test@outlook.com"", ""test@gmail.com"", ""test@tese.com""],
       ""link"": [
         {
           ""href"": ""/things/property-thing/properties/string2"",
@@ -426,10 +406,9 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""description"": ""int Description"",
       ""@type"": ""ABC"",
       ""type"": ""integer"",
-      ""readOnly"": false,
       ""minimum"": 1,
       ""maximum"": 100,
-      ""enums"": [1, 2, 3],
+      ""enum"": [1, 2, 3],
       ""link"": [
         {
           ""href"": ""/things/property-thing/properties/int2"",
@@ -442,10 +421,9 @@ namespace Mozilla.IoT.WebThing.Test.Builder
       ""description"": ""Double Description"",
       ""@type"": ""ABC"",
       ""type"": ""number"",
-      ""readOnly"": false,
       ""exclusiveMinimum"": 1,
       ""exclusiveMaximum"": 100,
-      ""enums"": [1.1, 2.3 ,3],
+      ""enum"": [1.1, 2.3 ,3],
       ""link"": [
         {
           ""href"": ""/things/property-thing/properties/double2"",
@@ -702,10 +680,10 @@ namespace Mozilla.IoT.WebThing.Test.Builder
               ""title"": ""String title"",
               ""description"": ""String Description"",
               ""type"": ""string"",
-              ""minimumLength"": 1,
-              ""maximumLength"": 100,
+              ""minLength"": 1,
+              ""maxLength"": 100,
               ""pattern"": ""^([a-zA-Z0-9_\\-\\.]\u002B)@([a-zA-Z0-9_\\-\\.]\u002B)\\.([a-zA-Z]{2,5})$"",
-              ""enums"": [
+              ""enum"": [
                 ""test@outlook.com"",
                 ""test@gmail.com"",
                 ""test@tese.com""
@@ -729,7 +707,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
               ""type"": ""integer"",
               ""minimum"": 1,
               ""maximum"": 100,
-              ""enums"": [
+              ""enum"": [
                 1,
                 2,
                 3
@@ -753,7 +731,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
               ""type"": ""number"",
               ""exclusiveMinimum"": 1,
               ""exclusiveMaximum"": 100,
-              ""enums"": [
+              ""enum"": [
                 1.1,
                 2.3,
                 3

@@ -134,8 +134,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     ""properties"": {
         ""value"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""2013-01-21T00:00:00\u002B01:00"",
                 ""2014-01-21T00:00:00\u002B01:00"",
                 ""2015-01-21T00:00:00\u002B01:00""
@@ -149,7 +148,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""nonNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
             ""link"": [
                 {
                     ""href"": ""/things/date-time-offset-property/properties/nonNullableValue"",
@@ -159,8 +157,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""notAcceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 ""2013-01-21T00:00:00\u002B01:00"",
                 ""2013-02-21T00:00:00\u002B01:00"",
                 ""2013-03-21T00:00:00\u002B01:00""
@@ -174,8 +171,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""acceptedNullableValue"": {
             ""type"": ""string"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 null,
                 ""2013-01-21T00:00:00\u002B02:00"",
                 ""2013-01-21T00:00:00\u002B03:00"",

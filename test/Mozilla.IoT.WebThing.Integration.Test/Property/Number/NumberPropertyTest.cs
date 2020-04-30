@@ -158,7 +158,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
     ""properties"": {{
         ""minAndMaxValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""readOnly"": false,
             ""minimum"": 10,
             ""maximum"": 100,
             ""link"": [
@@ -170,7 +169,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         }},
         ""exclusiveMinAndMaxValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""readOnly"": false,
             ""exclusiveMinimum"": 10,
             ""exclusiveMaximum"": 100,
             ""link"": [
@@ -182,7 +180,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         }},
         ""multiOfValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""readOnly"": false,
             ""multipleOf"": 2,
             ""link"": [
                 {{
@@ -193,8 +190,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         }},
         ""value"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 1,
                 2,
                 3
@@ -208,7 +204,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         }},
         ""nonNullableValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""readOnly"": false,
             ""link"": [
                 {{
                     ""href"": ""/things/number-property/properties/nonNullableValue"",
@@ -218,8 +213,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         }},
         ""notAcceptedNullableValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 10,
                 20,
                 30
@@ -233,8 +227,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         }},
         ""acceptedNullableValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""readOnly"": false,
-            ""enums"": [
+            ""enum"": [
                 null,
                 100,
                 110,

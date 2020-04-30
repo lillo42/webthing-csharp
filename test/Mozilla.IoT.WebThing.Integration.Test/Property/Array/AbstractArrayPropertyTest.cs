@@ -194,12 +194,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
 
             if(arrayLength.HasValue)
             {
-                var values = new List<T>(arrayLength.Value);
-
-                for (var i = 0; i < arrayLength.Value; i++)
-                {
-                    values.Add(Fixture.Create<T>());
-                }
+                var values = CreateValue(arrayLength.Value);
 
                 if (duplicateValue)
                 {

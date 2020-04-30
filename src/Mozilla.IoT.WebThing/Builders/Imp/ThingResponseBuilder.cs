@@ -19,6 +19,29 @@ namespace Mozilla.IoT.WebThing.Builders
 
         private Dictionary<string, object?>? _parameters;
         private string _thingName = string.Empty;
+        
+        private const string s_items = "items";
+        private const string s_type = "type";
+
+        private const string s_enum = "enum";
+        private const string s_readOnly = "readOnly";
+        private const string s_writeOnly = "writeOnly";
+        private const string s_deprecated = "deprecated";
+        
+        private const string s_pattern = "pattern";
+        private const string s_minLength = "minLength";
+        private const string s_maxLength = "maxLength";
+
+        private const string s_min = "minimum";
+        private const string s_max = "maximum";
+        private const string s_minExclusive = "exclusiveMinimum";
+        private const string s_maxExclusive = "exclusiveMaximum";
+        private const string s_multipleOf = "multipleOf";
+
+        private const string s_minItems = "minItems";
+        private const string s_maxItems = "maxItems";
+        private const string s_uniqueItems = "uniqueItems";
+        
 
         /// <inheritdoc />
         public IThingResponseBuilder SetThing(Thing thing)
@@ -107,25 +130,25 @@ namespace Mozilla.IoT.WebThing.Builders
             
             if (!_option.IgnoreNullValues || attribute?.Title != null)
             {
-                propertyInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Title)), attribute?.Title);
+                propertyInformation.Add(nameof(ThingEventAttribute.Title).ToLower(), attribute?.Title);
             }
 
             if (!_option.IgnoreNullValues || attribute?.Description != null)
             {
-                propertyInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Description)), attribute?.Description);
+                propertyInformation.Add(nameof(ThingEventAttribute.Description).ToLower(), attribute?.Description);
             }
 
             if (!_option.IgnoreNullValues || attribute?.Unit != null)
             {
-                propertyInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Unit)), attribute?.Unit);
+                propertyInformation.Add(nameof(ThingEventAttribute.Unit).ToLower(), attribute?.Unit);
             }
             
             AddTypeProperty(propertyInformation, attribute?.Type);
 
-            AddInformation(propertyInformation, jsonSchema, property.PropertyType.ToJsonType(), true);
+            AddInformation(propertyInformation, jsonSchema, property.PropertyType);
             var propertyName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? property.Name);
             
-            propertyInformation.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
+            propertyInformation.Add("link", new[]
             {
                 new Link($"/things/{_thingName}/properties/{propertyName}", "property")
             });
@@ -160,7 +183,7 @@ namespace Mozilla.IoT.WebThing.Builders
                 actionInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Description)), attribute?.Description);
             }
             
-            actionInformation.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
+            actionInformation.Add("link", new[]
             {
                 new Link($"/things/{_thingName}/actions/{propertyName}", "action")
             });
@@ -173,7 +196,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             _parameters = new Dictionary<string, object?>();
             
-            input.Add(_option.PropertyNamingPolicy.ConvertName("Properties"), _parameters);
+            input.Add("properties", _parameters);
             
             actionInformation.Add(_option.PropertyNamingPolicy.ConvertName("Input"), input);
 
@@ -215,82 +238,104 @@ namespace Mozilla.IoT.WebThing.Builders
                 parameterInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Unit)), attribute?.Unit);
             }
             
-            AddInformation(parameterInformation, jsonSchema, parameter.ParameterType.ToJsonType(), false);
+            AddInformation(parameterInformation, jsonSchema, parameter.ParameterType);
             var parameterName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? parameter.Name);
             
             _parameters.Add(parameterName, parameterInformation);
         }
 
-        private void AddInformation(Dictionary<string, object?> builder, JsonSchema jsonSchema, JsonType jsonType, bool writeIsReadOnly)
+        private static void AddInformation(Dictionary<string, object?> builder, JsonSchema jsonSchema, Type type)
         {
+            var jsonType = type.ToJsonType();
             builder.Add("type", jsonType.ToString().ToLower());
-            
-            if (_option == null)
+
+            if (jsonSchema.IsReadOnly.HasValue)
             {
-                throw new InvalidOperationException($"Thing is null, call {nameof(SetThingOption)} before build");
+                builder.Add(s_readOnly, jsonSchema.IsReadOnly);
+            }
+            
+            if (jsonSchema.IsWriteOnly.HasValue)
+            {
+                builder.Add(s_writeOnly, jsonSchema.IsReadOnly);
+            }
+            
+            if (jsonSchema.Enums != null)
+            {
+                builder.Add(s_enum, jsonSchema.Enums);
             }
 
-            if (writeIsReadOnly)
+            if (jsonSchema.Deprecated.HasValue)
             {
-                builder.Add(_option.PropertyNamingPolicy.ConvertName("ReadOnly"), jsonSchema.IsReadOnly);
+                builder.Add(s_deprecated, jsonSchema.Enums);
             }
             
             switch(jsonType)
             {
                 case JsonType.String:
-                    if (!_option.IgnoreNullValues || jsonSchema.MinimumLength.HasValue)
+                    if (jsonSchema.MinimumLength.HasValue)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.MinimumLength)), jsonSchema.MinimumLength);
+                        builder.Add(s_minLength, jsonSchema.MinimumLength);
                     }
 
-                    if (!_option.IgnoreNullValues || jsonSchema.MaximumLength.HasValue)
+                    if (jsonSchema.MaximumLength.HasValue)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.MaximumLength)), jsonSchema.MaximumLength);
+                        builder.Add(s_maxLength, jsonSchema.MaximumLength);
                     }
 
-                    if (!_option.IgnoreNullValues || jsonSchema.Pattern != null)
+                    if (jsonSchema.Pattern != null)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.Pattern)), jsonSchema.Pattern);
-                    }
-
-                    if (!_option.IgnoreNullValues || jsonSchema.Enums != null)
-                    {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.Enums)), jsonSchema.Enums);
+                        builder.Add(s_pattern, jsonSchema.Pattern);
                     }
                     break;
                 case JsonType.Integer:
                 case JsonType.Number:
-                    if (!_option.IgnoreNullValues ||  jsonSchema.Minimum.HasValue)
+                    if (jsonSchema.Minimum.HasValue)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.Minimum)), jsonSchema.Minimum);
+                        builder.Add(s_min, jsonSchema.Minimum);
                     }
 
-                    if (!_option.IgnoreNullValues || jsonSchema.Maximum.HasValue)
+                    if (jsonSchema.Maximum.HasValue)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.Maximum)), jsonSchema.Maximum);
+                        builder.Add(s_max, jsonSchema.Maximum);
                     }
                     
-                    if (!_option.IgnoreNullValues || jsonSchema.ExclusiveMinimum.HasValue)
+                    if (jsonSchema.ExclusiveMinimum.HasValue)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.ExclusiveMinimum)), jsonSchema.ExclusiveMinimum);
+                        builder.Add(s_minExclusive, jsonSchema.ExclusiveMinimum);
                     }
                     
-                    if (!_option.IgnoreNullValues || jsonSchema.ExclusiveMaximum.HasValue)
+                    if (jsonSchema.ExclusiveMaximum.HasValue)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.ExclusiveMaximum)), jsonSchema.ExclusiveMaximum);
+                        builder.Add(s_maxExclusive, jsonSchema.ExclusiveMaximum);
                     }
                     
-                    if (!_option.IgnoreNullValues || jsonSchema.MultipleOf.HasValue)
+                    if (jsonSchema.MultipleOf.HasValue)
                     {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.MultipleOf)), jsonSchema.MultipleOf);
-                    }
-                    
-                    if (!_option.IgnoreNullValues || jsonSchema.Enums != null)
-                    {
-                        builder.Add(_option.PropertyNamingPolicy.ConvertName(nameof(JsonSchema.Enums)), jsonSchema.Enums);
+                        builder.Add(s_multipleOf, jsonSchema.MultipleOf);
                     }
                     break;
                 case JsonType.Array:
+                    if (jsonSchema.MinimumItems.HasValue)
+                    {
+                        builder.Add(s_minItems, jsonSchema.Minimum);
+                    }
+                    
+                    if (jsonSchema.MaximumItems.HasValue)
+                    {
+                        builder.Add(s_maxItems, jsonSchema.Minimum);
+                    }
+                    
+                    if (jsonSchema.UniqueItems.HasValue)
+                    {
+                        builder.Add(s_uniqueItems, jsonSchema.Minimum);
+                    }
+
+                    var arrayType = type.GetCollectionType();
+                    builder.Add(s_items, new Dictionary<string, object>
+                    {
+                        [s_type] = arrayType.ToJsonType().ToString().ToLower()
+                    });
+                    break;
                 case JsonType.Boolean:
                     break;
                 default:
@@ -370,7 +415,6 @@ namespace Mozilla.IoT.WebThing.Builders
                 result.Add(_option.PropertyNamingPolicy.ConvertName("Actions"), _actions);
             }
             
-
             var links = new List<Link>(4)
             {
                 new Link("properties", $"/things/{_thingName}/properties"),

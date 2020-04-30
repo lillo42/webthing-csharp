@@ -46,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.Guid:
                 case TypeCode.TimeSpan:
                 case TypeCode.Enum:
-                    return new ThingProperty(thing, jsonSchema.IsReadOnly, jsonSchema.IsWriteOnly, 
+                    return new ThingProperty(thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), 
                         getter, setter, validation, jsonConvertible, null);
                 case TypeCode.SByte:
                 case TypeCode.Byte:
@@ -59,11 +59,11 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.Float:
                 case TypeCode.Double:
                 case TypeCode.Decimal:
-                    return new ThingProperty(thing, jsonSchema.IsReadOnly, jsonSchema.IsWriteOnly, 
+                    return new ThingProperty(thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), 
                         getter, setter, validation, jsonConvertible,
                         _convertibleFactory.Create(code, propertyType));
                 case TypeCode.Array:
-                    return new ThingProperty(thing, jsonSchema.IsReadOnly, jsonSchema.IsWriteOnly, getter, setter,
+                    return new ThingProperty(thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), getter, setter,
                         validation, jsonConvertible, _convertibleFactory.Create(code, propertyType));
                 default:
                     throw new ArgumentOutOfRangeException();
