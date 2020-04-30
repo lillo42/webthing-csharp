@@ -13,7 +13,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
         protected IThingContextFactory Factory { get; }
         protected Fixture Fixture { get; }
 
-        public AbstractPropertyTest()
+        protected AbstractPropertyTest()
         {
             var collection = new ServiceCollection();
             collection.AddThings();

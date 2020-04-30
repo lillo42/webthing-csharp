@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
@@ -40,9 +42,56 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
 
             return values;
         }
- 
-        #region Valid
+
+        #region Serialization
+        private void Serialize<TThing>()
+            where TThing : Thing, new()
+        {
+            var thing = new TThing();
+            var context = Factory.Create(thing, new ThingOption());
+
+            var message = JsonSerializer.Serialize(context.Response,
+                new ThingOption().ToJsonSerializerOptions());
+
+            FluentAssertions.Json.JsonAssertionExtensions.Should(JToken.Parse(message))
+                .BeEquivalentTo(JToken.Parse(RESPONSE.Replace("{0}", thing.Name)));
+        }
         
+        [Fact]
+        public void SerializeArrayProperty()
+            => Serialize<ArrayThing>();
+        
+        [Fact]
+        public void SerializeIEnumerableProperty()
+            => Serialize<IEnumerableThing>();
+        
+        [Fact]
+        public void SerializeListProperty()
+            => Serialize<ListThing>();
+        
+        [Fact]
+        public void SerializeIListProperty()
+            => Serialize<IListThing>();
+        
+        [Fact]
+        public void SerializeICollectionProperty()
+            => Serialize<ICollectionThing>();
+        
+        [Fact]
+        public void SerializeISetProperty()
+            => Serialize<ISetThing>();
+        
+        [Fact]
+        public void SerializeHashSetProperty()
+            => Serialize<HashSetThing>();
+        
+        [Fact]
+        public void SerializeLinkedListProperty()
+            => Serialize<LinkedListThing>();
+
+        #endregion
+        
+        #region Valid
         private void ValidProperty<TThing>(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue,
             Func<List<T>, List<T>> transValue = null)
             where  TThing : Thing, new()
@@ -445,5 +494,78 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
         }
         
         #endregion
+
+        private readonly string RESPONSE = $@"
+{{
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""properties"": {{
+        ""values"": {{
+            ""type"": ""array"",
+            ""items"": {{
+                ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
+            }},
+            ""link"": [
+                {{
+                    ""href"": ""/things/{{0}}/properties/values"",
+                    ""rel"": ""property""
+                }}
+            ]
+        }},
+        ""notNullable"": {{
+            ""type"": ""array"",
+            ""items"": {{
+                ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
+            }},
+            ""link"": [
+                {{
+                    ""href"": ""/things/{{0}}/properties/notNullable"",
+                    ""rel"": ""property""
+                }}
+            ]
+        }},
+        ""minAndMax"": {{
+            ""type"": ""array"",
+            ""minItems"": 2,
+            ""maxItems"": 3,
+            ""items"": {{
+                ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
+            }},
+            ""link"": [
+                {{
+                    ""href"": ""/things/{{0}}/properties/minAndMax"",
+                    ""rel"": ""property""
+                }}
+            ]
+        }},
+        ""unique"": {{
+            ""type"": ""array"",
+            ""uniqueItems"": true,
+            ""items"": {{
+                ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
+            }},
+            ""link"": [
+                {{
+                    ""href"": ""/things/{{0}}/properties/unique"",
+                    ""rel"": ""property""
+                }}
+            ]
+        }}
+    }},
+    ""links"": [
+        {{
+            ""href"": ""properties"",
+            ""rel"": ""/things/{{0}}/properties""
+        }},
+        {{
+            ""href"": ""events"",
+            ""rel"": ""/things/{{0}}/events""
+        }},
+        {{
+            ""href"": ""actions"",
+            ""rel"": ""/things/{{0}}/actions""
+        }}
+    ]
+}}
+";
     }
 }

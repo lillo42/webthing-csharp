@@ -317,17 +317,17 @@ namespace Mozilla.IoT.WebThing.Builders
                 case JsonType.Array:
                     if (jsonSchema.MinimumItems.HasValue)
                     {
-                        builder.Add(s_minItems, jsonSchema.Minimum);
+                        builder.Add(s_minItems, jsonSchema.MinimumItems);
                     }
                     
                     if (jsonSchema.MaximumItems.HasValue)
                     {
-                        builder.Add(s_maxItems, jsonSchema.Minimum);
+                        builder.Add(s_maxItems, jsonSchema.MaximumItems);
                     }
                     
                     if (jsonSchema.UniqueItems.HasValue)
                     {
-                        builder.Add(s_uniqueItems, jsonSchema.Minimum);
+                        builder.Add(s_uniqueItems, jsonSchema.UniqueItems);
                     }
 
                     var arrayType = type.GetCollectionType();

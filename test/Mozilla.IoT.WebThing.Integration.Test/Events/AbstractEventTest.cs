@@ -10,7 +10,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Events
         protected IThingContextFactory Factory { get; }
         protected Fixture Fixture { get; }
 
-        public AbstractEventTest()
+        protected AbstractEventTest()
         {
             var collection = new ServiceCollection();
             collection.AddThings();
