@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using AutoFixture;
 using System.Text.Json;
@@ -148,7 +147,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
             ""type"": ""string"",
             ""minLength"": 1,
             ""maxLength"": 10,
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/sting-property/properties/minAndMax"",
                     ""rel"": ""property""
@@ -158,7 +157,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         ""mail"": {
             ""type"": ""string"",
             ""pattern"": ""^\\w\u002B@[a-zA-Z_]\u002B?\\.[a-zA-Z]{2,3}$"",
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/sting-property/properties/mail"",
                     ""rel"": ""property""
@@ -172,7 +171,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
                 ""ipsum etiam"",
                 ""nec litora placerat""
             ],
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/sting-property/properties/enum"",
                     ""rel"": ""property""
@@ -181,7 +180,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""nonNullableEnumValue"": {
             ""type"": ""string"",
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/sting-property/properties/nonNullableEnumValue"",
                     ""rel"": ""property""
@@ -195,7 +194,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
                 ""donec nisi,"",
                 ""suspendisse""
             ],
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/sting-property/properties/notAcceptedNullableEnumValue"",
                     ""rel"": ""property""
@@ -210,7 +209,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
                 ""erat eleifend integer enim"",
                 ""porta praesent dictum""
             ],
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/sting-property/properties/acceptedNullableEnumValue"",
                     ""rel"": ""property""
