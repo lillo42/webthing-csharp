@@ -504,7 +504,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
             ""items"": {{
                 ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
             }},
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/{{0}}/properties/values"",
                     ""rel"": ""property""
@@ -516,7 +516,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
             ""items"": {{
                 ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
             }},
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/{{0}}/properties/notNullable"",
                     ""rel"": ""property""
@@ -530,7 +530,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
             ""items"": {{
                 ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
             }},
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/{{0}}/properties/minAndMax"",
                     ""rel"": ""property""
@@ -543,7 +543,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
             ""items"": {{
                 ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}""
             }},
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/{{0}}/properties/unique"",
                     ""rel"": ""property""

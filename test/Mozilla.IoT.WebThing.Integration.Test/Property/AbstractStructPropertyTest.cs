@@ -117,7 +117,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
     ""value"": {{
       ""type"": ""{0}"",
       {1}
-      ""link"": [
+      ""links"": [
         {{
           ""href"": ""/things/property-thing/properties/value"",
           ""rel"": ""property""
@@ -127,7 +127,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
     ""nullableValue"": {{
       ""type"": ""{0}"",
       {1}
-      ""link"": [
+      ""links"": [
         {{
           ""href"": ""/things/property-thing/properties/nullableValue"",
           ""rel"": ""property""

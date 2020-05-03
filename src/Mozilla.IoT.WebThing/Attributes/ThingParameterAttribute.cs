@@ -9,6 +9,8 @@ namespace Mozilla.IoT.WebThing.Attributes
     [AttributeUsage(AttributeTargets.Parameter)]
     public class ThingParameterAttribute : Attribute, IJsonSchema
     {
+        bool IJsonSchema.Ignore => false;
+        
         /// <summary>
         /// Action parameter name.
         /// </summary>
@@ -28,6 +30,11 @@ namespace Mozilla.IoT.WebThing.Attributes
         /// Unit of Action parameter.
         /// </summary>
         public string? Unit { get; set; }
+        
+        /// <summary>
+        /// Property types.
+        /// </summary>
+        public string[]? Type { get; set; }
 
         /// <inheritdoc/>
         bool? IJsonSchema.IsReadOnly { get; } = null;

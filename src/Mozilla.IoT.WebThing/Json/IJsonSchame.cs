@@ -1,3 +1,5 @@
+using Mozilla.IoT.WebThing.Builders;
+
 namespace Mozilla.IoT.WebThing.Json
 {
     /// <summary>
@@ -5,6 +7,36 @@ namespace Mozilla.IoT.WebThing.Json
     /// </summary>
     public interface IJsonSchema
     {
+        /// <summary>
+        /// Action parameter name.
+        /// </summary>
+        string? Name { get; }
+        
+        /// <summary>
+        /// Action parameter title.
+        /// </summary>
+        string? Title { get; }
+        
+        /// <summary>
+        /// Action parameter description.
+        /// </summary>
+        string? Description { get; }
+        
+        /// <summary>
+        /// If property should be ignore.
+        /// </summary>
+        bool Ignore { get; }
+        
+        /// <summary>
+        /// Property types.
+        /// </summary>
+        string[]? Type { get; }
+        
+        /// <summary>
+        /// Unit of Action parameter.
+        /// </summary>
+        public string? Unit { get; }
+        
         /// <summary>
         /// If property is read-only.
         /// </summary>

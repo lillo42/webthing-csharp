@@ -160,7 +160,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
             ""minimum"": 10,
             ""maximum"": 100,
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/number-property/properties/minAndMaxValue"",
                     ""rel"": ""property""
@@ -171,7 +171,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
             ""exclusiveMinimum"": 10,
             ""exclusiveMaximum"": 100,
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/number-property/properties/exclusiveMinAndMaxValue"",
                     ""rel"": ""property""
@@ -181,7 +181,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         ""multiOfValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
             ""multipleOf"": 2,
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/number-property/properties/multiOfValue"",
                     ""rel"": ""property""
@@ -195,7 +195,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
                 2,
                 3
             ],
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/number-property/properties/value"",
                     ""rel"": ""property""
@@ -204,7 +204,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         }},
         ""nonNullableValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/number-property/properties/nonNullableValue"",
                     ""rel"": ""property""
@@ -218,7 +218,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
                 20,
                 30
             ],
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/number-property/properties/notAcceptedNullableValue"",
                     ""rel"": ""property""
@@ -233,7 +233,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
                 110,
                 120
             ],
-            ""link"": [
+            ""links"": [
                 {{
                     ""href"": ""/things/number-property/properties/acceptedNullableValue"",
                     ""rel"": ""property""

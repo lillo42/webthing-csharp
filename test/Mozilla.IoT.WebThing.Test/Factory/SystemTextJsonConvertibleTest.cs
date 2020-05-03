@@ -8,8 +8,6 @@ using Mozilla.IoT.WebThing.Convertibles.Collection;
 using Mozilla.IoT.WebThing.Convertibles.Number;
 using Mozilla.IoT.WebThing.Convertibles.Strings;
 using Mozilla.IoT.WebThing.Factories;
-using Mozilla.IoT.WebThing.Json.Convertibles;
-using Mozilla.IoT.WebThing.Json.Convertibles.String;
 using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test.Factory

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Mozilla.IoT.WebThing.Json.SchemaValidations
@@ -13,7 +12,6 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
         private readonly int? _maxItems;
         private readonly bool _uniqueItem;
         private readonly HashSet<object>? _enum;
-        private readonly JsonType _acceptedType;
 
         /// <summary>
         /// Initialize a new instance of <see cref="ArrayJsonSchemaValidation"/>.
@@ -22,15 +20,12 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations
         /// <param name="minItems">The minimum array length.</param>
         /// <param name="maxItems">The maximum array length.</param>
         /// <param name="uniqueItem">Accepted only unique items</param>
-        /// <param name="acceptedType">Accepted type.</param>
         /// <param name="enum">Accepted values.</param>
-        public ArrayJsonSchemaValidation(bool isNullable, int? minItems, int? maxItems, bool uniqueItem, 
-            JsonType acceptedType, HashSet<object>? @enum)
+        public ArrayJsonSchemaValidation(bool isNullable, int? minItems, int? maxItems, bool uniqueItem, HashSet<object>? @enum)
         {
             _minItems = minItems;
             _maxItems = maxItems;
             _uniqueItem = uniqueItem;
-            _acceptedType = acceptedType;
             _enum = @enum;
             _isNullable = isNullable;
         }

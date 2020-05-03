@@ -19,10 +19,17 @@ namespace Mozilla.IoT.WebThing.Builders
 
         private Dictionary<string, object?>? _parameters;
         private string _thingName = string.Empty;
+
+        private const string s_link = "links";
+        private const string s_title = "title";
+        private const string s_description = "description";
+        private const string s_unit = "unit";
         
         private const string s_items = "items";
         private const string s_type = "type";
-
+        private const string s_input = "input";
+        private const string s_properties = "properties";
+        
         private const string s_enum = "enum";
         private const string s_readOnly = "readOnly";
         private const string s_writeOnly = "writeOnly";
@@ -81,31 +88,10 @@ namespace Mozilla.IoT.WebThing.Builders
                 throw new InvalidOperationException($"ThingOption is null, call {nameof(SetThingOption)} before add");
             }
             
-            var information = new Dictionary<string, object?>();
-            
-            if (eventInfo != null)
-            {
-                if (!_option.IgnoreNullValues || eventInfo.Title != null)
-                {
-                    information.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Title)), eventInfo.Title);
-                }
-
-                if (!_option.IgnoreNullValues || eventInfo.Description != null)
-                {
-                    information.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Description)), eventInfo.Description);
-                }
-
-                if (!_option.IgnoreNullValues || eventInfo.Unit != null)
-                {
-                    information.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Unit)), eventInfo.Unit);
-                }
-
-                AddTypeProperty(information, eventInfo.Type);
-            }
-            
             var eventName = _option.PropertyNamingPolicy.ConvertName(eventInfo?.Name ?? @event.Name);
-            
-            information.Add(_option.PropertyNamingPolicy.ConvertName("Link"), new[]
+            var information = new Dictionary<string, object?>();
+            AddSchemaInformation(information, eventInfo.ToJsonSchema(@event), @event.EventHandlerType!.GetGenericArguments()[0]);
+            information.Add(s_link, new[]
             {
                 new Link($"/things/{_thingName}/events/{eventName}", "event")
             });
@@ -128,27 +114,11 @@ namespace Mozilla.IoT.WebThing.Builders
             
             var propertyInformation = new Dictionary<string, object?>();
             
-            if (!_option.IgnoreNullValues || attribute?.Title != null)
-            {
-                propertyInformation.Add(nameof(ThingEventAttribute.Title).ToLower(), attribute?.Title);
-            }
-
-            if (!_option.IgnoreNullValues || attribute?.Description != null)
-            {
-                propertyInformation.Add(nameof(ThingEventAttribute.Description).ToLower(), attribute?.Description);
-            }
-
-            if (!_option.IgnoreNullValues || attribute?.Unit != null)
-            {
-                propertyInformation.Add(nameof(ThingEventAttribute.Unit).ToLower(), attribute?.Unit);
-            }
+            AddSchemaInformation(propertyInformation, jsonSchema, property.PropertyType);
             
-            AddTypeProperty(propertyInformation, attribute?.Type);
-
-            AddInformation(propertyInformation, jsonSchema, property.PropertyType);
             var propertyName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? property.Name);
             
-            propertyInformation.Add("link", new[]
+            propertyInformation.Add(s_link, new[]
             {
                 new Link($"/things/{_thingName}/properties/{propertyName}", "property")
             });
@@ -173,33 +143,22 @@ namespace Mozilla.IoT.WebThing.Builders
             
             var actionInformation = new Dictionary<string, object?>();
             
-            if (!_option.IgnoreNullValues || attribute?.Title != null)
-            {
-                actionInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Title)), attribute?.Title);
-            }
-
-            if (!_option.IgnoreNullValues || attribute?.Description != null)
-            {
-                actionInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Description)), attribute?.Description);
-            }
+            AddSchemaInformation(actionInformation, attribute.ToJsonSchema(action), null);
             
-            actionInformation.Add("link", new[]
+            actionInformation.Add(s_link, new[]
             {
                 new Link($"/things/{_thingName}/actions/{propertyName}", "action")
             });
-            
-            var input = new Dictionary<string, object?>();
-            
-            AddTypeProperty(input, attribute?.Type);
-            
-            input.Add("type", "object");
-            
-            _parameters = new Dictionary<string, object?>();
-            
-            input.Add("properties", _parameters);
-            
-            actionInformation.Add(_option.PropertyNamingPolicy.ConvertName("Input"), input);
 
+            var input = new Dictionary<string, object?>
+            {
+                [s_type] = "object"
+            };
+
+            _parameters = new Dictionary<string, object?>();
+            input.Add(s_properties, _parameters);
+            AddTypeProperty(input, attribute?.Type);
+            actionInformation.Add(s_input, input);
             _actions.Add(propertyName, actionInformation);
         }
 
@@ -223,29 +182,47 @@ namespace Mozilla.IoT.WebThing.Builders
             
             var parameterInformation = new Dictionary<string, object?>();
             
-            if (!_option.IgnoreNullValues || attribute?.Title != null)
-            {
-                parameterInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Title)), attribute?.Title);
-            }
-
-            if (!_option.IgnoreNullValues || attribute?.Description != null)
-            {
-                parameterInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Description)), attribute?.Description);
-            }
-
-            if (!_option.IgnoreNullValues || attribute?.Unit != null)
-            {
-                parameterInformation.Add(_option.PropertyNamingPolicy.ConvertName(nameof(ThingEventAttribute.Unit)), attribute?.Unit);
-            }
-            
-            AddInformation(parameterInformation, jsonSchema, parameter.ParameterType);
+            AddSchemaInformation(parameterInformation, jsonSchema, parameter.ParameterType);
             var parameterName = _option.PropertyNamingPolicy.ConvertName(attribute?.Name ?? parameter.Name);
             
             _parameters.Add(parameterName, parameterInformation);
         }
 
-        private static void AddInformation(Dictionary<string, object?> builder, JsonSchema jsonSchema, Type type)
+        private static void AddSchemaInformation(Dictionary<string, object?> builder, JsonSchema jsonSchema, Type? type)
         {
+            if (!string.IsNullOrEmpty(jsonSchema.Title))
+            {
+                builder.Add(s_title, jsonSchema.Title);
+            }
+
+            if (!string.IsNullOrEmpty(jsonSchema.Description))
+            {
+                builder.Add(s_description, jsonSchema.Description);
+            }
+
+            if (!string.IsNullOrEmpty(jsonSchema.Unit))
+            {
+                builder.Add(s_unit, jsonSchema.Unit);
+            }
+
+            if (type == null)
+            {
+                return;
+            }
+            
+            if (jsonSchema.Type != null && jsonSchema.Type.Length > 0)
+            {
+                if (jsonSchema.Type.Length == 1)
+                {
+                    builder.Add("@type", jsonSchema.Type[0]);
+                }
+                else
+                {
+                    
+                    builder.Add("@type", jsonSchema.Type);
+                }
+            }
+            
             var jsonType = type.ToJsonType();
             builder.Add("type", jsonType.ToString().ToLower());
 
@@ -258,11 +235,6 @@ namespace Mozilla.IoT.WebThing.Builders
             {
                 builder.Add(s_writeOnly, jsonSchema.IsReadOnly);
             }
-            
-            if (jsonSchema.Enums != null)
-            {
-                builder.Add(s_enum, jsonSchema.Enums);
-            }
 
             if (jsonSchema.Deprecated.HasValue)
             {
@@ -272,6 +244,11 @@ namespace Mozilla.IoT.WebThing.Builders
             switch(jsonType)
             {
                 case JsonType.String:
+                    if (jsonSchema.Enums != null)
+                    {
+                        builder.Add(s_enum, jsonSchema.Enums);
+                    }
+                    
                     if (jsonSchema.MinimumLength.HasValue)
                     {
                         builder.Add(s_minLength, jsonSchema.MinimumLength);
@@ -289,6 +266,11 @@ namespace Mozilla.IoT.WebThing.Builders
                     break;
                 case JsonType.Integer:
                 case JsonType.Number:
+                    if (jsonSchema.Enums != null)
+                    {
+                        builder.Add(s_enum, jsonSchema.Enums);
+                    }
+                    
                     if (jsonSchema.Minimum.HasValue)
                     {
                         builder.Add(s_min, jsonSchema.Minimum);
@@ -329,12 +311,19 @@ namespace Mozilla.IoT.WebThing.Builders
                     {
                         builder.Add(s_uniqueItems, jsonSchema.UniqueItems);
                     }
-
+                    
                     var arrayType = type.GetCollectionType();
-                    builder.Add(s_items, new Dictionary<string, object>
+                    var items = new Dictionary<string, object>
                     {
                         [s_type] = arrayType.ToJsonType().ToString().ToLower()
-                    });
+                    };
+                    
+                    if (jsonSchema.Enums != null)
+                    {
+                        items.Add(s_enum, jsonSchema.Enums);
+                    }
+                    
+                    builder.Add(s_items, items);
                     break;
                 case JsonType.Boolean:
                     break;
@@ -350,7 +339,7 @@ namespace Mozilla.IoT.WebThing.Builders
                 throw new InvalidOperationException($"ThingOption is null, call {nameof(SetThingOption)} before add");
             }
             
-            if (_option.IgnoreNullValues && types == null)
+            if (types == null || types.Length == 0)
             {
                 return;
             }
@@ -388,31 +377,31 @@ namespace Mozilla.IoT.WebThing.Builders
                 ["@context"] = _thing.Context
             };
 
-            if (!_option.IgnoreNullValues || _thing.Title != null)
+            if (_thing.Title != null)
             {
-                result.Add(_option.PropertyNamingPolicy.ConvertName(nameof(Thing.Title)), _thing.Title);
+                result.Add(s_title, _thing.Title);
             }
             
-            if (!_option.IgnoreNullValues || _thing.Description != null)
+            if (_thing.Description != null)
             {
-                result.Add(_option.PropertyNamingPolicy.ConvertName(nameof(Thing.Description)), _thing.Description);
+                result.Add(s_description, _thing.Description);
             }
             
             AddTypeProperty(result, _thing.Type);
 
             if (_events.Any())
             {
-                result.Add(_option.PropertyNamingPolicy.ConvertName("Events"), _events);
+                result.Add("events", _events);
             }
 
             if (_properties.Any())
             {
-                result.Add(_option.PropertyNamingPolicy.ConvertName("Properties"), _properties);
+                result.Add(s_properties, _properties);
             }
             
             if (_actions.Any())
             {
-                result.Add(_option.PropertyNamingPolicy.ConvertName("Actions"), _actions);
+                result.Add("actions", _actions);
             }
             
             var links = new List<Link>(4)
@@ -422,7 +411,7 @@ namespace Mozilla.IoT.WebThing.Builders
                 new Link("actions", $"/things/{_thingName}/actions")
             };
             
-            result.Add(_option.PropertyNamingPolicy.ConvertName("Links"), links);
+            result.Add(s_link, links);
             return result;
         }
     }

@@ -122,56 +122,13 @@ namespace Mozilla.IoT.WebThing.Factories
                     continue;
                 }
 
-                var propertyName = attribute?.Name ?? property.Name;
-
-                bool isNullable;
-                bool? isReadOnly = null;
-                if (attribute is IJsonSchema jsonSchema)
-                {
-                    if (jsonSchema.IsNullable.HasValue)
-                    {
-                        isNullable = jsonSchema.IsNullable.Value;
-                    }
-                    else if(jsonSchema.Enum != null)
-                    {
-                        isNullable = jsonSchema.Enum.Contains(null!);
-                    }
-                    else
-                    {
-                        isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();  
-                    }
-
-                    if (jsonSchema.IsReadOnly.HasValue)
-                    {
-                        isReadOnly = jsonSchema.IsReadOnly.Value;
-                    }
-                    else if (!property.CanWrite || !property.SetMethod!.IsPublic)
-                    {
-                        isReadOnly = true;
-                    }
-                }
-                else
-                {
-                    isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();
-                    
-                    if (!property.CanWrite || !property.SetMethod!.IsPublic)
-                    {
-                        isReadOnly = true;
-                    }
-                }
-                
-                var information = ToInformation(propertyName, isNullable, isReadOnly, propertyType, jsonType, attribute);
+               
+                var information = attribute.ToJsonSchema(property);
 
                 _property.Add(property, information);
                 _response.Add(property, attribute, information);
             }
-
-            static JsonSchema ToInformation(string propertyName, bool isNullable, bool? isReadOnly, 
-                Type properType, JsonType jsonType, IJsonSchema? attribute)
-            {
-                return new JsonSchema(attribute, GetEnums(properType, attribute?.Enum), jsonType,  propertyName, isNullable, isReadOnly);
-            }
-
+            
             static bool IsThingProperty(string name)
                 => name == nameof(Thing.Context)
                    || name == nameof(Thing.Name)
@@ -207,37 +164,14 @@ namespace Mozilla.IoT.WebThing.Factories
                     {
                         continue;
                     }
-
-                    var jsonType = parameter.ParameterType.ToJsonType();
                     
                     var attribute = parameter.GetCustomAttribute<ThingParameterAttribute>();
-                    var name = attribute?.Name ?? parameter.Name;
-                    var isNullable = parameter.ParameterType == typeof(string) || parameter.ParameterType.IsNullable();
-                    var information = ToInformation(name!,isNullable, parameter.ParameterType, jsonType, attribute);
+                    var information = attribute.ToJsonSchema(parameter);
 
                     _action.Add(parameter, information);
                     _response.Add(parameter, attribute, information);
                 }
             }
-
-            static JsonSchema ToInformation(string propertyName, bool isNullable, Type parameterType, JsonType jsonType, IJsonSchema? attribute)
-            {
-                return new JsonSchema(attribute,  GetEnums(parameterType, attribute?.Enum), jsonType, propertyName, isNullable);
-            }
-        }
-
-        private static object[]? GetEnums(Type type, object[]? values)
-        {
-            type = type.GetUnderlyingType();
-            if (type.IsEnum)
-            {
-                var enumValues = type.GetEnumNames();
-                var result = new object[enumValues.Length];
-                Array.Copy(enumValues, 0, result, 0, result.Length);
-                return result;
-            }
-
-            return values;
         }
     }
 }

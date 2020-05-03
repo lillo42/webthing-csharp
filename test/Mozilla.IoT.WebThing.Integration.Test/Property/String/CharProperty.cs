@@ -144,7 +144,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
                 ""B"",
                 ""C""
             ],
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/char-property/properties/value"",
                     ""rel"": ""property""
@@ -153,7 +153,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         },
         ""nonNullableValue"": {
             ""type"": ""string"",
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/char-property/properties/nonNullableValue"",
                     ""rel"": ""property""
@@ -167,7 +167,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
                 ""E"",
                 ""F""
             ],
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/char-property/properties/notAcceptedNullableValue"",
                     ""rel"": ""property""
@@ -182,7 +182,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
                 ""H"",
                 ""I""
             ],
-            ""link"": [
+            ""links"": [
                 {
                     ""href"": ""/things/char-property/properties/acceptedNullableValue"",
                     ""rel"": ""property""

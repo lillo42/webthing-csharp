@@ -35,6 +35,11 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <param name="isNullable"></param>
         public JsonSchema(IJsonSchema? schema, object[]? enums, JsonType jsonType, string name, bool isNullable)
         {
+            Title = schema?.Title;
+            Type = schema?.Type;
+            Unit = schema?.Unit;
+            Description = schema?.Description;
+            
             Name = name;
             Enums = enums;
             IsReadOnly = schema?.IsReadOnly;
@@ -64,6 +69,26 @@ namespace Mozilla.IoT.WebThing.Builders
         /// The name.
         /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Action parameter title.
+        /// </summary>
+        public string? Title { get; }
+        
+        /// <summary>
+        /// Action parameter description.
+        /// </summary>
+        public string? Description { get; }
+        
+        /// <summary>
+        /// Property types.
+        /// </summary>
+        public string[]? Type { get; }
+        
+        /// <summary>
+        /// Unit of Action parameter.
+        /// </summary>
+        public string? Unit { get; }
         
         /// <summary>
         /// Minimum value.

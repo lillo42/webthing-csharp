@@ -1,4 +1,5 @@
 using System;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Attributes
 {
@@ -6,7 +7,7 @@ namespace Mozilla.IoT.WebThing.Attributes
     /// Action information. 
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class ThingActionAttribute : Attribute
+    public class ThingActionAttribute : Attribute, IJsonSchema
     {
         /// <summary>
         /// If action should be ignore.
@@ -32,5 +33,37 @@ namespace Mozilla.IoT.WebThing.Attributes
         /// Action types
         /// </summary>
         public string[]? Type { get; set; }
+
+        string? IJsonSchema.Unit => null;
+
+        bool? IJsonSchema.IsReadOnly => null;
+
+        bool? IJsonSchema.IsWriteOnly => null;
+
+        bool? IJsonSchema.IsNullable => null;
+
+        object[]? IJsonSchema.Enum => null;
+
+        decimal? IJsonSchema.Minimum => null;
+
+        decimal? IJsonSchema.Maximum => null;
+
+        decimal? IJsonSchema.ExclusiveMinimum => null;
+
+        decimal? IJsonSchema.ExclusiveMaximum => null;
+
+        decimal? IJsonSchema.MultipleOf => null;
+
+        int? IJsonSchema.MinimumLength => null;
+
+        int? IJsonSchema.MaximumLength => null;
+
+        string? IJsonSchema.Pattern => null;
+
+        int? IJsonSchema.MinimumItems => null;
+
+        int? IJsonSchema.MaximumItems => null;
+
+        bool? IJsonSchema.UniqueItems => null;
     }
 }

@@ -1,7 +1,6 @@
 using AutoFixture;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Factories;
-using Xunit;
 
 namespace Mozilla.IoT.WebThing.Integration.Test.Events
 {
