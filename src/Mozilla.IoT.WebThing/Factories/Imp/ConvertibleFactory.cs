@@ -11,7 +11,7 @@ using IConvertible = Mozilla.IoT.WebThing.Convertibles.IConvertible;
 namespace Mozilla.IoT.WebThing.Factories
 {
     /// <inheritdoc />
-    public class SystemTextJsonConvertibleFactory : IConvertibleFactory
+    public class ConvertibleFactory : IConvertibleFactory
     {
         /// <inheritdoc />
         public IConvertible? Create(TypeCode typeCode, Type type)

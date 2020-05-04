@@ -20,6 +20,11 @@ namespace Mozilla.IoT.WebThing.Convertibles.Strings
                 return null;
             }
 
+            if (value is Guid guid)
+            {
+                return guid;
+            }
+
             return Guid.Parse(value.ToString()!);
         }
     }

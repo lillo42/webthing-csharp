@@ -20,6 +20,11 @@ namespace Mozilla.IoT.WebThing.Convertibles.Strings
                 return null;
             }
 
+            if (value is DateTimeOffset dateTimeOffset)
+            {
+                return dateTimeOffset;
+            }
+
             return DateTimeOffset.Parse(value.ToString()!);
         }
     }

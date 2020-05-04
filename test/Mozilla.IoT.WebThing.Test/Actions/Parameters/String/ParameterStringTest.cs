@@ -146,7 +146,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         public void TrySetNoNullableWithMaxLength()
         {
             var property = CreateProperty(maximum: 36);
-            var value = _fixture.Create<string>() + _fixture.Create<char>();
+            var value = _fixture.Create<string>() + _fixture.Create<string>()[0];
             var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{value}"" }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out _).Should().BeFalse();
             

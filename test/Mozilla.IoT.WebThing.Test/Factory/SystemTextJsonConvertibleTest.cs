@@ -14,11 +14,11 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 {
     public class SystemTextJsonConvertibleTest
     {
-        private readonly SystemTextJsonConvertibleFactory _factory;
+        private readonly ConvertibleFactory _factory;
 
         public SystemTextJsonConvertibleTest()
         {
-            _factory = new SystemTextJsonConvertibleFactory();
+            _factory = new ConvertibleFactory();
         }
         
         

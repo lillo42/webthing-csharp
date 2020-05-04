@@ -1,5 +1,3 @@
-using Mozilla.IoT.WebThing.Builders;
-
 namespace Mozilla.IoT.WebThing.Json
 {
     /// <summary>

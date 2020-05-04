@@ -11,7 +11,19 @@ namespace Mozilla.IoT.WebThing.Convertibles
         public static BooleanConvertible Instance { get; } = new BooleanConvertible();
         
         /// <inheritdoc/>
-        public object? Convert(object? value) 
-            => (bool?) value;
+        public object? Convert(object? value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            if (value is bool b)
+            {
+                return b;
+            }
+
+            return System.Convert.ToBoolean(value);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
@@ -65,9 +66,10 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         [Fact]
         public void TrySetNoNullableWithEnumValue()
         {
-            var values = _fixture.Create<char[]>();
+            var strings = _fixture.Create<string[]>();
+            var values = strings.Select(x => x[0]).ToArray();
             var property = CreateNoNullable(values);
-            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<char>()}"" }}");
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": ""{_fixture.Create<string>()[0]}"" }}");
             property.TryGetValue(jsonElement.GetProperty("input"), out _).Should().BeFalse();
         }
         #endregion
@@ -99,7 +101,8 @@ namespace Mozilla.IoT.WebThing.Test.Actions.Parameters.String
         [Fact]
         public void SetNullableWithValueEnums()
         {
-            var values = _fixture.Create<char[]>();
+            var strings = _fixture.Create<string[]>();
+            var values = strings.Select(x => x[0]).ToArray();
             var property = CreateNullable(values);
             foreach (var value in values)
             {
