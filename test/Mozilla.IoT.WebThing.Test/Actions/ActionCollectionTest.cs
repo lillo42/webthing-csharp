@@ -57,7 +57,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                     return true;
                 });
 
-            var actionInfo = Substitute.For<ActionInfo>();
+            var actionInfo = Substitute.For<ThingActionInformation>();
             
             _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
                 .Returns(actionInfo);
@@ -128,7 +128,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                     return true;
                 });
 
-            var actionInfo = Substitute.For<ActionInfo>();
+            var actionInfo = Substitute.For<ThingActionInformation>();
             
             _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
                 .Returns(actionInfo);
@@ -171,7 +171,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                     return true;
                 });
 
-            var actionInfo = Substitute.For<ActionInfo>();
+            var actionInfo = Substitute.For<ThingActionInformation>();
             
             _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
                 .Returns(actionInfo);
@@ -216,7 +216,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                     return true;
                 });
 
-            var actionInfo = new VoidActionInfo();
+            var actionInfo = new VoidThingActionInformation();
             
             _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
                 .Returns(actionInfo);
@@ -225,8 +225,8 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             action.Should().NotBeNull();
 
             var provider = Substitute.For<IServiceProvider>();
-            provider.GetService(typeof(ILogger<ActionInfo>))
-                .Returns(Substitute.For<ILogger<ActionInfo>>());
+            provider.GetService(typeof(ILogger<ThingActionInformation>))
+                .Returns(Substitute.For<ILogger<ThingActionInformation>>());
 
             actionInfo.ExecuteAsync(Substitute.For<Thing>(), provider);
             
@@ -249,7 +249,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
 
             
 
-            void OnActionStatusChange(object sender, ActionInfo info)
+            void OnActionStatusChange(object sender, ThingActionInformation info)
             {
                 counter++;
             }
@@ -257,12 +257,12 @@ namespace Mozilla.IoT.WebThing.Test.Actions
 
         #endregion
         
-        public class VoidActionInfo : ActionInfo
+        public class VoidThingActionInformation : ThingActionInformation
         {
             public List<string> Logs { get; } = new List<string>();
             protected override ValueTask InternalExecuteAsync(Thing thing, IServiceProvider provider)
             {
-                Logs.Add(nameof(VoidActionInfo));
+                Logs.Add(nameof(VoidThingActionInformation));
                 return new ValueTask();
             }
 

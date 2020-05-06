@@ -72,18 +72,18 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 .ConfigureAwait(false);
         }
         
-        public async void OnActionChange(object? sender, ActionInfo action)
+        public async void OnActionChange(object? sender, ThingActionInformation thingAction)
         {
             if (sender == null)
             {
                 return;
             }
             
-            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", action.GetActionName(), action.Status);
+            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", thingAction.GetActionName(), thingAction.Status);
             await _socket.SendAsync(
                     JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("actionStatus",new Dictionary<string, object>
                     {
-                        [action.GetActionName()] = action
+                        [thingAction.GetActionName()] = thingAction
                     }), _options),
                     WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);

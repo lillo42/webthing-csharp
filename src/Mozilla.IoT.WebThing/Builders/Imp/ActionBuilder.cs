@@ -135,11 +135,11 @@ namespace Mozilla.IoT.WebThing.Builders
         {
             var actionInfo = _module!.DefineType($"{thingType.Name}{action.Name}ActionInfo",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
-                typeof(ActionInfo));
+                typeof(ThingActionInformation));
             
             var input = CreateProperty(actionInfo, "input", inputType);
             
-            var getProperty = actionInfo.DefineMethod(nameof(ActionInfo.GetActionName), 
+            var getProperty = actionInfo.DefineMethod(nameof(ThingActionInformation.GetActionName), 
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, 
                 typeof(string), Type.EmptyTypes);
 
@@ -204,7 +204,7 @@ namespace Mozilla.IoT.WebThing.Builders
             var createMethod = actionInfoFactory.DefineMethod(nameof(IActionInfoFactory.CreateActionInfo),
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
                 CallingConventions.Standard, 
-                typeof(ActionInfo), 
+                typeof(ThingActionInformation), 
                 new[] {typeof(Dictionary<string, object>)});
 
             var generator = createMethod.GetILGenerator();

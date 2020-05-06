@@ -9,7 +9,7 @@ namespace Mozilla.IoT.WebThing.Actions
     /// <summary>
     /// Action information to return in Web Socket and Web API.
     /// </summary>
-    public abstract class ActionInfo
+    public abstract class ThingActionInformation
     {
         private readonly Guid _id = Guid.NewGuid();
         /// <summary>
@@ -66,7 +66,7 @@ namespace Mozilla.IoT.WebThing.Actions
         public async Task ExecuteAsync(Thing thing, IServiceProvider provider)
         {
             Status = ActionStatus.Pending;
-            var logger = provider.GetRequiredService<ILogger<ActionInfo>>();
+            var logger = provider.GetRequiredService<ILogger<ThingActionInformation>>();
             logger.LogInformation("Going to execute {actionName}. [Thing: {thingName}]", GetActionName(), thing.Name);
             Status = ActionStatus.Executing;
 

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
@@ -37,15 +38,39 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             if (!thing.ThingContext.Actions.TryGetValue(actionName, out var actions))
             {
-                logger.LogInformation("{actionName} Action not found in {thingName}", actionName, thingName);
+                logger.LogInformation("{actionName} Action not found in {thingName}", thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
+            
+            var reader = service.GetRequiredService<IJsonReader>();
+            var jsonActions2 = await reader.GetValuesAsync().ConfigureAwait(false);
 
+            if (jsonActions2.Count != 1)
+            {
+                logger.LogInformation("accepted only 1 action by executing. [Thing: {thingName}]", actions, thingName);
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return;
+            }
+            
+            
+            
+            
+            
+            foreach (var property in jsonActions2)
+            {
+                if (!property.Key.Equals(actionName, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    logger.LogInformation("Invalid {actionName} action. [Thing: {thingName}]", actions, thingName);
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    return;
+                }
+            }
+            
             var jsonActions = await context.FromBodyAsync<JsonElement>(jsonOption)
                 .ConfigureAwait(false);
 
-            var actionsToExecute = new LinkedList<ActionInfo>();
+            var actionsToExecute = new LinkedList<ThingActionInformation>();
             
             foreach (var property in jsonActions.EnumerateObject())
             {
@@ -77,16 +102,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     .ConfigureAwait(false);
             }
             
-            if (actionsToExecute.Count == 1)
-            {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First!.Value, jsonOption)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute, jsonOption)
-                    .ConfigureAwait(false);
-            }
+            await context.WriteBodyAsync(HttpStatusCode.Created, actionsToExecute.First!.Value, jsonOption).ConfigureAwait(false);
         }
     }
 }

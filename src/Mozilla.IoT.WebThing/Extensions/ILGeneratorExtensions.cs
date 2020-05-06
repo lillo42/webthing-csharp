@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Extensions
         private static readonly MethodInfo s_getService = typeof(IServiceProvider).GetMethod(nameof(IServiceProvider.GetService))!;
         private static readonly MethodInfo s_getTypeFromHandle = typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle))!;
 
-        private static readonly PropertyInfo s_getSource = typeof(ActionInfo).GetProperty("Source", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        private static readonly PropertyInfo s_getSource = typeof(ThingActionInformation).GetProperty("Source", BindingFlags.NonPublic | BindingFlags.Instance)!;
         private static readonly PropertyInfo s_getToken = typeof(CancellationTokenSource).GetProperty(nameof(CancellationTokenSource.Token), BindingFlags.Public | BindingFlags.Instance)!;
 
         private static readonly MethodInfo s_getItem = typeof(Dictionary<string, object>).GetMethod("get_Item")!;

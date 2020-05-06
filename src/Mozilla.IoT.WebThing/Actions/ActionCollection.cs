@@ -8,18 +8,18 @@ using System.Text.Json;
 namespace Mozilla.IoT.WebThing.Actions
 {
     /// <summary>
-    /// Collection of <see cref="ActionInfo"/>
+    /// Collection of <see cref="ThingActionInformation"/>
     /// </summary>
-    public class ActionCollection : IEnumerable<ActionInfo>
+    public class ActionCollection : IEnumerable<ThingActionInformation>
     {
-        private readonly ConcurrentDictionary<Guid, ActionInfo> _actions;
+        private readonly ConcurrentDictionary<Guid, ThingActionInformation> _actions;
         private readonly DictionaryInputConvert _inputConvert;
         private readonly IActionInfoFactory _actionInfoFactory;
 
         /// <summary>
-        /// Event to when Status of <see cref="ActionInfo"/> changed.
+        /// Event to when Status of <see cref="ThingActionInformation"/> changed.
         /// </summary>
-        public event EventHandler<ActionInfo>? Change;
+        public event EventHandler<ThingActionInformation>? Change;
 
         /// <summary>
         /// Initialize a new instance of <see cref="ActionCollection"/>.
@@ -30,16 +30,16 @@ namespace Mozilla.IoT.WebThing.Actions
         {
             _actionInfoFactory = actionInfoFactory ?? throw new ArgumentNullException(nameof(actionInfoFactory));
             _inputConvert = inputConvert;
-            _actions = new ConcurrentDictionary<Guid, ActionInfo>();
+            _actions = new ConcurrentDictionary<Guid, ThingActionInformation>();
         }
 
         /// <summary>
         /// Try to add Action to collection.
         /// </summary>
-        /// <param name="element">The <see cref="JsonElement"/> to be convert to <see cref="ActionInfo"/>.</param>
-        /// <param name="info">The <see cref="ActionInfo"/> created.</param>
+        /// <param name="value">The <see cref="object"/> to be convert to <see cref="ThingActionInformation"/>.</param>
+        /// <param name="info">The <see cref="ThingActionInformation"/> created.</param>
         /// <returns>Return true if could convert and added on collection, otherwise return false.</returns>
-        public bool TryAdd(JsonElement element, [NotNullWhen(true)]out ActionInfo? info)
+        public bool TryAdd(object value, [NotNullWhen(true)]out ThingActionInformation? info)
         {
             info = null;
             Dictionary<string, object>? inputValues = null;
@@ -66,23 +66,23 @@ namespace Mozilla.IoT.WebThing.Actions
         }
 
         /// <summary>
-        /// Try to get <see cref="ActionInfo"/> by Id.
+        /// Try to get <see cref="ThingActionInformation"/> by Id.
         /// </summary>
-        /// <param name="id">The id of <see cref="ActionInfo"/>.</param>
-        /// <param name="action">The <see cref="ActionInfo"/>.</param>
-        /// <returns>Return true if could get <see cref="ActionInfo"/> by Id, otherwise return false.</returns>
-        public bool TryGetValue(Guid id, [NotNullWhen(true)]out ActionInfo? action)
+        /// <param name="id">The id of <see cref="ThingActionInformation"/>.</param>
+        /// <param name="action">The <see cref="ThingActionInformation"/>.</param>
+        /// <returns>Return true if could get <see cref="ThingActionInformation"/> by Id, otherwise return false.</returns>
+        public bool TryGetValue(Guid id, [NotNullWhen(true)]out ThingActionInformation? action)
             => _actions.TryGetValue(id, out action);
         
         /// <summary>
-        /// Try to remove <see cref="ActionInfo"/> by Id.
+        /// Try to remove <see cref="ThingActionInformation"/> by Id.
         /// </summary>
-        /// <param name="id">The id of <see cref="ActionInfo"/>.</param>
-        /// <param name="action">The <see cref="ActionInfo"/>.</param>
-        /// <returns>Return true if could remove <see cref="ActionInfo"/> by Id, otherwise return false.</returns>
-        public bool TryRemove(Guid id, [NotNullWhen(true)]out ActionInfo? action)
+        /// <param name="id">The id of <see cref="ThingActionInformation"/>.</param>
+        /// <param name="action">The <see cref="ThingActionInformation"/>.</param>
+        /// <returns>Return true if could remove <see cref="ThingActionInformation"/> by Id, otherwise return false.</returns>
+        public bool TryRemove(Guid id, [NotNullWhen(true)]out ThingActionInformation? action)
         {
-            var result =_actions.TryRemove(id, out action);
+            var result = _actions.TryRemove(id, out action);
             if (result && action != null)
             {
                 action.StatusChanged -= OnStatusChange;   
@@ -94,14 +94,14 @@ namespace Mozilla.IoT.WebThing.Actions
         private void OnStatusChange(object? sender, EventArgs args)
         {
             var change = Change;
-            change?.Invoke(this, (ActionInfo)sender!);
+            change?.Invoke(this, (ThingActionInformation)sender!);
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<ActionInfo> GetEnumerator() 
+        public IEnumerator<ThingActionInformation> GetEnumerator() 
             => _actions.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() 
