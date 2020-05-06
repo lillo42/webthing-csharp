@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using Mozilla.IoT.WebThing.Attributes;
@@ -56,7 +57,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="other">The <see cref="Thing"/> to comparer with current object.</param>
         /// <returns>A <see cref="bool"/> indicating if the passed in object obj is Equal to this.</returns>
-        public bool Equals(Thing other)
+        public bool Equals([AllowNull]Thing other)
         {
             if (ReferenceEquals(null, other))
             {

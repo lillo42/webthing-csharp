@@ -7,8 +7,17 @@ using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class AttributeExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <param name="property"></param>
+        /// <returns></returns>
         public static JsonSchema ToJsonSchema(this ThingPropertyAttribute attribute, PropertyInfo property)
         {
             var propertyType = property.PropertyType;
@@ -54,6 +63,13 @@ namespace Mozilla.IoT.WebThing.Extensions
             return new JsonSchema(attribute, GetEnums(propertyType, attribute?.Enum),
                 propertyType.ToJsonType(), propertyName, isNullable, isReadOnly);
         }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
         public static JsonSchema ToJsonSchema(this ThingParameterAttribute attribute, ParameterInfo parameter)
         {
             var parameterType = parameter.ParameterType;
@@ -81,15 +97,27 @@ namespace Mozilla.IoT.WebThing.Extensions
             }
 
             return new JsonSchema(attribute,  GetEnums(parameterType, attribute?.Enum), 
-                parameterType.ToJsonType(), name, isNullable);
+                parameterType.ToJsonType(), name!, isNullable);
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
         public static JsonSchema ToJsonSchema(this ThingActionAttribute attribute, MethodInfo method)
         {
             var name = attribute?.Name ?? method.Name;
             return new JsonSchema(attribute, null, JsonType.Object, name, false);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <param name="event"></param>
+        /// <returns></returns>
         public static JsonSchema ToJsonSchema(this ThingEventAttribute attribute, EventInfo @event)
         {
             var parameterType = @event.EventHandlerType!.GetGenericArguments()[0];

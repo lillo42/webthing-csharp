@@ -1,4 +1,5 @@
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Mozilla.IoT.WebThing.Json.Convertibles
@@ -10,7 +11,7 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles
     {
 
         /// <inheritdoc/>
-        public bool TryConvert(object source, out object? result)
+        public bool TryConvert(object source, [MaybeNull]out object? result)
         {
             result = null;
             var jsonElement = (JsonElement)source;

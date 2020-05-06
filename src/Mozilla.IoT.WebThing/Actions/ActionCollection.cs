@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+using Mozilla.IoT.WebThing.Json.Convertibles;
+using Mozilla.IoT.WebThing.Json.SchemaValidations;
 
 namespace Mozilla.IoT.WebThing.Actions
 {
@@ -13,8 +14,9 @@ namespace Mozilla.IoT.WebThing.Actions
     public class ActionCollection : IEnumerable<ThingActionInformation>
     {
         private readonly ConcurrentDictionary<Guid, ThingActionInformation> _actions;
-        private readonly DictionaryInputConvert _inputConvert;
-        private readonly IActionInfoFactory _actionInfoFactory;
+        private readonly IJsonConvertible _inputConvertible;
+        private readonly IJsonSchemaValidation _inputValidation;
+        private readonly IActionInformationConvertible _actionInformationConvertible;
 
         /// <summary>
         /// Event to when Status of <see cref="ThingActionInformation"/> changed.
@@ -24,37 +26,40 @@ namespace Mozilla.IoT.WebThing.Actions
         /// <summary>
         /// Initialize a new instance of <see cref="ActionCollection"/>.
         /// </summary>
-        /// <param name="inputConvert">The <see cref="DictionaryInputConvert"/>.</param>
-        /// <param name="actionInfoFactory">The <see cref="IActionInfoFactory"/>.</param>
-        public ActionCollection(DictionaryInputConvert inputConvert, IActionInfoFactory actionInfoFactory)
+        /// <param name="inputConvertible">The <see cref="IJsonConvertible"/>.</param>
+        /// <param name="inputValidation"></param>
+        /// <param name="actionInformationConvertible">The <see cref="IActionInformationConvertible"/>.</param>
+        public ActionCollection(IJsonConvertible inputConvertible,
+            IJsonSchemaValidation inputValidation, 
+            IActionInformationConvertible actionInformationConvertible)
         {
-            _actionInfoFactory = actionInfoFactory ?? throw new ArgumentNullException(nameof(actionInfoFactory));
-            _inputConvert = inputConvert;
+            _actionInformationConvertible = actionInformationConvertible ?? throw new ArgumentNullException(nameof(actionInformationConvertible));
+            _inputValidation = inputValidation ?? throw new ArgumentNullException(nameof(inputValidation));
+            _inputConvertible = inputConvertible;
             _actions = new ConcurrentDictionary<Guid, ThingActionInformation>();
         }
 
         /// <summary>
         /// Try to add Action to collection.
         /// </summary>
-        /// <param name="value">The <see cref="object"/> to be convert to <see cref="ThingActionInformation"/>.</param>
+        /// <param name="source">The <see cref="object"/> to be convert to <see cref="ThingActionInformation"/>.</param>
         /// <param name="info">The <see cref="ThingActionInformation"/> created.</param>
         /// <returns>Return true if could convert and added on collection, otherwise return false.</returns>
-        public bool TryAdd(object value, [NotNullWhen(true)]out ThingActionInformation? info)
+        public bool TryAdd(object source, [NotNullWhen(true)]out ThingActionInformation? info)
         {
             info = null;
-            Dictionary<string, object>? inputValues = null;
-            if (element.TryGetProperty("input", out var inputProperty))
+
+            if (!_inputConvertible.TryConvert(source, out var inputProperty))
             {
-                if (inputProperty.ValueKind == JsonValueKind.Object 
-                    && !_inputConvert.TryConvert(inputProperty, out inputValues!))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            inputValues ??= new Dictionary<string, object>();
-
-            info = _actionInfoFactory.CreateActionInfo(inputValues!);
+            if (!_inputValidation.IsValid(inputProperty))
+            {
+                return false;
+            }
+            
+            info = _actionInformationConvertible.Convert(inputProperty as Dictionary<string, object?>);
             if (info == null)
             {
                 return false;

@@ -90,7 +90,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             var eventName = _option.PropertyNamingPolicy.ConvertName(eventInfo?.Name ?? @event.Name);
             var information = new Dictionary<string, object?>();
-            AddSchemaInformation(information, eventInfo.ToJsonSchema(@event), @event.EventHandlerType!.GetGenericArguments()[0]);
+            AddSchemaInformation(information, eventInfo!.ToJsonSchema(@event), @event.EventHandlerType!.GetGenericArguments()[0]);
             information.Add(s_link, new[]
             {
                 new Link($"/things/{_thingName}/events/{eventName}", "event")
@@ -143,7 +143,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             var actionInformation = new Dictionary<string, object?>();
             
-            AddSchemaInformation(actionInformation, attribute.ToJsonSchema(action), null);
+            AddSchemaInformation(actionInformation, attribute!.ToJsonSchema(action), null);
             
             actionInformation.Add(s_link, new[]
             {

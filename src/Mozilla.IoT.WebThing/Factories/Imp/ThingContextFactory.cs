@@ -123,7 +123,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 }
 
                
-                var information = attribute.ToJsonSchema(property);
+                var information = attribute!.ToJsonSchema(property);
 
                 _property.Add(property, information);
                 _response.Add(property, attribute, information);
@@ -166,7 +166,7 @@ namespace Mozilla.IoT.WebThing.Factories
                     }
                     
                     var attribute = parameter.GetCustomAttribute<ThingParameterAttribute>();
-                    var information = attribute.ToJsonSchema(parameter);
+                    var information = attribute!.ToJsonSchema(parameter);
 
                     _action.Add(parameter, information);
                     _response.Add(parameter, attribute, information);

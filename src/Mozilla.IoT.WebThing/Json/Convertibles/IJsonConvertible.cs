@@ -13,6 +13,6 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles
         /// <param name="source">The json object;</param>
         /// <param name="result">The result.</param>
         /// <returns>return true if could get value, otherwise return false.</returns>
-        bool TryConvert(object source, [NotNullWhen(true)]out object? result);
+        bool TryConvert(object source, [MaybeNull]out object? result);
     }
 }
