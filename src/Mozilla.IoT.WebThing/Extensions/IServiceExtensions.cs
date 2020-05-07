@@ -67,7 +67,6 @@ namespace Microsoft.Extensions.DependencyInjection
             service.TryAddTransient<IPropertyBuilder, PropertyBuilder>();
             
             service.TryAddSingleton<IPropertyFactory, PropertyFactory>();
-            service.TryAddSingleton<IActionParameterFactory, ActionParameterFactory>();
 
             service.TryAddScoped<SystemTextJson>();
             service.TryAddScoped<IJsonReader>(provider => provider.GetRequiredService<SystemTextJson>());

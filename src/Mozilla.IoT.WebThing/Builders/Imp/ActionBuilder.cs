@@ -23,9 +23,6 @@ namespace Mozilla.IoT.WebThing.Builders
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
         private static readonly ConstructorInfo s_valueTask = typeof(ValueTask).GetConstructor(new[] {typeof(Task)})!;
 
-       
-        private readonly IActionParameterFactory _factory;
-
         private readonly IJsonSchemaValidationFactory _jsonSchemaValidationFactory;
         private readonly IJsonConvertibleFactory _jsonConvertibleFactory;
         
@@ -44,11 +41,9 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <summary>
         /// Initialize a new instance of <see cref="ActionBuilder"/>.
         /// </summary>
-        public ActionBuilder(IActionParameterFactory factory, 
-            IJsonSchemaValidationFactory jsonSchemaValidationFactory, 
+        public ActionBuilder(IJsonSchemaValidationFactory jsonSchemaValidationFactory, 
             IJsonConvertibleFactory jsonConvertibleFactory)
         {
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _jsonSchemaValidationFactory = jsonSchemaValidationFactory ?? throw new ArgumentNullException(nameof(jsonSchemaValidationFactory));
             _jsonConvertibleFactory = jsonConvertibleFactory ?? throw new ArgumentNullException(nameof(jsonConvertibleFactory));
         }
