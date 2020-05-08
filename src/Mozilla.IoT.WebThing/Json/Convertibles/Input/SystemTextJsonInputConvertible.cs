@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -33,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles.Input
                 return false;
             }
 
-            var dict = new Dictionary<string, object?>();
+            var dict = new Dictionary<string, object?>(StringComparer.InvariantCultureIgnoreCase);
 
             foreach (var property in input.EnumerateObject())
             {

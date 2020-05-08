@@ -93,7 +93,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             }
             else
             {
-                isNullable = !parameterType.IsByRef || parameterType.IsNullable();
+                isNullable = parameterType.IsClass || parameterType.IsNullable();
             }
 
             return new JsonSchema(attribute,  GetEnums(parameterType, attribute?.Enum), 

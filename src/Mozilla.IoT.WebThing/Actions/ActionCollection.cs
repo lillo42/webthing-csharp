@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Mozilla.IoT.WebThing.Json.Convertibles;
 using Mozilla.IoT.WebThing.Json.SchemaValidations;
+using IConvertible = Mozilla.IoT.WebThing.Convertibles.IConvertible;
 
 namespace Mozilla.IoT.WebThing.Actions
 {
@@ -16,7 +17,8 @@ namespace Mozilla.IoT.WebThing.Actions
         private readonly ConcurrentDictionary<Guid, ThingActionInformation> _actions;
         private readonly IJsonConvertible _inputConvertible;
         private readonly IJsonSchemaValidation _inputValidation;
-        private readonly IActionInformationConvertible _actionInformationConvertible;
+        private readonly IConvertible _convertible;
+        private readonly IActionInformationFactory _actionInformationFactory;
 
         /// <summary>
         /// Event to when Status of <see cref="ThingActionInformation"/> changed.
@@ -28,14 +30,17 @@ namespace Mozilla.IoT.WebThing.Actions
         /// </summary>
         /// <param name="inputConvertible">The <see cref="IJsonConvertible"/>.</param>
         /// <param name="inputValidation"></param>
-        /// <param name="actionInformationConvertible">The <see cref="IActionInformationConvertible"/>.</param>
+        /// <param name="actionInformationFactory">The <see cref="IActionInformationFactory"/>.</param>
+        /// <param name="convertible"></param>
         public ActionCollection(IJsonConvertible inputConvertible,
             IJsonSchemaValidation inputValidation, 
-            IActionInformationConvertible actionInformationConvertible)
+            IConvertible convertible,
+            IActionInformationFactory actionInformationFactory)
         {
-            _actionInformationConvertible = actionInformationConvertible ?? throw new ArgumentNullException(nameof(actionInformationConvertible));
+            _actionInformationFactory = actionInformationFactory ?? throw new ArgumentNullException(nameof(actionInformationFactory));
+            _convertible = convertible ?? throw new ArgumentNullException(nameof(convertible));
             _inputValidation = inputValidation ?? throw new ArgumentNullException(nameof(inputValidation));
-            _inputConvertible = inputConvertible;
+            _inputConvertible = inputConvertible ?? throw new ArgumentNullException(nameof(inputConvertible));
             _actions = new ConcurrentDictionary<Guid, ThingActionInformation>();
         }
 
@@ -58,8 +63,9 @@ namespace Mozilla.IoT.WebThing.Actions
             {
                 return false;
             }
-            
-            info = _actionInformationConvertible.Convert(inputProperty as Dictionary<string, object?>);
+
+            inputProperty = _convertible.Convert(inputProperty);
+            info = _actionInformationFactory.Convert(inputProperty as Dictionary<string, object?>);
             if (info == null)
             {
                 return false;

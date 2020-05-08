@@ -6,7 +6,7 @@ namespace Mozilla.IoT.WebThing.Actions
     /// <summary>
     /// Create new instance of <see cref="ThingActionInformation"/> based in value of <see cref="Dictionary{TKey,TValue}"/> .
     /// </summary>
-    public interface IActionInformationConvertible : IConvertible
+    public interface IActionInformationFactory
     {
         /// <summary>
         /// Create new instance of <see cref="ThingActionInformation"/>.
@@ -14,8 +14,5 @@ namespace Mozilla.IoT.WebThing.Actions
         /// <param name="values">The value of input.</param>
         /// <returns>New instance of <see cref="ThingActionInformation"/>.</returns>
         ThingActionInformation Convert(Dictionary<string, object?>? values);
-
-        object? IConvertible.Convert(object? value) 
-            => Convert(value as Dictionary<string, object?>);
     }
 }

@@ -7,12 +7,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
+using Mozilla.IoT.WebThing.Convertibles;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Json.Convertibles;
 using Mozilla.IoT.WebThing.Json.Convertibles.Input;
 using Mozilla.IoT.WebThing.Json.SchemaValidations;
 using Mozilla.IoT.WebThing.Json.SchemaValidations.Input;
+using IConvertible = Mozilla.IoT.WebThing.Convertibles.IConvertible;
 
 namespace Mozilla.IoT.WebThing.Builders
 {
@@ -25,9 +27,11 @@ namespace Mozilla.IoT.WebThing.Builders
 
         private readonly IJsonSchemaValidationFactory _jsonSchemaValidationFactory;
         private readonly IJsonConvertibleFactory _jsonConvertibleFactory;
-        
-        private readonly Dictionary<string, IJsonConvertible> _jsonConvertibles = new Dictionary<string, IJsonConvertible>();
-        private readonly Dictionary<string, IJsonSchemaValidation> _jsonSchemaValidations = new Dictionary<string, IJsonSchemaValidation>();
+        private readonly IConvertibleFactory _convertibleFactory;
+
+        private Dictionary<string, IJsonConvertible> _jsonConvertibles;
+        private Dictionary<string, IJsonSchemaValidation> _jsonSchemaValidations;
+        private Dictionary<string, IConvertible?> _convertibles;
 
         private Thing? _thing;
         private ThingOption? _option;
@@ -42,10 +46,12 @@ namespace Mozilla.IoT.WebThing.Builders
         /// Initialize a new instance of <see cref="ActionBuilder"/>.
         /// </summary>
         public ActionBuilder(IJsonSchemaValidationFactory jsonSchemaValidationFactory, 
-            IJsonConvertibleFactory jsonConvertibleFactory)
+            IJsonConvertibleFactory jsonConvertibleFactory, 
+            IConvertibleFactory convertibleFactory)
         {
             _jsonSchemaValidationFactory = jsonSchemaValidationFactory ?? throw new ArgumentNullException(nameof(jsonSchemaValidationFactory));
             _jsonConvertibleFactory = jsonConvertibleFactory ?? throw new ArgumentNullException(nameof(jsonConvertibleFactory));
+            _convertibleFactory = convertibleFactory;
         }
 
         /// <inheritdoc /> 
@@ -72,6 +78,9 @@ namespace Mozilla.IoT.WebThing.Builders
         {
             _option = option;
             _actions = new Dictionary<string, ActionCollection>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _jsonConvertibles = new Dictionary<string, IJsonConvertible>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _jsonSchemaValidations = new Dictionary<string, IJsonSchemaValidation>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _convertibles = new Dictionary<string, IConvertible?>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
             return this;
         }
 
@@ -87,8 +96,7 @@ namespace Mozilla.IoT.WebThing.Builders
             {
                 throw new InvalidOperationException($"ThingOption is null, call {nameof(SetThingOption)} before add");
             }
-
-
+            
             if (_input != null)
             {
                 _input.CreateType();
@@ -98,10 +106,14 @@ namespace Mozilla.IoT.WebThing.Builders
                 _actions.Add(_name!, new ActionCollection(
                     new SystemTextJsonInputConvertible(_jsonConvertibles) ,
                     new InputJsonSchemaValidation(_jsonSchemaValidations),
-                    (IActionInformationConvertible)Activator.CreateInstance(factory)!));
+                    new InputConvertible(_convertibles), 
+                    (IActionInformationFactory)Activator.CreateInstance(factory)!));
             }
             
-            _jsonConvertibles.Clear();
+            
+            _jsonConvertibles = new Dictionary<string, IJsonConvertible>(_option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _jsonSchemaValidations = new Dictionary<string, IJsonSchemaValidation>(_option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _convertibles = new Dictionary<string, IConvertible?>(_option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
             _name = attribute?.Name ?? action.Name;
             _action = action;
             _input = _module.DefineType($"{action.Name}Input", TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass);
@@ -122,6 +134,9 @@ namespace Mozilla.IoT.WebThing.Builders
             
             _jsonSchemaValidations.Add(jsonSchema.Name, 
                 _jsonSchemaValidationFactory.Create(parameter.ParameterType.ToTypeCode(), jsonSchema, parameter.ParameterType));
+
+            _convertibles.Add(jsonSchema.Name,
+                _convertibleFactory.Create(parameter.ParameterType.ToTypeCode(), parameter.ParameterType));
         }
 
         private static System.Reflection.Emit.PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)
@@ -214,9 +229,9 @@ namespace Mozilla.IoT.WebThing.Builders
         {
             var actionInfoFactory = _module!.DefineType($"{actionInfo.Name}Convertible",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
-                null, new []{ typeof(IActionInformationConvertible) });
+                null, new []{ typeof(IActionInformationFactory) });
 
-            var createMethod = actionInfoFactory.DefineMethod(nameof(IActionInformationConvertible.Convert),
+            var createMethod = actionInfoFactory.DefineMethod(nameof(IActionInformationFactory.Convert),
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
                 CallingConventions.Standard, 
                 typeof(ThingActionInformation), 
@@ -261,7 +276,8 @@ namespace Mozilla.IoT.WebThing.Builders
                 _actions.Add(_name!, new ActionCollection(
                     new SystemTextJsonInputConvertible(_jsonConvertibles),
                     new InputJsonSchemaValidation(_jsonSchemaValidations),
-                    (IActionInformationConvertible)Activator.CreateInstance(factory)!));
+                    new InputConvertible(_convertibles), 
+                    (IActionInformationFactory)Activator.CreateInstance(factory)!));
             }
             
             return _actions;

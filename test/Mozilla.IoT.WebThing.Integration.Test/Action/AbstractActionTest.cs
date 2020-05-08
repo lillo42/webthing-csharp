@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using AutoFixture;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             
             var collection = new ServiceCollection();
             collection.AddThings();
+            collection.AddLogging();
             
             ConfigureServiceCollection(collection);
             
@@ -30,6 +32,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         }
         
         protected abstract JsonElement CreateJson(T value);
+        
+        protected abstract IEnumerable<JsonElement> CreateInvalidJson();
         
         protected virtual T CreateValue() => Fixture.Create<T>();
         

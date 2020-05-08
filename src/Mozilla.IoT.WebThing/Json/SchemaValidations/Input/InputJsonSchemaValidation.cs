@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations.Input
             {
                 if (!_schemaValidations.TryGetValue(propertyName, out var schemaValidation))
                 {
-                    return false;
+                    continue;
                 }
 
                 if (!schemaValidation.IsValid(propertyValue))
@@ -43,24 +43,22 @@ namespace Mozilla.IoT.WebThing.Json.SchemaValidations.Input
                 
                 properties.Add(propertyName);
             }
-
-            if (input.Count != _schemaValidations.Count)
+            
+            foreach (var (propertyName, schemaValidation) in _schemaValidations)
             {
-                foreach (var (propertyName, schemaValidation) in _schemaValidations)
+                if (properties.Contains(propertyName))
                 {
-                    if (properties.Contains(propertyName))
-                    {
-                        continue;
-                    }
-
-                    if (!schemaValidation.IsValid(null))
-                    {
-                        return false;
-                    }
-                    
-                    input.Add(propertyName, null!);
+                    continue;
                 }
+
+                if (!schemaValidation.IsValid(null))
+                {
+                    return false;
+                }
+                    
+                input.Add(propertyName, null!);
             }
+            
             
             return true;
         }

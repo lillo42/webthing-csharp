@@ -20,4 +20,8 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="System.IO.Pipelines" Version="4.7.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Convertibles\Input" />
+  </ItemGroup>
 </Project>

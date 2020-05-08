@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoFixture;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +18,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
     {
 
         #region Valid
-
         [Fact]
         public async Task Invoke_Should_Execute_When_ParameterIsValid()
         {
@@ -38,6 +36,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             var jsonElement = CreateJson(value);
             context.Actions[nameof(ActionThing.Invoke)].TryAdd(jsonElement, out var info).Should().BeTrue();
             
+            info.Should().NotBeNull();
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
@@ -62,15 +61,33 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             var jsonElement = CreateJson(value);
             context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out var info).Should().BeTrue();
             
+            
+            info.Should().NotBeNull();
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(value);
+        }
+        
+        [Fact]
+        public async Task InvokeNullable_Should_Execute_When_ParameterIsNull()
+        {
+            var thing = new ActionThing();
+            var context = Factory.Create(thing, new ThingOption());
+            thing.ThingContext = context;
 
-            jsonElement =  jsonElement = JsonSerializer.Deserialize<JsonElement>(
-                @"{ ""invokeNullable"": { ""input"": { ""value"": null } } }").GetProperty("invokeNullable");
-            context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out info).Should().BeTrue();
+            context.Events.Should().BeEmpty();
+            context.Properties.Should().BeEmpty();
+
+            context.Actions.Should().NotBeEmpty();
+            context.Actions.Should().HaveCount(6);
+            context.Actions.Should().ContainKey(nameof(ActionThing.InvokeNullable));
             
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(
+                @"{ ""invokeNullable"": { ""input"": { ""value"": null } } }").GetProperty("invokeNullable");
+            context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out var info).Should().BeTrue();
+            
+            info.Should().NotBeNull();
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
@@ -95,6 +112,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             var jsonElement = CreateJson(value);
             context.Actions[nameof(ActionThing.InvokeWithService)].TryAdd(jsonElement, out var info).Should().BeTrue();
             
+            info.Should().NotBeNull();
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
@@ -123,11 +141,27 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(value);
+        }
+        
+        [Fact]
+        public async Task InvokeNullableWithService_Should_Execute_When_ParameterIsNull()
+        {
+            var thing = new ActionThing();
+            var context = Factory.Create(thing, new ThingOption());
+            thing.ThingContext = context;
 
-            jsonElement =  jsonElement = JsonSerializer.Deserialize<JsonElement>(
+            context.Events.Should().BeEmpty();
+            context.Properties.Should().BeEmpty();
+
+            context.Actions.Should().NotBeEmpty();
+            context.Actions.Should().HaveCount(6);
+            context.Actions.Should().ContainKey(nameof(ActionThing.InvokeNullableWithService));
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(
                 @"{ ""invokeNullable"": { ""input"": { ""value"": null } } }").GetProperty("invokeNullable");
-            context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out info).Should().BeTrue();
+            context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out var info).Should().BeTrue();
             
+            info.Should().NotBeNull();
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
@@ -152,6 +186,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             var jsonElement = CreateJson(value);
             context.Actions[nameof(ActionThing.InvokeAsync)].TryAdd(jsonElement, out var info).Should().BeTrue();
             
+            info.Should().NotBeNull();
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
@@ -176,14 +211,30 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             var jsonElement = CreateJson(value);
             context.Actions[nameof(ActionThing.InvokeNullableAsync)].TryAdd(jsonElement, out var info).Should().BeTrue();
             
+            info.Should().NotBeNull();
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(value);
+        }
+        
+        [Fact]
+        public async Task InvokeNullableAsync_Should_Execute_When_ParameterIsNull()
+        {
+            var thing = new ActionThing();
+            var context = Factory.Create(thing, new ThingOption());
+            thing.ThingContext = context;
 
-            jsonElement =  jsonElement = JsonSerializer.Deserialize<JsonElement>(
+            context.Events.Should().BeEmpty();
+            context.Properties.Should().BeEmpty();
+
+            context.Actions.Should().NotBeEmpty();
+            context.Actions.Should().HaveCount(6);
+            context.Actions.Should().ContainKey(nameof(ActionThing.InvokeNullableAsync));
+
+            var jsonElement =  JsonSerializer.Deserialize<JsonElement>(
                 @"{ ""invokeNullable"": { ""input"": { ""value"": null } } }").GetProperty("invokeNullable");
-            context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out info).Should().BeTrue();
+            context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out var info).Should().BeTrue();
             
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
@@ -198,12 +249,101 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             var value = typeof(T).IsEnum
                 ? $@" ""enum"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""], "
                 : string.Empty;
-            TestResponse<ActionThing>(string.Format(RESPONSE, type, value));
+            TestResponse<ActionThing>(string.Format(s_response, type, value));
+        }
+        #endregion
+
+        #region Invalid
+        [Fact]
+        public void Invoke_Should_ReturnError_When_ParameterIsNull()
+        {
+            var thing = new ActionThing();
+            var context = Factory.Create(thing, new ThingOption());
+            thing.ThingContext = context;
+
+            context.Events.Should().BeEmpty();
+            context.Properties.Should().BeEmpty();
+
+            context.Actions.Should().NotBeEmpty();
+            context.Actions.Should().HaveCount(6);
+            context.Actions.Should().ContainKey(nameof(ActionThing.Invoke));
+            
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(
+                @"{ ""Invoke"": { ""input"": { ""value"": null } } }").GetProperty("Invoke");
+            context.Actions[nameof(ActionThing.Invoke)].TryAdd(jsonElement, out var info).Should().BeFalse();
+            thing.Value.Should().NotBe(null);
+        }
+
+        [Fact]
+        public void InvokeWithService_Should_ReturnError_When_ParameterIsNull()
+        {
+            var thing = new ActionThing();
+            var context = Factory.Create(thing, new ThingOption());
+            thing.ThingContext = context;
+
+            context.Events.Should().BeEmpty();
+            context.Properties.Should().BeEmpty();
+
+            context.Actions.Should().NotBeEmpty();
+            context.Actions.Should().HaveCount(6);
+            context.Actions.Should().ContainKey(nameof(ActionThing.InvokeWithService));
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(
+                @"{ ""invoke"": { ""input"": { ""value"": null } } }").GetProperty("invoke");
+            context.Actions[nameof(ActionThing.InvokeWithService)].TryAdd(jsonElement, out var info).Should().BeFalse();
+            thing.Value.Should().NotBeNull();
         }
         
+        [Fact]
+        public void InvokeAsync_Should_ReturnError_When_ParameterIsNull()
+        {
+            var thing = new ActionThing();
+            var context = Factory.Create(thing, new ThingOption());
+            thing.ThingContext = context;
+
+            context.Events.Should().BeEmpty();
+            context.Properties.Should().BeEmpty();
+
+            context.Actions.Should().NotBeEmpty();
+            context.Actions.Should().HaveCount(6);
+            context.Actions.Should().ContainKey(nameof(ActionThing.InvokeAsync));
+
+            var jsonElement =  JsonSerializer.Deserialize<JsonElement>(
+                @"{ ""invoke"": { ""input"": { ""value"": null } } }").GetProperty("invoke");
+            context.Actions[nameof(ActionThing.InvokeAsync)].TryAdd(jsonElement, out _).Should().BeFalse();
+            
+            thing.Value.Should().NotBeNull();
+        }
+        
+        [Theory]
+        [InlineData(nameof(ActionThing.Invoke))]
+        [InlineData(nameof(ActionThing.InvokeNullable))]
+        [InlineData(nameof(ActionThing.InvokeWithService))]
+        [InlineData(nameof(ActionThing.InvokeNullableWithService))]
+        [InlineData(nameof(ActionThing.InvokeAsync))]
+        [InlineData(nameof(ActionThing.InvokeNullableAsync))]
+        public void ExecuteMethod_Should_ReturnError_When_ParameterIsInvalid(string method)
+        {
+            var thing = new ActionThing();
+            var context = Factory.Create(thing, new ThingOption());
+            thing.ThingContext = context;
+
+            context.Events.Should().BeEmpty();
+            context.Properties.Should().BeEmpty();
+
+            context.Actions.Should().NotBeEmpty();
+            context.Actions.Should().HaveCount(6);
+            context.Actions.Should().ContainKey(method);
+
+            var jsons = CreateInvalidJson();
+
+            foreach (var element in jsons)
+            {
+                context.Actions[method].TryAdd(element, out _).Should().BeFalse();
+            }
+        }
         #endregion
         
-
         
         protected override void ConfigureServiceCollection(IServiceCollection collection)
         {
@@ -268,45 +408,123 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         {
             Guid Id { get; } 
         }
-        
-        private const string RESPONSE = @"{{
+
+        private const string s_response = @"
+{{
   ""@context"": ""https://iot.mozilla.org/schemas"",
-  ""properties"": {{
-    ""value"": {{
-      ""type"": ""{0}"",
-      {1}
+  ""actions"": {{
+    ""invoke"": {{
       ""links"": [
         {{
-          ""href"": ""/things/property-thing/properties/value"",
-          ""rel"": ""property""
+          ""href"": ""/things/action-thing/actions/invoke"",
+          ""rel"": ""action""
         }}
-      ]
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""value"": {{
+            ""type"": ""{0}""
+          }}
+        }}
+      }}
     }},
-    ""nullableValue"": {{
-      ""type"": ""{0}"",
-      {1}
+    ""invokeNullable"": {{
       ""links"": [
         {{
-          ""href"": ""/things/property-thing/properties/nullableValue"",
-          ""rel"": ""property""
+          ""href"": ""/things/action-thing/actions/invokeNullable"",
+          ""rel"": ""action""
         }}
-      ]
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""value"": {{
+            ""type"": ""{0}""
+          }}
+        }}
+      }}
+    }},
+    ""invokeWithService"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/action-thing/actions/invokeWithService"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""value"": {{
+            ""type"": ""{0}""
+          }}
+        }}
+      }}
+    }},
+    ""invokeNullableWithService"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/action-thing/actions/invokeNullableWithService"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""value"": {{
+            ""type"": ""{0}""
+          }}
+        }}
+      }}
+    }},
+    ""invokeAsync"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/action-thing/actions/invokeAsync"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""value"": {{
+            ""type"": ""{0}""
+          }}
+        }}
+      }}
+    }},
+    ""invokeNullableAsync"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/action-thing/actions/invokeNullableAsync"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""value"": {{
+            ""type"": ""{0}""
+          }}
+        }}
+      }}
     }}
   }},
   ""links"": [
     {{
       ""href"": ""properties"",
-      ""rel"": ""/things/property-thing/properties""
+      ""rel"": ""/things/action-thing/properties""
     }},
     {{
       ""href"": ""events"",
-      ""rel"": ""/things/property-thing/events""
+      ""rel"": ""/things/action-thing/events""
     }},
     {{
       ""href"": ""actions"",
-      ""rel"": ""/things/property-thing/actions""
+      ""rel"": ""/things/action-thing/actions""
     }}
   ]
-}}";
+}}
+";
     }
 }
