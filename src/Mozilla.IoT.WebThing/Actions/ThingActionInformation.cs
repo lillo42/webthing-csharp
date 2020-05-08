@@ -108,6 +108,6 @@ namespace Mozilla.IoT.WebThing.Actions
         /// <summary>
         /// The Status changed event. 
         /// </summary>
-        public event EventHandler? StatusChanged;
+        public virtual event EventHandler? StatusChanged;
     }
 }

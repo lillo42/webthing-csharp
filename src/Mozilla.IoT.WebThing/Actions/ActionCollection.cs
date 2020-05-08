@@ -64,13 +64,8 @@ namespace Mozilla.IoT.WebThing.Actions
                 return false;
             }
 
-            inputProperty = _convertible.Convert(inputProperty);
-            info = _actionInformationFactory.Convert(inputProperty as Dictionary<string, object?>);
-            if (info == null)
-            {
-                return false;
-            }
-            
+            info = _actionInformationFactory.Convert(_convertible.Convert(inputProperty) as Dictionary<string, object?>);
+
             info.StatusChanged += OnStatusChange;
             
             return _actions.TryAdd(info.GetId(), info);
