@@ -305,7 +305,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
-            thing.NullableValue.Should().Be(value);
+            thing.Value.Should().Be(value);
         }
         
         [Theory]
@@ -332,7 +332,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             info.Status.Should().Be(ActionStatus.Pending);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
-            thing.NullableValue.Should().Be(value);
+            thing.Value.Should().Be(value);
         }
         
         [Fact]
