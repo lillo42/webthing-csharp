@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -272,7 +273,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Number
             var jsonElement = JsonSerializer.Deserialize<JsonElement>(
                 $@"{{ ""action"": {{ ""input"": {{ ""number"": {value} }} }} }}").GetProperty("action");
 
-            context.Actions[nameof(NumberActionThing.MinAndMax)].TryAdd(jsonElement, out _).Should().BeTrue();
+            context.Actions[nameof(NumberActionThing.MinAndMax)].TryAdd(jsonElement, out _).Should().BeFalse();
             thing.Number.Should().NotBe(value);
         }
         
@@ -428,6 +429,13 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Number
         }
 
         #endregion
+
+        [Fact]
+        public void SerializationNumber()
+        {
+            var type = typeof(T).ToJsonType().ToString().ToLower();
+            TestResponse<NumberActionThing>(string.Format(_response, type));
+        }
         
         public class NumberActionThing : Thing
         {
@@ -471,6 +479,161 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Number
                 Number = number;
             }
         }
+
+        private readonly string _response = @"
+{{
+  ""@context"": ""https://iot.mozilla.org/schemas"",
+  ""actions"": {{
+    ""minAndMax"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/number-action-thing/actions/minAndMax"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""number"": {{
+            ""type"": ""{0}"",
+            ""minimum"": 10,
+            ""maximum"": 100
+          }}
+        }}
+      }}
+    }},
+    ""exclusiveMinAndMax"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/number-action-thing/actions/exclusiveMinAndMax"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""number"": {{
+            ""type"": ""{0}"",
+            ""exclusiveMinimum"": 10,
+            ""exclusiveMaximum"": 100
+          }}
+        }}
+      }}
+    }},
+    ""multiOf"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/number-action-thing/actions/multiOf"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""number"": {{
+            ""type"": ""{0}"",
+            ""multipleOf"": 2
+          }}
+        }}
+      }}
+    }},
+    ""enum"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/number-action-thing/actions/enum"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""number"": {{
+            ""type"": ""{0}"",
+            ""enum"": [
+              1,
+              2,
+              3
+            ]
+          }}
+        }}
+      }}
+    }},
+    ""nonNullableValue"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/number-action-thing/actions/nonNullableValue"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""number"": {{
+            ""type"": ""{0}""
+          }}
+        }}
+      }}
+    }},
+    ""notAcceptedNullableValue"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/number-action-thing/actions/notAcceptedNullableValue"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""number"": {{
+            ""type"": ""{0}"",
+            ""enum"": [
+              10,
+              20,
+              30
+            ]
+          }}
+        }}
+      }}
+    }},
+    ""acceptedNullableValue"": {{
+      ""links"": [
+        {{
+          ""href"": ""/things/number-action-thing/actions/acceptedNullableValue"",
+          ""rel"": ""action""
+        }}
+      ],
+      ""input"": {{
+        ""type"": ""object"",
+        ""properties"": {{
+          ""number"": {{
+            ""type"": ""{0}"",
+            ""enum"": [
+              null,
+              100,
+              110,
+              120
+            ]
+          }}
+        }}
+      }}
+    }}
+  }},
+  ""links"": [
+    {{
+      ""href"": ""properties"",
+      ""rel"": ""/things/number-action-thing/properties""
+    }},
+    {{
+      ""href"": ""events"",
+      ""rel"": ""/things/number-action-thing/events""
+    }},
+    {{
+      ""href"": ""actions"",
+      ""rel"": ""/things/number-action-thing/actions""
+    }}
+  ]
+}}
+";
     }
     
     public class ByteProperty : NumberActionTest<byte> { }

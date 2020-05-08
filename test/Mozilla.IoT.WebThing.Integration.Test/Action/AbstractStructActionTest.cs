@@ -242,15 +242,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
             thing.NullableValue.Should().Be(null);
         }
 
-        [Fact]
-        public void Serialize()
-        {
-            var type = typeof(T).ToJsonType().ToString().ToLower();
-            var value = typeof(T).IsEnum
-                ? $@" ""enum"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""], "
-                : string.Empty;
-            TestResponse<ActionThing>(string.Format(s_response, type, value));
-        }
+       
         #endregion
 
         #region Invalid
@@ -344,6 +336,15 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         }
         #endregion
         
+        [Fact]
+        public void Serialize()
+        {
+            var type = typeof(T).ToJsonType().ToString().ToLower();
+            var value = typeof(T).IsEnum
+                ? $@" ""enum"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""], "
+                : string.Empty;
+            TestResponse<ActionThing>(string.Format(s_response, type, value));
+        }
         
         protected override void ConfigureServiceCollection(IServiceCollection collection)
         {
