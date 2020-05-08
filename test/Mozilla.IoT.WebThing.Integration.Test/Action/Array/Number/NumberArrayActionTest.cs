@@ -1,26 +1,13 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using AutoFixture;
 
-namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
+namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array.Number
 {
-    public class CharArrayPropertyTest : AbstractArrayPropertyTest<char>
+    public abstract class NumberArrayActionTest<T> : AbstractArrayActionTest<T>
     {
-        protected override List<char> CreateValue(int arrayLength)
-        {
-            var values = new List<char>(arrayLength);
-
-            for (var i = 0; i < arrayLength; i++)
-            {
-                values.Add(Fixture.Create<string>()[0]);
-            }
-
-            return values;
-        }
-
-        protected override JsonElement CreateJson(IEnumerable<char> values)
+        protected override JsonElement CreateJson(IEnumerable<T> values)
         {
             var sb = new StringBuilder();
 
@@ -35,20 +22,18 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
                     sb.Append(", ");
                 }
 
-                sb.Append(@"""").Append(value).Append(@"""");
+                sb.Append(value);
                 isFirst = false;
             }
 
             sb.Append("]");
             
-            return JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {sb} }}")
-                .GetProperty("input");
+            return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
         }
 
-        protected override JsonElement[] CreateInvalidJson()
+        protected override IEnumerable<JsonElement> CreateInvalidJson()
         {
-            var result = new List<JsonElement>();
-
             #region String
             
             var strings = Fixture.Create<string[]>();
@@ -72,37 +57,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
+            
 
             #endregion
 
-            #region Int
-            sb.Clear();
-            
-            var ints = Fixture.Create<int[]>();
-            
-            sb.Append("[");
-            
-            isFirst = true;
-            
-            foreach (var value in ints)
-            {
-                if (!isFirst)
-                {
-                    sb.Append(", ");
-                }
-
-                sb.Append(value);
-                isFirst = false;
-            }
-
-            sb.Append("]");
-            
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
-            #endregion
-            
             #region bool
             sb.Clear();
             var bools = Fixture.Create<bool[]>();
@@ -124,8 +84,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
 
             #endregion
             
@@ -142,12 +102,33 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
             
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
 
             #endregion
-            
-            return result.ToArray();
+
         }
     }
+    
+    public class ByteArrayProperty : NumberArrayActionTest<byte> { }
+    
+    public class SByteArrayProperty : NumberArrayActionTest<sbyte> { }
+    
+    public class ShortArrayProperty : NumberArrayActionTest<short> { }
+    
+    public class UShortArrayProperty : NumberArrayActionTest<ushort> { }
+    
+    public class IntArrayProperty : NumberArrayActionTest<int> { }
+    
+    public class UIntArrayProperty : NumberArrayActionTest<uint> { }
+    
+    public class LongArrayProperty : NumberArrayActionTest<long> { }
+    
+    public class ULongArrayProperty : NumberArrayActionTest<ulong> { }
+    
+    public class FloatArrayProperty : NumberArrayActionTest<float> { }
+    
+    public class DoubleArrayProperty : NumberArrayActionTest<double> { }
+    
+    public class DecimalArrayProperty : NumberArrayActionTest<decimal> { }
 }

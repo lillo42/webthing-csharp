@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using AutoFixture;
 
-namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
+namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array.String
 {
-    public class CharArrayPropertyTest : AbstractArrayPropertyTest<char>
+    public class CharArrayActionTest : AbstractArrayActionTest<char>
     {
         protected override List<char> CreateValue(int arrayLength)
         {
@@ -41,14 +40,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            return JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {sb} }}")
-                .GetProperty("input");
+            return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
         }
 
-        protected override JsonElement[] CreateInvalidJson()
+        protected override IEnumerable<JsonElement> CreateInvalidJson()
         {
-            var result = new List<JsonElement>();
-
             #region String
             
             var strings = Fixture.Create<string[]>();
@@ -72,8 +69,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
 
             #endregion
 
@@ -99,8 +96,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
             #endregion
             
             #region bool
@@ -124,8 +121,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
 
             #endregion
             
@@ -142,12 +139,10 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
             
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
 
             #endregion
-            
-            return result.ToArray();
         }
     }
 }

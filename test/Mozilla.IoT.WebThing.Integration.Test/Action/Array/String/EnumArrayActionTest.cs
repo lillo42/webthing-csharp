@@ -1,26 +1,13 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using AutoFixture;
 
-namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
+namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array.String
 {
-    public class CharArrayPropertyTest : AbstractArrayPropertyTest<char>
+    public class EnumArrayActionTest : AbstractArrayActionTest<Foo>
     {
-        protected override List<char> CreateValue(int arrayLength)
-        {
-            var values = new List<char>(arrayLength);
-
-            for (var i = 0; i < arrayLength; i++)
-            {
-                values.Add(Fixture.Create<string>()[0]);
-            }
-
-            return values;
-        }
-
-        protected override JsonElement CreateJson(IEnumerable<char> values)
+        protected override JsonElement CreateJson(IEnumerable<Foo> values)
         {
             var sb = new StringBuilder();
 
@@ -35,20 +22,18 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
                     sb.Append(", ");
                 }
 
-                sb.Append(@"""").Append(value).Append(@"""");
+                sb.Append(@"""").Append(value.ToString()).Append(@"""");
                 isFirst = false;
             }
 
             sb.Append("]");
             
-            return JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {sb} }}")
-                .GetProperty("input");
+            return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
         }
 
-        protected override JsonElement[] CreateInvalidJson()
+        protected override IEnumerable<JsonElement> CreateInvalidJson()
         {
-            var result = new List<JsonElement>();
-
             #region String
             
             var strings = Fixture.Create<string[]>();
@@ -72,12 +57,13 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
 
             #endregion
 
             #region Int
+            
             sb.Clear();
             
             var ints = Fixture.Create<int[]>();
@@ -99,12 +85,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
             #endregion
             
             #region bool
+
             sb.Clear();
+            
             var bools = Fixture.Create<bool[]>();
             
             sb.Append("[");
@@ -124,13 +112,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
 
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
-
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
             #endregion
             
             #region Multi Value
+            
             sb.Clear();
+            
             sb = new StringBuilder();
 
             sb.Append("[")
@@ -142,12 +131,19 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.String
             
             sb.Append("]");
             
-            result.Add(JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"":  {sb} }}")
-                .GetProperty("input"));
+            yield return JsonSerializer.Deserialize<JsonElement>(
+                $@"{{ ""action"": {{ ""input"": {{ ""value"": {sb} }} }} }}").GetProperty("action");
+            
+            sb.Clear();
 
             #endregion
-            
-            return result.ToArray();
         }
+    }
+    
+    public enum Foo
+    {
+        A,
+        B,
+        C
     }
 }
