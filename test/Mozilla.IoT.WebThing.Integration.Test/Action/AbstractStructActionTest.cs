@@ -341,7 +341,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         {
             var type = typeof(T).ToJsonType().ToString().ToLower();
             var value = typeof(T).IsEnum
-                ? $@" ""enum"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""], "
+                ? $@" , ""enum"": [""{string.Join(@""" , """, typeof(T).GetEnumNames())}""], "
                 : string.Empty;
             TestResponse<ActionThing>(string.Format(s_response, type, value));
         }
@@ -426,6 +426,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         ""properties"": {{
           ""value"": {{
             ""type"": ""{0}""
+            {1}
           }}
         }}
       }}
@@ -442,6 +443,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         ""properties"": {{
           ""value"": {{
             ""type"": ""{0}""
+            {1}
           }}
         }}
       }}
@@ -458,6 +460,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         ""properties"": {{
           ""value"": {{
             ""type"": ""{0}""
+            {1}
           }}
         }}
       }}
@@ -474,6 +477,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         ""properties"": {{
           ""value"": {{
             ""type"": ""{0}""
+            {1}
           }}
         }}
       }}
@@ -490,6 +494,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         ""properties"": {{
           ""value"": {{
             ""type"": ""{0}""
+            {1}
           }}
         }}
       }}
@@ -506,6 +511,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action
         ""properties"": {{
           ""value"": {{
             ""type"": ""{0}""
+            {1}
           }}
         }}
       }}

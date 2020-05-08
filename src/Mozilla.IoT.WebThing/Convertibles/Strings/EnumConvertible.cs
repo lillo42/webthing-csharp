@@ -15,7 +15,7 @@ namespace Mozilla.IoT.WebThing.Convertibles.Strings
         /// <param name="enum">The enum type</param>
         public EnumConvertible(Type @enum)
         {
-            _enum = @enum;
+            _enum = @enum ?? throw new ArgumentNullException(nameof(@enum));
         }
 
         /// <inheritdoc/>

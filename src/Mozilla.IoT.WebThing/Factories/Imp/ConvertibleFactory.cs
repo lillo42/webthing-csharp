@@ -33,7 +33,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.TimeSpan:
                     return TimeSpanConvertible.Instance;
                 case TypeCode.Enum:
-                    return new EnumConvertible(type);
+                    return new EnumConvertible(type.GetUnderlyingType());
                 case TypeCode.SByte:
                 case TypeCode.Byte:
                 case TypeCode.Int16:

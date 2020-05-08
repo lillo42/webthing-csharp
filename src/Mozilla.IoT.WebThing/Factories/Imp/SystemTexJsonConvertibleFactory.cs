@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.TimeSpan:
                     return SystemTexJsonTimeSpanConvertible.Instance;
                 case TypeCode.Enum:
-                    return new SystemTexJsonEnumConvertible(@type);
+                    return new SystemTexJsonEnumConvertible(@type.GetUnderlyingType());
                 case TypeCode.SByte:
                 case TypeCode.Byte:
                 case TypeCode.Int16:
