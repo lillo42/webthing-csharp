@@ -29,9 +29,9 @@ namespace Mozilla.IoT.WebThing.Builders
         private readonly IJsonConvertibleFactory _jsonConvertibleFactory;
         private readonly IConvertibleFactory _convertibleFactory;
 
-        private Dictionary<string, IJsonConvertible> _jsonConvertibles;
-        private Dictionary<string, IJsonSchemaValidation> _jsonSchemaValidations;
-        private Dictionary<string, IConvertible?> _convertibles;
+        private Dictionary<string, IJsonConvertible>? _jsonConvertibles;
+        private Dictionary<string, IJsonSchemaValidation>? _jsonSchemaValidations;
+        private Dictionary<string, IConvertible?>? _convertibles;
 
         private Thing? _thing;
         private ThingOption? _option;
@@ -45,6 +45,9 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <summary>
         /// Initialize a new instance of <see cref="ActionBuilder"/>.
         /// </summary>
+        /// <param name="jsonSchemaValidationFactory">The <see cref="IJsonSchemaValidationFactory"/>.</param>
+        /// <param name="jsonConvertibleFactory">The <see cref="IJsonConvertibleFactory"/>.</param>
+        /// <param name="convertibleFactory">The <see cref="IConvertibleFactory"/>.</param>
         public ActionBuilder(IJsonSchemaValidationFactory jsonSchemaValidationFactory, 
             IJsonConvertibleFactory jsonConvertibleFactory, 
             IConvertibleFactory convertibleFactory)
@@ -104,9 +107,9 @@ namespace Mozilla.IoT.WebThing.Builders
                 var factory = CreateActionInfoFactory(actionInfoBuilder, _input, inputProperty);
                 
                 _actions.Add(_name!, new ActionCollection(
-                    new SystemTextJsonInputConvertible(_jsonConvertibles) ,
-                    new InputJsonSchemaValidation(_jsonSchemaValidations),
-                    new InputConvertible(_convertibles), 
+                    new SystemTextJsonInputConvertible(_jsonConvertibles!),
+                    new InputJsonSchemaValidation(_jsonSchemaValidations!),
+                    new InputConvertible(_convertibles!), 
                     (IActionInformationFactory)Activator.CreateInstance(factory)!));
             }
             
@@ -129,13 +132,13 @@ namespace Mozilla.IoT.WebThing.Builders
             
             CreateProperty(_input, jsonSchema.Name, parameter.ParameterType);
             
-            _jsonConvertibles.Add(jsonSchema.Name, 
+            _jsonConvertibles!.Add(jsonSchema.Name, 
                 _jsonConvertibleFactory.Create(parameter.ParameterType.ToTypeCode(), parameter.ParameterType));
             
-            _jsonSchemaValidations.Add(jsonSchema.Name, 
+            _jsonSchemaValidations!.Add(jsonSchema.Name, 
                 _jsonSchemaValidationFactory.Create(parameter.ParameterType.ToTypeCode(), jsonSchema, parameter.ParameterType));
 
-            _convertibles.Add(jsonSchema.Name,
+            _convertibles!.Add(jsonSchema.Name,
                 _convertibleFactory.Create(parameter.ParameterType.ToTypeCode(), parameter.ParameterType));
         }
 
@@ -274,9 +277,9 @@ namespace Mozilla.IoT.WebThing.Builders
                 var factory = CreateActionInfoFactory(actionInfoBuilder, _input, inputProperty);
                 
                 _actions.Add(_name!, new ActionCollection(
-                    new SystemTextJsonInputConvertible(_jsonConvertibles),
-                    new InputJsonSchemaValidation(_jsonSchemaValidations),
-                    new InputConvertible(_convertibles), 
+                    new SystemTextJsonInputConvertible(_jsonConvertibles!),
+                    new InputJsonSchemaValidation(_jsonSchemaValidations!),
+                    new InputConvertible(_convertibles!), 
                     (IActionInformationFactory)Activator.CreateInstance(factory)!));
             }
             

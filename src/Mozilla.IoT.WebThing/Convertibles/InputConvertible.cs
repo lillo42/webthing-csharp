@@ -5,21 +5,22 @@ using System.Linq;
 namespace Mozilla.IoT.WebThing.Convertibles
 {
     /// <summary>
-    /// 
+    /// Convert data for input
     /// </summary>
     public class InputConvertible : IConvertible
     {
         private readonly Dictionary<string, IConvertible> _convertibles;
 
         /// <summary>
-        /// 
+        /// Initialize a new instance of <see cref="InputConvertible"/>.
         /// </summary>
-        /// <param name="convertibles"></param>
+        /// <param name="convertibles">The convertibles</param>
         public InputConvertible(Dictionary<string, IConvertible?> convertibles)
         {
-            _convertibles = convertibles;
+            _convertibles = convertibles ?? throw new ArgumentNullException(nameof(convertibles));
         }
 
+        /// <inheritdoc/>
         public object? Convert(object? value)
         {
             if (_convertibles == null)
