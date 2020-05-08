@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Attributes;
@@ -160,6 +161,23 @@ namespace Mozilla.IoT.WebThing.Extensions
                 return result;
             }
 
+            if (type.IsArray)
+            {
+                var arrayType = type.GetCollectionType();
+                return GetEnums(arrayType, values);
+            }
+
+            if (type.IsGenericType)
+            {
+                var gen = type.GetGenericTypeDefinition();
+                if (gen == typeof(IEnumerable<>) || type.GetInterfaces()
+                    .Any(x => x.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+                {
+                    var enumerableType = type.GetGenericArguments();
+                    return GetEnums(enumerableType[0], values);
+                }
+            }
+            
             return values;
         }
     }

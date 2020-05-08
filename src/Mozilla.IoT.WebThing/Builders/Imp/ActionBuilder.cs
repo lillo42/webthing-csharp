@@ -132,14 +132,17 @@ namespace Mozilla.IoT.WebThing.Builders
             
             CreateProperty(_input, jsonSchema.Name, parameter.ParameterType);
             
+            var parameterType = parameter.ParameterType.GetUnderlyingType();
+            var code = parameterType.ToTypeCode();
+            
             _jsonConvertibles!.Add(jsonSchema.Name, 
-                _jsonConvertibleFactory.Create(parameter.ParameterType.ToTypeCode(), parameter.ParameterType));
+                _jsonConvertibleFactory.Create(code, parameterType));
             
             _jsonSchemaValidations!.Add(jsonSchema.Name, 
-                _jsonSchemaValidationFactory.Create(parameter.ParameterType.ToTypeCode(), jsonSchema, parameter.ParameterType));
+                _jsonSchemaValidationFactory.Create(code, jsonSchema, parameterType));
 
             _convertibles!.Add(jsonSchema.Name,
-                _convertibleFactory.Create(parameter.ParameterType.ToTypeCode(), parameter.ParameterType));
+                _convertibleFactory.Create(code, parameterType));
         }
 
         private static System.Reflection.Emit.PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)
