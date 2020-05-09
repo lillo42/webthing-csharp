@@ -88,7 +88,7 @@ namespace Mozilla.IoT.WebThing.Builders
         }
 
         /// <inheritdoc /> 
-        public void Add(MethodInfo action, ThingActionAttribute? attribute)
+        public IActionBuilder Add(MethodInfo action, ThingActionAttribute? attribute)
         {
             if (_thingType == null || _module == null)
             {
@@ -120,10 +120,12 @@ namespace Mozilla.IoT.WebThing.Builders
             _name = attribute?.Name ?? action.Name;
             _action = action;
             _input = _module.DefineType($"{action.Name}Input", TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass);
+
+            return this;
         }
         
         /// <inheritdoc /> 
-        public void Add(ParameterInfo parameter, JsonSchema jsonSchema)
+        public IActionBuilder Add(ParameterInfo parameter, JsonSchema jsonSchema)
         {
             if (_input == null)
             {
@@ -143,6 +145,8 @@ namespace Mozilla.IoT.WebThing.Builders
 
             _convertibles!.Add(jsonSchema.Name,
                 _convertibleFactory.Create(code, parameterType));
+
+            return this;
         }
 
         private static System.Reflection.Emit.PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)

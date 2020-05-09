@@ -39,14 +39,14 @@ namespace Mozilla.IoT.WebThing.Builders
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="information">The <see cref="JsonSchema"/> about action.</param>
-        void Add(MethodInfo action, ThingActionAttribute? information);
+        IActionBuilder Add(MethodInfo action, ThingActionAttribute? information);
         
         /// <summary>
         /// Add property.
         /// </summary>
         /// <param name="parameter">The parameter.</param>
         /// <param name="jsonSchema">The <see cref="JsonSchema"/> about parameter.</param>
-        void Add(ParameterInfo parameter, JsonSchema jsonSchema);
+        IActionBuilder Add(ParameterInfo parameter, JsonSchema jsonSchema);
 
         /// <summary>
         /// Build the <see cref="Dictionary{TKey,TValue}"/>
