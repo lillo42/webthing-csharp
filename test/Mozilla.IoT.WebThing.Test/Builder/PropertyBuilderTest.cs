@@ -28,25 +28,40 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             _builder = new PropertyBuilder(_factory);
         }
 
+        #region Add
+
         [Fact]
-        public void TryAddWhenSetThingTypeIsNotCalled()
+        public void Add_Should_Throw_When_SetThingTypeIsNotCalled()
             => Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<PropertyInfo>(),
                 new JsonSchema(Substitute.For<IJsonSchema>(), null, JsonType.String,
                     _fixture.Create<string>(), _fixture.Create<bool>())));
-        
-        [Fact]
-        public void TryBuildWhenIsNotSetSetThing() 
-            => Assert.Throws<InvalidOperationException>(() =>  _builder.Build());
 
         [Fact]
-        public void TryBuildWhenIsNotSetThingType()
+        public void Add_Should_Throw_When_SetThingOptionIsNotCalled()
+        {
+            _builder.SetThing(new PropertyThing());
+            Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<PropertyInfo>(),
+                new JsonSchema(Substitute.For<IJsonSchema>(), null, JsonType.String,
+                    _fixture.Create<string>(), _fixture.Create<bool>())));
+        }
+
+        #endregion
+
+        #region Build
+
+        [Fact]
+        public void Build_Should_Throw_When_SetThingWasNotCalled() 
+            => Assert.Throws<InvalidOperationException>(() =>  _builder.Build());
+        
+        [Fact]
+        public void Build_Should_Throw_When_SetThingTypeWasNotCalled()
         {
             _builder.SetThing(_thing);
             Assert.Throws<InvalidOperationException>(() => _builder.Build());
         }
         
         [Fact]
-        public void BuildReadOnlyProperty()
+        public void BuildForReadOnlyProperty()
         {
             _builder
                 .SetThing(_thing)
@@ -64,12 +79,8 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             properties.Should().NotBeEmpty();
             properties.Should().HaveCount(1);
             properties.Should().ContainKey(propertyName);
-            
-            _thing.Value = _fixture.Create<string>();
-            properties[propertyName].TryGetValue(out var value).Should().BeTrue();
-            value.Should().Be(_thing.Value);
         }
-        
+
         [Fact]
         public void BuildNonReadOnlyProperty()
         {
@@ -96,6 +107,9 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             _factory.Getter(_thing).Should().Be(value);
             _thing.Value.Should().Be(value);
         }
+
+        
+        #endregion
         
         private void Visit(JsonSchema jsonSchema)
         {

@@ -30,7 +30,56 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
         }
+
+        #region Set
+
+        [Fact]
+        public void SetThing()
+        {
+            _builder.SetThing(new PropertyThing());
+        }
         
+        [Fact]
+        public void SetThingAfterSetThingOption()
+        {
+            _builder.SetThingOption(new ThingOption())
+                .SetThing(new PropertyThing());
+        }
+        
+        [Fact]
+        public void SetThingOption()
+        {
+            _builder.SetThingOption(new ThingOption());
+        }
+        
+        [Fact]
+        public void SetThingOptionSetThingAfter()
+        {
+            _builder.SetThing(new PropertyThing())
+                .SetThingOption(new ThingOption());
+        }
+        
+
+        #endregion
+
+        #region Event
+
+        [Fact]
+        public void AddEvent_Should_Throw_When_SetThingWasNotCalled()
+        {
+            Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<EventInfo>(), null));
+        }
+        
+        [Fact]
+        public void AddEvent_Should_Throw_When_SetThingOptionWasNotCalled()
+        {
+            Assert.Throws<InvalidOperationException>(() => _builder
+                .SetThing(new PropertyThing())
+                .Add(Substitute.For<EventInfo>(), null));
+        }
+
+        #endregion
+
         [Fact]
         public void TryAddWhenSetThingIsNotCalled() 
             => Assert.Throws<InvalidOperationException>(() =>  _builder.Add(Substitute.For<EventInfo>(), null));
@@ -776,6 +825,8 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                     attribute?.Name ?? name, _fixture.Create<bool>());
             }
         }
+
+        #region Thing
         
         public class EventThing : Thing
         {
@@ -891,5 +942,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             Bar,
             C
         }
+        
+        #endregion
     }
 }

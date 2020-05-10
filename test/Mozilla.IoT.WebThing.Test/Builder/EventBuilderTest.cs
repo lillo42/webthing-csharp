@@ -16,13 +16,11 @@ namespace Mozilla.IoT.WebThing.Test.Builder
     {
         private readonly EventBuilder _builder;
         private readonly EventThing _thing;
-        private readonly Fixture _fixture;
-        
+
         public EventBuilderTest()
         {
             _builder = new EventBuilder();
             _thing = new EventThing();
-            _fixture = new Fixture();
         }
 
         #region Add
