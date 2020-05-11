@@ -21,9 +21,4 @@
       <ProjectReference Include="..\..\src\Mozilla.IoT.WebThing\Mozilla.IoT.WebThing.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Web\Http" />
-      <Folder Include="Web\Things" />
-    </ItemGroup>
-
 </Project>

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
+using Mozilla.IoT.WebThing.Integration.Test.Web.Things;
 
 namespace Mozilla.IoT.WebThing.Integration.Test.Web
 {
@@ -9,7 +10,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddThings();
+            services.AddThings()
+                .AddThing<PropertyThing>()
+                .AddThing<WebSocketPropertyThing>();
             
             services.AddWebSockets(_ => { });
         }

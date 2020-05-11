@@ -14,6 +14,11 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles
         public bool TryConvert(object source, [MaybeNull]out object? result)
         {
             result = null;
+            if (source == null)
+            {
+                return true;
+            }
+            
             var jsonElement = (JsonElement)source;
             return jsonElement.ValueKind == JsonValueKind.Null || TryConvert(jsonElement, out result);
         }
