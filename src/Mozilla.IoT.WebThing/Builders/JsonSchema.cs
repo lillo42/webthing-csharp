@@ -19,10 +19,12 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <param name="isNullable"></param>
         /// <param name="isReadOnly"></param>
         /// <param name="enums"></param>
-        public JsonSchema(IJsonSchema? schema, object[]? enums, JsonType jsonType, string name, bool isNullable, bool? isReadOnly)
+        /// <param name="isWriteOnly"></param>
+        public JsonSchema(IJsonSchema? schema, object[]? enums, JsonType jsonType, string name, bool isNullable, bool? isReadOnly, bool? isWriteOnly)
             : this(schema, enums, jsonType, name, isNullable)
         {
             IsReadOnly = isReadOnly;
+            IsWriteOnly = isWriteOnly;
         }
 
         /// <summary>

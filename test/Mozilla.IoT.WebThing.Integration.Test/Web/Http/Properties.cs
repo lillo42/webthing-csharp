@@ -39,10 +39,80 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
 
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
+        
+        [Fact]
+        public async Task GetProperties_Should_ReturnNotFound_When_ThingNotFound()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var response = await _client.GetAsync($"/things/{_fixture.Create<string>()}/properties", 
+                source.Token);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        
+        [Fact]
+        public async Task GetProperty_Should_ReturnNotFound_When_ThingNotFound()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var response = await _client.GetAsync($"/things/{_fixture.Create<string>()}/properties/{_fixture.Create<string>()}", 
+                source.Token);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        
+        [Fact]
+        public async Task PutNotExistProperty_Should_ReturnNotFound()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var value = _fixture.Create<string>();
+            var response = await _client
+                .PutAsync($"{s_baseUrl}/AAAa", 
+                    new StringContent($@"{{ ""AAA"": ""{value}"" }}"), 
+                    source.Token);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        
+        [Fact]
+        public async Task Put_Should_ReturnNotFound_When_ThingNotFound()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var value = _fixture.Create<string>();
+            var response = await _client
+                .PutAsync($"/things/{_fixture.Create<string>()}/properties/text", 
+                    new StringContent($@"{{ ""text"": ""{value}"" }}"), 
+                    source.Token);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
 
         #endregion
 
-        #region BadReques
+        #region BadRequest
+        [Theory]
+        [InlineData("write")]
+        [InlineData("write2")]
+        public async Task GetWriteOnlyProperty_Should_ReturnBdRequest(string propertyName)
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var response = await _client
+                .GetAsync($"{s_baseUrl}/{propertyName}", 
+                    source.Token);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+        
 
         [Fact]
         public async Task PutId_Should_ReturnBadRequest()
@@ -111,6 +181,21 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             var response = await _client
                 .PutAsync($"{s_baseUrl}/extraInformation", 
                     new StringContent($@"{{ ""extraInformation"": [""{_fixture.Create<string>()}""] }}"), 
+                    source.Token);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+        
+        [Fact]
+        public async Task PutText_Should_ReturnBdRequest_When_PropertyInBodyNotMatch()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var value = _fixture.Create<string>();
+            var response = await _client
+                .PutAsync($"{s_baseUrl}/text", 
+                    new StringContent($@"{{ ""tex2"": ""{value}"" }}"), 
                     source.Token);
             
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
