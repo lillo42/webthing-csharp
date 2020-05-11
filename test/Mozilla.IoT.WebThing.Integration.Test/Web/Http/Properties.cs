@@ -144,7 +144,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             
             var text = json["text"];
             text.Type.Should().Be(JTokenType.String);
-            text.Value<string>().Should().BeNullOrEmpty();
             
             var level = json["level"];
             level.Type.Should().Be(JTokenType.Integer);
@@ -181,6 +180,66 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
                 .BeEquivalentTo(JToken.Parse($@"
 {{
     ""level"": {value}
+}}
+"));
+        }
+        
+        [Fact]
+        public async Task PutText_Should_ReturnOk_When_ValueIsNotNull()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var value = _fixture.Create<string>();
+            var response = await _client
+                .PutAsync($"{s_baseUrl}/text", 
+                    new StringContent($@"{{ ""text"": ""{value}"" }}"), 
+                    source.Token);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            
+            
+            response = await _client
+                .GetAsync($"{s_baseUrl}/text", 
+                    source.Token);
+
+            var message = await response.Content.ReadAsStringAsync();
+            
+            FluentAssertions.Json.JsonAssertionExtensions
+                .Should(JToken.Parse(message))
+                .BeEquivalentTo(JToken.Parse($@"
+{{
+    ""text"": ""{value}""
+}}
+"));
+        }
+        
+        
+        [Fact]
+        public async Task PutExtraInformation_Should_ReturnOk_When_ValueIsNotNull()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            var response = await _client
+                .PutAsync($"{s_baseUrl}/extraInformation", 
+                    new StringContent($@"{{ ""extraInformation"": [""ABC"", ""GHI""] }}"), 
+                    source.Token);
+            
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            
+            
+            response = await _client
+                .GetAsync($"{s_baseUrl}/extraInformation", 
+                    source.Token);
+
+            var message = await response.Content.ReadAsStringAsync();
+            
+            FluentAssertions.Json.JsonAssertionExtensions
+                .Should(JToken.Parse(message))
+                .BeEquivalentTo(JToken.Parse($@"
+{{
+    ""extraInformation"": [""ABC"", ""GHI""] 
 }}
 "));
         }
