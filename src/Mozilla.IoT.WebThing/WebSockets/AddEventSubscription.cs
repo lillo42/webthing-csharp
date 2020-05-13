@@ -16,6 +16,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         /// <inheritdoc/>
         public string Action => "addEventSubscription";
         
+        
         /// <inheritdoc/>
         public ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data,
             IServiceProvider provider, CancellationToken cancellationToken)

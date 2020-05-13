@@ -58,7 +58,9 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
             byte[]? buffer = null;
 
-            var actions = service.GetRequiredService<Dictionary<string, IWebSocketAction>>();
+            var actions = service.GetRequiredService<IEnumerable<IWebSocketAction>>()
+                .ToDictionary(x => x.Action,
+                    x => x);
 
             var jsonOptions = service.GetRequiredService<JsonSerializerOptions>();
             
