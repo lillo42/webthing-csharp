@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Factories
 
         /// <inheritdoc />
         public IThingProperty Create(Type propertyType, JsonSchema jsonSchema, Thing thing,
-            Action<object, object?> setter, Func<object, object?> getter)
+            Action<object, object?> setter, Func<object, object?> getter, string originPropertyName)
         {
             propertyType = propertyType.GetUnderlyingType();
             var code = propertyType.ToTypeCode();
@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.TimeSpan:
                 case TypeCode.Enum:
                     return new ThingProperty(thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), 
-                        getter, setter, validation, jsonConvertible, null);
+                        getter, setter, validation, jsonConvertible, null, originPropertyName);
                 case TypeCode.SByte:
                 case TypeCode.Byte:
                 case TypeCode.Int16:
@@ -61,10 +61,10 @@ namespace Mozilla.IoT.WebThing.Factories
                 case TypeCode.Decimal:
                     return new ThingProperty(thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), 
                         getter, setter, validation, jsonConvertible,
-                        _convertibleFactory.Create(code, propertyType));
+                        _convertibleFactory.Create(code, propertyType), originPropertyName);
                 case TypeCode.Array:
                     return new ThingProperty(thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), getter, setter,
-                        validation, jsonConvertible, _convertibleFactory.Create(code, propertyType));
+                        validation, jsonConvertible, _convertibleFactory.Create(code, propertyType), originPropertyName);
                 default:
                     throw new ArgumentOutOfRangeException();
             }

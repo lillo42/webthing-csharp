@@ -60,7 +60,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
             var actions = service.GetRequiredService<Dictionary<string, IWebSocketAction>>();
 
-            var jsonOptions = service.GetRequiredService<JsonSerializerOptions>();
+            var jsonOptions = option.ToJsonSerializerOptions();
             
             var webSocketOption = service.GetRequiredService<IOptions<WebSocketOptions>>().Value;
             

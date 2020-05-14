@@ -18,7 +18,7 @@ namespace Mozilla.IoT.WebThing.Test
         
         private readonly Action<Thing, object> _setter;
         private readonly Func<Thing, object> _getter;
-        
+        private readonly string _originPropertyName;
         public ThingPropertyTest()
         {
             _fixture = new Fixture();
@@ -29,37 +29,39 @@ namespace Mozilla.IoT.WebThing.Test
 
             _setter = (thing, value) => ((FakeThing)thing).Value = value;
             _getter = thing => ((FakeThing)thing).Value;
+
+            _originPropertyName = _fixture.Create<string>();
         }
 
         [Fact]
         public void Ctor_Should_ThrowArgumentNullException_When_ThingIsNull()
             => Assert.Throws<ArgumentNullException>(() => new ThingProperty(null, false, false,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible));
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName));
         [Fact]
         public void Ctor_Should_ArgumentNullException_When_GetterIsNull()
             => Assert.Throws<ArgumentNullException>(() => new ThingProperty(_thing, false, false,
-                null, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible));
+                null, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName));
 
         [Fact]
         public void Ctor_Should_ArgumentNullException_When_IsNotReadOnlyAndSetterIsNull()
             => Assert.Throws<ArgumentNullException>(() => new ThingProperty(_thing, false, false,
-                _getter, null, _jsonSchemaValidation, _jsonConvertible, _convertible));
+                _getter, null, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName));
         
         [Fact]
         public void Ctor_Should_ArgumentNullException_When_IsNotReadOnlyAndJsonSchemaValidationIsNull()
             => Assert.Throws<ArgumentNullException>(() => new ThingProperty(_thing, false, false,
-                _getter, _setter, null, _jsonConvertible, _convertible));
+                _getter, _setter, null, _jsonConvertible, _convertible, _originPropertyName));
         
         [Fact]
         public void Ctor_Should_ArgumentNullException_When_IsNotReadOnlyAndJsonConvertibleIsNull()
             => Assert.Throws<ArgumentNullException>(() => new ThingProperty(_thing, false, false,
-                _getter, _setter, _jsonSchemaValidation, null, _convertible));
+                _getter, _setter, _jsonSchemaValidation, null, _convertible, _originPropertyName));
 
         [Fact]
         public void TryGetValue_Should_ReturnTrue_When_IsNotWriteOnly()
         {
             var property = new ThingProperty(_thing, false, false,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible);
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName);
 
             _thing.Value = _fixture.Create<string>();
 
@@ -71,7 +73,7 @@ namespace Mozilla.IoT.WebThing.Test
         public void TryGetValue_Should_ReturnFalse_When_IsWriteOnly()
         {
             var property = new ThingProperty(_thing, false, true,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible);
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName);
 
             _thing.Value = _fixture.Create<string>();
 
@@ -84,7 +86,7 @@ namespace Mozilla.IoT.WebThing.Test
         public void TrySetValue_Should_ReturnReadOnly_When_IsReadOnly()
         {
             var property = new ThingProperty(_thing, true, false,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible);
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName);
 
             var value = _fixture.Create<string>();
 
@@ -104,7 +106,7 @@ namespace Mozilla.IoT.WebThing.Test
         public void TrySetValue_Should_ReturnInvalid_When_TryConvertIsFalse()
         {
             var property = new ThingProperty(_thing, false, false,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible);
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName);
             
             var value = _fixture.Create<string>();
 
@@ -131,7 +133,7 @@ namespace Mozilla.IoT.WebThing.Test
         public void TrySetValue_Should_ReturnInvalid_When_IsValidIsFalse()
         {
             var property = new ThingProperty(_thing, false, false,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible);
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName);
             
             var value = _fixture.Create<string>();
             var jsonValue = _fixture.Create<string>();
@@ -163,7 +165,7 @@ namespace Mozilla.IoT.WebThing.Test
         public void TrySetValue_Should_ReturnOk_When_ConvertibleIsNull()
         {
             var property = new ThingProperty(_thing, false, false,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, null);
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, null, _originPropertyName);
             
             var value = _fixture.Create<string>();
             var jsonValue = _fixture.Create<string>();
@@ -194,7 +196,7 @@ namespace Mozilla.IoT.WebThing.Test
         public void TrySetValue_Should_ReturnOk_When_ConvertibleIsNotNull()
         {
             var property = new ThingProperty(_thing, false, false,
-                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible);
+                _getter, _setter, _jsonSchemaValidation, _jsonConvertible, _convertible, _originPropertyName);
             
             var value = _fixture.Create<string>();
             var jsonValue = _fixture.Create<string>();

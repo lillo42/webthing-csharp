@@ -8,6 +8,11 @@ namespace Mozilla.IoT.WebThing
     public interface IThingProperty
     {
         /// <summary>
+        /// Name of origin property
+        /// </summary>
+        string OriginPropertyName { get; }
+        
+        /// <summary>
         /// Try get value. it only can get value if property is write-only
         /// </summary>
         /// <param name="value">The result value</param>

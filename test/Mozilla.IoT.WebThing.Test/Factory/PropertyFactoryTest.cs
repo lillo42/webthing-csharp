@@ -27,6 +27,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
         private readonly JsonSchema _jsonSchema;
 
         private readonly PropertyFactory _factory;
+        private readonly Fixture _fixture;
 
         public PropertyFactoryTest()
         {
@@ -34,10 +35,10 @@ namespace Mozilla.IoT.WebThing.Test.Factory
             _jsonConvertibleFactory = Substitute.For<IJsonConvertibleFactory>();
             _convertibleFactory = Substitute.For<IConvertibleFactory>();
 
-            var fixture = new Fixture();
+            _fixture = new Fixture();
             
-            _jsonSchema = new JsonSchema(Substitute.For<IJsonSchema>(), fixture.Create<object[]>(), 
-                fixture.Create<JsonType>() , fixture.Create<string>(), fixture.Create<bool>());
+            _jsonSchema = new JsonSchema(Substitute.For<IJsonSchema>(), _fixture.Create<object[]>(), 
+                _fixture.Create<JsonType>() , _fixture.Create<string>(), _fixture.Create<bool>());
             
             _thing = new FakeThing();
             
@@ -95,7 +96,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
                 .Returns(validation);
 
 
-            var result =_factory.Create(type, _jsonSchema, _thing, _setter, _getter);
+            var result = _factory.Create(type, _jsonSchema, _thing, _setter, _getter, _fixture.Create<string>());
             result.Should().NotBeNull();
             result.Should().BeAssignableTo<ThingProperty>();
             
@@ -167,7 +168,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
                 .Returns(convertible);
 
 
-            var result =_factory.Create(type, _jsonSchema, _thing, _setter, _getter);
+            var result =_factory.Create(type, _jsonSchema, _thing, _setter, _getter, _fixture.Create<string>());
             result.Should().NotBeNull();
             result.Should().BeAssignableTo<ThingProperty>();
             

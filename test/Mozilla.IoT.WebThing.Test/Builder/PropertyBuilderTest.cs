@@ -136,7 +136,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             public Action<object, object> Setter { get; private set; }
             public Func<object, object> Getter { get; private set; }
             public IThingProperty Create(Type propertyType, JsonSchema jsonSchema, Thing thing, Action<object, object> setter, 
-                Func<object, object> getter)
+                Func<object, object> getter, string originPropertyName)
             {
                 JsonSchema = jsonSchema;
                 Setter = setter;

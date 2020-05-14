@@ -34,11 +34,17 @@ namespace Mozilla.IoT.WebThing
         /// <param name="jsonSchemaValidation"></param>
         /// <param name="convertible"></param>
         /// <param name="jsonConvertible"></param>
+        /// <param name="originPropertyName"></param>
         public ThingProperty(Thing thing, bool isReadOnly, bool isWriteOnly, 
             Func<Thing, object?> getter, Action<Thing, object?>? setter, 
             IJsonSchemaValidation? jsonSchemaValidation, IJsonConvertible? jsonConvertible, 
-            IConvertible? convertible)
+            IConvertible? convertible, string originPropertyName)
         {
+            if (originPropertyName == null)
+            {
+                throw new ArgumentNullException(nameof(originPropertyName));
+            }
+
             _thing = thing ?? throw new ArgumentNullException(nameof(thing));
 
             _isReadOnly = isReadOnly;
@@ -69,13 +75,13 @@ namespace Mozilla.IoT.WebThing
             _jsonSchemaValidation = jsonSchemaValidation;
             _jsonConvertible = jsonConvertible;
             _convertible = convertible;
+            OriginPropertyName = originPropertyName;
         }
-        
-        /// <summary>
-        /// Try get value. it only can get value if property is write-only
-        /// </summary>
-        /// <param name="value">The result value</param>
-        /// <returns>The if could get value</returns>
+
+        /// <inheritdoc />
+        public string OriginPropertyName { get; }
+
+        /// <inheritdoc />
         public bool TryGetValue([MaybeNull]out object? value)
         {
             if (_isWriteOnly)
@@ -88,11 +94,7 @@ namespace Mozilla.IoT.WebThing
             return true;
         }
 
-        /// <summary>
-        /// Try set value
-        /// </summary>
-        /// <param name="value">Value to be set. This value should be <see cref="System.Text.Json.JsonElement"/></param>
-        /// <returns>The <see cref="SetPropertyResult"/>.</returns>
+        /// <inheritdoc />
         public SetPropertyResult TrySetValue(object value)
         {
             if (_isReadOnly)

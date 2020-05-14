@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
@@ -54,19 +55,19 @@ namespace Mozilla.IoT.WebThing.WebSockets
         
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
         {
-            var data = _thing.ThingContext.Properties[property.PropertyName];
+            var data = _thing.ThingContext
+                .Properties.First(x => x.Key == property.PropertyName);
+            
             _logger.LogInformation("Property changed, going to notify via Web Socket. [Property: {propertyName}]", property.PropertyName);
-            if (!data.TryGetValue(out var value))
+            
+            if (!data.Value.TryGetValue(out var value))
             {
+                _logger.LogInformation("Property is write only, not going to notify via Web Socket. [Property: {propertyName}]", property.PropertyName);
                 return;
             }
             
             var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
-                    new Dictionary<string, object?>
-                    {
-                        [_options.GetPropertyName(property.PropertyName)] = value
-                    }),
-                _options);
+                    new Dictionary<string, object?> {[data.Key] = value}), _options);
             
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);

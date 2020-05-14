@@ -59,14 +59,14 @@ namespace Mozilla.IoT.WebThing.Builders
             {
                 _properties.Add(propertyName, 
                     new ThingProperty(_thing, jsonSchema.IsReadOnly.GetValueOrDefault(), jsonSchema.IsWriteOnly.GetValueOrDefault(), 
-                        getter, null, null, null, null));
+                        getter, null, null, null, null, property.Name));
                 return;
             }
             
             var setter = GetSetMethod(property);
             
             _properties.Add(_option.PropertyNamingPolicy.ConvertName(jsonSchema.Name), 
-                _factory.Create(property.PropertyType, jsonSchema, _thing, setter, getter));
+                _factory.Create(property.PropertyType, jsonSchema, _thing, setter, getter, property.Name));
 
             static Func<object, object?> GetGetMethod(PropertyInfo property)
             {
