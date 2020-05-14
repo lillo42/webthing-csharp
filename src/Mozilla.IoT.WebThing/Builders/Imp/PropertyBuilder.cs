@@ -70,6 +70,11 @@ namespace Mozilla.IoT.WebThing.Builders
 
             static Func<object, object?> GetGetMethod(PropertyInfo property)
             {
+                if (!property.CanRead || !property.GetMethod.IsPublic)
+                {
+                    return _ => null;
+                }
+                
                 var instance = Expression.Parameter(typeof(object), "instance");
                 var instanceCast = property.DeclaringType!.IsValueType ? 
                     Expression.Convert(instance, property.DeclaringType) : Expression.TypeAs(instance, property.DeclaringType);
@@ -80,8 +85,9 @@ namespace Mozilla.IoT.WebThing.Builders
                 return Expression.Lambda<Func<object, object>>(typeAs, instance).Compile();
             }
             
-            static Action<object, object?> GetSetMethod(PropertyInfo property)
+            static Action<object, object?>? GetSetMethod(PropertyInfo property)
             {
+               
                 var instance = Expression.Parameter(typeof(object), "instance");
                 var value = Expression.Parameter(typeof(object), "value");
 

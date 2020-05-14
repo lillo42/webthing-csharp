@@ -21,6 +21,29 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Things
                 OnPropertyChanged();
             }
         }
+        
+        private bool _write = true;
+        [ThingProperty(IsWriteOnly = true)]
+        public bool Write
+        {
+            get => _write;
+            set
+            {
+                _write = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private bool _write2 = true;
+        public bool Write2
+        {
+            private get => _write2;
+            set
+            {
+                _write2 = value;
+                OnPropertyChanged();
+            }
+        }
 
         private string _someText = "";
 

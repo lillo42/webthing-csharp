@@ -56,9 +56,9 @@ namespace Microsoft.Extensions.DependencyInjection
             service.AddScoped(provider => provider.GetService<ThingObservableResolver>().Observer);
 
             service.AddHttpContextAccessor();
-            service.TryAddSingleton<IWebSocketAction, RequestAction>();
-            service.TryAddSingleton<IWebSocketAction, AddEventSubscription>();
-            service.TryAddSingleton<IWebSocketAction, SetThingProperty>();
+            service.AddSingleton<IWebSocketAction, RequestAction>();
+            service.AddSingleton<IWebSocketAction, AddEventSubscription>();
+            service.AddSingleton<IWebSocketAction, SetThingProperty>();
 
             service.TryAddTransient<IThingContextFactory, ThingContextFactory>();
             service.TryAddTransient<IThingResponseBuilder, ThingResponseBuilder>();

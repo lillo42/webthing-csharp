@@ -16,7 +16,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         private readonly ILogger<SetThingProperty> _logger;
 
         /// <summary>
-        /// Initialize a new instance of <see cref="RequestAction"/>.
+        /// Initialize a new instance of <see cref="SetThingProperty"/>.
         /// </summary>
         /// <param name="logger"></param>
         public SetThingProperty(ILogger<SetThingProperty> logger)
@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         public string Action => "setProperty";
 
         /// <inheritdoc/>
-        public ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data, 
+        public async ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data, 
             IServiceProvider provider, CancellationToken cancellationToken)
         {
             var option = provider.GetRequiredService<JsonSerializerOptions>();
@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         new WebSocketResponse("error", 
                             new ErrorResponse("404 Not found", "Property not found")), option);
 
-                    socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
+                    await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
                         .ConfigureAwait(false);
                 }
 
@@ -58,7 +58,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                             new WebSocketResponse("error",
                                 new ErrorResponse("400 Bad Request", "Invalid property value")), option);
 
-                        socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
+                        await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
                             .ConfigureAwait(false);
                         break;
                     }
@@ -71,7 +71,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                             new WebSocketResponse("error",
                                 new ErrorResponse("400 Bad Request", "Read-only property")), option);
 
-                        socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
+                        await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
                             .ConfigureAwait(false);
                         break;
                     }
@@ -81,8 +81,6 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         throw new ArgumentOutOfRangeException();
                 }
             }
-
-            return new ValueTask();
         }
     }
 }

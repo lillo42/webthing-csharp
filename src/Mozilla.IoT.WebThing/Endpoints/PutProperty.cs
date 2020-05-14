@@ -39,40 +39,37 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
-
-
+            
             var reader = service.GetRequiredService<IJsonReader>();
 
             var jsonProperties =  await reader.GetValuesAsync()
                 .ConfigureAwait(false);
-            foreach (var jsonProperty in jsonProperties)
+
+            if (jsonProperties.TryGetValue(propertyName, out var jsonValue))
             {
-                if (propertyName.Equals(jsonProperty.Key))
+                switch (property.TrySetValue(jsonValue!))
                 {
-                    switch (property.TrySetValue(jsonProperty.Value!))
-                    {
-                        case SetPropertyResult.InvalidValue:
-                            logger.LogInformation("Property with Invalid. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
-                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            return;
-                        case SetPropertyResult.ReadOnly:
-                            logger.LogInformation("Read-Only Property. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
-                            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            return;
-                        case SetPropertyResult.Ok:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                else
-                {
-                    logger.LogInformation("Invalid property. [Thing: {thingName}][Excepted property: {propertyName}][Actual property: {currentPropertyName}]", thing.Name, propertyName, jsonProperty.Key);
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    return;
+                    case SetPropertyResult.InvalidValue:
+                        logger.LogInformation("Property with Invalid. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        return;
+                    case SetPropertyResult.ReadOnly:
+                        logger.LogInformation("Read-Only Property. [Thing Name: {thingName}][Property Name: {propertyName}]", thing.Name, property);
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        return;
+                    case SetPropertyResult.Ok:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
-            
+            else
+            {
+                logger.LogInformation("Invalid property name. [Thing: {thingName}][Excepted property: {propertyName}]", thing.Name, propertyName);
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return;
+            }
+
             context.StatusCodeResult(HttpStatusCode.OK);
             
             var writer = service.GetRequiredService<IJsonWriter>();

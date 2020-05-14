@@ -26,6 +26,7 @@ namespace Mozilla.IoT.WebThing.Extensions
 
             bool isNullable;
             bool? isReadOnly = null;
+            bool? isWriteOnly = null;
 
             if (attribute is IJsonSchema jsonSchema)
             {
@@ -50,6 +51,16 @@ namespace Mozilla.IoT.WebThing.Extensions
                 {
                     isReadOnly = true;
                 }
+                
+                
+                if (jsonSchema.IsWriteOnly.HasValue)
+                {
+                    isWriteOnly = jsonSchema.IsWriteOnly.Value;
+                }
+                else if (!property.CanRead || !property.GetMethod!.IsPublic)
+                {
+                    isWriteOnly = true;
+                }
             }
             else
             {
@@ -59,10 +70,15 @@ namespace Mozilla.IoT.WebThing.Extensions
                 {
                     isReadOnly = true;
                 }
+                
+                if (!property.CanRead || !property.GetMethod!.IsPublic)
+                {
+                    isWriteOnly = true;
+                }
             }
             
             return new JsonSchema(attribute, GetEnums(propertyType, attribute?.Enum),
-                propertyType.ToJsonType(), propertyName, isNullable, isReadOnly);
+                propertyType.ToJsonType(), propertyName, isNullable, isReadOnly, isWriteOnly);
         }
         
         /// <summary>
