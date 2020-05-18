@@ -20,18 +20,15 @@ namespace Mozilla.IoT.WebThing
         /// <param name="events">The <see cref="Dictionary{TKey,TValue}"/> with events associated with thing.</param>
         /// <param name="actions">The <see cref="Dictionary{TKey,TValue}"/> with actions associated with thing.</param>
         /// <param name="properties">The <see cref="Dictionary{TKey,TValue}"/> with properties associated with thing.</param>
-        /// <param name="propertiesMap"></param>
         public ThingContext(Dictionary<string, object?> response, 
             Dictionary<string, EventCollection> events,
             Dictionary<string, ActionCollection> actions, 
-            Dictionary<string, IThingProperty> properties, 
-            Dictionary<string, string> propertiesMap)
+            Dictionary<string, IThingProperty> properties)
         {
             Response = response ?? throw new ArgumentNullException(nameof(response));
             Events = events ?? throw new ArgumentNullException(nameof(events));
             Actions = actions ?? throw new ArgumentNullException(nameof(actions));
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
-            PropertiesMap = propertiesMap ?? throw new ArgumentNullException(nameof(propertiesMap));
         }
 
         /// <summary>
@@ -43,11 +40,6 @@ namespace Mozilla.IoT.WebThing
         /// The properties associated with thing.
         /// </summary>
         public Dictionary<string, IThingProperty> Properties { get; }
-        
-        /// <summary>
-        /// The properties associated with thing.
-        /// </summary>
-        public Dictionary<string, string> PropertiesMap { get; }
         
         /// <summary>
         /// The events associated with thing.

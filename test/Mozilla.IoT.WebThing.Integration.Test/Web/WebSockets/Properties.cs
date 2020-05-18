@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,19 +10,18 @@ using Xunit;
 
 namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
 {
-    public class Properties : IDisposable
+    public class Properties : IClassFixture<TestHost>
     {
         private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
         private readonly Uri _baseUrl;
 
-        private WebSocket _socket;
         private readonly WebSocketClient _socketClient;
         private readonly Fixture _fixture;
 
-        public Properties()
+        public Properties(TestHost testHost)
         {
             _fixture = new Fixture();
-            var host = HostFactory.CreateHost().GetAwaiter().GetResult();
+            var host = testHost.Host;
             _baseUrl = new UriBuilder(host.GetTestServer().BaseAddress) {Scheme = "ws", Path = "/things/web-socket-property-thing/"}.Uri;
             _socketClient = host.GetTestServer().CreateWebSocketClient();
         }
@@ -47,12 +45,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 }
             };
             
-            _socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
-            _socket.State.Should().Be(WebSocketState.Open);
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
             
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
-            await _socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
             
             var counter = 0;
             do
@@ -63,7 +61,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 try
                 {
                     var array = new ArraySegment<byte>(new byte[4096]);
-                    var result =  await _socket.ReceiveAsync(array, source.Token);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
                     var json = Serializer.Deserialize(array, result);
                     json["messageType"].Value<string>().Should().Be("propertyStatus");
                     json["data"].Type.Should().Be(JTokenType.Object);
@@ -71,13 +69,15 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                     json["data"]["text"].Value<string>().Should().Be(value);
                     break;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     counter++;
                 }
             } while (counter <= 3);
 
             counter.Should().BeLessOrEqualTo(3);
+
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
 
         [Theory] 
@@ -98,12 +98,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 }
             };
             
-            _socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
-            _socket.State.Should().Be(WebSocketState.Open);
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
             
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
-            await _socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
             
             var counter = 0;
             do
@@ -114,7 +114,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 try
                 {
                     var array = new ArraySegment<byte>(new byte[4096]);
-                    var result =  await _socket.ReceiveAsync(array, source.Token);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
                     var json = Serializer.Deserialize(array, result);
                     json["messageType"].Value<string>().Should().Be("propertyStatus");
                     json["data"].Type.Should().Be(JTokenType.Object);
@@ -122,13 +122,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                     json["data"]["level"].Value<int>().Should().Be(value);
                     break;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     counter++;
                 }
             } while (counter <= 3);
 
             counter.Should().BeLessOrEqualTo(3);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
         
         [Fact]
@@ -148,12 +149,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 }
             };
             
-            _socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
-            _socket.State.Should().Be(WebSocketState.Open);
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
             
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
-            await _socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
             
             var counter = 0;
             do
@@ -164,21 +165,22 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 try
                 {
                     var array = new ArraySegment<byte>(new byte[4096]);
-                    var result =  await _socket.ReceiveAsync(array, source.Token);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
                     var json = Serializer.Deserialize(array, result);
                     json["messageType"].Value<string>().Should().Be("propertyStatus");
                     json["data"].Type.Should().Be(JTokenType.Object);
                     json["data"]["extraInformation"].Type.Should().Be(JTokenType.Array);
-                    json["data"]["extraInformation"].Value<string[]>().Should().BeEquivalentTo(value);
+                    json["data"]["extraInformation"].Values<string>().Should().BeEquivalentTo(value);
                     break;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     counter++;
                 }
             } while (counter <= 3);
 
             counter.Should().BeLessOrEqualTo(3);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
 
         [Fact]
@@ -198,37 +200,13 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 }
             };
             
-            _socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
-            _socket.State.Should().Be(WebSocketState.Open);
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
             
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
-            await _socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
-            
-            var counter = 0;
-            do
-            {
-                source = new CancellationTokenSource();
-                source.CancelAfter(s_timeout);
-
-                try
-                {
-                    var array = new ArraySegment<byte>(new byte[4096]);
-                    var result =  await _socket.ReceiveAsync(array, source.Token);
-                    var json = Serializer.Deserialize(array, result);
-                    json["messageType"].Value<string>().Should().Be("propertyStatus");
-                    json["data"].Type.Should().Be(JTokenType.Object);
-                    json["data"]["write"].Type.Should().Be(JTokenType.Boolean);
-                    json["data"]["write"].Value<bool>().Should().Be(value);
-                    break;
-                }
-                catch (Exception)
-                {
-                    counter++;
-                }
-            } while (counter <= 3);
-
-            counter.Should().BeLessOrEqualTo(3);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
         
         [Fact]
@@ -248,43 +226,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 }
             };
             
-            _socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
-            _socket.State.Should().Be(WebSocketState.Open);
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
             
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
-            await _socket.SendAsync(Serializer.Serialize(value), WebSocketMessageType.Text, true, source.Token);
-            
-            var counter = 0;
-            do
-            {
-                source = new CancellationTokenSource();
-                source.CancelAfter(s_timeout);
-
-                try
-                {
-                    var array = new ArraySegment<byte>(new byte[4096]);
-                    var result =  await _socket.ReceiveAsync(array, source.Token);
-                    var json = Serializer.Deserialize(array, result);
-                    json["messageType"].Value<string>().Should().Be("propertyStatus");
-                    json["data"].Type.Should().Be(JTokenType.Object);
-                    json["data"]["write2"].Type.Should().Be(JTokenType.Boolean);
-                    json["data"]["write2"].Value<bool>().Should().Be(value);
-                    break;
-                }
-                catch (Exception e)
-                {
-                    counter++;
-                }
-            } while (counter > 3);
-
-            counter.Should().BeLessOrEqualTo(3);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
         #endregion
-
-        public void Dispose()
-        {
-            _socket?.Dispose();
-        }
     }
 }

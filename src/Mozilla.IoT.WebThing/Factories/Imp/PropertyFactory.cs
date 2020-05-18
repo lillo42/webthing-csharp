@@ -28,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Factories
 
         /// <inheritdoc />
         public IThingProperty Create(Type propertyType, JsonSchema jsonSchema, Thing thing,
-            Action<object, object?> setter, Func<object, object?> getter, string originPropertyName)
+            Action<object, object?>? setter, Func<object, object?> getter, string originPropertyName)
         {
             propertyType = propertyType.GetUnderlyingType();
             var code = propertyType.ToTypeCode();

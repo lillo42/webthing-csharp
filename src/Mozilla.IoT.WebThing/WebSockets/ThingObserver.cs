@@ -52,23 +52,34 @@ namespace Mozilla.IoT.WebThing.WebSockets
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }
-        
+
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
         {
-            var data = _thing.ThingContext
-                .Properties.First(x => x.Key == property.PropertyName);
-            
-            _logger.LogInformation("Property changed, going to notify via Web Socket. [Property: {propertyName}]", property.PropertyName);
-            
-            if (!data.Value.TryGetValue(out var value))
+            var (propertyName, propertyValue) = _thing.ThingContext
+                .Properties.First(x => x.Value.OriginPropertyName.Equals(property.PropertyName));
+
+            _logger.LogInformation("Property changed, going to notify via Web Socket. [Property: {propertyName}]",
+                property.PropertyName);
+
+            if (!propertyValue.TryGetValue(out var value))
             {
-                _logger.LogInformation("Property is write only, not going to notify via Web Socket. [Property: {propertyName}]", property.PropertyName);
+                _logger.LogInformation(
+                    "Property is write only, not going to notify via Web Socket. [Property: {propertyName}]",
+                    property.PropertyName);
                 return;
             }
-            
-            var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus", 
-                    new Dictionary<string, object?> {[data.Key] = value}), _options);
-            
+
+            var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("propertyStatus",
+                new Dictionary<string, object?> {[propertyName] = value}), _options);
+
+            if (_socket.State != WebSocketState.Open || _socket.CloseStatus.HasValue)
+            {
+                _logger.LogInformation(
+                    "The Web Socket is not open. [Property: {propertyName}]",
+                    property.PropertyName);
+                return;
+            }
+
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }

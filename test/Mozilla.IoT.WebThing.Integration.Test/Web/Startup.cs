@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebSockets;
@@ -14,7 +15,10 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web
                 .AddThing<PropertyThing>()
                 .AddThing<WebSocketPropertyThing>();
             
-            services.AddWebSockets(_ => { });
+            services.AddWebSockets(opt =>
+            {
+                opt.KeepAliveInterval = TimeSpan.FromSeconds(2);
+            });
         }
         
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

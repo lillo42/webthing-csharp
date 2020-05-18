@@ -70,7 +70,7 @@ namespace Mozilla.IoT.WebThing.Builders
 
             static Func<object, object?> GetGetMethod(PropertyInfo property)
             {
-                if (!property.CanRead || !property.GetMethod.IsPublic)
+                if (!property.CanRead || !property.GetMethod!.IsPublic)
                 {
                     return _ => null;
                 }

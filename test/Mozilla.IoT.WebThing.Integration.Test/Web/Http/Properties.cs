@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
 {
-    public class Properties
+    public class Properties : IClassFixture<TestHost>
     {
         private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
         private const string s_baseUrl = "/things/property-thing/properties";
@@ -19,11 +19,11 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
         private readonly HttpClient _client;
         private readonly Fixture _fixture;
 
-        public Properties()
+        public Properties(TestHost testHost)
         {
             _fixture = new Fixture();
 
-            var host = HostFactory.CreateHost().GetAwaiter().GetResult();
+            var host = testHost.Host;
             _client = host.GetTestClient();
         }
 

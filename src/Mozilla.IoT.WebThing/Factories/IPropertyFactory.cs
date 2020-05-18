@@ -19,6 +19,6 @@ namespace Mozilla.IoT.WebThing.Factories
         /// <param name="originPropertyName"></param>
         /// <returns>New instance of <see cref="ThingProperty"/>.</returns>
         IThingProperty Create(Type propertyType, JsonSchema jsonSchema, Thing thing, 
-            Action<object, object?> setter, Func<object, object?> getter, string originPropertyName);
+            Action<object, object?>? setter, Func<object, object?> getter, string originPropertyName);
     }
 }
