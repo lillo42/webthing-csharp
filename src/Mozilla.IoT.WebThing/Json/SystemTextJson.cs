@@ -1,84 +1,49 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Json
 {
     /// <summary>
-    /// Implementation of <see cref="IJsonReader"/> for System.Text.Json
+    /// Implementation of <see cref="IJsonConvert"/> for System.Text.Json
     /// </summary>
-    public class SystemTextJson : IJsonReader, IJsonWriter
+    public class SystemTextJson : IJsonConvert
     {
-        private readonly JsonSerializerOptions _options;
-        private readonly IHttpContextAccessor _context;
+        private readonly ThingOption _options;
 
         /// <summary>
         /// Initialize a new instance of <see cref="SystemTextJson"/>.
         /// </summary>
-        /// <param name="context">The <see cref="IHttpContextAccessor"/>.</param>
-        /// <param name="options">The <see cref="JsonSerializerOptions"/>.</param>
-        public SystemTextJson(IHttpContextAccessor context, JsonSerializerOptions options)
+        /// <param name="options">The <see cref="ThingOption"/>.</param>
+        public SystemTextJson(ThingOption options)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         /// <inheritdoc/>
-        public async Task<Dictionary<string, object?>> GetValuesAsync()
+        public T Deserialize<T>(ReadOnlySpan<byte> values)
         {
-            var context = _context.HttpContext;
-            
-            var reader = context.Request.BodyReader;
-            var cancellationToken = _context.HttpContext.RequestAborted;
-            Dictionary<string, object?> result = default!;
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var readResult = await reader.ReadAsync(cancellationToken)
-                    .ConfigureAwait(false);
-
-                var buffer = readResult.Buffer;
-                var position = buffer.PositionOf((byte)'}');
-                if (position != null)
-                {
-                    if (buffer.IsSingleSegment)
-                    {
-                        result = JsonSerializer.Deserialize<Dictionary<string, object?>>(buffer.FirstSpan, _options);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException();
-                    }
-                }
-
-                reader.AdvanceTo(buffer.Start, buffer.End);
-
-                if (readResult.IsCompleted)
-                {
-                    break;
-                }
-            }
-            
-            return result;
+            return JsonSerializer.Deserialize<T>(values, _options.ToJsonSerializerOptions());
         }
 
         /// <inheritdoc/>
-        public async Task WriteAsync<T>(T value)
+        public byte[] Serialize<T>(T value)
         {
-            var context = _context.HttpContext;
-            var cancellationToken = _context.HttpContext.RequestAborted;
-            
-            if (value != null)
+            return JsonSerializer.SerializeToUtf8Bytes(value, _options.ToJsonSerializerOptions());
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<KeyValuePair<string, object>> ToEnumerable(object data)
+        {
+            if (!(data is JsonElement element))
             {
-                var buffer = JsonSerializer.SerializeToUtf8Bytes(value, value.GetType(), _options);
+                yield break;
+            }
 
-                await context.Response.BodyWriter.WriteAsync(buffer, cancellationToken)
-                    .ConfigureAwait(false);
-
-                await context.Response.BodyWriter.FlushAsync(cancellationToken)
-                    .ConfigureAwait(false);
+            foreach (var property in element.EnumerateObject())
+            {
+                yield return new KeyValuePair<string, object>(property.Name, property.Value);
             }
         }
     }

@@ -19,7 +19,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             
             var name = context.GetRouteData<string>("name");
-            logger.LogInformation("Requesting Thing. [Name: {name}]", name);
+            logger.LogInformation("Requesting to change property value. [Name: {name}]", name);
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
@@ -40,10 +40,11 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            var reader = service.GetRequiredService<IJsonReader>();
+            var converter = service.GetRequiredService<IJsonConvert>();
 
-            var jsonProperties =  await reader.GetValuesAsync()
-                .ConfigureAwait(false);
+            var jsonProperties =  converter
+                .Deserialize<Dictionary<string, object>>(await context.GetBody()
+                    .ConfigureAwait(false));
 
             if (jsonProperties.TryGetValue(propertyName, out var jsonValue))
             {
@@ -70,11 +71,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
 
-            context.StatusCodeResult(HttpStatusCode.OK);
-            
-            var writer = service.GetRequiredService<IJsonWriter>();
             property.TryGetValue(out var value);
-            await writer.WriteAsync(new Dictionary<string, object?> {[propertyName] = value})
+            await context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object?> {[propertyName] = value})
                 .ConfigureAwait(false);
         }
     }

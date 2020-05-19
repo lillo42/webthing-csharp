@@ -29,17 +29,19 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return;
             }
             
-            var reader = service.GetRequiredService<IJsonReader>();
-            var jsonActions = await reader.GetValuesAsync().ConfigureAwait(false);
+            var converter = service.GetRequiredService<IJsonConvert>();
+            var receivedAction = converter
+                .Deserialize<Dictionary<string, object>>(await context.GetBody()
+                    .ConfigureAwait(false));
 
-            if (jsonActions.Count != 1)
+            if (receivedAction.Count != 1)
             {
                 logger.LogInformation("accepted only 1 action by executing. [Thing: {thingName}]", thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
 
-            var (actionName, actionValue) = jsonActions.First();
+            var (actionName, actionValue) = receivedAction.First();
             
             if (!thing.ThingContext.Actions.TryGetValue(actionName, out var action))
             {
@@ -64,7 +66,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", actionInformation.GetActionName(), thingName);
               _ = actionInformation.ExecuteAsync(thing, service).ConfigureAwait(false);
               
-            await context.WriteBodyAsync(HttpStatusCode.Created, actionInformation, option)
+            await context.WriteBodyAsync(HttpStatusCode.Created, actionInformation)
                 .ConfigureAwait(false);
         }
     }

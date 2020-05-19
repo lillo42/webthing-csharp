@@ -36,26 +36,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             service.AddSingleton(thingOption);
 
-            service.TryAddSingleton(provider =>
-            {
-                var opt = provider.GetRequiredService<ThingOption>();
-                return new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = opt.PropertyNamingPolicy,
-                    DictionaryKeyPolicy = opt.PropertyNamingPolicy,
-                    PropertyNameCaseInsensitive = opt.IgnoreCase,
-                    Converters =
-                    {
-                        new ActionStatusConverter()
-                    },
-                    IgnoreNullValues = true
-                };
-            });
-
             service.AddScoped<ThingObservableResolver>();
             service.AddScoped(provider => provider.GetService<ThingObservableResolver>().Observer);
 
-            service.AddHttpContextAccessor();
             service.AddSingleton<IWebSocketAction, RequestAction>();
             service.AddSingleton<IWebSocketAction, AddEventSubscription>();
             service.AddSingleton<IWebSocketAction, SetThingProperty>();
@@ -68,25 +51,12 @@ namespace Microsoft.Extensions.DependencyInjection
             
             service.TryAddSingleton<IPropertyFactory, PropertyFactory>();
 
-            service.TryAddScoped<SystemTextJson>();
-            service.TryAddScoped<IJsonReader>(provider => provider.GetRequiredService<SystemTextJson>());
-            service.TryAddScoped<IJsonWriter>(provider => provider.GetRequiredService<SystemTextJson>());
+            service.TryAddSingleton<SystemTextJson>();
+            service.TryAddSingleton<IJsonConvert>(provider => provider.GetRequiredService<SystemTextJson>());
 
             service.TryAddScoped<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
             service.TryAddScoped<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
             service.TryAddScoped<IConvertibleFactory, ConvertibleFactory>();
-
-
-            service.AddSingleton(provider =>
-            {
-                var opt = provider.GetRequiredService<ThingOption>();
-                var actions = provider.GetRequiredService<IEnumerable<IWebSocketAction>>();
-
-                return actions.ToDictionary(
-                    x => x.Action,
-                    x => x,
-                    opt.IgnoreCase ? StringComparer.InvariantCultureIgnoreCase : null);
-            });
 
             var builder = new ThingCollectionBuilder(service);
             return builder;

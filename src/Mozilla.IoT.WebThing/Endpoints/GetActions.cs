@@ -42,7 +42,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             }
 
             logger.LogInformation("Found {counter} Actions. [Thing: {name}]", result.Count, thingName);
-            await context.WriteBodyAsync(HttpStatusCode.OK, result, option)
+            await context.WriteBodyAsync(HttpStatusCode.OK, result)
                 .ConfigureAwait(false);
         }
     }

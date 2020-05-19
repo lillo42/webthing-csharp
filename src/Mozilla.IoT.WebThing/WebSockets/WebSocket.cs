@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -62,17 +63,21 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     x => x);
 
             var jsonOptions = option.ToJsonSerializerOptions();
+            var converter = service.GetRequiredService<IJsonConvert>();
             
             var webSocketOption = service.GetRequiredService<IOptions<WebSocketOptions>>().Value;
             
-            var observer = new ThingObserver(service.GetRequiredService<ILogger<ThingObserver>>(),
-                jsonOptions, socket, cancellation, thing);
+            var observer = new ThingObserver(
+                socket,
+                service.GetRequiredService<IJsonConvert>(),
+                cancellation,
+                service.GetRequiredService<ILogger<ThingObserver>>());
 
+            BindActions(thing, observer);
+            BindPropertyChanged(thing, observer);
+            
             try
             {
-                BindActions(thing, observer);
-                BindPropertyChanged(thing, observer);
-
                 while (!socket.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
                 {
                     if (buffer != null)
@@ -88,53 +93,55 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
                     if (received.CloseStatus.HasValue)
                     {
-                        logger.LogInformation("Request to close socket. [Thing: {name}]", thing.Name);
+                        logger.LogInformation("Request by client to close socket. [Thing: {name}][Close status: {closeStatus}]", 
+                            thing.Name, received.CloseStatus);
                         continue;
                     }
 
-                    var messageTypeString = string.Empty;
+                    var messageType = string.Empty;
                     try
                     {
-                        var json = JsonSerializer.Deserialize<JsonElement>(segment.Slice(0, received.Count),
-                            jsonOptions);
+                        var command = converter.Deserialize<RequestCommand>(segment.Slice(0, received.Count));
 
-                        if (!json.TryGetProperty("messageType", out var messageType))
+                        messageType = command.MessageType;
+                        if (string.IsNullOrEmpty(command.MessageType))
                         {
                             logger.LogInformation("Web Socket request without messageType");
+                            
                             await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
                                 .ConfigureAwait(false);
                             continue;
                         }
 
-                        if (!json.TryGetProperty("data", out var data))
+                        if (command.Data == null)
                         {
-                            logger.LogInformation("Web Socket request without data. [Message Type: {messageType}]",
-                                messageType.GetString());
+                            logger.LogInformation("Web Socket request without data. [Message Type: {messageType}]", command.MessageType);
+                            
                             await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
                                 .ConfigureAwait(false);
                             continue;
                         }
-
-                        messageTypeString = messageType.GetString();
-                        if (!actions.TryGetValue(messageType.GetString(), out var action))
+                        
+                        if (!actions.TryGetValue(command.MessageType, out var action))
                         {
-                            logger.LogInformation("Invalid Message Type: {messageType}", messageType.GetString());
+                            logger.LogInformation("Invalid Message Type. [Message Type: {messageType}]", command.MessageType);
                             await socket.SendAsync(s_error, WebSocketMessageType.Text, true, cancellation)
                                 .ConfigureAwait(false);
                             continue;
                         }
 
                         using var scope = service.CreateScope();
+                        
                         scope.ServiceProvider.GetRequiredService<ThingObservableResolver>().Observer = observer;
-                        await action.ExecuteAsync(socket, thing, data, scope.ServiceProvider, cancellation)
+                        
+                        await action.ExecuteAsync(socket, thing, command.Data, scope.ServiceProvider, cancellation)
                             .ConfigureAwait(false);
 
-                        messageTypeString = string.Empty;
-
+                        messageType = string.Empty;
                     }
                     catch (Exception e)
                     {
-                        logger.LogError(e, "Error to execute Web Socket Action: {action}", messageTypeString);
+                        logger.LogError(e, "Error to execute Web Socket Action. [Message Type: {messageType}]", messageType);
                     }
                 }
                 
@@ -148,14 +155,14 @@ namespace Mozilla.IoT.WebThing.WebSockets
             }
             catch (OperationCanceledException)
             {
-                logger.LogInformation("Close connection by client");
+                logger.LogInformation("Close connection by client. [Thing: {name}]", thing.Name);
                 await socket
                     .CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by client", CancellationToken.None)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error to execute WebSocket, going to close connection");
+                logger.LogError(ex, "Error to execute WebSocket, going to close connection. [Thing: {name}]", thing.Name);
                 await socket
                         .CloseAsync(WebSocketCloseStatus.InternalServerError, ex.ToString(), CancellationToken.None)
                         .ConfigureAwait(false);

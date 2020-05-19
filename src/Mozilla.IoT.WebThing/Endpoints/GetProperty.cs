@@ -20,7 +20,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var name = context.GetRouteData<string>("name");
             
-            logger.LogInformation("Requesting Thing. [Thing: {name}]", name);
+            logger.LogInformation("Requesting get property. [Thing: {name}]", name);
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
@@ -47,10 +47,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 return Task.CompletedTask;
             }
             
-            context.StatusCodeResult(HttpStatusCode.OK);
-            
-            var writer = service.GetRequiredService<IJsonWriter>();
-            return writer.WriteAsync(new Dictionary<string, object?>
+            return context.WriteBodyAsync(HttpStatusCode.OK, new Dictionary<string, object?>
             {
                 [propertyName] = value
             });

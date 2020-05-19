@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
 {
     internal class GetProperties
     {
-        public static Task InvokeAsync(HttpContext context)
+        public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<GetProperties>>();
@@ -20,21 +20,20 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             var name = context.GetRouteData<string>("name");
             
-            logger.LogInformation("Requesting Thing. [Thing: {name}]", name);
+            logger.LogInformation("Requesting get all properties. [Thing: {name}]", name);
             var thing = things.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
                 logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
             }
             
-            logger.LogInformation("Found Thing with {counter} properties. [Thing: {name}]", thing.ThingContext.Properties.Count, thing.Name);
-            
+            logger.LogInformation("Going to get all properties [Thing: {name}]", name);
+
             var properties = new Dictionary<string, object?>();
             
-            foreach (var (propertyName, property) in thing.ThingContext.Properties)
+            foreach (var (propertyName, property) in thing!.ThingContext.Properties)
             {
                 if (property.TryGetValue(out var value))
                 {
@@ -42,9 +41,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                 }
             }
             
-            context.StatusCodeResult(HttpStatusCode.OK);
-            var writer = service.GetRequiredService<IJsonWriter>();
-            return writer.WriteAsync(properties);
+            await context.WriteBodyAsync(HttpStatusCode.OK, properties)
+                .ConfigureAwait(false);
         }
     }
 }

@@ -1,10 +1,7 @@
 using System;
-using System.Net.WebSockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Mozilla.IoT.WebThing.WebSockets
@@ -31,36 +28,36 @@ namespace Mozilla.IoT.WebThing.WebSockets
         public string Action => "requestAction";
 
         /// <inheritdoc/>
-        public ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data,
+        public ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, object data,
             IServiceProvider provider, CancellationToken cancellationToken)
         {
-            var option = provider.GetRequiredService<JsonSerializerOptions>();
-            foreach (var property in data.EnumerateObject())
-            {
-                if (!thing.ThingContext.Actions.TryGetValue(property.Name, out var actions))
-                {
-                    continue;
-                }
-
-                if (!actions.TryAdd(property.Value, out var action))
-                {
-                    _logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", property.Name, thing.Name);
-                    socket.SendAsync(s_errorMessage, WebSocketMessageType.Text, true, cancellationToken)
-                        .ConfigureAwait(false);
-                    continue;
-                }
-
-                action.Thing = thing;
-                
-                _logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", action.GetActionName(), thing.Name);
-                
-                var namePolicy = option.PropertyNamingPolicy;
-                action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(action.GetActionName())}/{action.GetId()}";
-                
-                action.ExecuteAsync(thing, provider)
-                    .ConfigureAwait(false);
-            }
-            
+            // var option = provider.GetRequiredService<JsonSerializerOptions>();
+            // foreach (var property in data.EnumerateObject())
+            // {
+            //     if (!thing.ThingContext.Actions.TryGetValue(property.Name, out var actions))
+            //     {
+            //         continue;
+            //     }
+            //
+            //     if (!actions.TryAdd(property.Value, out var action))
+            //     {
+            //         _logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", property.Name, thing.Name);
+            //         socket.SendAsync(s_errorMessage, WebSocketMessageType.Text, true, cancellationToken)
+            //             .ConfigureAwait(false);
+            //         continue;
+            //     }
+            //
+            //     action.Thing = thing;
+            //     
+            //     _logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", action.GetActionName(), thing.Name);
+            //     
+            //     var namePolicy = option.PropertyNamingPolicy;
+            //     action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(action.GetActionName())}/{action.GetId()}";
+            //     
+            //     action.ExecuteAsync(thing, provider)
+            //         .ConfigureAwait(false);
+            // }
+            //
             return new ValueTask();
         }
     }

@@ -1,10 +1,10 @@
 using System;
 using System.Net.WebSockets;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
@@ -28,36 +28,34 @@ namespace Mozilla.IoT.WebThing.WebSockets
         public string Action => "setProperty";
 
         /// <inheritdoc/>
-        public async ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data, 
+        public async ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, object data, 
             IServiceProvider provider, CancellationToken cancellationToken)
         {
-            var option = provider.GetRequiredService<JsonSerializerOptions>();
-
-            foreach (var jsonProperty in data.EnumerateObject())
+            var convert = provider.GetRequiredService<IJsonConvert>();
+            foreach (var (propertyName, value) in convert.ToEnumerable(data))
             {
-                if (!thing.ThingContext.Properties.TryGetValue(jsonProperty.Name, out var property))
+                if (!thing.ThingContext.Properties.TryGetValue(propertyName, out var property))
                 {
-                    _logger.LogInformation("Property not found. [Thing: {thing}][Property Name: {propertyName}]", thing.Name, jsonProperty.Name);
-                    var response = JsonSerializer.SerializeToUtf8Bytes(
-                        new WebSocketResponse("error", 
-                            new ErrorResponse("404 Not found", "Property not found")), option);
-
+                    _logger.LogInformation("Property not found. [Thing: {thing}][Property Name: {propertyName}]", 
+                        thing.Name, propertyName);
+                    var response = convert.Serialize(new WebSocketResponse("error",
+                        new ErrorResponse("404 Not found", $"{propertyName} property not found")));
+            
                     await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
                         .ConfigureAwait(false);
                 }
-
-                switch (property!.TrySetValue(jsonProperty.Value))
+            
+                switch (property!.TrySetValue(value))
                 {
                     case SetPropertyResult.InvalidValue:
                     {
                         _logger.LogInformation(
                             "Invalid property value. [Thing: {thing}][Property Name: {propertyName}]",
-                            thing.Name, jsonProperty.Name);
-
-                        var response = JsonSerializer.SerializeToUtf8Bytes(
-                            new WebSocketResponse("error",
-                                new ErrorResponse("400 Bad Request", "Invalid property value")), option);
-
+                            thing.Name, propertyName);
+            
+                        var response = convert.Serialize(new WebSocketResponse("error",
+                            new ErrorResponse("400 Bad Request", $"Invalid value for {propertyName} property.")));
+            
                         await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
                             .ConfigureAwait(false);
                         break;
@@ -65,12 +63,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     case SetPropertyResult.ReadOnly:
                     {
                         _logger.LogInformation("Read-only property. [Thing: {thing}][Property Name: {propertyName}]",
-                            thing.Name, jsonProperty.Name);
-
-                        var response = JsonSerializer.SerializeToUtf8Bytes(
-                            new WebSocketResponse("error",
-                                new ErrorResponse("400 Bad Request", "Read-only property")), option);
-
+                            thing.Name, propertyName);
+            
+                        var response = convert.Serialize(new WebSocketResponse("error",
+                            new ErrorResponse("400 Bad Request", $"{propertyName} property is read-only")));
+            
                         await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken)
                             .ConfigureAwait(false);
                         break;
