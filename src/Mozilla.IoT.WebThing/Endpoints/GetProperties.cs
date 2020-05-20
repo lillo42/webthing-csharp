@@ -27,13 +27,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
             }
             
             logger.LogInformation("Going to get all properties [Thing: {name}]", name);
 
             var properties = new Dictionary<string, object?>();
             
-            foreach (var (propertyName, property) in thing!.ThingContext.Properties)
+            foreach (var (propertyName, property) in thing.ThingContext.Properties)
             {
                 if (property.TryGetValue(out var value))
                 {

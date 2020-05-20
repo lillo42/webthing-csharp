@@ -120,7 +120,6 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         }
 
                         using var scope = service.CreateScope();
-
                         await action.ExecuteAsync(socket, thing, command.Data, scope.ServiceProvider, cancellation)
                             .ConfigureAwait(false);
 
