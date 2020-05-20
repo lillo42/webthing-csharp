@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Factories;
+using Mozilla.IoT.WebThing.WebSockets;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
@@ -46,7 +47,11 @@ namespace Mozilla.IoT.WebThing.Extensions
             var factory = provider.GetRequiredService<IThingContextFactory>();
             
             thing.ThingContext = factory.Create(thing, option);
-            
+
+
+            var observer = provider.GetService<ThingObserver>();
+            thing.PropertyChanged += observer.OnPropertyChanged;
+
             return thing;
             
         }

@@ -11,23 +11,15 @@ using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
 {
-    
     internal class ThingObserver
     {
         private readonly ILogger<ThingObserver> _logger;
-        private readonly System.Net.WebSockets.WebSocket _socket;
         private readonly IJsonConvert _convert;
-        private readonly CancellationToken _cancellation;
         
-        public ThingObserver(
-            System.Net.WebSockets.WebSocket socket, 
-            IJsonConvert convert,
-            CancellationToken cancellation, 
+        public ThingObserver(IJsonConvert convert, 
             ILogger<ThingObserver> logger)
         {
-            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _convert = convert ?? throw new ArgumentNullException(nameof(convert));
-            _cancellation = cancellation;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
         
@@ -81,17 +73,21 @@ namespace Mozilla.IoT.WebThing.WebSockets
             var sent = _convert.Serialize(new WebSocketResponse("propertyStatus",
                 new Dictionary<string, object?> {[propertyName] = value}));
 
-            if (_socket.State != WebSocketState.Open || _socket.CloseStatus.HasValue)
-            {
-                _logger.LogInformation("The Web Socket is not open or was requested to close. [Property: {propertyName}][Thing: {thingName}]",
-                    property.PropertyName, thing.Name);
-                return;
-            }
-            
             _logger.LogInformation("Going to notify property change via Web Socket. [Property: {propertyName}][Thing: {thingName}]",
                 property.PropertyName, thing.Name);
-            await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
-                .ConfigureAwait(false);
+
+            foreach (var (_, socket) in thing.ThingContext.Sockets.ToArray())
+            {
+                if (socket.State != WebSocketState.Open || socket.CloseStatus.HasValue)
+                {
+                    _logger.LogInformation("The Web Socket is not open or was requested to close. [Property: {propertyName}][Thing: {thingName}]",
+                        property.PropertyName, thing.Name);
+                    return;
+                }
+
+                await socket.SendAsync(sent, WebSocketMessageType.Text, true, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
         }
         
         public async void OnActionChange(object? sender, ThingActionInformation thingAction)

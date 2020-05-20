@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -24,6 +23,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
         private static readonly ArraySegment<byte> s_error = new ArraySegment<byte>(
             Encoding.UTF8.GetBytes(
                 @"{""messageType"": ""error"", ""data"": {""status"": ""400 Bad Request"",""message"": ""Invalid message""}}"));
+        
         public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
@@ -62,20 +62,9 @@ namespace Mozilla.IoT.WebThing.WebSockets
                 .ToDictionary(x => x.Action,
                     x => x);
 
-            var jsonOptions = option.ToJsonSerializerOptions();
             var converter = service.GetRequiredService<IJsonConvert>();
-            
             var webSocketOption = service.GetRequiredService<IOptions<WebSocketOptions>>().Value;
-            
-            var observer = new ThingObserver(
-                socket,
-                service.GetRequiredService<IJsonConvert>(),
-                cancellation,
-                service.GetRequiredService<ILogger<ThingObserver>>());
 
-            BindActions(thing, observer);
-            BindPropertyChanged(thing, observer);
-            
             try
             {
                 while (!socket.CloseStatus.HasValue && !cancellation.IsCancellationRequested)
@@ -131,9 +120,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         }
 
                         using var scope = service.CreateScope();
-                        
-                        scope.ServiceProvider.GetRequiredService<ThingObservableResolver>().Observer = observer;
-                        
+
                         await action.ExecuteAsync(socket, thing, command.Data, scope.ServiceProvider, cancellation)
                             .ConfigureAwait(false);
 
@@ -173,40 +160,6 @@ namespace Mozilla.IoT.WebThing.WebSockets
             if (buffer != null)
             {
                 s_pool.Return(buffer, true);
-            }
-
-            UnbindActions(thing, observer);
-            UnbindPropertyChanged(thing, observer);
-            UnbindEvent(thing, observer);
-        }
-
-        private static void BindActions(Thing thing, ThingObserver observer)
-        {
-            foreach (var (_, actionContext) in thing.ThingContext.Actions)
-            {
-                actionContext.Change += observer.OnActionChange;
-            }
-        }
-
-        private static void BindPropertyChanged(Thing thing, ThingObserver observer) 
-            => thing.PropertyChanged += observer.OnPropertyChanged;
-        
-        private static void UnbindActions(Thing thing, ThingObserver observer)
-        {
-            foreach (var (_, actionContext) in thing.ThingContext.Actions)
-            {
-                actionContext.Change -= observer.OnActionChange;
-            }
-        }
-        
-        private static void UnbindPropertyChanged(Thing thing, ThingObserver observer) 
-            => thing.PropertyChanged -= observer.OnPropertyChanged;
-        
-        private static void UnbindEvent(Thing thing, ThingObserver observer)
-        {
-            foreach (var @event in observer.EventsBind)
-            {
-                thing.ThingContext.Events[@event].Added -= observer.OnEvenAdded;
             }
         }
     }

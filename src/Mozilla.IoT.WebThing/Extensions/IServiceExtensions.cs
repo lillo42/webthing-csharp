@@ -35,10 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
             options?.Invoke(thingOption);
 
             service.AddSingleton(thingOption);
-
-            service.AddScoped<ThingObservableResolver>();
-            service.AddScoped(provider => provider.GetService<ThingObservableResolver>().Observer);
-
+            
             service.AddSingleton<IWebSocketAction, RequestAction>();
             service.AddSingleton<IWebSocketAction, AddEventSubscription>();
             service.AddSingleton<IWebSocketAction, SetThingPropertyWebSocketAction>();
@@ -53,6 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             service.TryAddSingleton<SystemTextJson>();
             service.TryAddSingleton<IJsonConvert>(provider => provider.GetRequiredService<SystemTextJson>());
+            service.TryAddSingleton<ThingObserver>();
 
             service.TryAddScoped<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
             service.TryAddScoped<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
@@ -63,8 +61,4 @@ namespace Microsoft.Extensions.DependencyInjection
         }
     }
 
-    internal class ThingObservableResolver
-    {
-        public ThingObserver? Observer { get; set; }
-    }
 }

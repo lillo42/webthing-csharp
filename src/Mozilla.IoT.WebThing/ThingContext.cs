@@ -11,7 +11,7 @@ namespace Mozilla.IoT.WebThing
     /// Represent property, event and action the thing have.
     /// This class is used to avoid reflection.
     /// </summary>
-    public class ThingContext
+    public readonly struct ThingContext
     {
         /// <summary>
         /// Initialize a new instance of <see cref="ThingContext"/>.
@@ -29,6 +29,7 @@ namespace Mozilla.IoT.WebThing
             Events = events ?? throw new ArgumentNullException(nameof(events));
             Actions = actions ?? throw new ArgumentNullException(nameof(actions));
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
+            Sockets = new ConcurrentDictionary<Guid, WebSocket>();
         }
 
         /// <summary>
@@ -54,6 +55,6 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The web sockets associated with thing.
         /// </summary>
-        public ConcurrentDictionary<Guid, WebSocket> Sockets { get; } = new ConcurrentDictionary<Guid, WebSocket>();
+        public ConcurrentDictionary<Guid, WebSocket> Sockets { get; }
     }
 }
