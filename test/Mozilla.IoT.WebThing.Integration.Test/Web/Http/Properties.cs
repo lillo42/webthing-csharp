@@ -51,7 +51,6 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
 
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
-
         
         [Fact]
         public async Task GetProperty_Should_ReturnNotFound_When_ThingNotFound()
@@ -97,7 +96,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
 
         #endregion
 
-        #region BadRequest
+        #region Bad Request
         [Theory]
         [InlineData("write")]
         [InlineData("write2")]

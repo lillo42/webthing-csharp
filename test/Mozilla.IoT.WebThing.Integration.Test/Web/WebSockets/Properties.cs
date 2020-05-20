@@ -12,6 +12,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
 {
     public class Properties : IClassFixture<TestHost>
     {
+        private const int retries = 3;
         private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
         private readonly Uri _baseUrl;
 
@@ -53,7 +54,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
             await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
             
             var counter = 0;
-            do
+            while(true)
             {
                 source = new CancellationTokenSource();
                 source.CancelAfter(s_timeout);
@@ -72,10 +73,13 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 catch (Exception)
                 {
                     counter++;
-                }
-            } while (counter <= 3);
 
-            counter.Should().BeLessOrEqualTo(3);
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
+                }
+            }
 
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
@@ -106,7 +110,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
             await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
             
             var counter = 0;
-            do
+            while(true)
             {
                 source = new CancellationTokenSource();
                 source.CancelAfter(s_timeout);
@@ -125,10 +129,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 catch (Exception)
                 {
                     counter++;
+                    
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
                 }
-            } while (counter <= 3);
+            }
 
-            counter.Should().BeLessOrEqualTo(3);
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
         
@@ -157,7 +165,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
             await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
             
             var counter = 0;
-            do
+            while(true)
             {
                 source = new CancellationTokenSource();
                 source.CancelAfter(s_timeout);
@@ -176,10 +184,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 catch (Exception)
                 {
                     counter++;
+                    
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
                 }
-            } while (counter <= 3);
-
-            counter.Should().BeLessOrEqualTo(3);
+            } 
+            
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
 
@@ -232,6 +244,340 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
             source = new CancellationTokenSource();
             source.CancelAfter(s_timeout);
             await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        }
+        #endregion
+
+        #region Not Found
+
+        [Fact]
+        public async Task SetThing_Should_ReturnNotFound_When_PropertyNotFound()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            
+            var value = _fixture.Create<string>();
+            var message = new WebSocketRequest
+            {
+                MessageType = "setProperty",
+                Data = new
+                {
+                    Abc = value
+                }
+            };
+            
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            
+            var counter = 0;
+            while (true)
+            {
+                source = new CancellationTokenSource();
+                source.CancelAfter(s_timeout);
+
+                try
+                {
+                    var array = new ArraySegment<byte>(new byte[4096]);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
+                    var json = Serializer.Deserialize(array, result);
+                    json["messageType"].Value<string>().Should().Be("error");
+                    json["data"].Type.Should().Be(JTokenType.Object);
+                    json["data"]["status"].Type.Should().Be(JTokenType.String);
+                    json["data"]["status"].Value<string>().Should().StartWith("404");
+                    break;
+                }
+                catch (Exception)
+                {
+                    counter++;
+
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        }
+
+        #endregion
+
+        #region Bad Request
+
+        [Fact]
+        public async Task SetThingSetModifyViaMethod_Should_ReturnBadRequest()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            
+            var value = _fixture.Create<bool>();
+            var message = new WebSocketRequest
+            {
+                MessageType = "setProperty",
+                Data = new
+                {
+                    modifyViaMethod = value
+                }
+            };
+            
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            
+            var counter = 0;
+            while (true)
+            {
+                source = new CancellationTokenSource();
+                source.CancelAfter(s_timeout);
+
+                try
+                {
+                    var array = new ArraySegment<byte>(new byte[4096]);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
+                    var json = Serializer.Deserialize(array, result);
+                    json["messageType"].Value<string>().Should().Be("error");
+                    json["data"].Type.Should().Be(JTokenType.Object);
+                    json["data"]["status"].Type.Should().Be(JTokenType.String);
+                    json["data"]["status"].Value<string>().Should().StartWith("400");
+                    break;
+                }
+                catch (Exception)
+                {
+                    counter++;
+
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task SetThingId_Should_ReturnBadRequest()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            
+            var value = _fixture.Create<Guid>();
+            var message = new WebSocketRequest
+            {
+                MessageType = "setProperty",
+                Data = new
+                {
+                    Id = value
+                }
+            };
+            
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            
+            var counter = 0;
+            while (true)
+            {
+                source = new CancellationTokenSource();
+                source.CancelAfter(s_timeout);
+
+                try
+                {
+                    var array = new ArraySegment<byte>(new byte[4096]);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
+                    var json = Serializer.Deserialize(array, result);
+                    json["messageType"].Value<string>().Should().Be("error");
+                    json["data"].Type.Should().Be(JTokenType.Object);
+                    json["data"]["status"].Type.Should().Be(JTokenType.String);
+                    json["data"]["status"].Value<string>().Should().StartWith("400");
+                    break;
+                }
+                catch (Exception)
+                {
+                    counter++;
+
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        }
+        
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(101)]
+        public async Task SetThingLevel_Should_ReturnBadRequest_When_ValueIsOutOfRange(int value)
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+
+            
+            var message = new WebSocketRequest
+            {
+                MessageType = "setProperty",
+                Data = new
+                {
+                    Level = value
+                }
+            };
+            
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            
+            var counter = 0;
+            while (true)
+            {
+                source = new CancellationTokenSource();
+                source.CancelAfter(s_timeout);
+
+                try
+                {
+                    var array = new ArraySegment<byte>(new byte[4096]);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
+                    var json = Serializer.Deserialize(array, result);
+                    json["messageType"].Value<string>().Should().Be("error");
+                    json["data"].Type.Should().Be(JTokenType.Object);
+                    json["data"]["status"].Type.Should().Be(JTokenType.String);
+                    json["data"]["status"].Value<string>().Should().StartWith("400");
+                    break;
+                }
+                catch (Exception)
+                {
+                    counter++;
+
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        }
+
+        [Fact]
+        public async Task SetThingSomeText_Should_ReturnBadRequest_When_TextIsNull()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var message = new WebSocketRequest
+            {
+                MessageType = "setProperty",
+                Data = new
+                {
+                    Text = (string)null
+                }
+            };
+            
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            
+            var counter = 0;
+            while (true)
+            {
+                source = new CancellationTokenSource();
+                source.CancelAfter(s_timeout);
+
+                try
+                {
+                    var array = new ArraySegment<byte>(new byte[4096]);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
+                    var json = Serializer.Deserialize(array, result);
+                    json["messageType"].Value<string>().Should().Be("error");
+                    json["data"].Type.Should().Be(JTokenType.Object);
+                    json["data"]["status"].Type.Should().Be(JTokenType.String);
+                    json["data"]["status"].Value<string>().Should().StartWith("400");
+                    break;
+                }
+                catch (Exception)
+                {
+                    counter++;
+
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        }
+        
+        [Fact]
+        public async Task SetThingExtraInformation_Should_ReturnBadRequest_When_ValueIsNotInEnum()
+        {
+            var source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            
+            var message = new WebSocketRequest
+            {
+                MessageType = "setProperty",
+                Data = new
+                {
+                    ExtraInformation = new[] { _fixture.Create<string>() }
+                }
+            };
+            
+            using var socket = await _socketClient.ConnectAsync(_baseUrl, source.Token);
+            socket.State.Should().Be(WebSocketState.Open);
+            
+            source = new CancellationTokenSource();
+            source.CancelAfter(s_timeout);
+            await socket.SendAsync(Serializer.Serialize(message), WebSocketMessageType.Text, true, source.Token);
+            
+            var counter = 0;
+            while (true)
+            {
+                source = new CancellationTokenSource();
+                source.CancelAfter(s_timeout);
+
+                try
+                {
+                    var array = new ArraySegment<byte>(new byte[4096]);
+                    var result =  await socket.ReceiveAsync(array, source.Token);
+                    var json = Serializer.Deserialize(array, result);
+                    json["messageType"].Value<string>().Should().Be("error");
+                    json["data"].Type.Should().Be(JTokenType.Object);
+                    json["data"]["status"].Type.Should().Be(JTokenType.String);
+                    json["data"]["status"].Value<string>().Should().StartWith("400");
+                    break;
+                }
+                catch (Exception)
+                {
+                    counter++;
+
+                    if (counter >= retries)
+                    {
+                        throw;
+                    }
+                }
+            }
+
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
         #endregion

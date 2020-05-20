@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Events;
-using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Json;
 
 namespace Mozilla.IoT.WebThing.WebSockets
@@ -57,6 +55,8 @@ namespace Mozilla.IoT.WebThing.WebSockets
         {
             if (!(sender is Thing thing))
             {
+                _logger.LogWarning("The sender is not a Thing, going to skip notify property changed. [Property: {propertyName}]",
+                    property.PropertyName);
                 return;
             }
             
@@ -69,14 +69,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     property.PropertyName, thing.Name);
                 return;
             }
-            
-            _logger.LogInformation("Property changed, going to notify via Web Socket. [Property: {propertyName}][Thing: {thingName}]",
-                property.PropertyName, thing.Name);
 
             if (!propertyValue.TryGetValue(out var value))
             {
                 _logger.LogInformation(
-                    "Property is write only, not going to notify via Web Socket. [Property: {propertyName}][Thing: {thingName}]",
+                    "Property is write only, not going to notify property change via Web Socket. [Property: {propertyName}][Thing: {thingName}]",
                     property.PropertyName, thing.Name);
                 return;
             }
@@ -86,11 +83,13 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
             if (_socket.State != WebSocketState.Open || _socket.CloseStatus.HasValue)
             {
-                _logger.LogInformation("The Web Socket is not open. [Property: {propertyName}][Thing: {thingName}]",
+                _logger.LogInformation("The Web Socket is not open or was requested to close. [Property: {propertyName}][Thing: {thingName}]",
                     property.PropertyName, thing.Name);
                 return;
             }
-
+            
+            _logger.LogInformation("Going to notify property change via Web Socket. [Property: {propertyName}][Thing: {thingName}]",
+                property.PropertyName, thing.Name);
             await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
                 .ConfigureAwait(false);
         }

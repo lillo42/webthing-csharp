@@ -11,15 +11,15 @@ namespace Mozilla.IoT.WebThing.WebSockets
     /// <summary>
     /// Set property value action.
     /// </summary>
-    public class SetThingProperty : IWebSocketAction
+    public class SetThingPropertyWebSocketAction : IWebSocketAction
     {
-        private readonly ILogger<SetThingProperty> _logger;
+        private readonly ILogger<SetThingPropertyWebSocketAction> _logger;
 
         /// <summary>
-        /// Initialize a new instance of <see cref="SetThingProperty"/>.
+        /// Initialize a new instance of <see cref="SetThingPropertyWebSocketAction"/>.
         /// </summary>
         /// <param name="logger"></param>
-        public SetThingProperty(ILogger<SetThingProperty> logger)
+        public SetThingPropertyWebSocketAction(ILogger<SetThingPropertyWebSocketAction> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -73,6 +73,9 @@ namespace Mozilla.IoT.WebThing.WebSockets
                         break;
                     }
                     case SetPropertyResult.Ok:
+                        _logger.LogInformation(
+                            "Set property value with success. [Thing: {thing}][Property Name: {propertyName}]",
+                            thing.Name, propertyName);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

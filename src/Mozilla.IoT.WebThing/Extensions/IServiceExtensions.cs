@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             service.AddSingleton<IWebSocketAction, RequestAction>();
             service.AddSingleton<IWebSocketAction, AddEventSubscription>();
-            service.AddSingleton<IWebSocketAction, SetThingProperty>();
+            service.AddSingleton<IWebSocketAction, SetThingPropertyWebSocketAction>();
 
             service.TryAddTransient<IThingContextFactory, ThingContextFactory>();
             service.TryAddTransient<IThingResponseBuilder, ThingResponseBuilder>();
