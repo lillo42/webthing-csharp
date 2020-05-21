@@ -92,19 +92,36 @@ namespace Mozilla.IoT.WebThing.WebSockets
         
         public async void OnActionChange(object? sender, ThingActionInformation thingAction)
         {
-            // if (sender == null)
-            // {
-            //     return;
-            // }
-            //
-            // _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {propertyName}][Status: {status}]", thingAction.GetActionName(), thingAction.Status);
-            // await _socket.SendAsync(
-            //         JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("actionStatus",new Dictionary<string, object>
-            //         {
-            //             [thingAction.GetActionName()] = thingAction
-            //         }), _options),
-            //         WebSocketMessageType.Text, true, _cancellation)
-            //     .ConfigureAwait(false);
+            if (thingAction.Thing == null)
+            {
+                _logger.LogWarning("Going to skip notify action changed. [Action: {actionName}]",
+                    thingAction.GetActionName());
+                return;
+            }
+
+            var thing = thingAction.Thing;
+            
+            _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Action: {actionName}][Status: {status}]", 
+                thingAction.GetActionName(), thingAction.Status);
+            
+            var sent = _convert.Serialize(new WebSocketResponse("actionStatus",
+                new Dictionary<string, object?>
+                {
+                    [thingAction.GetActionName()] = thingAction
+                }));
+            
+            foreach (var (_, socket) in thing.ThingContext.Sockets.ToArray())
+            {
+                if (socket.State != WebSocketState.Open || socket.CloseStatus.HasValue)
+                {
+                    _logger.LogInformation("The Web Socket is not open or was requested to close. [Action: {actionName}][Thing: {thingName}]",
+                        thingAction.GetActionName(), thing.Name);
+                    return;
+                }
+
+                await socket.SendAsync(sent, WebSocketMessageType.Text, true, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
         }
     }
 }

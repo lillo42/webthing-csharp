@@ -47,13 +47,17 @@ namespace Mozilla.IoT.WebThing.Extensions
             var factory = provider.GetRequiredService<IThingContextFactory>();
             
             thing.ThingContext = factory.Create(thing, option);
-
-
+            
             var observer = provider.GetService<ThingObserver>();
+            
             thing.PropertyChanged += observer.OnPropertyChanged;
 
+            foreach (var (_, action) in thing.ThingContext.Actions)
+            {
+                action.Change += observer.OnActionChange;
+            }
+
             return thing;
-            
         }
     }
 }

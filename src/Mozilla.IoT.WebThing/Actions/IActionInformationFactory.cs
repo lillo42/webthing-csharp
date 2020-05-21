@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Mozilla.IoT.WebThing.Convertibles;
 
 namespace Mozilla.IoT.WebThing.Actions
 {

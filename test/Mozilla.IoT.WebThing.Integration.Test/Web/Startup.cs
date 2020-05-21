@@ -13,7 +13,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web
         {
             services.AddThings()
                 .AddThing<PropertyThing>()
-                .AddThing<WebSocketPropertyThing>();
+                .AddThing<WebSocketPropertyThing>()
+                .AddThing<ActionThing>()
+                .AddThing<WebSocketActionThing>();
             
             services.AddWebSockets(opt =>
             {

@@ -18,13 +18,15 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<PostActions>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
+            
             var thingName = context.GetRouteData<string>("name");
-            logger.LogInformation("Requesting Thing. [Name: {name}]", thingName);
+            logger.LogInformation("Requesting Post Actions. [Thing: {name}]", thingName);
+            
             var thing = things.FirstOrDefault(x => x.Name.Equals(thingName, StringComparison.OrdinalIgnoreCase));
 
             if (thing == null)
             {
-                logger.LogInformation("Thing not found. [Name: {name}]", thingName);
+                logger.LogInformation("Thing not found. [Thing: {name}]", thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
@@ -36,7 +38,7 @@ namespace Mozilla.IoT.WebThing.Endpoints
 
             if (receivedAction.Count != 1)
             {
-                logger.LogInformation("accepted only 1 action by executing. [Thing: {thingName}]", thingName);
+                logger.LogInformation("Accepted only 1 action by executing. [Thing: {thingName}]", thingName);
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
@@ -45,28 +47,36 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             if (!thing.ThingContext.Actions.TryGetValue(actionName, out var action))
             {
-                logger.LogInformation("{actionName} Action not found in {thingName}", actionName, thingName);
+                logger.LogInformation("Action not found. [Thing: {name}][Action: {actionName}]", 
+                    thingName, actionName);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
 
             if (!action.TryAdd(actionValue!, out var actionInformation))
             {
-                logger.LogInformation("{actionName} Action has invalid parameters. [Name: {thingName}]", thingName);
+                logger.LogInformation("Action has invalid parameters. [Thing: {name}][Action: {actionName}]", 
+                    thingName, actionName);
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
             
-            var option = service.GetRequiredService<ThingOption>().ToJsonSerializerOptions();
+            var option = service.GetRequiredService<ThingOption>();
+            var namePolicy = option.PropertyNamingPolicy;
             
             actionInformation.Thing = thing;
-            var namePolicy = option.PropertyNamingPolicy;
             actionInformation.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionInformation.GetActionName())}/{actionInformation.GetId()}";
             
-            logger.LogInformation("Going to execute {actionName} action. [Name: {thingName}]", actionInformation.GetActionName(), thingName);
-              _ = actionInformation.ExecuteAsync(thing, service).ConfigureAwait(false);
+            logger.LogInformation("Going to execute action. [Thing: {name}][Action: {actionName}]", 
+                thingName, actionName);
+            
+              _ = actionInformation.ExecuteAsync(thing, service)
+                  .ConfigureAwait(false);
               
-            await context.WriteBodyAsync(HttpStatusCode.Created, actionInformation)
+            await context.WriteBodyAsync(HttpStatusCode.Created, new Dictionary<string, object>
+                {
+                    [namePolicy.ConvertName(actionName)] = actionInformation
+                })
                 .ConfigureAwait(false);
         }
     }

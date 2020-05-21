@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {

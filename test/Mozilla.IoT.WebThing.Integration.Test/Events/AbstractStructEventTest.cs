@@ -134,7 +134,17 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Events
 
             [ThingAction(Ignore = true)]
             public void Invoke(T value)
-                => Event?.Invoke(this, value);
+            {
+                try
+                {
+                    Event?.Invoke(this, value);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
 
             [ThingAction(Ignore = true)]
             public void Invoke(T? value)

@@ -1,7 +1,6 @@
 using System.Globalization;
 using AutoFixture;
 using FluentAssertions;
-using Mozilla.IoT.WebThing.Convertibles;
 using Mozilla.IoT.WebThing.Convertibles.Number;
 using Mozilla.IoT.WebThing.Factories;
 using Xunit;

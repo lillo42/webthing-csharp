@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using AutoFixture;
 using FluentAssertions;
-using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
