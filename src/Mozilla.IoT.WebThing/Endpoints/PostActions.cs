@@ -67,11 +67,10 @@ namespace Mozilla.IoT.WebThing.Endpoints
             actionInformation.Thing = thing;
             actionInformation.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionInformation.GetActionName())}/{actionInformation.GetId()}";
             
-            logger.LogInformation("Going to execute action. [Thing: {name}][Action: {actionName}]", 
-                thingName, actionName);
+            logger.LogInformation("Going to execute action. [Thing: {name}][Action: {actionName}][Action Id: {actionId}]", 
+                thingName, actionName, actionInformation.GetId());
             
-              _ = actionInformation.ExecuteAsync(thing, service)
-                  .ConfigureAwait(false);
+            _ = actionInformation.ExecuteAsync(thing, service).ConfigureAwait(false);
               
             await context.WriteBodyAsync(HttpStatusCode.Created, new Dictionary<string, object>
                 {

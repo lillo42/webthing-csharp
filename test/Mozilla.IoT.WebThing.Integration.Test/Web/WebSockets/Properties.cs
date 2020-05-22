@@ -12,7 +12,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
 {
     public class Properties : IClassFixture<TestHost>
     {
-        private const int retries = 3;
+        private const int s_retries = 3;
         private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
         private readonly Uri _baseUrl;
 
@@ -74,7 +74,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
 
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -130,7 +130,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
                     
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -185,7 +185,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
                     
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -295,7 +295,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
 
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -354,7 +354,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
 
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -409,7 +409,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
 
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -465,7 +465,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
 
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -518,7 +518,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
 
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
@@ -571,7 +571,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 {
                     counter++;
 
-                    if (counter >= retries)
+                    if (counter >= s_retries)
                     {
                         throw;
                     }
