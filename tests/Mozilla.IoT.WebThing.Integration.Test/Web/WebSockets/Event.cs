@@ -17,11 +17,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
         private readonly Uri _baseUrl;
 
         private readonly WebSocketClient _socketClient;
-        private readonly Fixture _fixture;
 
         public Event(TestHost testHost)
         {
-            _fixture = new Fixture();
             var host = testHost.Host;
             _baseUrl = new UriBuilder(host.GetTestServer().BaseAddress) {Scheme = "ws", Path = "/things/web-socket-event-thing/"}.Uri;
             _socketClient = host.GetTestServer().CreateWebSocketClient();

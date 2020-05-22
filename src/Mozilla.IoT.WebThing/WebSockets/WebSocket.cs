@@ -155,6 +155,10 @@ namespace Mozilla.IoT.WebThing.WebSockets
             }
 
             thing.ThingContext.Sockets.TryRemove(id, out _);
+            foreach (var (_, subscribes) in thing.ThingContext.EventsSubscribes)
+            {
+                subscribes.TryRemove(id, out _);
+            }
             
             if (buffer != null)
             {

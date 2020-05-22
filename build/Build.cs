@@ -22,8 +22,9 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [UnsetVisualStudioEnvironmentVariables]
 [AzurePipelines(
     AzurePipelinesImage.UbuntuLatest,
+    AutoGenerate = false,
     TriggerBranchesInclude = new[]{"master", "release-*"},
-    PullRequestsBranchesInclude = new[]{"master", "release-*"}, 
+    PullRequestsBranchesInclude = new[]{"master", "release-*"},
     InvokedTargets = new[] { nameof(Test), nameof(Publish) },
     NonEntryTargets = new[] { nameof(Restore) },
     ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
