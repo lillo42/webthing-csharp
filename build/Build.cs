@@ -22,7 +22,9 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [UnsetVisualStudioEnvironmentVariables]
 [AzurePipelines(
     AzurePipelinesImage.UbuntuLatest,
-    InvokedTargets = new[] { nameof(Test), nameof(Pack) },
+    TriggerBranchesInclude = new[]{"master", "release-*"},
+    PullRequestsBranchesInclude = new[]{"master", "release-*"}, 
+    InvokedTargets = new[] { nameof(Test), nameof(Publish) },
     NonEntryTargets = new[] { nameof(Restore) },
     ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
 )]
@@ -49,7 +51,13 @@ class Build : NukeBuild
     [GitRepository] readonly GitRepository GitRepository;
     [GitVersion] readonly GitVersion GitVersion;
     [CI] readonly AzurePipelines AzurePipelines;
+    
+    
+    IEnumerable<Project> TestProjects => Solution.GetProjects("*.Test");
 
+    AbsolutePath SourceDirectory => RootDirectory/ "src";
+    AbsolutePath TestsDirectory => RootDirectory / "tests";
+    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
     
     AbsolutePath PackageDirectory => ArtifactsDirectory / "packages";
     
@@ -57,12 +65,8 @@ class Build : NukeBuild
     
     string CoverageReportDirectory => ArtifactsDirectory / "coverage-report";
     string CoverageReportArchive => ArtifactsDirectory / "coverage-report.zip";
-    
-    IEnumerable<Project> TestProjects => Solution.GetProjects("*.Test");
 
-    AbsolutePath SourceDirectory => RootDirectory/ "src";
-    AbsolutePath TestsDirectory => RootDirectory / "tests";
-    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    const string ReleaseBranchPrefix = "release-";
 
     Target Clean => _ => _
         .Before(Restore)
@@ -176,7 +180,7 @@ class Build : NukeBuild
         .Consumes(Pack)
         .Requires(() => ApiKey)
         .Requires(() => Configuration.Equals(Configuration.Release))
-        .Requires(() => GitRepository.Branch.StartsWith("Release-"))
+        .Requires(() => GitRepository.Branch.StartsWith(ReleaseBranchPrefix))
         .Executes(() =>
         {
             DotNetNuGetPush(s => s
