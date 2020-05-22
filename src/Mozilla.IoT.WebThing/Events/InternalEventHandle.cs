@@ -3,7 +3,7 @@
     /// <summary>
     /// Handler all event
     /// </summary>
-    public static class EventHandle
+    public static class InternalEventHandle
     {
         /// <summary>
         /// Handle event and enqueue the event

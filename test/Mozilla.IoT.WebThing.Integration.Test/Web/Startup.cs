@@ -15,12 +15,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web
                 .AddThing<PropertyThing>()
                 .AddThing<WebSocketPropertyThing>()
                 .AddThing<ActionThing>()
-                .AddThing<WebSocketActionThing>();
+                .AddThing<WebSocketActionThing>()
+                .AddThing<EventThing>()
+                .AddThing<WebSocketEventThing>();
             
             services.AddWebSockets(opt =>
             {
                 opt.KeepAliveInterval = TimeSpan.FromSeconds(2);
             });
+
+            services.AddHostedService<FireEventService>();
         }
         
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

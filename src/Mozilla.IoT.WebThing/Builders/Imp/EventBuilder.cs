@@ -19,7 +19,7 @@ namespace Mozilla.IoT.WebThing.Builders
         private TypeBuilder? _builder;
         private Dictionary<string, EventCollection>? _events;
 
-        private static readonly MethodInfo s_handler = typeof(EventHandle).GetMethod(nameof(EventHandle.Handler))!;
+        private static readonly MethodInfo s_handler = typeof(InternalEventHandle).GetMethod(nameof(InternalEventHandle.Handler))!;
         
         
         /// <summary>
