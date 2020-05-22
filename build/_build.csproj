@@ -14,4 +14,10 @@
     <PackageDownload Include="GitVersion.Tool" Version="[5.1.1]" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="..\.github\workflows\build-master.yml" />
+    <None Remove="..\.github\workflows\pull-request.yml" />
+    <None Remove="..\.github\workflows\release.yml" />
+  </ItemGroup>
+
 </Project>

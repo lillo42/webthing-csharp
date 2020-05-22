@@ -20,13 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleThing", "sample\Sampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiThing", "sample\MultiThing\MultiThing.csproj", "{3CDFC9FB-F240-419A-800D-79C506CBDAE2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{425538CC-334D-4DB3-B529-48EA7CD778BF}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\pull-request.yml = .github\workflows\pull-request.yml
-		.github\workflows\build-master.yml = .github\workflows\build-master.yml
-		.github\workflows\release.yml = .github\workflows\release.yml
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{899614ED-D5AF-4168-9700-A8ABE60E9CF5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{AA0F03C5-EFB9-49B9-88C1-A738661A0E72}"
