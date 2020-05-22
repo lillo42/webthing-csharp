@@ -17,6 +17,7 @@ using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
+using static Nuke.Common.Logger;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
@@ -107,6 +108,8 @@ class Build : NukeBuild
         .Produces(TestResultDirectory / "*.xml")
         .Executes(() =>
         {
+            var noBuilder = InvokedTargets.Contains(Compile);
+            Normal($"Build was requested: {noBuilder}");
             DotNetTest(s => s
                 .SetProjectFile(Solution)
                 .SetNoBuild(InvokedTargets.Contains(Compile))
@@ -149,8 +152,7 @@ class Build : NukeBuild
                         AzurePipelinesCodeCoverageToolType.Cobertura,
                         x,
                         CoverageReportDirectory));
-
-
+                
                 CompressZip(
                     directory: CoverageReportDirectory,
                     archiveFile: CoverageReportArchive,
