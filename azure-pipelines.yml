@@ -21,20 +21,13 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
-      - job: Restore
-        displayName: 'Restore'
+      - job: Compile
+        displayName: 'Compile'
         dependsOn: [  ]
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Restore --skip'
-      - job: Compile
-        displayName: 'Compile'
-        dependsOn: [ Restore ]
-        steps:
-          - task: CmdLine@2
-            inputs:
-              script: './build.cmd Compile --skip'
+              script: './build.cmd Restore Compile --skip'
       - job: Test
         displayName: 'Test'
         dependsOn: [ Compile ]
@@ -46,17 +39,6 @@ stages:
             inputs:
               artifactName: test-results
               pathtoPublish: 'artifacts/test-results'
-      - job: Coverage
-        displayName: 'Coverage'
-        dependsOn: [ Test ]
-        steps:
-          - task: CmdLine@2
-            inputs:
-              script: './build.cmd Coverage --skip'
-          - task: PublishBuildArtifacts@1
-            inputs:
-              artifactName: coverage-report.zip
-              pathtoPublish: 'artifacts/coverage-report.zip'
       - job: Pack
         displayName: 'Pack'
         dependsOn: [ Compile, Test ]

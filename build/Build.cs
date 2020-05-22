@@ -22,7 +22,9 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [UnsetVisualStudioEnvironmentVariables]
 [AzurePipelines(
     AzurePipelinesImage.UbuntuLatest,
-    InvokedTargets = new [] {nameof(Test), nameof(Pack)}
+    InvokedTargets = new[] { nameof(Test), nameof(Pack) },
+    NonEntryTargets = new[] { nameof(Restore) },
+    ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
 )]
 class Build : NukeBuild
 {
