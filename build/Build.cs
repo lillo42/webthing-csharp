@@ -23,10 +23,9 @@ using static Nuke.Common.Logger;
 [UnsetVisualStudioEnvironmentVariables]
 [AzurePipelines(
     AzurePipelinesImage.UbuntuLatest,
-    AutoGenerate = false,
     TriggerBranchesInclude = new[]{"master", "release-*"},
     PullRequestsBranchesInclude = new[]{"master", "release-*"},
-    InvokedTargets = new[] { nameof(Test), nameof(Publish) },
+    InvokedTargets = new[] { nameof(Test), nameof(Pack) },
     NonEntryTargets = new[] { nameof(Restore) },
     ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
 )]
@@ -55,7 +54,8 @@ class Build : NukeBuild
     [CI] readonly AzurePipelines AzurePipelines;
     
     
-    IEnumerable<Project> TestProjects => Solution.GetProjects("*.Test");
+    [Partition(2)] readonly Partition TestPartition;
+    IEnumerable<Project> TestProjects => TestPartition.GetCurrent(Solution.GetProjects("*.Tests"));
 
     AbsolutePath SourceDirectory => RootDirectory/ "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
@@ -69,6 +69,7 @@ class Build : NukeBuild
     string CoverageReportArchive => ArtifactsDirectory / "coverage-report.zip";
 
     const string ReleaseBranchPrefix = "release-";
+    
 
     Target Clean => _ => _
         .Before(Restore)
@@ -106,12 +107,10 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .Produces(TestResultDirectory / "*.trx")
         .Produces(TestResultDirectory / "*.xml")
+        .Partition(() => TestPartition)
         .Executes(() =>
         {
-            var noBuilder = InvokedTargets.Contains(Compile);
-            Normal($"Build was requested: {noBuilder}");
             DotNetTest(s => s
-                .SetProjectFile(Solution)
                 .SetNoBuild(InvokedTargets.Contains(Compile))
                 .SetResultsDirectory(TestResultDirectory)
                 .SetConfiguration(Configuration)
