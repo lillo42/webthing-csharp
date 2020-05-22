@@ -20,8 +20,10 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
-[AzurePipelines(AzurePipelinesImage.UbuntuLatest,
-    AutoGenerate = true)]
+[AzurePipelines(
+    AzurePipelinesImage.UbuntuLatest,
+    InvokedTargets = new [] {nameof(Test), nameof(Pack)}
+)]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -44,6 +46,8 @@ class Build : NukeBuild
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
     [GitVersion] readonly GitVersion GitVersion;
+    [CI] readonly AzurePipelines AzurePipelines;
+
     
     AbsolutePath PackageDirectory => ArtifactsDirectory / "packages";
     
@@ -54,7 +58,7 @@ class Build : NukeBuild
     
     IEnumerable<Project> TestProjects => Solution.GetProjects("*.Test");
 
-    AbsolutePath SourceDirectory => RootDirectory / "src";
+    AbsolutePath SourceDirectory => RootDirectory/ "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
@@ -110,6 +114,12 @@ class Build : NukeBuild
                     .SetProjectFile(v)
                     .SetLogger($"trx;LogFileName={v.Name}.trx")
                     .SetCoverletOutput(TestResultDirectory / $"{v.Name}.xml")));
+            
+            TestResultDirectory.GlobFiles("*.trx").ForEach(x =>
+                AzurePipelines?.PublishTestResults(
+                    type: AzurePipelinesTestResultsType.XUnit,
+                    title: $"{Path.GetFileNameWithoutExtension(x)} ({AzurePipelines.StageDisplayName})",
+                    files: new string[] { x }));
         });
 
     Target Coverage => _ => _
@@ -126,6 +136,13 @@ class Build : NukeBuild
                     .SetReportTypes(ReportTypes.HtmlInline)
                     .SetTargetDirectory(CoverageReportDirectory)
                     .SetFramework("netcoreapp2.1"));
+                
+                TestResultDirectory.GlobFiles("*.xml").ForEach(x =>
+                    AzurePipelines?.PublishCodeCoverage(
+                        AzurePipelinesCodeCoverageToolType.Cobertura,
+                        x,
+                        CoverageReportDirectory));
+
 
                 CompressZip(
                     directory: CoverageReportDirectory,
@@ -157,6 +174,7 @@ class Build : NukeBuild
         .Consumes(Pack)
         .Requires(() => ApiKey)
         .Requires(() => Configuration.Equals(Configuration.Release))
+        .Requires(() => GitRepository.Branch.StartsWith("Release-"))
         .Executes(() =>
         {
             DotNetNuGetPush(s => s
