@@ -17,14 +17,14 @@ stages:
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Compile'
+              script: './build.sh Compile'
       - job: Test
         displayName: 'Test'
         dependsOn: [ Compile ]
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Test'
+              script: './build.sh Test'
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: test-results
@@ -35,7 +35,7 @@ stages:
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Pack'
+              script: './build.sh Pack'
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: packages
@@ -46,4 +46,4 @@ stages:
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Publish'
+              script: './build.sh Publish'
