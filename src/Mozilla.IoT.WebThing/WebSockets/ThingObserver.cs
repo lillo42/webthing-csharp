@@ -29,22 +29,42 @@ namespace Mozilla.IoT.WebThing.WebSockets
         
         public IEnumerable<string> EventsBind { get; } = new HashSet<string>();
         
-        public async void OnEvenAdded(object? sender, Event @event)
+        public async void OnEvenAdded(object? sender, EventAddedEventArgs args)
         {
-            // if (sender == null)
-            // {
-            //     return;
-            // }
-            //
-            // _logger.LogInformation("Event add received, going to notify Web Socket");
-            // var sent = JsonSerializer.SerializeToUtf8Bytes(new WebSocketResponse("event", 
-            //         new Dictionary<string, object?>
-            //         {
-            //             [sender.ToString()!] = @event
-            //         }), _options);
-            //
-            // await _socket.SendAsync(sent, WebSocketMessageType.Text, true, _cancellation)
-            //     .ConfigureAwait(false);
+            if (!(sender is Thing thing))
+            {
+                _logger.LogWarning("The sender is not a Thing, not going to notify.");
+                return;
+            }
+
+            if (thing.ThingContext.EventsSubscribes[args.EventName].IsEmpty)
+            {
+                _logger.LogTrace("No subscriber for this event.  [Thing: {thingName}][Event: {eventName}]",
+                    thing.Name, args.EventName);
+                return;
+            }
+            
+            var message = _convert.Serialize(new WebSocketResponse("event",
+                new Dictionary<string, object?>
+                {
+                    [_option.PropertyNamingPolicy.ConvertName(args.EventName)] = args.Event
+                }));
+
+            _logger.LogInformation("Going to notify event via Web Socket. [Thing: {thingName}][Event: {eventName}]",
+                thing.Name, args.EventName);
+            
+            foreach (var (_, socket) in thing.ThingContext.EventsSubscribes[args.EventName].ToArray())
+            {
+                if (socket.State != WebSocketState.Open || socket.CloseStatus.HasValue)
+                {
+                    _logger.LogInformation("The Web Socket is not open or was requested to close. [Thing: {thingName}][Event: {eventName}]",
+                        thing.Name, args.EventName);
+                    return;
+                }
+
+                await socket.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
         }
 
         public async void OnPropertyChanged(object sender, PropertyChangedEventArgs property)
@@ -61,24 +81,24 @@ namespace Mozilla.IoT.WebThing.WebSockets
 
             if (string.IsNullOrEmpty(propertyName))
             {
-                _logger.LogWarning("Property not found. [Property: {propertyName}][Thing: {thingName}]",
-                    property.PropertyName, thing.Name);
+                _logger.LogWarning("Property not found. [Thing: {thingName}][Property: {propertyName}]",
+                    thing.Name, property.PropertyName);
                 return;
             }
 
             if (!propertyValue.TryGetValue(out var value))
             {
                 _logger.LogInformation(
-                    "Property is write only, not going to notify property change via Web Socket. [Property: {propertyName}][Thing: {thingName}]",
-                    property.PropertyName, thing.Name);
+                    "Property is write only, not going to notify property change via Web Socket.[Thing: {thingName}][Property: {propertyName}]",
+                    thing.Name, property.PropertyName);
                 return;
             }
 
-            var sent = _convert.Serialize(new WebSocketResponse("propertyStatus",
+            var message = _convert.Serialize(new WebSocketResponse("propertyStatus",
                 new Dictionary<string, object?> {[propertyName] = value}));
 
-            _logger.LogInformation("Going to notify property change via Web Socket. [Property: {propertyName}][Thing: {thingName}]",
-                property.PropertyName, thing.Name);
+            _logger.LogInformation("Going to notify property change via Web Socket. [Thing: {thingName}][Property: {propertyName}]",
+                thing.Name, property.PropertyName);
 
             foreach (var (_, socket) in thing.ThingContext.Sockets.ToArray())
             {
@@ -89,7 +109,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     return;
                 }
 
-                await socket.SendAsync(sent, WebSocketMessageType.Text, true, CancellationToken.None)
+                await socket.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None)
                     .ConfigureAwait(false);
             }
         }
@@ -108,7 +128,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
             _logger.LogInformation("Action Status changed, going to notify via Web Socket. [Thing: {name}][Action: {actionName}][Action Id: {actionId}][Status: {status}]", 
                 thing.Name, thingAction.GetActionName(), thingAction.GetId(), thingAction.Status);
             
-            var sent = _convert.Serialize(new WebSocketResponse("actionStatus",
+            var message = _convert.Serialize(new WebSocketResponse("actionStatus",
                 new Dictionary<string, object?>
                 {
                     [_option.PropertyNamingPolicy.ConvertName(thingAction.GetActionName())] = thingAction
@@ -123,7 +143,7 @@ namespace Mozilla.IoT.WebThing.WebSockets
                     continue;
                 }
 
-                await socket.SendAsync(sent, WebSocketMessageType.Text, true, CancellationToken.None)
+                await socket.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None)
                     .ConfigureAwait(false);
             }
         }

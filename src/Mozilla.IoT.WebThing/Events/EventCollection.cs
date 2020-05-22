@@ -21,7 +21,7 @@ namespace Mozilla.IoT.WebThing.Events
         /// <summary>
         /// On event is added
         /// </summary>
-        public event EventHandler<Event>? Added; 
+        public event EventHandler<EventAddedEventArgs>? Added; 
         
         /// <summary>
         /// Initialize a new instance of <see cref="EventCollection"/>.
@@ -38,7 +38,8 @@ namespace Mozilla.IoT.WebThing.Events
         /// </summary>
         /// <param name="event">The <see cref="Event"/> to be enqueue.</param>
         /// <param name="name">The name of <see cref="Event"/>.</param>
-        public void Enqueue(Event @event, string name)
+        /// <param name="thing">The <see cref="Thing"/> who dispatch the event.</param>
+        public void Enqueue(Event @event, string name, Thing thing)
         {
             if (_events.Count >= _maxSize)
             {
@@ -54,7 +55,7 @@ namespace Mozilla.IoT.WebThing.Events
             _events.Enqueue(@event);
             
             var add = Added;
-            add?.Invoke(name, @event);
+            add?.Invoke(thing, new EventAddedEventArgs(name, @event));
         }
         
         /// <summary>

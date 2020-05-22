@@ -30,6 +30,7 @@ namespace Mozilla.IoT.WebThing
             Actions = actions ?? throw new ArgumentNullException(nameof(actions));
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
             Sockets = new ConcurrentDictionary<Guid, WebSocket>();
+            EventsSubscribes = new Dictionary<string, ConcurrentDictionary<Guid, WebSocket>>(StringComparer.InvariantCultureIgnoreCase);
         }
 
         /// <summary>
@@ -56,5 +57,10 @@ namespace Mozilla.IoT.WebThing
         /// The web sockets associated with thing.
         /// </summary>
         public ConcurrentDictionary<Guid, WebSocket> Sockets { get; }
+        
+        /// <summary>
+        /// The subscribe for the events.
+        /// </summary>
+        public Dictionary<string, ConcurrentDictionary<Guid, WebSocket>> EventsSubscribes { get; }
     }
 }

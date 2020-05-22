@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.WebSockets;
+using WebSocket = System.Net.WebSockets.WebSocket;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
@@ -55,6 +57,12 @@ namespace Mozilla.IoT.WebThing.Extensions
             foreach (var (_, action) in thing.ThingContext.Actions)
             {
                 action.Change += observer.OnActionChange;
+            }
+            
+            foreach (var (eventName, @events) in thing.ThingContext.Events)
+            {
+                @events.Added += observer.OnEvenAdded;
+                thing.ThingContext.EventsSubscribes.Add(eventName, new ConcurrentDictionary<Guid, WebSocket>());
             }
 
             return thing;

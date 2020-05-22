@@ -13,7 +13,7 @@
         /// <param name="name">The event name</param>
         public static void Handler(object sender, object args, string name)
         {
-            ((Thing)sender).ThingContext.Events[name].Enqueue(new Event(args), name);
+            ((Thing)sender).ThingContext.Events[name].Enqueue(new Event(args), name, (Thing)sender);
         }
     }
 }
