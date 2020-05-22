@@ -24,6 +24,9 @@
     <Content Include="..\azure-pipelines.yml">
       <Link>ci\azure-pipelines.yml</Link>
     </Content>
+    <Content Include="..\GitVersion.yml">
+      <Link>config\GitVersion.yml</Link>
+    </Content>
   </ItemGroup>
 
 </Project>
