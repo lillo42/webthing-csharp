@@ -20,4 +20,10 @@
     <None Remove="..\.github\workflows\release.yml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\azure-pipelines.yml">
+      <Link>ci\azure-pipelines.yml</Link>
+    </Content>
+  </ItemGroup>
+
 </Project>
