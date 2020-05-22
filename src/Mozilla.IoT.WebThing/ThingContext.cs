@@ -3,9 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using Mozilla.IoT.WebThing.Actions;
-using Mozilla.IoT.WebThing.Converts;
 using Mozilla.IoT.WebThing.Events;
-using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing
 {
@@ -13,7 +11,7 @@ namespace Mozilla.IoT.WebThing
     /// Represent property, event and action the thing have.
     /// This class is used to avoid reflection.
     /// </summary>
-    public class ThingContext
+    public readonly struct ThingContext
     {
         /// <summary>
         /// Initialize a new instance of <see cref="ThingContext"/>.
@@ -25,12 +23,14 @@ namespace Mozilla.IoT.WebThing
         public ThingContext(Dictionary<string, object?> response, 
             Dictionary<string, EventCollection> events,
             Dictionary<string, ActionCollection> actions, 
-            Dictionary<string, IProperty> properties)
+            Dictionary<string, IThingProperty> properties)
         {
             Response = response ?? throw new ArgumentNullException(nameof(response));
             Events = events ?? throw new ArgumentNullException(nameof(events));
             Actions = actions ?? throw new ArgumentNullException(nameof(actions));
             Properties = properties ?? throw new ArgumentNullException(nameof(properties));
+            Sockets = new ConcurrentDictionary<Guid, WebSocket>();
+            EventsSubscribes = new Dictionary<string, ConcurrentDictionary<Guid, WebSocket>>(StringComparer.InvariantCultureIgnoreCase);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The properties associated with thing.
         /// </summary>
-        public Dictionary<string, IProperty> Properties { get; }
+        public Dictionary<string, IThingProperty> Properties { get; }
         
         /// <summary>
         /// The events associated with thing.
@@ -56,6 +56,11 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// The web sockets associated with thing.
         /// </summary>
-        public ConcurrentDictionary<Guid, WebSocket> Sockets { get; } = new ConcurrentDictionary<Guid, WebSocket>();
+        public ConcurrentDictionary<Guid, WebSocket> Sockets { get; }
+        
+        /// <summary>
+        /// The subscribe for the events.
+        /// </summary>
+        public Dictionary<string, ConcurrentDictionary<Guid, WebSocket>> EventsSubscribes { get; }
     }
 }

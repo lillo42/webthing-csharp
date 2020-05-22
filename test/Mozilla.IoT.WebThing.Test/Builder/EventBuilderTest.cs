@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using AutoFixture;
 using FluentAssertions;
-using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Properties;
 using NSubstitute;
 using Xunit;
 
@@ -17,39 +13,43 @@ namespace Mozilla.IoT.WebThing.Test.Builder
     {
         private readonly EventBuilder _builder;
         private readonly EventThing _thing;
-        private readonly Fixture _fixture;
-        
+
         public EventBuilderTest()
         {
             _builder = new EventBuilder();
             _thing = new EventThing();
-            _fixture = new Fixture();
         }
 
-        [Fact]
-        public void TryAddWhenSetThingTypeIsNotCalled() 
-            => Assert.Throws<InvalidOperationException>(() =>  _builder.Add(Substitute.For<EventInfo>(), null));
+        #region Add
 
         [Fact]
-        public void TryAddWhenSetThingOptionIsNotCalled()
+        public void Add_Should_Throw_When_SetThingTypeIsNotCalled() 
+            => Assert.Throws<InvalidOperationException>(() =>  _builder.Add(Substitute.For<EventInfo>(), null));
+        
+        [Fact]
+        public void Add_Should_Throw_When_SetThingOptionIsNotCalled()
         {
             _builder.SetThingType(_thing.GetType());
             Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<EventInfo>(), null));
         }
-        
+
+        #endregion
+
+        #region Build
+
         [Fact]
-        public void TryBuildWhenIsNotSetSetThing() 
+        public void Build_Should_Throw_When_IsNotSetSetThing() 
             => Assert.Throws<InvalidOperationException>(() =>  _builder.Build());
 
         [Fact]
-        public void TryBuildWhenIsNotSetThingType()
+        public void Build_Should_Throw_When_IsNotSetThingType()
         {
             _builder.SetThing(_thing);
             Assert.Throws<InvalidOperationException>(() => _builder.Build());
         }
-
+        
         [Fact]
-        public void BuildEventsAndInvokeInt()
+        public void Build()
         {
             _builder
                 .SetThing(_thing)
@@ -62,53 +62,10 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             events.Should().NotBeEmpty();
             events.Should().HaveCount(2);
             events.Should().ContainKey(nameof(EventThing.Int));
-
-            _thing.ThingContext = new ThingContext(
-                new Dictionary<string, object>(), 
-                events,
-                new Dictionary<string, ActionCollection>(),
-                new Dictionary<string, IProperty>());
-            
-            var value = _fixture.Create<int>();
-            _thing.Invoke(value);
-            
-
-            var array = events[nameof(EventThing.Int)].ToArray();
-            array.Should().NotBeEmpty();
-            array.Should().HaveCount(1);
-            array[0].Data.Should().Be(value);
         }
         
-        [Fact]
-        public void BuildEventsWithCustomNameAndInvokeInt()
-        {
-            _builder
-                .SetThing(_thing)
-                .SetThingType(_thing.GetType())
-                .SetThingOption(new ThingOption());
-            
-            Visit();
+        #endregion
 
-            var events = _builder.Build();
-            events.Should().NotBeEmpty();
-            events.Should().HaveCount(2);
-            events.Should().ContainKey("test");
-
-            _thing.ThingContext = new ThingContext(
-                new Dictionary<string, object>(), 
-                events,
-                new Dictionary<string, ActionCollection>(),
-                new Dictionary<string, IProperty>());
-            
-            var value = _fixture.Create<string>();
-            _thing.Invoke(value);
-
-            var array = events["test"].ToArray();
-            array.Should().NotBeEmpty();
-            array.Should().HaveCount(1);
-            array[0].Data.Should().Be(value);
-        }
-        
         private void Visit()
         {
             var events = _thing.GetType().GetEvents(BindingFlags.Public | BindingFlags.Instance);

@@ -5,8 +5,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Mozilla.IoT.WebThing;
+using Mozilla.IoT.WebThing.Json;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -66,18 +68,19 @@ namespace Microsoft.AspNetCore.Http
             return result;
         }
 
-        public static async ValueTask WriteBodyAsync<T>(this HttpContext context, 
-            HttpStatusCode statusCode, T value, 
-            JsonSerializerOptions options, CancellationToken cancellationToken = default)
+        public static async Task WriteBodyAsync<T>(this HttpContext context, 
+            HttpStatusCode statusCode, T value)
         {
             context.Response.StatusCode = (int)statusCode;
             context.Response.ContentType = Const.ContentType;
             context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
-            
+
+            var cancellationToken = context.RequestAborted;
+            var convert = context.RequestServices.GetRequiredService<IJsonConvert>();
 
             if (value != null)
             {
-                var buffer = JsonSerializer.SerializeToUtf8Bytes(value, value.GetType(), options);
+                var buffer = convert.Serialize(value);
 
                 await context.Response.BodyWriter.WriteAsync(buffer, cancellationToken)
                     .ConfigureAwait(false);
@@ -85,6 +88,35 @@ namespace Microsoft.AspNetCore.Http
                 await context.Response.BodyWriter.FlushAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
+        }
+
+        public static async Task<byte[]> GetBody(this HttpContext context)
+        {
+            var cancellationToken = context.RequestAborted;
+            var reader = context.Request.BodyReader;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var readResult = await reader.ReadAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                var buffer = readResult.Buffer;
+                var position = buffer.PositionOf((byte)'}');
+                if (position != null)
+                {
+                    if (buffer.IsSingleSegment)
+                    {
+                        return buffer.FirstSpan.ToArray();
+                    }
+
+                    throw new NotImplementedException();
+                }
+
+                reader.AdvanceTo(buffer.Start, buffer.End);
+
+                if (readResult.IsCompleted) break;
+            }
+
+            return Array.Empty<byte>();
         }
     }
 }

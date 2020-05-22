@@ -10,7 +10,6 @@ using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Events;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
-using Mozilla.IoT.WebThing.Properties;
 using NSubstitute;
 using Xunit;
 
@@ -47,7 +46,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _property
                 .Build()
-                .Returns(new Dictionary<string, IProperty>());
+                .Returns(new Dictionary<string, IThingProperty>());
         }
 
         [Fact]
@@ -86,7 +85,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _property
                 .DidNotReceive()
-                .Add(Arg.Any<PropertyInfo>(), Arg.Any<Information>());
+                .Add(Arg.Any<PropertyInfo>(), Arg.Any<JsonSchema>());
 
             _action
                 .DidNotReceive()
@@ -94,7 +93,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _action
                 .DidNotReceive()
-                .Add(Arg.Any<ParameterInfo>(), Arg.Any<Information>());
+                .Add(Arg.Any<ParameterInfo>(), Arg.Any<JsonSchema>());
         }
         
         [Fact]
@@ -125,11 +124,11 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _property
                 .Received(5)
-                .Add(Arg.Any<PropertyInfo>(), Arg.Any<Information>());
+                .Add(Arg.Any<PropertyInfo>(), Arg.Any<JsonSchema>());
             
             _response
                 .Received(5)
-                .Add(Arg.Any<PropertyInfo>(), Arg.Any<ThingPropertyAttribute>(), Arg.Any<Information>());
+                .Add(Arg.Any<PropertyInfo>(), Arg.Any<ThingPropertyAttribute>(), Arg.Any<JsonSchema>());
             
             _event
                 .DidNotReceive()
@@ -141,7 +140,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _action
                 .DidNotReceive()
-                .Add(Arg.Any<ParameterInfo>(), Arg.Any<Information>());
+                .Add(Arg.Any<ParameterInfo>(), Arg.Any<JsonSchema>());
         }
         
         [Fact]
@@ -172,11 +171,11 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _property
                 .DidNotReceive()
-                .Add(Arg.Any<PropertyInfo>(), Arg.Any<Information>());
+                .Add(Arg.Any<PropertyInfo>(), Arg.Any<JsonSchema>());
             
             _response
                 .DidNotReceive()
-                .Add(Arg.Any<PropertyInfo>(), Arg.Any<ThingPropertyAttribute>(), Arg.Any<Information>());
+                .Add(Arg.Any<PropertyInfo>(), Arg.Any<ThingPropertyAttribute>(), Arg.Any<JsonSchema>());
             
             _event
                 .DidNotReceive()
@@ -192,7 +191,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _action
                 .Received(2)
-                .Add(Arg.Any<ParameterInfo>(), Arg.Any<Information>());
+                .Add(Arg.Any<ParameterInfo>(), Arg.Any<JsonSchema>());
             
             _response
                 .Received(2)
@@ -200,7 +199,7 @@ namespace Mozilla.IoT.WebThing.Test.Factory
 
             _response
                 .Received(2)
-                .Add(Arg.Any<ParameterInfo>(), Arg.Any<ThingParameterAttribute>(), Arg.Any<Information>());
+                .Add(Arg.Any<ParameterInfo>(), Arg.Any<ThingParameterAttribute>(), Arg.Any<JsonSchema>());
         }
         
         public class EventThing : Thing

@@ -6,7 +6,7 @@ using FluentAssertions;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
-using Mozilla.IoT.WebThing.Properties;
+using Mozilla.IoT.WebThing.Json;
 using NSubstitute;
 using Xunit;
 
@@ -28,26 +28,40 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             _builder = new PropertyBuilder(_factory);
         }
 
-        [Fact]
-        public void TryAddWhenSetThingTypeIsNotCalled()
-            => Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<PropertyInfo>(),
-                new Information(null, null, null, null, null,
-                    null, null, null, null, _fixture.Create<bool>(), 
-                    _fixture.Create<string>(), _fixture.Create<bool>())));
-        
-        [Fact]
-        public void TryBuildWhenIsNotSetSetThing() 
-            => Assert.Throws<InvalidOperationException>(() =>  _builder.Build());
+        #region Add
 
         [Fact]
-        public void TryBuildWhenIsNotSetThingType()
+        public void Add_Should_Throw_When_SetThingTypeIsNotCalled()
+            => Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<PropertyInfo>(),
+                new JsonSchema(Substitute.For<IJsonSchema>(), null, JsonType.String,
+                    _fixture.Create<string>(), _fixture.Create<bool>())));
+
+        [Fact]
+        public void Add_Should_Throw_When_SetThingOptionIsNotCalled()
+        {
+            _builder.SetThing(new PropertyThing());
+            Assert.Throws<InvalidOperationException>(() => _builder.Add(Substitute.For<PropertyInfo>(),
+                new JsonSchema(Substitute.For<IJsonSchema>(), null, JsonType.String,
+                    _fixture.Create<string>(), _fixture.Create<bool>())));
+        }
+
+        #endregion
+
+        #region Build
+
+        [Fact]
+        public void Build_Should_Throw_When_SetThingWasNotCalled() 
+            => Assert.Throws<InvalidOperationException>(() =>  _builder.Build());
+        
+        [Fact]
+        public void Build_Should_Throw_When_SetThingTypeWasNotCalled()
         {
             _builder.SetThing(_thing);
             Assert.Throws<InvalidOperationException>(() => _builder.Build());
         }
         
         [Fact]
-        public void BuildReadOnlyProperty()
+        public void BuildForReadOnlyProperty()
         {
             _builder
                 .SetThing(_thing)
@@ -55,8 +69,9 @@ namespace Mozilla.IoT.WebThing.Test.Builder
 
             var propertyName = _fixture.Create<string>();
             
-            Visit(new Information(null, null, null, null, null,
-                null, null, null, null, true,
+            var schema = Substitute.For<IJsonSchema>();
+            schema.IsReadOnly.Returns(true);
+            Visit(new JsonSchema(schema, null, JsonType.String,
                 propertyName, _fixture.Create<bool>()));
 
             var properties = _builder.Build();
@@ -64,11 +79,8 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             properties.Should().NotBeEmpty();
             properties.Should().HaveCount(1);
             properties.Should().ContainKey(propertyName);
-            properties[propertyName].Should().BeAssignableTo<PropertyReadOnly>();
-            _thing.Value = _fixture.Create<string>();
-            properties[propertyName].GetValue().Should().Be(_thing.Value);
         }
-        
+
         [Fact]
         public void BuildNonReadOnlyProperty()
         {
@@ -78,8 +90,7 @@ namespace Mozilla.IoT.WebThing.Test.Builder
 
             var propertyName = _fixture.Create<string>();
             
-            var information = new Information(null, null, null, null, null,
-                null, null, null, null, false,
+            var information = new JsonSchema(Substitute.For<IJsonSchema>(), null, JsonType.String,
                 propertyName, _fixture.Create<bool>());
             
             Visit(information);
@@ -89,23 +100,25 @@ namespace Mozilla.IoT.WebThing.Test.Builder
             properties.Should().NotBeEmpty();
             properties.Should().HaveCount(1);
             properties.Should().ContainKey(propertyName);
-            properties[propertyName].Should().NotBeAssignableTo<PropertyReadOnly>();
 
-            _factory.Information.Should().Be(information);
+            _factory.JsonSchema.Should().Be(information);
             var value = _fixture.Create<string>();
             _factory.Setter(_thing, value);
             _factory.Getter(_thing).Should().Be(value);
             _thing.Value.Should().Be(value);
         }
+
         
-        private void Visit(Information information)
+        #endregion
+        
+        private void Visit(JsonSchema jsonSchema)
         {
             var properties = _thing.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(x => !IsThingProperty(x.Name));
             
             foreach (var property in properties)
             {
-                _builder.Add(property, information);
+                _builder.Add(property, jsonSchema);
             }
             
             static bool IsThingProperty(string name)
@@ -119,17 +132,17 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         
         private class FakePropertyFactory : IPropertyFactory
         {
-            public Information Information { get; private set; }
+            public JsonSchema JsonSchema { get; private set; }
             public Action<object, object> Setter { get; private set; }
             public Func<object, object> Getter { get; private set; }
-            public IProperty Create(Type propertyType, Information information, Thing thing, Action<object, object> setter, 
-                Func<object, object> getter)
+            public IThingProperty Create(Type propertyType, JsonSchema jsonSchema, Thing thing, Action<object, object> setter, 
+                Func<object, object> getter, string originPropertyName)
             {
-                Information = information;
+                JsonSchema = jsonSchema;
                 Setter = setter;
                 Getter = getter;
 
-                return Substitute.For<IProperty>();
+                return Substitute.For<IThingProperty>();
             }
         }
         

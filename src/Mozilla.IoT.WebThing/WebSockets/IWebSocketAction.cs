@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,11 +19,11 @@ namespace Mozilla.IoT.WebThing.WebSockets
         /// </summary>
         /// <param name="socket">The <see cref="WebSocket"/> origin of this action.</param>
         /// <param name="thing">The <see cref="Thing"/> associated with action.</param>
-        /// <param name="data">The <see cref="JsonElement"/> request with this action.</param>
+        /// <param name="data">The <see cref="object"/> request with this action.</param>
         /// <param name="provider">The <see cref="IServiceProvider"/> for this action. Every request is generate new scope.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns></returns>
-        ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, JsonElement data, 
+        ValueTask ExecuteAsync(System.Net.WebSockets.WebSocket socket, Thing thing, object data, 
             IServiceProvider provider, CancellationToken cancellationToken);
     }
 }

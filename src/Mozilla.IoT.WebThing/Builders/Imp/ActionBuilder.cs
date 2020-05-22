@@ -7,8 +7,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
+using Mozilla.IoT.WebThing.Convertibles;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
+using Mozilla.IoT.WebThing.Json.Convertibles;
+using Mozilla.IoT.WebThing.Json.Convertibles.Input;
+using Mozilla.IoT.WebThing.Json.SchemaValidations;
+using Mozilla.IoT.WebThing.Json.SchemaValidations.Input;
+using IConvertible = Mozilla.IoT.WebThing.Convertibles.IConvertible;
 
 namespace Mozilla.IoT.WebThing.Builders
 {
@@ -19,9 +25,13 @@ namespace Mozilla.IoT.WebThing.Builders
             MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
         private static readonly ConstructorInfo s_valueTask = typeof(ValueTask).GetConstructor(new[] {typeof(Task)})!;
 
-       
-        private readonly IActionParameterFactory _factory;
-        private readonly Dictionary<string, IActionParameter> _parameters = new Dictionary<string, IActionParameter>();
+        private readonly IJsonSchemaValidationFactory _jsonSchemaValidationFactory;
+        private readonly IJsonConvertibleFactory _jsonConvertibleFactory;
+        private readonly IConvertibleFactory _convertibleFactory;
+
+        private Dictionary<string, IJsonConvertible>? _jsonConvertibles;
+        private Dictionary<string, IJsonSchemaValidation>? _jsonSchemaValidations;
+        private Dictionary<string, IConvertible?>? _convertibles;
 
         private Thing? _thing;
         private ThingOption? _option;
@@ -35,9 +45,16 @@ namespace Mozilla.IoT.WebThing.Builders
         /// <summary>
         /// Initialize a new instance of <see cref="ActionBuilder"/>.
         /// </summary>
-        public ActionBuilder(IActionParameterFactory factory)
+        /// <param name="jsonSchemaValidationFactory">The <see cref="IJsonSchemaValidationFactory"/>.</param>
+        /// <param name="jsonConvertibleFactory">The <see cref="IJsonConvertibleFactory"/>.</param>
+        /// <param name="convertibleFactory">The <see cref="IConvertibleFactory"/>.</param>
+        public ActionBuilder(IJsonSchemaValidationFactory jsonSchemaValidationFactory, 
+            IJsonConvertibleFactory jsonConvertibleFactory, 
+            IConvertibleFactory convertibleFactory)
         {
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _jsonSchemaValidationFactory = jsonSchemaValidationFactory ?? throw new ArgumentNullException(nameof(jsonSchemaValidationFactory));
+            _jsonConvertibleFactory = jsonConvertibleFactory ?? throw new ArgumentNullException(nameof(jsonConvertibleFactory));
+            _convertibleFactory = convertibleFactory;
         }
 
         /// <inheritdoc /> 
@@ -64,11 +81,14 @@ namespace Mozilla.IoT.WebThing.Builders
         {
             _option = option;
             _actions = new Dictionary<string, ActionCollection>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _jsonConvertibles = new Dictionary<string, IJsonConvertible>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _jsonSchemaValidations = new Dictionary<string, IJsonSchemaValidation>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _convertibles = new Dictionary<string, IConvertible?>(option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
             return this;
         }
 
         /// <inheritdoc /> 
-        public void Add(MethodInfo action, ThingActionAttribute? attribute)
+        public IActionBuilder Add(MethodInfo action, ThingActionAttribute? attribute)
         {
             if (_thingType == null || _module == null)
             {
@@ -79,34 +99,54 @@ namespace Mozilla.IoT.WebThing.Builders
             {
                 throw new InvalidOperationException($"ThingOption is null, call {nameof(SetThingOption)} before add");
             }
-
-
+            
             if (_input != null)
             {
                 _input.CreateType();
                 var (actionInfoBuilder, inputProperty) = CreateActionInfo(_action!, _input, _thingType, _name!);
                 var factory = CreateActionInfoFactory(actionInfoBuilder, _input, inputProperty);
                 
-                _actions.Add(_name!, new ActionCollection(new DictionaryInputConvert(_parameters), 
-                    (IActionInfoFactory)Activator.CreateInstance(factory)!));
+                _actions.Add(_name!, new ActionCollection(
+                    new SystemTextJsonInputConvertible(_jsonConvertibles!),
+                    new InputJsonSchemaValidation(_jsonSchemaValidations!),
+                    new InputConvertible(_convertibles!), 
+                    (IActionInformationFactory)Activator.CreateInstance(factory)!));
             }
             
-            _parameters.Clear();
+            
+            _jsonConvertibles = new Dictionary<string, IJsonConvertible>(_option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _jsonSchemaValidations = new Dictionary<string, IJsonSchemaValidation>(_option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
+            _convertibles = new Dictionary<string, IConvertible?>(_option.IgnoreCase ? StringComparer.OrdinalIgnoreCase : null);
             _name = attribute?.Name ?? action.Name;
             _action = action;
             _input = _module.DefineType($"{action.Name}Input", TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass);
+
+            return this;
         }
         
         /// <inheritdoc /> 
-        public void Add(ParameterInfo parameter, Information information)
+        public IActionBuilder Add(ParameterInfo parameter, JsonSchema jsonSchema)
         {
             if (_input == null)
             {
                 throw new InvalidOperationException($"ThingOption is null, call {nameof(Add)} before add");
             }
             
-            CreateProperty(_input, information.Name, parameter.ParameterType);
-            _parameters.Add(information.Name, _factory.Create(parameter.ParameterType, information));
+            CreateProperty(_input, jsonSchema.Name, parameter.ParameterType);
+            
+            var parameterType = parameter.ParameterType.GetUnderlyingType();
+            var code = parameterType.ToTypeCode();
+            
+            _jsonConvertibles!.Add(jsonSchema.Name, 
+                _jsonConvertibleFactory.Create(code, parameterType));
+            
+            _jsonSchemaValidations!.Add(jsonSchema.Name, 
+                _jsonSchemaValidationFactory.Create(code, jsonSchema, parameterType));
+
+            _convertibles!.Add(jsonSchema.Name,
+                _convertibleFactory.Create(code, parameterType));
+
+            return this;
         }
 
         private static System.Reflection.Emit.PropertyBuilder CreateProperty(TypeBuilder builder, string fieldName, Type type)
@@ -135,11 +175,11 @@ namespace Mozilla.IoT.WebThing.Builders
         {
             var actionInfo = _module!.DefineType($"{thingType.Name}{action.Name}ActionInfo",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
-                typeof(ActionInfo));
+                typeof(ThingActionInformation));
             
             var input = CreateProperty(actionInfo, "input", inputType);
             
-            var getProperty = actionInfo.DefineMethod(nameof(ActionInfo.GetActionName), 
+            var getProperty = actionInfo.DefineMethod(nameof(ThingActionInformation.GetActionName), 
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual, 
                 typeof(string), Type.EmptyTypes);
 
@@ -197,14 +237,14 @@ namespace Mozilla.IoT.WebThing.Builders
 
         private TypeBuilder CreateActionInfoFactory(Type actionInfo, Type inputType, PropertyInfo inputProperty)
         {
-            var actionInfoFactory = _module!.DefineType($"{actionInfo.Name}Factory",
+            var actionInfoFactory = _module!.DefineType($"{actionInfo.Name}Convertible",
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.AutoClass,
-                null, new []{ typeof(IActionInfoFactory) });
+                null, new []{ typeof(IActionInformationFactory) });
 
-            var createMethod = actionInfoFactory.DefineMethod(nameof(IActionInfoFactory.CreateActionInfo),
+            var createMethod = actionInfoFactory.DefineMethod(nameof(IActionInformationFactory.Convert),
                 MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual,
                 CallingConventions.Standard, 
-                typeof(ActionInfo), 
+                typeof(ThingActionInformation), 
                 new[] {typeof(Dictionary<string, object>)});
 
             var generator = createMethod.GetILGenerator();
@@ -243,8 +283,11 @@ namespace Mozilla.IoT.WebThing.Builders
                 var (actionInfoBuilder, inputProperty) = CreateActionInfo(_action!, _input, _thingType, _name!);
                 var factory = CreateActionInfoFactory(actionInfoBuilder, _input, inputProperty);
                 
-                _actions.Add(_name!, new ActionCollection(new DictionaryInputConvert(_parameters), 
-                    (IActionInfoFactory)Activator.CreateInstance(factory)!));
+                _actions.Add(_name!, new ActionCollection(
+                    new SystemTextJsonInputConvertible(_jsonConvertibles!),
+                    new InputJsonSchemaValidation(_jsonSchemaValidations!),
+                    new InputConvertible(_convertibles!), 
+                    (IActionInformationFactory)Activator.CreateInstance(factory)!));
             }
             
             return _actions;

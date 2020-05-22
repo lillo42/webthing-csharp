@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Actions;
+using Mozilla.IoT.WebThing.Json.Convertibles;
+using Mozilla.IoT.WebThing.Json.SchemaValidations;
 using NSubstitute;
 using Xunit;
 
@@ -13,105 +12,125 @@ namespace Mozilla.IoT.WebThing.Test.Actions
 {
     public class ActionCollectionTest
     {
-        private readonly Fixture _fixture;
-        private readonly IActionInfoFactory _factory;
-        private readonly JsonElement _input;
-        private readonly string _parameterName;
-        private readonly int _parameterValue;
-        private readonly IActionParameter _parameter;
-        private readonly Dictionary<string, IActionParameter> _parameters;
-        private readonly DictionaryInputConvert _convert;
+        private readonly IJsonConvertible _jsonConvertible;
+        private readonly IJsonSchemaValidation _schemaValidation;
+        private readonly Mozilla.IoT.WebThing.Convertibles.IConvertible _convertible;
+        private readonly IActionInformationFactory _factory;
         private readonly ActionCollection _collection;
+        private readonly Fixture _fixture;
 
         public ActionCollectionTest()
         {
             _fixture = new Fixture();
-            _parameterName = _fixture.Create<string>();
-            _parameterValue = _fixture.Create<int>();
-            
-            _factory = Substitute.For<IActionInfoFactory>();
-            _parameter = Substitute.For<IActionParameter>();
-            _parameters = new Dictionary<string, IActionParameter>
-            {
-                [_parameterName] = _parameter
-            };
 
-            _input = JsonSerializer.Deserialize<JsonElement>($@"{{ ""input"": {{ 
-                    ""{_parameterName}"": {_parameterValue}
-                }} 
-            }}");
+            _jsonConvertible = Substitute.For<IJsonConvertible>();
+            _schemaValidation = Substitute.For<IJsonSchemaValidation>();
+            _convertible = Substitute.For<Mozilla.IoT.WebThing.Convertibles.IConvertible>();
+            _factory = Substitute.For<IActionInformationFactory>();
             
-            _convert = new DictionaryInputConvert(_parameters); 
-            _collection = new ActionCollection(_convert, _factory);
+            _collection = new ActionCollection(_jsonConvertible, _schemaValidation, _convertible, _factory);
         }
 
         #region TryAdd
 
         [Fact]
-        public void TryAddWithSuccess()
+        public void TryAdd_Should_ReturnFalse_When_TryConvertReturnFalse()
         {
-            _parameter.TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>())
-                .Returns(x =>
-                {
-                    x[1] = _parameterValue;
-                    return true;
-                });
-
-            var actionInfo = Substitute.For<ActionInfo>();
-            
-            _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
-                .Returns(actionInfo);
-            
-            _collection.TryAdd(_input, out var action).Should().BeTrue();
-            action.Should().NotBeNull();
-
-            _parameter
-                .Received(1)
-                .TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>());
-
-            _factory
-                .Received(1)
-                .CreateActionInfo(Arg.Any<Dictionary<string, object>>());
-        }
-        
-        [Fact]
-        public void TryAddWhenInputNotExist()
-        {
-            var input = JsonSerializer.Deserialize<JsonElement>($@"{{ ""{_parameterName}"": {_parameterValue} }}");
-            
-            _collection.TryAdd(input, out var action).Should().BeFalse();
-            
-            action.Should().BeNull();
-
-            _parameter
-                .DidNotReceive()
-                .TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>());
-
-            _factory
-                .Received(1)
-                .CreateActionInfo(Arg.Any<Dictionary<string, object>>());
-        }
-        
-        [Fact]
-        public void TryAddWhenCouldNotConvert()
-        {
-            _parameter.TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>())
+            var source = _fixture.Create<string>();
+            _jsonConvertible.TryConvert(source, out Arg.Any<object>())
                 .Returns(x =>
                 {
                     x[1] = null;
                     return false;
                 });
 
-            _collection.TryAdd(_input, out var action).Should().BeFalse();
-            action.Should().BeNull();
 
-            _parameter
+            _collection.TryAdd(source, out _).Should().BeFalse();
+
+            _jsonConvertible
                 .Received(1)
-                .TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>());
+                .TryConvert(source, out Arg.Any<object>());
+        }
+        
+        [Fact]
+        public void TryAdd_Should_ReturnFalse_When_IsValidReturnFalse()
+        {
+            var source = _fixture.Create<string>();
+            var converted = _fixture.Create<object>();
+            
+            _jsonConvertible.TryConvert(source, out Arg.Any<object>())
+                .Returns(x =>
+                {
+                    x[1] = converted;
+                    return true;
+                });
+            
+            _schemaValidation.IsValid(converted)
+                .Returns(false);
+
+
+            _collection.TryAdd(source, out _).Should().BeFalse();
+
+            _jsonConvertible
+                .Received(1)
+                .TryConvert(source, out Arg.Any<object>());
+            
+            _schemaValidation
+                .Received(1)
+                .IsValid(converted);
+        }
+        
+        [Fact]
+        public void TryAdd_Should_ReturnTrue()
+        {
+            var source = _fixture.Create<string>();
+            var converted = _fixture.Create<object>();
+            
+            _jsonConvertible.TryConvert(source, out Arg.Any<object>())
+                .Returns(x =>
+                {
+                    x[1] = converted;
+                    return true;
+                });
+            
+            _schemaValidation.IsValid(converted)
+                .Returns(true);
+
+            var convertible = _fixture.Create<Dictionary<string, object>>();
+            
+            _convertible.Convert(converted)
+                .Returns(convertible);
+
+            var info = Substitute.For<ThingActionInformation>();
+            
+            _factory.Convert(convertible)
+                .Returns(info);
+
+            _collection.TryAdd(source, out _).Should().BeTrue();
+
+            _jsonConvertible
+                .Received(1)
+                .TryConvert(source, out Arg.Any<object>());
+            
+            _schemaValidation
+                .Received(1)
+                .IsValid(converted);
+            
+            _convertible
+                .Received(1)
+                .Convert(converted);
 
             _factory
-                .DidNotReceive()
-                .CreateActionInfo(Arg.Any<Dictionary<string, object>>());
+                .Received(1)
+                .Convert(convertible);
+
+            _collection.Should().NotBeEmpty();
+            _collection.Should().HaveCount(1);
+            
+            foreach (var item in _collection)
+            {
+                item.Should().Be(info);
+            }
         }
 
         #endregion
@@ -119,155 +138,188 @@ namespace Mozilla.IoT.WebThing.Test.Actions
         #region TryGetValue
 
         [Fact]
-        public void TryGetWithSuccess()
+        public void TryGetValue_Should_ReturnFalse_When_IdNotExist()
         {
-            _parameter.TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>())
-                .Returns(x =>
-                {
-                    x[1] = _parameterValue;
-                    return true;
-                });
-
-            var actionInfo = Substitute.For<ActionInfo>();
-            
-            _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
-                .Returns(actionInfo);
-            
-            _collection.TryAdd(_input, out var action).Should().BeTrue();
-            action.Should().NotBeNull();
-
-            _collection.TryGetValue(action.GetId(), out var getAction).Should().BeTrue();
-
-            getAction.Should().NotBeNull();
-            getAction.Should().Be(action);
-
-            _parameter
-                .Received(1)
-                .TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>());
-
-            _factory
-                .Received(1)
-                .CreateActionInfo(Arg.Any<Dictionary<string, object>>());
+            _collection.TryGetValue(_fixture.Create<Guid>(), out var result).Should().BeFalse();
+            result.Should().BeNull();
         }
         
         [Fact]
-        public void TryGetWhenActionDoesNotExist()
+        public void TryGetValue_Should_ReturnTrue()
         {
-            _collection.TryGetValue(_fixture.Create<Guid>(), out var action).Should().BeFalse();
-            action.Should().BeNull();
+            var source = _fixture.Create<string>();
+            var converted = _fixture.Create<object>();
+            
+            _jsonConvertible.TryConvert(source, out Arg.Any<object>())
+                .Returns(x =>
+                {
+                    x[1] = converted;
+                    return true;
+                });
+            
+            _schemaValidation.IsValid(converted)
+                .Returns(true);
+
+            var convertible = _fixture.Create<Dictionary<string, object>>();
+            
+            _convertible.Convert(converted)
+                .Returns(convertible);
+
+            var info = Substitute.For<ThingActionInformation>();
+            
+            _factory.Convert(convertible)
+                .Returns(info);
+
+            _collection.TryAdd(source, out _).Should().BeTrue();
+
+
+            _collection.TryGetValue(info.GetId(), out var info2).Should().BeTrue();
+            info2.Should().NotBeNull();
+            info2.Should().Be(info);
+
+            _jsonConvertible
+                .Received(1)
+                .TryConvert(source, out Arg.Any<object>());
+            
+            _schemaValidation
+                .Received(1)
+                .IsValid(converted);
+            
+            _convertible
+                .Received(1)
+                .Convert(converted);
+
+            _factory
+                .Received(1)
+                .Convert(convertible);
+
+            _collection.Should().NotBeEmpty();
+            _collection.Should().HaveCount(1);
         }
 
         #endregion
-        
+
         #region TryRemove
 
         [Fact]
-        public void TryRemoveWithSuccess()
+        public void TryRemove_Should_ReturnFalse_When_IdNotExist()
         {
-            _parameter.TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>())
-                .Returns(x =>
-                {
-                    x[1] = _parameterValue;
-                    return true;
-                });
-
-            var actionInfo = Substitute.For<ActionInfo>();
-            
-            _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
-                .Returns(actionInfo);
-            
-            _collection.TryAdd(_input, out var action).Should().BeTrue();
-            action.Should().NotBeNull();
-
-            _collection.TryRemove(action.GetId(), out var getAction).Should().BeTrue();
-
-            getAction.Should().NotBeNull();
-            getAction.Should().Be(action);
-
-            _parameter
-                .Received(1)
-                .TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>());
-
-            _factory
-                .Received(1)
-                .CreateActionInfo(Arg.Any<Dictionary<string, object>>());
+            _collection.TryRemove(_fixture.Create<Guid>(), out var result).Should().BeFalse();
+            result.Should().BeNull();
         }
         
         [Fact]
-        public void TryRemoveWhenActionDoesNotExist()
+        public void TryRemove_Should_ReturnTrue()
         {
-            _collection.TryRemove(_fixture.Create<Guid>(), out var action).Should().BeFalse();
-            action.Should().BeNull();
+            var source = _fixture.Create<string>();
+            var converted = _fixture.Create<object>();
+            
+            _jsonConvertible.TryConvert(source, out Arg.Any<object>())
+                .Returns(x =>
+                {
+                    x[1] = converted;
+                    return true;
+                });
+            
+            _schemaValidation.IsValid(converted)
+                .Returns(true);
+
+            var convertible = _fixture.Create<Dictionary<string, object>>();
+            
+            _convertible.Convert(converted)
+                .Returns(convertible);
+
+            var info = Substitute.For<ThingActionInformation>();
+            
+            _factory.Convert(convertible)
+                .Returns(info);
+
+            _collection.TryAdd(source, out _).Should().BeTrue();
+            
+            _collection.TryRemove(info.GetId(), out var info2).Should().BeTrue();
+            info2.Should().NotBeNull();
+            info2.Should().Be(info);
+
+            _jsonConvertible
+                .Received(1)
+                .TryConvert(source, out Arg.Any<object>());
+            
+            _schemaValidation
+                .Received(1)
+                .IsValid(converted);
+            
+            _convertible
+                .Received(1)
+                .Convert(converted);
+
+            _factory
+                .Received(1)
+                .Convert(convertible);
+
+            _collection.Should().BeEmpty();
         }
 
         #endregion
 
-        #region OnStatusChange
-
         [Fact]
-        public void OnStatusChange()
+        public void Change_Should_Raiser_When_EventChanged()
         {
-            var counter = 0;
-            _collection.Change += OnActionStatusChange;
-            _parameter.TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>())
+            var source = _fixture.Create<string>();
+            var converted = _fixture.Create<object>();
+            
+            _jsonConvertible.TryConvert(source, out Arg.Any<object>())
                 .Returns(x =>
                 {
-                    x[1] = _parameterValue;
+                    x[1] = converted;
                     return true;
                 });
-
-            var actionInfo = new VoidActionInfo();
             
-            _factory.CreateActionInfo(Arg.Any<Dictionary<string, object>>())
-                .Returns(actionInfo);
+            _schemaValidation.IsValid(converted)
+                .Returns(true);
+
+            var convertible = _fixture.Create<Dictionary<string, object>>();
             
-            _collection.TryAdd(_input, out var action).Should().BeTrue();
-            action.Should().NotBeNull();
+            _convertible.Convert(converted)
+                .Returns(convertible);
 
-            var provider = Substitute.For<IServiceProvider>();
-            provider.GetService(typeof(ILogger<ActionInfo>))
-                .Returns(Substitute.For<ILogger<ActionInfo>>());
-
-            actionInfo.ExecuteAsync(Substitute.For<Thing>(), provider);
+            var info = Substitute.For<ThingActionInformation>();
             
-            counter.Should().Be(3);
+            _factory.Convert(convertible)
+                .Returns(info);
 
-            counter = 0;
+            _collection.TryAdd(source, out _).Should().BeTrue();
 
-            _collection.TryRemove(actionInfo.GetId(), out _);
-            
-            actionInfo.ExecuteAsync(Substitute.For<Thing>(), provider);
-            counter.Should().Be(0);
-            
-            _parameter
-                .Received(1)
-                .TryGetValue(Arg.Any<JsonElement>(), out Arg.Any<object>());
-
-            _factory
-                .Received(1)
-                .CreateActionInfo(Arg.Any<Dictionary<string, object>>());
-
-            
-
-            void OnActionStatusChange(object sender, ActionInfo info)
+            var counter = 0;
+            _collection.Change += (sender, args) =>
             {
                 counter++;
-            }
-        }
+                sender.Should().NotBeNull();
+                sender.Should().Be(_collection);
 
-        #endregion
-        
-        public class VoidActionInfo : ActionInfo
-        {
-            public List<string> Logs { get; } = new List<string>();
-            protected override ValueTask InternalExecuteAsync(Thing thing, IServiceProvider provider)
-            {
-                Logs.Add(nameof(VoidActionInfo));
-                return new ValueTask();
-            }
+                args.Should().NotBeNull();
+                args.Should().Be(info);
+            };
 
-            public override string GetActionName()
-                => "void-action";
+            info.StatusChanged += Raise.EventWith((object)info, EventArgs.Empty);
+            
+            _jsonConvertible
+                .Received(1)
+                .TryConvert(source, out Arg.Any<object>());
+            
+            _schemaValidation
+                .Received(1)
+                .IsValid(converted);
+            
+            _convertible
+                .Received(1)
+                .Convert(converted);
+
+            _factory
+                .Received(1)
+                .Convert(convertible);
+
+            counter.Should().Be(1);
+
         }
     }
 }

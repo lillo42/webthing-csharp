@@ -18,12 +18,8 @@ namespace Mozilla.IoT.WebThing.Builders
         private Type? _thingType;
         private TypeBuilder? _builder;
         private Dictionary<string, EventCollection>? _events;
-        
-        private static readonly ConstructorInfo s_createThing = typeof(Event).GetConstructors(BindingFlags.Public | BindingFlags.Instance)[0];
-        private static readonly MethodInfo s_getContext = typeof(Thing).GetProperty(nameof(Thing.ThingContext))?.GetMethod!;
-        private static readonly MethodInfo s_getEvent = typeof(ThingContext).GetProperty(nameof(ThingContext.Events))?.GetMethod!;
-        private static readonly MethodInfo s_getItem = typeof(Dictionary<string, EventCollection>).GetMethod("get_Item")!;
-        private static readonly MethodInfo s_addItem = typeof(EventCollection).GetMethod(nameof(EventCollection.Enqueue))!;
+
+        private static readonly MethodInfo s_handler = typeof(InternalEventHandle).GetMethod(nameof(InternalEventHandle.Handler))!;
         
         
         /// <summary>
@@ -89,28 +85,22 @@ namespace Mozilla.IoT.WebThing.Builders
             
             var il = methodBuilder.GetILGenerator();
             
-            // static void <EventName>Handler(object sender, <EventType> @event) 
+            // https://sharplab.io/#v2:C4LglgNgPgAgTARgLACgYGYAE9MGFMDeqmJ2WMCAbNgCyYCyAFAPYBGAVgKYDGwmAzpwB2AE04AnADSZWzZhEwBDcQHN+ASkLFSOgKIA3YcAASi0RE4A6U+c6NBoidOVrpAIjfqA3NpIBfVACUVFQwIWAJIUUFCmocAyMbEQtUIhQdDGwqWkwkixYOHj4HMSlMNi5eJVV+aQoABkwogFtOdQIgvyA===
+            // static void <EventName>Handler(object sender, <EventType> args)
             // {
-            //    ((Thing)sender).ThingContext.Events["<eventName>"].Enqueue(new Event(@event), "<eventName>");
+            //    EventHandle.Handle(sender, args, "<eventName>");
             // }
             //
             
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Castclass, _thingType);
-            il.EmitCall(OpCodes.Callvirt, s_getContext, null);
-            il.EmitCall(OpCodes.Callvirt, s_getEvent, null);
-            il.Emit(OpCodes.Ldstr, name);
-            il.EmitCall(OpCodes.Callvirt, s_getItem, null);
             il.Emit(OpCodes.Ldarg_1);
-
             if (type.IsValueType)
             {
                 il.Emit(OpCodes.Box, type);
             }
             
-            il.Emit(OpCodes.Newobj, s_createThing);
             il.Emit(OpCodes.Ldstr, _option.PropertyNamingPolicy.ConvertName(name));
-            il.EmitCall(OpCodes.Callvirt, s_addItem, null);
+            il.EmitCall(OpCodes.Call, s_handler, null);
             il.Emit(OpCodes.Ret);
         }
 

@@ -14,9 +14,14 @@ namespace Mozilla.IoT.WebThing.Events
         private readonly int _maxSize;
 
         /// <summary>
+        /// Get the number of element in the <see cref="EventCollection"/>.
+        /// </summary>
+        public int Count => _events.Count;
+
+        /// <summary>
         /// On event is added
         /// </summary>
-        public event EventHandler<Event>? Added; 
+        public event EventHandler<EventAddedEventArgs>? Added; 
         
         /// <summary>
         /// Initialize a new instance of <see cref="EventCollection"/>.
@@ -33,7 +38,8 @@ namespace Mozilla.IoT.WebThing.Events
         /// </summary>
         /// <param name="event">The <see cref="Event"/> to be enqueue.</param>
         /// <param name="name">The name of <see cref="Event"/>.</param>
-        public void Enqueue(Event @event, string name)
+        /// <param name="thing">The <see cref="Thing"/> who dispatch the event.</param>
+        public void Enqueue(Event @event, string name, Thing thing)
         {
             if (_events.Count >= _maxSize)
             {
@@ -49,7 +55,7 @@ namespace Mozilla.IoT.WebThing.Events
             _events.Enqueue(@event);
             
             var add = Added;
-            add?.Invoke(name, @event);
+            add?.Invoke(thing, new EventAddedEventArgs(name, @event));
         }
         
         /// <summary>
@@ -62,7 +68,7 @@ namespace Mozilla.IoT.WebThing.Events
         /// <returns>
         /// true if an element was removed and returned from the beginning of the <see cref="ConcurrentQueue{T}"/> successfully; otherwise, false.
         /// </returns>
-        public bool TryDequeue([MaybeNullWhen(false)]out Event? @event) 
+        public bool TryDequeue([NotNullWhen(true)]out Event? @event) 
             => _events.TryDequeue(out @event);
 
         /// <summary>

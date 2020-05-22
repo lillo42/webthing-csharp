@@ -12,21 +12,21 @@ namespace Mozilla.IoT.WebThing.Test.Actions
     public class ActionInfoTest
     {
         private readonly IServiceProvider _provider;
-        private readonly ILogger<ActionInfo> _logger;
+        private readonly ILogger<ThingActionInformation> _logger;
 
         public ActionInfoTest()
         {
             _provider = Substitute.For<IServiceProvider>();
-            _logger = Substitute.For<ILogger<ActionInfo>>();
+            _logger = Substitute.For<ILogger<ThingActionInformation>>();
 
-            _provider.GetService(typeof(ILogger<ActionInfo>))
+            _provider.GetService(typeof(ILogger<ThingActionInformation>))
                 .Returns(_logger);
         }
 
         [Fact]
         public void Execute()
         {
-            var action = new VoidActionInfo();
+            var action = new VoidThingActionInformation();
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
@@ -42,14 +42,14 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             action.Logs.Should().HaveCount(1);
             action.Logs.Should().BeEquivalentTo(new List<string>
             {
-                nameof(VoidActionInfo)
+                nameof(VoidThingActionInformation)
             });
         }
         
         [Fact]
         public void ExecuteWithThrow()
         {
-            var action = new VoidActionInfo();
+            var action = new VoidThingActionInformation();
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
@@ -65,14 +65,14 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             action.Logs.Should().HaveCount(1);
             action.Logs.Should().BeEquivalentTo(new List<string>
             {
-                nameof(VoidActionInfo)
+                nameof(VoidThingActionInformation)
             });
         }
         
         [Fact]
         public async Task ExecuteAsync()
         {
-            var action = new LongRunningActionInfo();
+            var action = new LongRunningThingActionInformation();
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
@@ -95,14 +95,14 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             action.Logs.Should().HaveCount(1);
             action.Logs.Should().BeEquivalentTo(new List<string>
             {
-                nameof(LongRunningActionInfo)
+                nameof(LongRunningThingActionInformation)
             });
         }
         
         [Fact]
         public async Task Cancel()
         {
-            var action = new LongRunningActionInfo();
+            var action = new LongRunningThingActionInformation();
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
@@ -129,7 +129,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
         public async Task StatusChange()
         {
             var counter = 0;
-            var action = new VoidActionInfo();
+            var action = new VoidThingActionInformation();
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
@@ -147,21 +147,21 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             action.Logs.Should().HaveCount(1);
             action.Logs.Should().BeEquivalentTo(new List<string>
             {
-                nameof(VoidActionInfo)
+                nameof(VoidThingActionInformation)
             });
 
             void OnStatusChange(object sender, EventArgs args)
             {
-                ((ActionInfo)sender).Status.Should().Be((ActionStatus)counter++);
+                ((ThingActionInformation)sender).Status.Should().Be((ActionStatus)counter++);
             }
         }
 
-        public class VoidActionInfo : ActionInfo
+        public class VoidThingActionInformation : ThingActionInformation
         {
             public List<string> Logs { get; } = new List<string>();
             protected override ValueTask InternalExecuteAsync(Thing thing, IServiceProvider provider)
             {
-                Logs.Add(nameof(VoidActionInfo));
+                Logs.Add(nameof(VoidThingActionInformation));
                 return new ValueTask();
             }
 
@@ -169,20 +169,20 @@ namespace Mozilla.IoT.WebThing.Test.Actions
                 => "void-action";
         }
         
-        public class LongRunningActionInfo : ActionInfo
+        public class LongRunningThingActionInformation : ThingActionInformation
         {
             public List<string> Logs { get; } = new List<string>();
             protected override async ValueTask InternalExecuteAsync(Thing thing, IServiceProvider provider)
             {
                 await Task.Delay(3_000, Source.Token);
-                Logs.Add(nameof(LongRunningActionInfo));
+                Logs.Add(nameof(LongRunningThingActionInformation));
             }
 
             public override string GetActionName()
                 => "long-running-action";
         }
         
-        public class ExceptionActionInfo : ActionInfo
+        public class ExceptionThingActionInformation : ThingActionInformation
         {
             protected override ValueTask InternalExecuteAsync(Thing thing, IServiceProvider provider)
             {
