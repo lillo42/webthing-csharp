@@ -25,6 +25,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         {
             var collection = new ServiceCollection();
             collection.AddThings();
+            collection.AddLogging();
+            
             Provider = collection.BuildServiceProvider().CreateScope().ServiceProvider;
             Factory = Provider.GetRequiredService<IThingContextFactory>();
             Fixture = new Fixture();
@@ -127,7 +129,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
                 jsonElement =JsonSerializer.Deserialize<JsonElement>($@"{{ ""action"": {{ ""input"": {{ ""value"": null }} }} }}").GetProperty("action"); 
                 context.Actions[actionName].TryAdd(jsonElement, out actionInformation).Should().BeTrue();
                 await actionInformation.ExecuteAsync(thing, Provider);
-                thing.Collection.Should().BeEquivalentTo(actionInformation);
+                thing.Collection.Should().BeNull();
             }
         }
         
