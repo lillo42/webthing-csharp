@@ -1,0 +1,20 @@
+mode: ContinuousDeployment
+build-metadata-padding: 5
+tag-prefix: '[Rr]eleases?[/-]'
+assembly-versioning-scheme: MajorMinorPatch
+assembly-versioning-format: '{Major}.{Minor}.{Patch}'
+branches:
+    master:
+        regex: master
+        tag: 'unstable'
+        increment: None
+    release:
+        regex: releases?[/-]
+        mode: ContinuousDelivery
+        increment: None
+        tag: ''
+        is-release-branch: true
+    pull-request:
+        increment: None
+ignore:
+  sha: []
