@@ -137,9 +137,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(ArrayThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(ArrayThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(ArrayThing.Unique), 2, true, true)]
-        public void ValidArrayProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
+        public async Task ValidArrayProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
         {
-            ValidAction<ArrayThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
+            await ValidAction<ArrayThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
         }
         
         [Theory]
@@ -148,9 +148,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(IEnumerableThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(IEnumerableThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(IEnumerableThing.Unique), 2, true, true)]
-        public void ValidIEnumerableProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
+        public async Task ValidIEnumerableProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
         {
-            ValidAction<IEnumerableThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
+            await ValidAction<IEnumerableThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
         }
         
         [Theory]
@@ -159,9 +159,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(ListThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(ListThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(ListThing.Unique), 2, true, true)]
-        public void ValidListProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
+        public async Task ValidListProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
         {
-            ValidAction<ListThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
+            await ValidAction<ListThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
         }
         
         [Theory]
@@ -170,9 +170,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(IListThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(IListThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(IListThing.Unique), 2, true, true)]
-        public void ValidIListProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue) 
+        public async Task ValidIListProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue) 
         {
-            ValidAction<IListThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
+            await ValidAction<IListThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
         }
 
         [Theory]
@@ -181,9 +181,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(ICollectionThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(ICollectionThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(ICollectionThing.Unique), 2, true, true)]
-        public void ValidICollectionProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue) 
+        public async Task ValidICollectionProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue) 
         {
-            ValidAction<ICollectionThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
+            await ValidAction<ICollectionThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
         }
         
         [Theory]
@@ -192,9 +192,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(ISetThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(ISetThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(ISetThing.Unique), 2, true, true)]
-        public void ValidISetProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
+        public async Task ValidISetProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
         {
-            ValidAction<ISetThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue, x => x.ToHashSet().ToList());
+            await ValidAction<ISetThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue, x => x.ToHashSet().ToList());
         }
         
         [Theory]
@@ -203,9 +203,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(HashSetThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(HashSetThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(HashSetThing.Unique), 2, true, true)]
-        public void ValidHashSetProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
+        public async Task ValidHashSetProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
         {
-            ValidAction<HashSetThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue, x => x.ToHashSet().ToList());
+            await ValidAction<HashSetThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue, x => x.ToHashSet().ToList());
         }
         
         [Theory]
@@ -214,9 +214,9 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         [InlineData(nameof(LinkedListThing.MinAndMax), 2, false, true)]
         [InlineData(nameof(LinkedListThing.MinAndMax), 3, false, true)]
         [InlineData(nameof(LinkedListThing.Unique), 2, true, true)]
-        public void ValidLinkedListProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
+        public async Task ValidLinkedListProperty(string propertyName, int arrayLength, bool uniqueItems, bool acceptedNullValue)
         {
-            ValidAction<LinkedListThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
+            await ValidAction<LinkedListThing>(propertyName, arrayLength, uniqueItems, acceptedNullValue);
         }
 
         #endregion
