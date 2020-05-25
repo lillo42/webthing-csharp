@@ -13,7 +13,7 @@ namespace Mozilla.IoT.WebThing.Middlewares
         private readonly ThingOption _option;
         private readonly RequestDelegate _next;
 
-        private static bool s_isIdResolved = false;
+        private static bool s_isIdResolved;
         private static readonly object s_locker = new object();
         public ThingAdapterMiddleware(RequestDelegate next, IEnumerable<Thing> things, ThingOption option)
         {
@@ -51,8 +51,10 @@ namespace Mozilla.IoT.WebThing.Middlewares
                             }
                             
                             builder.Scheme = builder.Scheme == "http" ? "ws" : "wss";
-                            ((List<Link>)thing.ThingContext.Response[_option.PropertyNamingPolicy.ConvertName("Links")])!
-                                .Add(new Link("alternate", builder.Uri.ToString()));
+
+                            var context = thing.ThingContext;
+                            var links =  (List<Link>)context.Response[_option.PropertyNamingPolicy.ConvertName("Links")]!;
+                            links.Add(new Link("alternate", builder.Uri.ToString()));
                         }
                         s_isIdResolved = true;
                     }

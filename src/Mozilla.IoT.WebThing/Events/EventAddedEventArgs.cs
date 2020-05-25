@@ -2,6 +2,9 @@
 
 namespace Mozilla.IoT.WebThing.Events
 {
+    /// <summary>
+    /// The <see cref="EventArgs"/> when event had added.
+    /// </summary>
     public class EventAddedEventArgs : EventArgs
     {
         /// <summary>

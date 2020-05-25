@@ -9,24 +9,26 @@ namespace Mozilla.IoT.WebThing.Json
     public interface IJsonConvert
     {
         /// <summary>
-        /// Retrieve the <see cref="T"/> value.
+        /// Retrieve the value.
         /// </summary>
-        /// <returns>The <see cref="T"/>.</returns>
+        /// <typeparam name="T">The Type to be deserialize.</typeparam>
+        /// <param name="values">The <see cref="ReadOnlySpan{T}"/> to be convert.</param>
+        /// <returns></returns>
         T Deserialize<T>(ReadOnlySpan<byte> values);
         
         /// <summary>
-        /// Convert the <see cref="T"/> to <see cref="byte"/>
+        /// Convert to <see cref="T:byte[]"/>
         /// </summary>
-        /// <param name="value">The <see cref="T"/> to be convert.</param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>The <see cref="byte"/>.</returns>
+        /// <param name="value">The value to be convert.</param>
+        /// <typeparam name="T">The Type to be serialize.</typeparam>
+        /// <returns>The <see cref="T:byte[]"/>.</returns>
         byte[] Serialize<T>(T value);
 
         /// <summary>
-        /// 
+        /// Convert object to <see cref="KeyValuePair{TKey,TValue}"/>
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="data">The <see cref="object"/> to be converted</param>
+        /// <returns>Returns <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/></returns>
         IEnumerable<KeyValuePair<string, object>> ToEnumerable(object data);
     }
 }

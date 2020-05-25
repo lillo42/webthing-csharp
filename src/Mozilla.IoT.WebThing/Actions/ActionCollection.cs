@@ -89,11 +89,13 @@ namespace Mozilla.IoT.WebThing.Actions
         public bool TryRemove(Guid id, [NotNullWhen(true)]out ThingActionInformation? action)
         {
             var result = _actions.TryRemove(id, out action);
-            if (result && action != null)
+
+            if (action == null)
             {
-                action.StatusChanged -= OnStatusChange;   
+                return false;
             }
             
+            action.StatusChanged -= OnStatusChange;
             return result;
         }
         

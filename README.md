@@ -1,6 +1,6 @@
 # webthing
 
-![Build](https://github.com/lillo42/webthing-csharp/workflows/Build/badge.svg)
+[![Build Status](https://lillo42.visualstudio.com/Moziila%20%20IoT%20-%20Web%20Thing/_apis/build/status/lillo42.webthing-csharp?branchName=master)](https://lillo42.visualstudio.com/Moziila%20%20IoT%20-%20Web%20Thing/_build/latest?definitionId=3&branchName=master)
 [![NuGet](http://img.shields.io/nuget/v/Mozilla.IoT.WebThing.svg)](https://www.nuget.org/packages/Mozilla.IoT.WebThing/)
 
 
@@ -143,7 +143,3 @@ Task.Factory.StartNew(async () => {
    await Level = ReadFromGPIO();
 });
 ```
-
-## Limitation
-
-Current version, 2.0.0-previewX, Websocket is not working
