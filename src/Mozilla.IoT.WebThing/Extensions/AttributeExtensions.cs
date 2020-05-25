@@ -40,7 +40,7 @@ namespace Mozilla.IoT.WebThing.Extensions
                 }
                 else
                 {
-                    isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();  
+                    isNullable = property.PropertyType.IsNullable();  
                 }
 
                 if (jsonSchema.IsReadOnly.HasValue)
@@ -64,7 +64,7 @@ namespace Mozilla.IoT.WebThing.Extensions
             }
             else
             {
-                isNullable = !propertyType.IsByRef || property.PropertyType.IsNullable();
+                isNullable = property.PropertyType.IsNullable();
                     
                 if (!property.CanWrite || !property.SetMethod!.IsPublic)
                 {
@@ -105,12 +105,12 @@ namespace Mozilla.IoT.WebThing.Extensions
                 }
                 else
                 {
-                    isNullable = !parameterType.IsByRef || parameterType.IsNullable();  
+                    isNullable = parameterType.IsNullable();  
                 }
             }
             else
             {
-                isNullable = parameterType.IsClass || parameterType.IsNullable();
+                isNullable = parameterType.IsNullable();
             }
 
             return new JsonSchema(attribute,  GetEnums(parameterType, attribute?.Enum), 
@@ -153,12 +153,12 @@ namespace Mozilla.IoT.WebThing.Extensions
                 }
                 else
                 {
-                    isNullable = !parameterType.IsByRef || parameterType.IsNullable();  
+                    isNullable = parameterType.IsNullable();  
                 }
             }
             else
             {
-                isNullable = !parameterType.IsByRef || parameterType.IsNullable();
+                isNullable = parameterType.IsNullable();
             }
 
             return new JsonSchema(attribute,  GetEnums(parameterType, attribute?.Enum), 

@@ -831,11 +831,12 @@ namespace Mozilla.IoT.WebThing.Test.Builder
         public class EventThing : Thing
         {
             public override string Name => "event-thing";
-
+#pragma warning disable 67
             public event EventHandler<int> Int;
             
             [ThingEvent(Name = "Test", Description = "Foo", Title = "Bar", Unit = "milli")]
             public event EventHandler<string> String;
+#pragma warning restore 67
         }
         
         public class PropertyThing : Thing

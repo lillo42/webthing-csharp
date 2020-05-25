@@ -27,9 +27,9 @@ namespace Mozilla.IoT.WebThing.Extensions
 
         /// <summary>
         /// If when serialize thing should serialize for use thing adapter.
-        /// The default value is false.
+        /// The default value is true.
         /// </summary>
-        public bool UseThingAdapterUrl { get; set; }
+        public bool UseThingAdapterUrl { get; set; } = true;
         
         /// <summary>
         /// Specifies the policy used to convert a property's name on an object to another format, such as camel-casing.

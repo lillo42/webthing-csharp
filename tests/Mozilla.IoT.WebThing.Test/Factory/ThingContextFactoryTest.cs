@@ -204,15 +204,17 @@ namespace Mozilla.IoT.WebThing.Test.Factory
         
         public class EventThing : Thing
         {
-            public delegate void NotValidHandler(object? sender);
+            public delegate void NotValidHandler(object sender);
             public override string Name => "event-thing";
 
+#pragma warning disable 67
             public event EventHandler<int> Int;
             
             [ThingEvent(Ignore = true)]
             public event EventHandler<string> Ignore;
 
             public event NotValidHandler NotValid;
+#pragma warning restore 67
         }
         
         public class PropertyThing : Thing

@@ -14,7 +14,7 @@ namespace SampleThing
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddThings()
+            services.AddThings(opt => opt.UseThingAdapterUrl = true)
                 .AddThing<LampThing>();
 
 

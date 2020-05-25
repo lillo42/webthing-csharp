@@ -1,6 +1,6 @@
 # webthing
 
-![Build](https://github.com/lillo42/webthing-csharp/workflows/Build/badge.svg)
+[![Build Status](https://lillo42.visualstudio.com/Moziila%20%20IoT%20-%20Web%20Thing/_apis/build/status/lillo42.webthing-csharp?branchName=master)](https://lillo42.visualstudio.com/Moziila%20%20IoT%20-%20Web%20Thing/_build/latest?definitionId=3&branchName=master)
 [![NuGet](http://img.shields.io/nuget/v/Mozilla.IoT.WebThing.svg)](https://www.nuget.org/packages/Mozilla.IoT.WebThing/)
 
 
@@ -44,15 +44,25 @@ public class LampThing : Thing
 
 Now we can add the required properties.
 
-The **`on`** property reports and sets the on/off state of the light. For this, we need to create a new property in Thing. For our purposes, we just want to log the new state if the light is switched on/off.
+The **`on`** property reports and sets the on/off state of the light. For this, we need to create a new property in Thing and add ```ThingPropertyAttribute```. For our purposes, we just want to log the new state if the light is switched on/off.
 
 ```csharp
 public class LampThing : Thing
 {
     ...
-     [ThingProperty(Type = new []{ "OnOffProperty" }, Title = "On/Off", 
-        Description = "Whether the lamp is turned on")]
-     public bool On { get; set; }
+    private bool _on;
+
+    [ThingProperty(Type = new []{ "OnOffProperty" }, Title = "On/Off", Description = "Whether the lamp is turned on")]
+    public bool On 
+    { 
+        get => _on;
+        set 
+        {
+            _on = value;
+            Console.WriteLine($"On is now {value}");
+            OnPropertyChanged();
+        }
+    }
 }
 ```
 
@@ -62,7 +72,6 @@ The **`brightness`** property reports the brightness level of the light and sets
 public class LampThing : Thing
 {
     ...
-
     private int _brightness;
     [ThingProperty(Type = new []{ "BrightnessProperty" },Title = "Brightness",
         Description = "The level of light from 0-100", Minimum = 0, Maximum = 100,
@@ -74,6 +83,7 @@ public class LampThing : Thing
         { 
             _brightness = value;
             Console.WriteLine($"Brightness is now {value}");
+            OnPropertyChanged();
         } 
     }
 }
@@ -87,10 +97,16 @@ public void ConfigureServices(IServiceCollection services)
 {
     services.AddThings()
         .AddThing<LampThing>();
+
+    // If you want use Web Sockets.
+    services.AddWebSockets(opt => { });
 }
 
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
+    // If you want use Web Sockets.
+    app.UseWebSockets();
+
     app.UseEndpoints(endpoints =>
     {
         endpoints.MapThings();
@@ -143,7 +159,3 @@ Task.Factory.StartNew(async () => {
    await Level = ReadFromGPIO();
 });
 ```
-
-## Limitation
-
-Current version, 2.0.0-previewX, Websocket is not working

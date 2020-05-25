@@ -9,7 +9,7 @@ namespace Mozilla.IoT.WebThing.Convertibles
     /// </summary>
     public class InputConvertible : IConvertible
     {
-        private readonly Dictionary<string, IConvertible> _convertibles;
+        private readonly Dictionary<string, IConvertible?> _convertibles;
 
         /// <summary>
         /// Initialize a new instance of <see cref="InputConvertible"/>.
