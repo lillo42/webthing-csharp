@@ -21,14 +21,14 @@ using static Nuke.Common.Logger;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
-[AzurePipelines(
-    AzurePipelinesImage.UbuntuLatest,
-    TriggerBranchesInclude = new[]{"master", "release-*"},
-    PullRequestsBranchesInclude = new[]{"master", "release-*"},
-    InvokedTargets = new[] { nameof(Test), nameof(Pack) },
-    NonEntryTargets = new[] { nameof(Restore) },
-    ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
-)]
+// [AzurePipelines(
+//     AzurePipelinesImage.UbuntuLatest,
+//     TriggerBranchesInclude = new[]{"master", "release-*"},
+//     PullRequestsBranchesInclude = new[]{"master", "release-*"},
+//     InvokedTargets = new[] { nameof(Test), nameof(Pack) },
+//     NonEntryTargets = new[] { nameof(Restore) },
+//     ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
+// )]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -52,10 +52,6 @@ class Build : NukeBuild
     [GitRepository] readonly GitRepository GitRepository;
     [GitVersion] readonly GitVersion GitVersion;
     [CI] readonly AzurePipelines AzurePipelines;
-    
-    
-    [Partition(2)] readonly Partition TestPartition;
-    IEnumerable<Project> TestProjects => TestPartition.GetCurrent(Solution.GetProjects("*.Tests"));
 
     AbsolutePath SourceDirectory => RootDirectory/ "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
@@ -63,7 +59,6 @@ class Build : NukeBuild
     
     AbsolutePath PackageDirectory => ArtifactsDirectory / "packages";
     
-    AbsolutePath TestResultDirectory => ArtifactsDirectory / "test-results";
     
     string CoverageReportDirectory => ArtifactsDirectory / "coverage-report";
     string CoverageReportArchive => ArtifactsDirectory / "coverage-report.zip";
@@ -103,6 +98,10 @@ class Build : NukeBuild
                 .EnableNoRestore());
         });
     
+    [Partition(2)] readonly Partition TestPartition;
+    IEnumerable<Project> TestProjects => TestPartition.GetCurrent(Solution.GetProjects("*.Test"));
+    AbsolutePath TestResultDirectory => ArtifactsDirectory / "test-results";
+    
     Target Test => _ => _
         .DependsOn(Compile)
         .Produces(TestResultDirectory / "*.trx")
@@ -110,11 +109,12 @@ class Build : NukeBuild
         .Partition(() => TestPartition)
         .Executes(() =>
         {
-            DotNetTest(s => s
-                .SetNoBuild(InvokedTargets.Contains(Compile))
-                .SetResultsDirectory(TestResultDirectory)
+            DotNetTest(_ => _
+                .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .EnableNoRestore()
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetNoRestore(InvokedTargets.Contains(Restore))
+                .SetResultsDirectory(TestResultDirectory)
                 .When(InvokedTargets.Contains(Coverage) || IsServerBuild, _ => _
                     .EnableCollectCoverage()
                     .SetCoverletOutputFormat(CoverletOutputFormat.opencover)
@@ -122,7 +122,8 @@ class Build : NukeBuild
                 .CombineWith(TestProjects, (_, v) => _
                     .SetProjectFile(v)
                     .SetLogger($"trx;LogFileName={v.Name}.trx")
-                    .SetCoverletOutput(TestResultDirectory / $"{v.Name}.xml")));
+                    .SetCoverletOutput(TestResultDirectory / $"{v.Name}.xml"))
+            );
             
             TestResultDirectory.GlobFiles("*.trx").ForEach(x =>
                 AzurePipelines?.PublishTestResults(
@@ -169,12 +170,12 @@ class Build : NukeBuild
             DotNetPack(s => s
                 .SetProject(Solution)
                 .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetNoRestore(InvokedTargets.Contains(Restore))
                 .SetConfiguration(Configuration)
                 .SetOutputDirectory(PackageDirectory)
                 .SetVersion(GitVersion.NuGetVersionV2)
                 .EnableIncludeSource()
-                .EnableIncludeSymbols()
-                .EnableNoRestore());
+                .EnableIncludeSymbols());
         });
     
     Target Publish => _ => _
