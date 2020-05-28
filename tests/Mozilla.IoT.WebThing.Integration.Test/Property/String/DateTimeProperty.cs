@@ -187,16 +187,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     },
     ""links"": [
         {
-            ""href"": ""properties"",
-            ""rel"": ""/things/date-time-offset-property/properties""
+            ""rel"": ""properties"",
+            ""href"": ""/things/date-time-offset-property/properties""
         },
         {
-            ""href"": ""events"",
-            ""rel"": ""/things/date-time-offset-property/events""
+            ""rel"": ""events"",
+            ""href"": ""/things/date-time-offset-property/events""
         },
         {
-            ""href"": ""actions"",
-            ""rel"": ""/things/date-time-offset-property/actions""
+            ""rel"": ""actions"",
+            ""href"": ""/things/date-time-offset-property/actions""
         }
     ]
 }

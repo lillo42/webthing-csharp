@@ -775,16 +775,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
   }},
   ""links"": [
     {{
-      ""href"": ""properties"",
-      ""rel"": ""/things/action-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/action-thing/properties""
     }},
     {{
-      ""href"": ""events"",
-      ""rel"": ""/things/action-thing/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/action-thing/events""
     }},
     {{
-      ""href"": ""actions"",
-      ""rel"": ""/things/action-thing/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/action-thing/actions""
     }}
   ]
 }}

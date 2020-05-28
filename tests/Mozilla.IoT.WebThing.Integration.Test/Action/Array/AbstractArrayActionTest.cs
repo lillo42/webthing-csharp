@@ -701,16 +701,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
   }},
   ""links"": [
     {{
-      ""href"": ""properties"",
-      ""rel"": ""/things/{0}/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/{0}/properties""
     }},
     {{
-      ""href"": ""events"",
-      ""rel"": ""/things/{0}/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/{0}/events""
     }},
     {{
-      ""href"": ""actions"",
-      ""rel"": ""/things/{0}/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/{0}/actions""
     }}
   ]
 }}

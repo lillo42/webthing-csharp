@@ -620,16 +620,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Number
   }},
   ""links"": [
     {{
-      ""href"": ""properties"",
-      ""rel"": ""/things/number-action-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/number-action-thing/properties""
     }},
     {{
-      ""href"": ""events"",
-      ""rel"": ""/things/number-action-thing/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/number-action-thing/events""
     }},
     {{
-      ""href"": ""actions"",
-      ""rel"": ""/things/number-action-thing/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/number-action-thing/actions""
     }}
   ]
 }}

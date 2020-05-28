@@ -243,16 +243,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
     }},
     ""links"": [
         {{
-            ""href"": ""properties"",
-            ""rel"": ""/things/number-property/properties""
+            ""rel"": ""properties"",
+            ""href"": ""/things/number-property/properties""
         }},
         {{
-            ""href"": ""events"",
-            ""rel"": ""/things/number-property/events""
+            ""rel"": ""events"",
+            ""href"": ""/things/number-property/events""
         }},
         {{
-            ""href"": ""actions"",
-            ""rel"": ""/things/number-property/actions""
+            ""rel"": ""actions"",
+            ""href"": ""/things/number-property/actions""
         }}
     ]
 }}

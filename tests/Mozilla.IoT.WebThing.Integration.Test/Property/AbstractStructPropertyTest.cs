@@ -137,16 +137,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
   }},
   ""links"": [
     {{
-      ""href"": ""properties"",
-      ""rel"": ""/things/property-thing/properties""
+      ""rel"": ""properties"",
+      ""href"": ""/things/property-thing/properties""
     }},
     {{
-      ""href"": ""events"",
-      ""rel"": ""/things/property-thing/events""
+      ""rel"": ""events"",
+      ""href"": ""/things/property-thing/events""
     }},
     {{
-      ""href"": ""actions"",
-      ""rel"": ""/things/property-thing/actions""
+      ""rel"": ""actions"",
+      ""href"": ""/things/property-thing/actions""
     }}
   ]
 }}";

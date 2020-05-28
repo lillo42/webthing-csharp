@@ -34,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array.Number
 
         protected override JsonElement[] CreateInvalidJson()
         {
-             var result = new List<JsonElement>();
+            var result = new List<JsonElement>();
 
             #region String
             

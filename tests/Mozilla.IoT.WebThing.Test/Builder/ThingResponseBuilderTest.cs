@@ -130,14 +130,14 @@ namespace Mozilla.IoT.WebThing.Test.Builder
     },
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""links"": [{
-        ""href"": ""properties"",
-        ""rel"": ""/things/event-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/event-thing/properties""
       },{
-        ""href"": ""events"",
-        ""rel"": ""/things/event-thing/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/event-thing/events""
       },{
-        ""href"": ""actions"",
-        ""rel"": ""/things/event-thing/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/event-thing/actions""
     }]
 }
 "));
@@ -348,14 +348,14 @@ namespace Mozilla.IoT.WebThing.Test.Builder
     },
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""links"": [{
-        ""href"": ""properties"",
-        ""rel"": ""/things/property-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/property-thing/properties""
       },{
-        ""href"": ""events"",
-        ""rel"": ""/things/property-thing/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/property-thing/events""
       },{
-        ""href"": ""actions"",
-        ""rel"": ""/things/property-thing/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/property-thing/actions""
     }]
 }
 "));
@@ -405,14 +405,14 @@ namespace Mozilla.IoT.WebThing.Test.Builder
 {
   ""@context"": ""https://iot.mozilla.org/schemas"",
    ""links"": [{
-        ""href"": ""properties"",
-        ""rel"": ""/things/property-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/property-thing/properties""
       },{
-        ""href"": ""events"",
-        ""rel"": ""/things/property-thing/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/property-thing/events""
       },{
-        ""href"": ""actions"",
-        ""rel"": ""/things/property-thing/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/property-thing/actions""
    }],
    ""properties"": {
     ""bool2"": {
@@ -531,14 +531,14 @@ namespace Mozilla.IoT.WebThing.Test.Builder
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""links"": [{
-        ""href"": ""properties"",
-        ""rel"": ""/things/action-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/action-thing/properties""
       },{
-        ""href"": ""events"",
-        ""rel"": ""/things/action-thing/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/action-thing/events""
       },{
-        ""href"": ""actions"",
-        ""rel"": ""/things/action-thing/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/action-thing/actions""
     }],
     ""actions"": {
       ""noParameter"": {
@@ -668,14 +668,14 @@ namespace Mozilla.IoT.WebThing.Test.Builder
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
     ""links"": [{
-        ""href"": ""properties"",
-        ""rel"": ""/things/action-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/action-thing/properties""
       },{
-        ""href"": ""events"",
-        ""rel"": ""/things/action-thing/events""
+        ""rel"": ""events"",
+        ""href"": ""/things/action-thing/events""
       },{
-        ""href"": ""actions"",
-        ""rel"": ""/things/action-thing/actions""
+        ""rel"": ""actions"",
+        ""href"": ""/things/action-thing/actions""
     }],
     ""actions"": {
       ""test"": {

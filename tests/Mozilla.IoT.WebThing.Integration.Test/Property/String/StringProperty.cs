@@ -219,16 +219,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     },
     ""links"": [
         {
-            ""href"": ""properties"",
-            ""rel"": ""/things/sting-property/properties""
+            ""rel"": ""properties"",
+            ""href"": ""/things/sting-property/properties""
         },
         {
-            ""href"": ""events"",
-            ""rel"": ""/things/sting-property/events""
+            ""rel"": ""events"",
+            ""href"": ""/things/sting-property/events""
         },
         {
-            ""href"": ""actions"",
-            ""rel"": ""/things/sting-property/actions""
+            ""rel"": ""actions"",
+            ""href"": ""/things/sting-property/actions""
         }
     ]
 }
