@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AzurePipelines;
@@ -17,18 +20,11 @@ using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
-using static Nuke.Common.Logger;
+using static Nuke.Common.Tools.Git.GitTasks;
+
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
-// [AzurePipelines(
-//     AzurePipelinesImage.UbuntuLatest,
-//     TriggerBranchesInclude = new[]{"master", "release-*"},
-//     PullRequestsBranchesInclude = new[]{"master", "release-*"},
-//     InvokedTargets = new[] { nameof(Test), nameof(Pack) },
-//     NonEntryTargets = new[] { nameof(Restore) },
-//     ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
-// )]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -159,8 +155,31 @@ class Build : NukeBuild
                     fileMode: FileMode.Create);
             }
         });
+    
+    
+    Target AcceptanceTest => _ => _
+        .DependsOn(Test)
+        .Executes(async () =>
+        {
+            Git("clone https://github.com/mozilla-iot/webthing-tester");
+            
+            var pip3 = (Tool) new PathExecutableAttribute("pip3").GetValue(null, null);
+            pip3("install --user -r webthing-tester/requirements.txt");
 
+            var source = new CancellationTokenSource();
+            var dotnet = Task.Factory.StartNew(() => DotNetRun(_ => _
+                .SetConfiguration(Configuration)
+                .SetProjectFile(Solution.GetProject("TestThing"))
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetNoRestore(InvokedTargets.Contains(Restore))), source.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
+            await Task.Delay(TimeSpan.FromSeconds(10));
+            
+            var webThingTest = (Tool) new PathExecutableAttribute("./webthing-tester/test-client.py").GetValue(null, null);
+            webThingTest("--path-prefix \"/things/my-lamp-1234\"  --host localhost --port 5000");
+            
+            source.Cancel();
+        });
     Target Pack => _ => _
         .DependsOn(Compile, Test)
         .Produces(PackageDirectory / "*.nupkg")

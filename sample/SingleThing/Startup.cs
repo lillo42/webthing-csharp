@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SampleThing.Things;
+using SingleThing.Things;
 
-namespace SampleThing
+namespace SingleThing
 {
     public class Startup
     {
