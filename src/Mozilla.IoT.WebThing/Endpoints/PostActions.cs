@@ -69,14 +69,14 @@ namespace Mozilla.IoT.WebThing.Endpoints
             
             logger.LogInformation("Going to execute action. [Thing: {name}][Action: {actionName}][Action Id: {actionId}]", 
                 thingName, actionName, actionInformation.GetId());
-            
-            _ = actionInformation.ExecuteAsync(thing, service).ConfigureAwait(false);
-              
+
             await context.WriteBodyAsync(HttpStatusCode.Created, new Dictionary<string, object>
                 {
                     [namePolicy.ConvertName(actionName)] = actionInformation
                 })
                 .ConfigureAwait(false);
+            
+            _ = actionInformation.ExecuteAsync(thing, service).ConfigureAwait(false);
         }
     }
 }
