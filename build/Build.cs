@@ -171,9 +171,9 @@ class Build : NukeBuild
                 .SetConfiguration(Configuration)
                 .SetProjectFile(Solution.GetProject("TestThing"))
                 .SetNoBuild(InvokedTargets.Contains(Compile))
-                .SetNoRestore(InvokedTargets.Contains(Restore))), source.Token);
+                .SetNoRestore(InvokedTargets.Contains(Restore))), source.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(10));
             
             var webThingTest = (Tool) new PathExecutableAttribute("./webthing-tester/test-client.py").GetValue(null, null);
             webThingTest("--path-prefix \"/things/my-lamp-1234\"  --host localhost --port 5000");
