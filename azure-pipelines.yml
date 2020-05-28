@@ -47,10 +47,14 @@ stages:
             inputs:
               artifactName: test-results
               pathtoPublish: 'artifacts/test-results'
+      - job: AcceptanceTest
+        displayName: 'Acceptance Test'
+        dependsOn: [ Test ]
+        steps:
           - task: UsePythonVersion@0
             inputs:
               versionSpec: '3.6'
-              script: './build.sh AcceptanceTest --skip'              
+              script: './build.sh AcceptanceTest --skip'
       - job: Pack
         displayName: 'Pack'
         dependsOn: [ Compile, Test ]
