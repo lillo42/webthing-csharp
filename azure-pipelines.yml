@@ -33,7 +33,7 @@ stages:
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Restore Compile --skip'
+              script: './build.sh Restore Compile --skip'
       - job: Test
         displayName: 'Test'
         dependsOn: [ Compile ]
@@ -42,18 +42,22 @@ stages:
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Test --skip --test-partition $(System.JobPositionInPhase)'
+              script: './build.sh Test --skip --test-partition $(System.JobPositionInPhase)'
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: test-results
               pathtoPublish: 'artifacts/test-results'
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.6'
+              script: './build.sh AcceptanceTest --skip'              
       - job: Pack
         displayName: 'Pack'
         dependsOn: [ Compile, Test ]
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.cmd Pack --skip'
+              script: './build.sh Pack --skip'
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: packages

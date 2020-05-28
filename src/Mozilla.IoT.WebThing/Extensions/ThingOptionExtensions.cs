@@ -56,7 +56,7 @@ namespace Mozilla.IoT.WebThing.Extensions
         /// Add <see cref="JsonConverter"/>
         /// </summary>
         /// <param name="option">The <see cref="ThingOption"/>.</param>
-        /// <param name="converter">The <see cref="converter"/>.</param>
+        /// <param name="converter">The <see cref="JsonConverter"/>.</param>
         /// <returns>Return same instance that was passed</returns>
         public static ThingOption AddConverters(this ThingOption option, JsonConverter converter)
         {

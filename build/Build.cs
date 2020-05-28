@@ -158,10 +158,8 @@ class Build : NukeBuild
     [PathExecutable] readonly Tool Pip3;
     
     [PathExecutable("./webthing-tester/test-client.py")] readonly Tool WebThingTest;
-    Target MozillaIotWebTest => _ => _
+    Target AcceptanceTest => _ => _
         .DependsOn(Test)
-        .TriggeredBy(Test)
-        .Consumes(Test)
         .Executes(() =>
         {
             var test= FromUrl("https://github.com/mozilla-iot/webthing-tester");
