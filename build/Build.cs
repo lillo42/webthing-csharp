@@ -175,7 +175,7 @@ class Build : NukeBuild
 
             await Task.Delay(TimeSpan.FromSeconds(2));
             
-            var webThingTest = (Tool) new PathExecutableAttribute("pip3").GetValue(null, null);
+            var webThingTest = (Tool) new PathExecutableAttribute("./webthing-tester/test-client.py").GetValue(null, null);
             webThingTest("--path-prefix \"/things/my-lamp-1234\"  --host localhost --port 5000");
             
             source.Cancel();
