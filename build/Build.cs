@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AzurePipelines;
@@ -18,9 +17,7 @@ using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
-using static Nuke.Common.Git.GitRepository;
 using static Nuke.Common.Tools.Git.GitTasks;
-using static Nuke.Common.Tools.GitHub.GitHubTasks;
 
 
 [CheckBuildProjectConfigurations]
@@ -168,7 +165,7 @@ class Build : NukeBuild
 
             DotNetRun(_ => _
                 .SetConfiguration(Configuration)
-                .SetProjectFile(Solution.Projects.First(x => x.Name == "TestThing"))
+                .SetProjectFile(Solution.GetProject("TestThing"))
                 .SetNoBuild(InvokedTargets.Contains(Compile))
                 .SetNoRestore(InvokedTargets.Contains(Restore)));
 
