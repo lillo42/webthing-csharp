@@ -93,7 +93,7 @@ namespace Mozilla.IoT.WebThing.Builders
             AddSchemaInformation(information, eventInfo!.ToJsonSchema(@event), @event.EventHandlerType!.GetGenericArguments()[0]);
             information.Add(s_link, new[]
             {
-                new Link($"/things/{_thingName}/events/{eventName}", "event")
+                new Link("event", $"/things/{_thingName}/events/{eventName}")
             });
             
             _events.Add(eventName, information);
@@ -120,7 +120,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             propertyInformation.Add(s_link, new[]
             {
-                new Link($"/things/{_thingName}/properties/{propertyName}", "property")
+                new Link("property", $"/things/{_thingName}/properties/{propertyName}")
             });
             
             _properties.Add(propertyName, propertyInformation);
@@ -147,7 +147,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             actionInformation.Add(s_link, new[]
             {
-                new Link($"/things/{_thingName}/actions/{propertyName}", "action")
+                new Link("action", $"/things/{_thingName}/actions/{propertyName}")
             });
 
             var input = new Dictionary<string, object?>
