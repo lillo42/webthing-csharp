@@ -498,6 +498,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
         private readonly string RESPONSE = $@"
 {{
     ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {{
+        ""nosec_sc"": {{
+            ""scheme"": ""nosec""
+        }}
+    }},
     ""properties"": {{
         ""values"": {{
             ""type"": ""array"",
@@ -557,12 +563,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Array
             ""href"": ""/things/{{0}}/properties""
         }},
         {{
-            ""rel"": ""events"",
-            ""href"": ""/things/{{0}}/events""
-        }},
-        {{
             ""rel"": ""actions"",
             ""href"": ""/things/{{0}}/actions""
+        }},
+        {{
+            ""rel"": ""events"",
+            ""href"": ""/things/{{0}}/events""
         }}
     ]
 }}

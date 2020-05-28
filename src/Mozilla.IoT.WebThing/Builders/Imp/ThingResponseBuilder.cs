@@ -48,7 +48,9 @@ namespace Mozilla.IoT.WebThing.Builders
         private const string s_minItems = "minItems";
         private const string s_maxItems = "maxItems";
         private const string s_uniqueItems = "uniqueItems";
-        
+
+        private const string s_security = "security";
+        private const string s_securityDefinitions = "securityDefinitions";
 
         /// <inheritdoc />
         public IThingResponseBuilder SetThing(Thing thing)
@@ -385,6 +387,16 @@ namespace Mozilla.IoT.WebThing.Builders
             if (_thing.Description != null)
             {
                 result.Add(s_description, _thing.Description);
+            }
+            
+            if (_thing.Security != null)
+            {
+                result.Add(s_security, _thing.Security);
+            }
+            
+            if (_thing.SecurityDefinitions?.Count > 0)
+            {
+                result.Add(s_securityDefinitions, _thing.SecurityDefinitions);
             }
             
             AddTypeProperty(result, _thing.Type);

@@ -131,6 +131,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         private const string ExpectedSerialize = @"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {
+        ""nosec_sc"": {
+            ""scheme"": ""nosec""
+        }
+    },
     ""properties"": {
         ""value"": {
             ""type"": ""string"",
@@ -191,12 +197,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
             ""href"": ""/things/time-span-property/properties""
         },
         {
-            ""rel"": ""events"",
-            ""href"": ""/things/time-span-property/events""
-        },
-        {
             ""rel"": ""actions"",
             ""href"": ""/things/time-span-property/actions""
+        },
+        {
+            ""rel"": ""events"",
+            ""href"": ""/things/time-span-property/events""
         }
     ]
 }

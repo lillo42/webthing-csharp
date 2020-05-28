@@ -111,42 +111,49 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
             public T? NullableValue { get; set; }
         }
         
-        private const string RESPONSE = @"{{
-  ""@context"": ""https://iot.mozilla.org/schemas"",
-  ""properties"": {{
-    ""value"": {{
-      ""type"": ""{0}"",
-      {1}
-      ""links"": [
-        {{
-          ""href"": ""/things/property-thing/properties/value"",
-          ""rel"": ""property""
+        private const string RESPONSE = @"
+{{
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {{
+        ""nosec_sc"": {{
+          ""scheme"": ""nosec""
         }}
-      ]
-    }},
-    ""nullableValue"": {{
-      ""type"": ""{0}"",
-      {1}
-      ""links"": [
-        {{
-          ""href"": ""/things/property-thing/properties/nullableValue"",
-          ""rel"": ""property""
+      }},
+    ""properties"": {{
+        ""value"": {{
+            ""type"": ""{0}"",
+            {1}
+            ""links"": [
+            {{
+                ""href"": ""/things/property-thing/properties/value"",
+                ""rel"": ""property""
+            }}
+            ]
+        }},
+        ""nullableValue"": {{
+            ""type"": ""{0}"",
+            {1}
+            ""links"": [
+                {{
+                ""href"": ""/things/property-thing/properties/nullableValue"",
+                ""rel"": ""property""
+                }}
+            ]
         }}
-      ]
-    }}
-  }},
-  ""links"": [
+    }},
+    ""links"": [
     {{
-      ""rel"": ""properties"",
-      ""href"": ""/things/property-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/property-thing/properties""
     }},
     {{
-      ""rel"": ""events"",
-      ""href"": ""/things/property-thing/events""
+        ""rel"": ""actions"",
+        ""href"": ""/things/property-thing/actions""
     }},
     {{
-      ""rel"": ""actions"",
-      ""href"": ""/things/property-thing/actions""
+        ""rel"": ""events"",
+        ""href"": ""/things/property-thing/events""
     }}
   ]
 }}";

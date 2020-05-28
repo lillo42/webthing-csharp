@@ -614,6 +614,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         private const string Response = @"
 {{
   ""@context"": ""https://iot.mozilla.org/schemas"",
+  ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {{
+        ""nosec_sc"": {{
+            ""scheme"": ""nosec""
+        }}
+  }},
   ""actions"": {{
     ""values"": {{
       ""links"": [
@@ -705,12 +711,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Array
         ""href"": ""/things/{0}/properties""
     }},
     {{
-        ""rel"": ""events"",
-        ""href"": ""/things/{0}/events""
-    }},
-    {{
         ""rel"": ""actions"",
         ""href"": ""/things/{0}/actions""
+    }},
+    {{
+        ""rel"": ""events"",
+        ""href"": ""/things/{0}/events""
     }}
   ]
 }}

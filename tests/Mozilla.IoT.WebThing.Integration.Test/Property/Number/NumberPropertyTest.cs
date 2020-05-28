@@ -155,6 +155,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
         private readonly string ExpectedSerialize = $@"
 {{
     ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {{
+        ""nosec_sc"": {{
+            ""scheme"": ""nosec""
+        }}
+    }},
     ""properties"": {{
         ""minAndMaxValue"": {{
             ""type"": ""{typeof(T).ToJsonType().ToString().ToLower()}"",
@@ -247,12 +253,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.Number
             ""href"": ""/things/number-property/properties""
         }},
         {{
-            ""rel"": ""events"",
-            ""href"": ""/things/number-property/events""
-        }},
-        {{
             ""rel"": ""actions"",
             ""href"": ""/things/number-property/actions""
+        }},
+        {{
+            ""rel"": ""events"",
+            ""href"": ""/things/number-property/events""
         }}
     ]
 }}
