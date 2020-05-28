@@ -407,8 +407,8 @@ namespace Mozilla.IoT.WebThing.Builders
             var links = new List<Link>(4)
             {
                 new Link("properties", $"/things/{_thingName}/properties"),
-                new Link("events", $"/things/{_thingName}/events"),
-                new Link("actions", $"/things/{_thingName}/actions")
+                new Link("actions", $"/things/{_thingName}/actions"),
+                new Link("events", $"/things/{_thingName}/events")
             };
             
             result.Add(s_link, links);
