@@ -19,6 +19,8 @@ using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 using static Nuke.Common.Git.GitRepository;
+using static Nuke.Common.Tools.Git.GitTasks;
+using static Nuke.Common.Tools.GitHub.GitHubTasks;
 
 
 [CheckBuildProjectConfigurations]
@@ -159,8 +161,9 @@ class Build : NukeBuild
         .DependsOn(Test)
         .Executes(() =>
         {
+            Git("clone https://github.com/mozilla-iot/webthing-tester");
+            
             var pip3 = (Tool) new PathExecutableAttribute("pip3").GetValue(null, null);
-            var test= FromUrl("https://github.com/mozilla-iot/webthing-tester");
             pip3("install --user -r webthing-tester/requirements.txt");
 
             DotNetRun(_ => _
