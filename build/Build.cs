@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AzurePipelines;
@@ -17,18 +18,11 @@ using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
-using static Nuke.Common.Logger;
+using static Nuke.Common.Git.GitRepository;
+
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
-// [AzurePipelines(
-//     AzurePipelinesImage.UbuntuLatest,
-//     TriggerBranchesInclude = new[]{"master", "release-*"},
-//     PullRequestsBranchesInclude = new[]{"master", "release-*"},
-//     InvokedTargets = new[] { nameof(Test), nameof(Pack) },
-//     NonEntryTargets = new[] { nameof(Restore) },
-//     ExcludedTargets = new[] { nameof(Clean), nameof(Coverage) }
-// )]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -161,6 +155,27 @@ class Build : NukeBuild
         });
 
 
+    [PathExecutable] readonly Tool Pip3;
+    
+    [PathExecutable("./webthing-tester/test-client.py")] readonly Tool WebThingTest;
+    Target MozillaIotWebTest => _ => _
+        .DependsOn(Test)
+        .TriggeredBy(Test)
+        .Consumes(Test)
+        .Executes(() =>
+        {
+            var test= FromUrl("https://github.com/mozilla-iot/webthing-tester");
+            Pip3("install --user -r webthing-tester/requirements.txt");
+
+            DotNetRun(_ => _
+                .SetConfiguration(Configuration)
+                .SetProjectFile(Solution.Projects.First(x => x.Name == "TestThing"))
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetNoRestore(InvokedTargets.Contains(Restore)));
+
+            WebThingTest("--path-prefix \"/things/my-lamp-1234\"  --host localhost --port 5000");
+
+        });
     Target Pack => _ => _
         .DependsOn(Compile, Test)
         .Produces(PackageDirectory / "*.nupkg")
