@@ -377,7 +377,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
                 MessageType = "setProperty",
                 Data = new
                 {
-                    Id = value
+                    Id2 = value
                 }
             };
             

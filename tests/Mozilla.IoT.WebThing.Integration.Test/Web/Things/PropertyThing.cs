@@ -7,7 +7,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Things
     {
         public override string Name => "property-thing";
 
-        public Guid Id { get; } = Guid.Parse("77bd476e-469d-4954-83b5-d9eedb2543ff");
+        public Guid Id2 { get; } = Guid.Parse("77bd476e-469d-4954-83b5-d9eedb2543ff");
 
         private bool _modifyViaMethod = true;
 

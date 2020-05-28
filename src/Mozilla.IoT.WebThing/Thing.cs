@@ -30,8 +30,14 @@ namespace Mozilla.IoT.WebThing
         public virtual string Context { get; } = DefaultContext;
 
         /// <summary>
+        /// The id of the thing.
+        /// Default value is same as name
+        /// </summary>
+        [ThingProperty(Ignore = true)]
+        public virtual string Id => Name;
+        
+        /// <summary>
         /// The name of the thing.
-        /// It's used to generated Id.
         /// </summary>
         [ThingProperty(Ignore = true)]
         public abstract string Name { get; }

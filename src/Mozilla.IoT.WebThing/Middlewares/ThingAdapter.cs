@@ -26,7 +26,7 @@ namespace Mozilla.IoT.WebThing.Middlewares
 
                         if (option.UseThingAdapterUrl)
                         {
-                            response.TryAdd("id", thing.Name);
+                            response.TryAdd("id", thing.Id);
                             response.TryAdd("href", builder.Path);
                             response.TryAdd("base", builder.Uri.ToString());
                         }

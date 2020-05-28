@@ -120,8 +120,8 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             source.CancelAfter(s_timeout);
             
             var response = await _client
-                .PutAsync($"{s_baseUrl}/id", 
-                    new StringContent(@"{ ""id"": ""3756710b-623e-4602-8675-d94aa224e680"" }"), 
+                .PutAsync($"{s_baseUrl}/Id2", 
+                    new StringContent(@"{ ""Id2"": ""3756710b-623e-4602-8675-d94aa224e680"" }"), 
                     source.Token);
             
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -218,7 +218,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json.Should().HaveCount(5);
             
-            var id = json["id"];
+            var id = json["id2"];
             id.Type.Should().Be(JTokenType.String);
             id.Value<string>().Should().Be("77bd476e-469d-4954-83b5-d9eedb2543ff");
             
