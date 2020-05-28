@@ -483,6 +483,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Number
         private readonly string _response = @"
 {{
   ""@context"": ""https://iot.mozilla.org/schemas"",
+  ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {{
+        ""nosec_sc"": {{
+            ""scheme"": ""nosec""
+        }}
+  }},
   ""actions"": {{
     ""minAndMax"": {{
       ""links"": [
@@ -620,16 +626,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.Number
   }},
   ""links"": [
     {{
-      ""href"": ""properties"",
-      ""rel"": ""/things/number-action-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/number-action-thing/properties""
     }},
     {{
-      ""href"": ""events"",
-      ""rel"": ""/things/number-action-thing/events""
+        ""rel"": ""actions"",
+        ""href"": ""/things/number-action-thing/actions""
     }},
     {{
-      ""href"": ""actions"",
-      ""rel"": ""/things/number-action-thing/actions""
+        ""rel"": ""events"",
+        ""href"": ""/things/number-action-thing/events""
     }}
   ]
 }}

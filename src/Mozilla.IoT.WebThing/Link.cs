@@ -1,18 +1,20 @@
+using System;
+
 namespace Mozilla.IoT.WebThing
 {
     /// <summary>
-    /// 
+    /// Represent link
     /// </summary>
     public class Link
     {
         /// <summary>
-        /// 
+        /// Initialize a new instance of <see cref="Link"/>.
         /// </summary>
-        /// <param name="href"></param>
-        /// <param name="rel"></param>
-        public Link(string href, string? rel)
+        /// <param name="href">Representation of a URL.</param>
+        /// <param name="rel">Describing a relationship</param>
+        public Link(string? rel, string href)
         {
-            Href = href;
+            Href = href ?? throw new ArgumentNullException(nameof(href));
             Rel = rel;
         }
 

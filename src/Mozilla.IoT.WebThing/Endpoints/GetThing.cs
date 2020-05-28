@@ -8,12 +8,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Middlewares;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
     internal class GetThing
     {
-        internal static Task InvokeAsync(HttpContext context)
+        internal static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<GetThing>>();
@@ -28,16 +29,13 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
+                return;
             }
             
+            ThingAdapter.Adapt(context, thing);
             logger.LogInformation("Found 1 Thing. [Thing: {name}]", thing.Name);
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = Const.ContentType;
-            
-            return JsonSerializer.SerializeAsync(context.Response.Body, thing,
-                service.GetRequiredService<ThingOption>().ToJsonSerializerOptions(),
-                context.RequestAborted);
+            await context.WriteBodyAsync(HttpStatusCode.OK, thing.ThingContext.Response)
+                .ConfigureAwait(false);
         }
     }
 }

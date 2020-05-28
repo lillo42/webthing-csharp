@@ -48,7 +48,9 @@ namespace Mozilla.IoT.WebThing.Builders
         private const string s_minItems = "minItems";
         private const string s_maxItems = "maxItems";
         private const string s_uniqueItems = "uniqueItems";
-        
+
+        private const string s_security = "security";
+        private const string s_securityDefinitions = "securityDefinitions";
 
         /// <inheritdoc />
         public IThingResponseBuilder SetThing(Thing thing)
@@ -93,7 +95,7 @@ namespace Mozilla.IoT.WebThing.Builders
             AddSchemaInformation(information, eventInfo!.ToJsonSchema(@event), @event.EventHandlerType!.GetGenericArguments()[0]);
             information.Add(s_link, new[]
             {
-                new Link($"/things/{_thingName}/events/{eventName}", "event")
+                new Link("event", $"/things/{_thingName}/events/{eventName}")
             });
             
             _events.Add(eventName, information);
@@ -120,7 +122,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             propertyInformation.Add(s_link, new[]
             {
-                new Link($"/things/{_thingName}/properties/{propertyName}", "property")
+                new Link("property", $"/things/{_thingName}/properties/{propertyName}")
             });
             
             _properties.Add(propertyName, propertyInformation);
@@ -147,7 +149,7 @@ namespace Mozilla.IoT.WebThing.Builders
             
             actionInformation.Add(s_link, new[]
             {
-                new Link($"/things/{_thingName}/actions/{propertyName}", "action")
+                new Link("action", $"/things/{_thingName}/actions/{propertyName}")
             });
 
             var input = new Dictionary<string, object?>
@@ -387,6 +389,16 @@ namespace Mozilla.IoT.WebThing.Builders
                 result.Add(s_description, _thing.Description);
             }
             
+            if (_thing.Security != null)
+            {
+                result.Add(s_security, _thing.Security);
+            }
+            
+            if (_thing.SecurityDefinitions?.Count > 0)
+            {
+                result.Add(s_securityDefinitions, _thing.SecurityDefinitions);
+            }
+            
             AddTypeProperty(result, _thing.Type);
 
             if (_events.Any())
@@ -407,8 +419,8 @@ namespace Mozilla.IoT.WebThing.Builders
             var links = new List<Link>(4)
             {
                 new Link("properties", $"/things/{_thingName}/properties"),
-                new Link("events", $"/things/{_thingName}/events"),
-                new Link("actions", $"/things/{_thingName}/actions")
+                new Link("actions", $"/things/{_thingName}/actions"),
+                new Link("events", $"/things/{_thingName}/events")
             };
             
             result.Add(s_link, links);

@@ -91,31 +91,37 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property
         }
         
         private const string RESPONSE = @"{{
-  ""@context"": ""https://iot.mozilla.org/schemas"",
-  ""properties"": {{
-    ""value"": {{
-      ""type"": ""{0}"",
-      {1}
-      ""links"": [
-        {{
-          ""href"": ""/things/property-thing/properties/value"",
-          ""rel"": ""property""
+    ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {{
+        ""nosec_sc"": {{
+            ""scheme"": ""nosec""
         }}
-      ]
-    }}
-  }},
-  ""links"": [
+    }},
+    ""properties"": {{
+        ""value"": {{
+            ""type"": ""{0}"",
+            {1}
+            ""links"": [
+            {{
+                ""href"": ""/things/property-thing/properties/value"",
+                ""rel"": ""property""
+            }}
+        ]
+        }}
+    }},
+    ""links"": [
     {{
-      ""href"": ""properties"",
-      ""rel"": ""/things/property-thing/properties""
+        ""rel"": ""properties"",
+        ""href"": ""/things/property-thing/properties""
     }},
     {{
-      ""href"": ""events"",
-      ""rel"": ""/things/property-thing/events""
+        ""rel"": ""actions"",
+        ""href"": ""/things/property-thing/actions""
     }},
     {{
-      ""href"": ""actions"",
-      ""rel"": ""/things/property-thing/actions""
+        ""rel"": ""events"",
+        ""href"": ""/things/property-thing/events""
     }}
   ]
 }}";

@@ -142,6 +142,12 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
         private const string ExpectedSerialize = @"
 {
     ""@context"": ""https://iot.mozilla.org/schemas"",
+    ""security"": ""nosec_sc"",
+    ""securityDefinitions"": {
+        ""nosec_sc"": {
+            ""scheme"": ""nosec""
+        }
+    },
     ""properties"": {
         ""minAndMax"": {
             ""type"": ""string"",
@@ -219,16 +225,16 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Property.String
     },
     ""links"": [
         {
-            ""href"": ""properties"",
-            ""rel"": ""/things/sting-property/properties""
+            ""rel"": ""properties"",
+            ""href"": ""/things/sting-property/properties""
         },
         {
-            ""href"": ""events"",
-            ""rel"": ""/things/sting-property/events""
+            ""rel"": ""actions"",
+            ""href"": ""/things/sting-property/actions""
         },
         {
-            ""href"": ""actions"",
-            ""rel"": ""/things/sting-property/actions""
+            ""rel"": ""events"",
+            ""href"": ""/things/sting-property/events""
         }
     ]
 }
