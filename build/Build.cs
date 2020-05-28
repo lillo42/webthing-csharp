@@ -50,7 +50,7 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
-    [GitVersion(Framework = "netcoreapp3.1", NoFetch = true)] readonly GitVersion GitVersion;
+    [GitVersion] readonly GitVersion GitVersion;
     [CI] readonly AzurePipelines AzurePipelines;
 
     AbsolutePath SourceDirectory => RootDirectory/ "src";
