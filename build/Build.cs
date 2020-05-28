@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.AzurePipelines;
@@ -156,22 +159,26 @@ class Build : NukeBuild
     
     Target AcceptanceTest => _ => _
         .DependsOn(Test)
-        .Executes(() =>
+        .Executes(async () =>
         {
             Git("clone https://github.com/mozilla-iot/webthing-tester");
             
             var pip3 = (Tool) new PathExecutableAttribute("pip3").GetValue(null, null);
             pip3("install --user -r webthing-tester/requirements.txt");
 
-            DotNetRun(_ => _
+            var source = new CancellationTokenSource();
+            var dotnet = Task.Factory.StartNew(() => DotNetRun(_ => _
                 .SetConfiguration(Configuration)
                 .SetProjectFile(Solution.GetProject("TestThing"))
                 .SetNoBuild(InvokedTargets.Contains(Compile))
-                .SetNoRestore(InvokedTargets.Contains(Restore)));
+                .SetNoRestore(InvokedTargets.Contains(Restore))), source.Token);
 
+            await Task.Delay(TimeSpan.FromSeconds(2));
+            
             var webThingTest = (Tool) new PathExecutableAttribute("pip3").GetValue(null, null);
             webThingTest("--path-prefix \"/things/my-lamp-1234\"  --host localhost --port 5000");
-
+            
+            source.Cancel();
         });
     Target Pack => _ => _
         .DependsOn(Compile, Test)
