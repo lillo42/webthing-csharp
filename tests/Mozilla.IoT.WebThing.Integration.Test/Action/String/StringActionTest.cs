@@ -52,7 +52,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             context.Actions[nameof(ActionThing.Invoke)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
             info.Should().NotBeNull();
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.Value.Should().Be(value);
@@ -78,7 +78,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
                     
                     
             info.Should().NotBeNull();
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(value);
@@ -103,7 +103,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
             info.Should().NotBeNull();
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(null);
@@ -128,7 +128,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             context.Actions[nameof(ActionThing.InvokeWithService)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
             info.Should().NotBeNull();
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.Value.Should().Be(value);
@@ -152,7 +152,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             var jsonElement = CreateJson(value);
             context.Actions[nameof(ActionThing.InvokeNullableWithService)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(value);
@@ -177,7 +177,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             context.Actions[nameof(ActionThing.InvokeNullable)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
             info.Should().NotBeNull();
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(null);
@@ -202,7 +202,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             context.Actions[nameof(ActionThing.InvokeAsync)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
             info.Should().NotBeNull();
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.Value.Should().Be(value);
@@ -227,7 +227,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             context.Actions[nameof(ActionThing.InvokeNullableAsync)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
             info.Should().NotBeNull();
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(value);
@@ -251,7 +251,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
                 @"{ ""invokeNullable"": { ""input"": { ""value"": null } } }").GetProperty("invokeNullable");
             context.Actions[nameof(ActionThing.InvokeNullableAsync)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(null);
@@ -275,7 +275,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             
             context.Actions[nameof(ActionThing.Pattern)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.Value.Should().Be("test@test.com");
@@ -302,7 +302,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             
             context.Actions[nameof(ActionThing.Enum)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.Value.Should().Be(value);
@@ -329,7 +329,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
             
             context.Actions[nameof(ActionThing.EnumNull)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(value);
@@ -353,7 +353,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Action.String
                 @"{ ""invokeNullable"": { ""input"": { ""value"": null } } }").GetProperty("invokeNullable");
             context.Actions[nameof(ActionThing.EnumNull)].TryAdd(jsonElement, out var info).Should().BeTrue();
                     
-            info.Status.Should().Be(ActionStatus.Pending);
+            info.Status.Should().Be(ActionStatus.Created);
             await info.ExecuteAsync(thing, Provider).ConfigureAwait(false);
             info.Status.Should().Be(ActionStatus.Completed);
             thing.NullableValue.Should().Be(null);

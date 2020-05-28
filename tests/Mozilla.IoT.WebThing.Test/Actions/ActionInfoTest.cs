@@ -30,7 +30,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
-            action.Status.Should().Be(ActionStatus.Pending);
+            action.Status.Should().Be(ActionStatus.Created);
             action.GetActionName().Should().Be("void-action");
             
             action.ExecuteAsync(Substitute.For<Thing>(), _provider);
@@ -53,7 +53,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
-            action.Status.Should().Be(ActionStatus.Pending);
+            action.Status.Should().Be(ActionStatus.Created);
             action.GetActionName().Should().Be("void-action");
             
             action.ExecuteAsync(Substitute.For<Thing>(), _provider);
@@ -76,7 +76,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
-            action.Status.Should().Be(ActionStatus.Pending);
+            action.Status.Should().Be(ActionStatus.Created);
             action.GetActionName().Should().Be("long-running-action");
             
             var task = action.ExecuteAsync(Substitute.For<Thing>(), _provider);
@@ -84,7 +84,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             action.Logs.Should().BeEmpty();
             
             action.TimeCompleted.Should().BeNull();
-            action.Status.Should().Be(ActionStatus.Executing);
+            action.Status.Should().Be(ActionStatus.Pending);
 
             await task;
             
@@ -106,7 +106,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
-            action.Status.Should().Be(ActionStatus.Pending);
+            action.Status.Should().Be(ActionStatus.Created);
             action.GetActionName().Should().Be("long-running-action");
             
             var task = action.ExecuteAsync(Substitute.For<Thing>(), _provider);
@@ -114,7 +114,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             action.Logs.Should().BeEmpty();
             
             action.TimeCompleted.Should().BeNull();
-            action.Status.Should().Be(ActionStatus.Executing);
+            action.Status.Should().Be(ActionStatus.Pending);
             
             action.Cancel();
 
@@ -133,7 +133,7 @@ namespace Mozilla.IoT.WebThing.Test.Actions
             
             action.GetId().Should().NotBeEmpty();
             action.TimeCompleted.Should().BeNull();
-            action.Status.Should().Be(ActionStatus.Pending);
+            action.Status.Should().Be(ActionStatus.Created);
             action.GetActionName().Should().Be("void-action");
 
             action.StatusChanged += OnStatusChange;

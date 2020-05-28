@@ -8,12 +8,12 @@ namespace Mozilla.IoT.WebThing.Actions
         /// <summary>
         /// Waiting to be execute.
         /// </summary>
-        Pending,
+        Created,
         
         /// <summary>
         /// Executing action.
         /// </summary>
-        Executing,
+        Pending,
         
         /// <summary>
         /// Action completed.
