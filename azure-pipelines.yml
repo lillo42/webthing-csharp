@@ -52,12 +52,14 @@ stages:
         dependsOn: [ Test ]
         steps:
           - task: UsePythonVersion@0
+            displayName: 'Use Python 3.7'
             inputs:
-              versionSpec: '3.6'
-              script: './build.sh AcceptanceTest --skip'
+              versionSpec: '3.7'
+          - script: './build.sh AcceptanceTest --skip'
+            displayName: 'Execute Acceptance Test'
       - job: Pack
         displayName: 'Pack'
-        dependsOn: [ Compile, Test ]
+        dependsOn: [ Compile, Test, AcceptanceTest ]
         steps:
           - task: CmdLine@2
             inputs:
