@@ -127,7 +127,9 @@ namespace Mozilla.IoT.WebThing.Test.Builder
                    || name == nameof(Thing.Description)
                    || name == nameof(Thing.Title)
                    || name == nameof(Thing.Type)
-                   || name == nameof(Thing.ThingContext);
+                   || name == nameof(Thing.ThingContext)
+                   || name == nameof(Thing.Security)
+                   || name == nameof(Thing.SecurityDefinitions);
         }
         
         private class FakePropertyFactory : IPropertyFactory
