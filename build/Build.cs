@@ -153,17 +153,15 @@ class Build : NukeBuild
                     fileMode: FileMode.Create);
             }
         });
-
-
-    [PathExecutable] readonly Tool Pip3;
     
-    [PathExecutable("./webthing-tester/test-client.py")] readonly Tool WebThingTest;
+    
     Target AcceptanceTest => _ => _
         .DependsOn(Test)
         .Executes(() =>
         {
+            var pip3 = (Tool) new PathExecutableAttribute("pip3").GetValue(null, null);
             var test= FromUrl("https://github.com/mozilla-iot/webthing-tester");
-            Pip3("install --user -r webthing-tester/requirements.txt");
+            pip3("install --user -r webthing-tester/requirements.txt");
 
             DotNetRun(_ => _
                 .SetConfiguration(Configuration)
@@ -171,7 +169,8 @@ class Build : NukeBuild
                 .SetNoBuild(InvokedTargets.Contains(Compile))
                 .SetNoRestore(InvokedTargets.Contains(Restore)));
 
-            WebThingTest("--path-prefix \"/things/my-lamp-1234\"  --host localhost --port 5000");
+            var webThingTest = (Tool) new PathExecutableAttribute("pip3").GetValue(null, null);
+            webThingTest("--path-prefix \"/things/my-lamp-1234\"  --host localhost --port 5000");
 
         });
     Target Pack => _ => _
