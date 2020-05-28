@@ -12,13 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="0.24.11" />
     <PackageDownload Include="GitVersion.Tool" Version="[5.3.4]" />
-    <PackageDownload Include="ReportGenerator" Version="[4.2.16]" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="..\.github\workflows\build-master.yml" />
-    <None Remove="..\.github\workflows\pull-request.yml" />
-    <None Remove="..\.github\workflows\release.yml" />
+    <PackageDownload Include="ReportGenerator" Version="[4.6.0]" />
   </ItemGroup>
 
   <ItemGroup>
