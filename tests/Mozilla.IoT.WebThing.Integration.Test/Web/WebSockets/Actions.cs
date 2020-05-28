@@ -225,14 +225,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
 
                     if (status == 0)
                     {
-                        json["data"]["noRestriction"]["status"].Value<string>().Should().BeOneOf("pending");
+                        json["data"]["noRestriction"]["status"].Value<string>().Should().BeOneOf("created");
                         status++;
                         counterError = 0;
                     }
                     
                     if (status == 1)
                     {
-                        json["data"]["noRestriction"]["status"].Value<string>().Should().BeOneOf("executing");
+                        json["data"]["noRestriction"]["status"].Value<string>().Should().BeOneOf("pending");
                         status++;
                         counterError = 0;
                     }
@@ -325,14 +325,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
 
                     if (status == 0)
                     {
-                        json["data"]["withRestriction"]["status"].Value<string>().Should().BeOneOf("pending");
+                        json["data"]["withRestriction"]["status"].Value<string>().Should().BeOneOf("created");
                         status++;
                         counterError = 0;
                     }
                     
                     if (status == 1)
                     {
-                        json["data"]["withRestriction"]["status"].Value<string>().Should().BeOneOf("executing");
+                        json["data"]["withRestriction"]["status"].Value<string>().Should().BeOneOf("pending");
                         status++;
                         counterError = 0;
                     }
@@ -405,14 +405,14 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.WebSockets
 
                     if (status == 0)
                     {
-                        json["data"]["longRunning"]["status"].Value<string>().Should().BeOneOf("pending");
+                        json["data"]["longRunning"]["status"].Value<string>().Should().BeOneOf("created");
                         status++;
                         counterError = 0;
                     }
                     
                     if (status == 1)
                     {
-                        json["data"]["longRunning"]["status"].Value<string>().Should().BeOneOf("executing");
+                        json["data"]["longRunning"]["status"].Value<string>().Should().BeOneOf("pending");
                         status++;
                         counterError = 0;
                     }

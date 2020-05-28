@@ -78,7 +78,6 @@ namespace Mozilla.IoT.WebThing.Endpoints
             var option = service.GetRequiredService<ThingOption>();
             var namePolicy = option.PropertyNamingPolicy;
             action.Href = $"/things/{namePolicy.ConvertName(thing.Name)}/actions/{namePolicy.ConvertName(actionName)}/{action.GetId()}";
-            var _ = action.ExecuteAsync(thing, service);
 
             logger.LogInformation("Action started to execute. [Thing: {name}][Action: {actionName}][Action Id: {actionId}]", 
                 thingName, action, action.GetId());
@@ -87,6 +86,8 @@ namespace Mozilla.IoT.WebThing.Endpoints
                     [namePolicy.ConvertName(actionName)] = action
                 })
                 .ConfigureAwait(false);
+            
+            _ = action.ExecuteAsync(thing, service);
         }
     }
 }

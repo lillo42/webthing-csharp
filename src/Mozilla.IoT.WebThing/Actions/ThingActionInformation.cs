@@ -34,7 +34,7 @@ namespace Mozilla.IoT.WebThing.Actions
         /// </summary>
         public DateTime? TimeCompleted { get; private set; } = null;
         
-        private ActionStatus _status = ActionStatus.Pending;
+        private ActionStatus _status = ActionStatus.Created;
 
         /// <summary>
         /// The <see cref="Status"/> of action.
@@ -65,10 +65,10 @@ namespace Mozilla.IoT.WebThing.Actions
         /// <returns>Execute task async.</returns>
         public async Task ExecuteAsync(Thing thing, IServiceProvider provider)
         {
-            Status = ActionStatus.Pending;
+            Status = ActionStatus.Created;
             var logger = provider.GetRequiredService<ILogger<ThingActionInformation>>();
             logger.LogInformation("Going to execute {actionName}. [Thing: {thingName}]", GetActionName(), thing.Name);
-            Status = ActionStatus.Executing;
+            Status = ActionStatus.Pending;
 
             try
             {

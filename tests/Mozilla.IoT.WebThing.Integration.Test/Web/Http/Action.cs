@@ -309,7 +309,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json["longRunning"].Type.Should().Be(JTokenType.Object);
             json["longRunning"]["status"].Type.Should().Be(JTokenType.String);
-            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending", "executing");
+            json["longRunning"]["status"].Value<string>().Should().Be("created");
             json["longRunning"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -324,7 +324,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json["longRunning"].Type.Should().Be(JTokenType.Object);
             json["longRunning"]["status"].Type.Should().Be(JTokenType.String);
-            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending", "executing");
+            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending");
             json["longRunning"]["href"].Type.Should().Be(JTokenType.String);
         }
         
@@ -345,7 +345,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json["longRunning"].Type.Should().Be(JTokenType.Object);
             json["longRunning"]["status"].Type.Should().Be(JTokenType.String);
-            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending", "executing");
+            json["longRunning"]["status"].Value<string>().Should().BeOneOf("created");
             json["longRunning"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -360,7 +360,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json["longRunning"].Type.Should().Be(JTokenType.Object);
             json["longRunning"]["status"].Type.Should().Be(JTokenType.String);
-            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending", "executing");
+            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending");
             json["longRunning"]["href"].Type.Should().Be(JTokenType.String);
         }
         
@@ -411,7 +411,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["noRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToString().ToUpper());
             
             json["noRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["noRestriction"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -441,7 +441,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["noRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToString().ToUpper());
             
             json["noRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["noRestriction"]["href"].Type.Should().Be(JTokenType.String);
         }
         
@@ -492,7 +492,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["noRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToString().ToUpper());
             
             json["noRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["noRestriction"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -522,7 +522,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["noRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToString().ToUpper());
             
             json["noRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["noRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["noRestriction"]["href"].Type.Should().Be(JTokenType.String);
         }
         
@@ -573,7 +573,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["withRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToUpper());
             
             json["withRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["withRestriction"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -601,7 +601,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["withRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToUpper());
             
             json["withRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["withRestriction"]["href"].Type.Should().Be(JTokenType.String);
         }
 
@@ -652,7 +652,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["withRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToUpper());
             
             json["withRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["withRestriction"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -680,7 +680,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json["withRestriction"]["input"]["id"].Value<string>().ToUpper().Should().Be(id.ToUpper());
             
             json["withRestriction"]["status"].Type.Should().Be(JTokenType.String);
-            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("pending", "executing", "completed");
+            json["withRestriction"]["status"].Value<string>().Should().BeOneOf("created", "pending", "completed");
             json["withRestriction"]["href"].Type.Should().Be(JTokenType.String);
         }
         
@@ -701,7 +701,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json["longRunning"].Type.Should().Be(JTokenType.Object);
             json["longRunning"]["status"].Type.Should().Be(JTokenType.String);
-            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending", "executing");
+            json["longRunning"]["status"].Value<string>().Should().BeOneOf("created", "pending");
             json["longRunning"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -734,7 +734,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json["longRunning"].Type.Should().Be(JTokenType.Object);
             json["longRunning"]["status"].Type.Should().Be(JTokenType.String);
-            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending", "executing");
+            json["longRunning"]["status"].Value<string>().Should().BeOneOf("created", "pending");
             json["longRunning"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
@@ -767,7 +767,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web.Http
             json.Type.Should().Be(JTokenType.Object);
             json["longRunning"].Type.Should().Be(JTokenType.Object);
             json["longRunning"]["status"].Type.Should().Be(JTokenType.String);
-            json["longRunning"]["status"].Value<string>().Should().BeOneOf("pending", "executing");
+            json["longRunning"]["status"].Value<string>().Should().BeOneOf("created", "pending");
             json["longRunning"]["href"].Type.Should().Be(JTokenType.String);
             
             source = new CancellationTokenSource();
