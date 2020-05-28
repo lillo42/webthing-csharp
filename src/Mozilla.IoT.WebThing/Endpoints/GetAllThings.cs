@@ -7,25 +7,24 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Extensions;
+using Mozilla.IoT.WebThing.Middlewares;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
     internal class GetAllThings
     {
-        internal static Task InvokeAsync(HttpContext context)
+        internal static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<GetAllThings>>();
             var things = service.GetRequiredService<IEnumerable<Thing>>();
             
-            logger.LogInformation("Found {counter} things", things.Count());
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = Const.ContentType;
-
-            return JsonSerializer.SerializeAsync(context.Response.Body, 
-                things.Select(thing => thing.ThingContext.Response).ToList(), 
-                service.GetRequiredService<ThingOption>().ToJsonSerializerOptions(), 
-                context.RequestAborted);
+            logger.LogInformation("Request all things.");
+            await context.WriteBodyAsync(HttpStatusCode.OK, things.Select(thing =>
+            {
+                ThingAdapter.Adapt(context, thing);
+                return thing.ThingContext.Response;
+            })).ConfigureAwait(false);
         }
     }
 }
