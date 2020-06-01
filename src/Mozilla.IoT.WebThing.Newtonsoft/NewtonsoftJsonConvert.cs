@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Json;
@@ -29,7 +28,7 @@ namespace Mozilla.IoT.WebThing.Newtonsoft
         /// <inheritdoc cref="IJsonConvert"/>
         public T Deserialize<T>(ReadOnlySpan<byte> values)
         {
-            return JsonConvert.DeserializeObject<T>(values.ToString(), _settings)!;
+            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(values), _settings)!;
         }
 
         /// <inheritdoc cref="IJsonConvert"/>
