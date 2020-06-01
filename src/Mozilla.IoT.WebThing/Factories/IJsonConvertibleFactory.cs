@@ -8,7 +8,6 @@ namespace Mozilla.IoT.WebThing.Factories
     /// </summary>
     public interface IJsonConvertibleFactory
     {
-        
         /// <summary>
         /// Create new instance of <see cref="IJsonConvertible"/> for <see cref="bool"/>.
         /// </summary>

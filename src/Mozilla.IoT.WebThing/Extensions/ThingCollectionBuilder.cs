@@ -10,19 +10,20 @@ namespace Mozilla.IoT.WebThing.Extensions
     /// <inheritdoc />
     public class ThingCollectionBuilder : IThingCollectionBuilder
     {
-        private readonly IServiceCollection _service;
-
         internal ThingCollectionBuilder(IServiceCollection service)
         {
-            _service = service ?? throw new ArgumentNullException(nameof(service));
+            ServiceCollection = service ?? throw new ArgumentNullException(nameof(service));
         }
+
+        /// <inheritdoc />
+        public IServiceCollection ServiceCollection { get; }
 
         /// <inheritdoc />
         public IThingCollectionBuilder AddThing<T>() 
             where T : Thing
         {
-            _service.AddSingleton<T>();
-            _service.AddSingleton(ConfigureThing<T>);
+            ServiceCollection.AddSingleton<T>();
+            ServiceCollection.AddSingleton(ConfigureThing<T>);
             return this;
         }
         
@@ -35,8 +36,8 @@ namespace Mozilla.IoT.WebThing.Extensions
                 throw new ArgumentNullException(nameof(thing));
             }
 
-            _service.AddSingleton(thing);
-            _service.AddSingleton(ConfigureThing<T>);
+            ServiceCollection.AddSingleton(thing);
+            ServiceCollection.AddSingleton(ConfigureThing<T>);
 
             return this;
         }

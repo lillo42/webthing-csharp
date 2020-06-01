@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace Mozilla.IoT.WebThing.Json.Convertibles.Input
 {
     /// <summary>
-    /// 
+    /// Represent convertible/getter <see cref="string"/> from <see cref="JsonElement"/>.
     /// </summary>
     public class SystemTextJsonInputConvertible : SystemTexJsonConvertible
     {

@@ -1,10 +1,17 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Mozilla.IoT.WebThing.Extensions
 {
     /// <summary>
-    /// 
+    /// The <see cref="Thing"/> builder.
     /// </summary>
     public interface IThingCollectionBuilder
     {
+        /// <summary>
+        /// The <see cref="IServiceCollection"/>.
+        /// </summary>
+        IServiceCollection ServiceCollection { get; }
+        
         /// <summary>
         /// Add thing.
         /// </summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Json.Convertibles;
+using Mozilla.IoT.WebThing.Json.Convertibles.Array;
 using Mozilla.IoT.WebThing.Json.Convertibles.String;
 
 namespace Mozilla.IoT.WebThing.Factories
