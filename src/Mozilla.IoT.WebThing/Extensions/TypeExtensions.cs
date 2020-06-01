@@ -5,17 +5,35 @@ using Code = Mozilla.IoT.WebThing.Factories.TypeCode;
 
 namespace System.Reflection
 {
-    internal static class TypeExtensions
+    /// <summary>
+    /// Extensions of <see cref="Type"/>.
+    /// </summary>
+    public static class TypeExtensions
     {
+        /// <summary>
+        /// If type is nullable
+        /// </summary>
+        /// <param name="type">The type to be check</param>
+        /// <returns>True if type is nullable otherwise is false</returns>
         public static bool IsNullable(this Type type)
             => type.IsClass
                || type.IsArray 
                || type.IsInterface
                || Nullable.GetUnderlyingType(type) != null;
 
+        /// <summary>
+        /// Get type if is null.
+        /// </summary>
+        /// <param name="type">The type to get</param>
+        /// <returns>Return type.</returns>
         public static Type GetUnderlyingType(this Type type)
             => Nullable.GetUnderlyingType(type) ?? type;
         
+        /// <summary>
+        /// Get Collection type
+        /// </summary>
+        /// <param name="type">The type to get</param>
+        /// <returns>Return type.</returns>
         public static Type GetCollectionType(this Type type)
         {
             if (type.IsArray)
@@ -31,6 +49,11 @@ namespace System.Reflection
             return typeof(object);
         }
         
+        /// <summary>
+        /// Convert <see cref="Type"/> to <see cref="JsonType"/>.
+        /// </summary>
+        /// <param name="type">The type to get</param>
+        /// <returns>Return <see cref="JsonType"/>.</returns>
         public static JsonType ToJsonType(this Type type)
         {
             type = type.GetUnderlyingType();
@@ -79,6 +102,11 @@ namespace System.Reflection
             return JsonType.Object;
         }
 
+        /// <summary>
+        /// Convert <see cref="Type"/> to <see cref="Code"/>.
+        /// </summary>
+        /// <param name="type">The type to get</param>
+        /// <returns>Return <see cref="Code"/>.</returns>
         public static Code ToTypeCode(this Type type)
         {
             type = type.GetUnderlyingType();

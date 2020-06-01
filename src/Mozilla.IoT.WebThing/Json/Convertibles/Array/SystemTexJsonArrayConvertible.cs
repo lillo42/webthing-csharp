@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace Mozilla.IoT.WebThing.Json.Convertibles
+namespace Mozilla.IoT.WebThing.Json.Convertibles.Array
 {
     /// <summary>
     /// Represent convertible/getter <see cref="bool"/> from <see cref="JsonElement"/>.
@@ -9,9 +9,9 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles
     public class SystemTexJsonArrayConvertible : SystemTexJsonConvertible
     {
         /// <summary>
-        /// 
+        /// Initialize a new instance of <see cref="SystemTexJsonArrayConvertible"/>.
         /// </summary>
-        /// <param name="convertible"></param>
+        /// <param name="convertible">The <see cref="IJsonConvertible"/>.</param>
         public SystemTexJsonArrayConvertible(IJsonConvertible convertible)
         {
             _convertible = convertible ?? throw new ArgumentNullException(nameof(convertible));

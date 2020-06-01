@@ -4,6 +4,7 @@ using System.Reflection;
 using FluentAssertions;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Json.Convertibles;
+using Mozilla.IoT.WebThing.Json.Convertibles.Array;
 using Mozilla.IoT.WebThing.Json.Convertibles.String;
 using Xunit;
 

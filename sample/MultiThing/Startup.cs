@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Mozilla.IoT.WebThing.Newtonsoft;
 using MultiThing.Things;
 
 namespace MultiThing
@@ -22,6 +23,7 @@ namespace MultiThing
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddThings(opt => opt.UseThingAdapterUrl = true)
+                .AddNewtonsoft()
                 .AddThing<ExampleDimmableLight>()
                 .AddThing<FakeGpioHumiditySensor>();
 
