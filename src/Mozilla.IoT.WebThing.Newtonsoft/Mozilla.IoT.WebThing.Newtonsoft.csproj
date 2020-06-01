@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+      <TargetFramework>$(ThingAppTargetFrameworks)</TargetFramework>
+      <OutputType>Library</OutputType>
+      <Nullable>enable</Nullable>
+      <Title>Mozilla.IoT.WebThing.Newtonsof</Title>
+      <Description>Add support to Newtonsoft.</Description>
+
+      <PublishRepositoryUrl>true</PublishRepositoryUrl>
+      <RepositoryUrl>https://github.com/lillo42/webthing-csharp</RepositoryUrl>
+      <RepositoryType>git</RepositoryType>
+
+      <IsPackable>true</IsPackable>
+      <IncludeSymbols>true</IncludeSymbols>
+      <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mozilla.IoT.WebThing\Mozilla.IoT.WebThing.csproj" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Properties\launchSettings.json" />
+  </ItemGroup>
+
+</Project>

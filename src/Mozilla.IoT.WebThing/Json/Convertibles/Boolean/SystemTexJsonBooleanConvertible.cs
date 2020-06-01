@@ -11,8 +11,7 @@ namespace Mozilla.IoT.WebThing.Json.Convertibles
         /// Static Instance of <see cref="SystemTexJsonBooleanConvertible"/>
         /// </summary>
         public static SystemTexJsonBooleanConvertible Instance { get; } = new SystemTexJsonBooleanConvertible();
-        
-        
+
         /// <inheritdoc/>
         protected override bool TryConvert(JsonElement source, out object? result)
         {
