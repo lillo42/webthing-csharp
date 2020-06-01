@@ -51,7 +51,7 @@ stages:
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.sh Pack --api-key=${{ NUGET_TOKEN }} --skip'
+              script: './build.sh Pack --api-key=$[NUGET_TOKEN] --skip'
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: packages
