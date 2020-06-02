@@ -9,7 +9,7 @@ branches:
         tag: 'unstable'
         increment: None
     release:
-        regex: [Rr]elease?[/-]
+        regex: releases?[/-]
         mode: ContinuousDelivery
         increment: None
         tag: ''
