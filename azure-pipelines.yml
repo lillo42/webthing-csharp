@@ -4,6 +4,7 @@ trigger:
       - master
       - release-*
       - Release-*
+      - refs/tags/{tagname}
 pr:
 - master
 - Release-*
