@@ -3,8 +3,10 @@ trigger:
     include:
       - master
       - release-*
+      - Release-*
 pr:
 - master
+- Release-*
 - release-*
 
 stages:
