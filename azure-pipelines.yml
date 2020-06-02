@@ -4,9 +4,9 @@ trigger:
       - master
       - release-*
       - Release-*
+      - refs/tags/v*
 pr:
 - master
-- Release-*
 - release-*
 
 stages:
