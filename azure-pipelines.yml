@@ -40,6 +40,11 @@ stages:
         displayName: 'Coverage'
         dependsOn: [ Test ]
         steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: test-results
+              patterns: 'artifacts/test-results/*'
+              path: 'artifacts/test-results'
           - task: CmdLine@2
             inputs:
               script: './build.sh Coverage --skip'
@@ -75,4 +80,3 @@ stages:
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.sh Publish --api-key=$[NUGET_TOKEN] --skip'
