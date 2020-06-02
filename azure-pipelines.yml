@@ -77,6 +77,10 @@ stages:
         condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
         dependsOn: [ Pack ]
         steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: packages
+              path: 'artifacts/packages'
           - task: CmdLine@2
             inputs:
               script: './build.sh Publish --api-key=$[NUGET_TOKEN] --skip'
