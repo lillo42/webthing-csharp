@@ -83,4 +83,4 @@ stages:
               path: 'artifacts/packages'
           - task: CmdLine@2
             inputs:
-              script: './build.sh Publish --api-key=$[NUGET_TOKEN] --skip'
+              script: './build.sh Publish --api-key=$(NUGET_TOKEN) --skip'
