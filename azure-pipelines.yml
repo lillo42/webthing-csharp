@@ -3,6 +3,8 @@ trigger:
     include:
       - master
       - release-*
+      - Release-*
+      - refs/tags/v*
 pr:
 - master
 - release-*
@@ -34,6 +36,21 @@ stages:
             inputs:
               artifactName: test-results
               pathtoPublish: 'artifacts/test-results'
+      - job: Coverage
+        displayName: 'Coverage'
+        dependsOn: [ Test ]
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: test-results
+              path: 'artifacts/test-results'
+          - task: CmdLine@2
+            inputs:
+              script: './build.sh Coverage --skip'
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: coverage-report
+              pathtoPublish: 'artifacts/coverage-report.zip'
       - job: AcceptanceTest
         displayName: 'Acceptance Test'
         dependsOn: [ Test ]
@@ -45,14 +62,25 @@ stages:
           - script: './build.sh AcceptanceTest --skip'
             displayName: 'Execute Acceptance Test'
       - job: Pack
-        displayName: 'Pack'
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-') 
+        displayName: 'Pack' 
         dependsOn: [ Compile, Test, AcceptanceTest ]
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.sh Pack --api-key=$[NUGET_TOKEN] --skip'
+              script: './build.sh Pack --skip'
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: packages
               pathtoPublish: 'artifacts/packages'
+      - job: Publish
+        displayName: 'Publish'
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+        dependsOn: [ Pack ]
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: packages
+              path: 'artifacts/packages'
+          - task: CmdLine@2
+            inputs:
+              script: './build.sh Publish --api-key=$[NUGET_TOKEN] --skip'

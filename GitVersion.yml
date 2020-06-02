@@ -1,6 +1,6 @@
 mode: ContinuousDeployment
 build-metadata-padding: 5
-tag-prefix: '[Rr]eleases?[/-]'
+tag-prefix: 'v'
 assembly-versioning-scheme: MajorMinorPatch
 assembly-versioning-format: '{Major}.{Minor}.{Patch}'
 branches:
