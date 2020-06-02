@@ -43,7 +43,6 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               artifact: test-results
-              patterns: 'artifacts/test-results/*'
               path: 'artifacts/test-results'
           - task: CmdLine@2
             inputs:
