@@ -36,6 +36,17 @@ stages:
             inputs:
               artifactName: test-results
               pathtoPublish: 'artifacts/test-results'
+      - job: Coverage
+          displayName: 'Coverage'
+          dependsOn: [ Test ]
+          steps:
+            - task: CmdLine@2
+              inputs:
+                script: './build.sh Coverage --skip'
+            - task: PublishBuildArtifacts@1
+              inputs:
+                artifactName: coverage-report
+                pathtoPublish: 'artifacts/coverage-report.zip'
       - job: AcceptanceTest
         displayName: 'Acceptance Test'
         dependsOn: [ Test ]
@@ -47,14 +58,21 @@ stages:
           - script: './build.sh AcceptanceTest --skip'
             displayName: 'Execute Acceptance Test'
       - job: Pack
-        displayName: 'Pack'
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v') 
+        displayName: 'Pack' 
         dependsOn: [ Compile, Test, AcceptanceTest ]
         steps:
           - task: CmdLine@2
             inputs:
-              script: './build.sh Pack --api-key=$[NUGET_TOKEN] --skip'
+              script: './build.sh Pack --skip'
           - task: PublishBuildArtifacts@1
             inputs:
               artifactName: packages
               pathtoPublish: 'artifacts/packages'
+      - job: Publish
+          displayName: 'Publish'
+          condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+          dependsOn: [ Pack ]
+          steps:
+            - task: CmdLine@2
+              inputs:
+                script: './build.sh Publish --api-key=$[NUGET_TOKEN] --skip'

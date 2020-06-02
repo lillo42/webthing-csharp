@@ -54,14 +54,9 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
     
     AbsolutePath PackageDirectory => ArtifactsDirectory / "packages";
-    
-    
-    string CoverageReportDirectory => ArtifactsDirectory / "coverage-report";
-    string CoverageReportArchive => ArtifactsDirectory / "coverage-report.zip";
 
     const string ReleaseBranchPrefix = "release-";
     
-
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
@@ -128,6 +123,9 @@ class Build : NukeBuild
                     files: new string[] { x }));
         });
 
+    string CoverageReportDirectory => ArtifactsDirectory / "coverage-report";
+    string CoverageReportArchive => ArtifactsDirectory / "coverage-report.zip";
+    
     Target Coverage => _ => _
         .DependsOn(Test)
         .TriggeredBy(Test)
@@ -181,7 +179,7 @@ class Build : NukeBuild
             source.Cancel();
         });
     Target Pack => _ => _
-        .DependsOn(Compile, Test)
+        .DependsOn(Compile)
         .Produces(PackageDirectory / "*.nupkg")
         .Produces(PackageDirectory / "*.snupkg")
         .Executes(() =>
@@ -198,7 +196,7 @@ class Build : NukeBuild
         });
     
     Target Publish => _ => _
-        .DependsOn(Clean, Test, Pack)
+        .DependsOn(Pack)
         .Consumes(Pack)
         .Requires(() => ApiKey)
         .Requires(() => Configuration.Equals(Configuration.Release))
