@@ -19,8 +19,7 @@ namespace MultiThing.Things
                 while (true)
                 {
                     Task.Delay(3_000).GetAwaiter().GetResult();
-                    var newLevel =  ReadFromGPIO();
-                    Level = newLevel;
+                    Level = ReadFromGPIO();
                 }
             }, TaskCreationOptions.LongRunning);
         }
@@ -51,8 +50,10 @@ namespace MultiThing.Things
         /// Mimic an actual sensor updating its reading every couple seconds.
         /// </summary>
         /// <returns></returns>
-        private double ReadFromGPIO() {
-            return Math.Abs(70.0d * _random.Next() * (-0.5 + _random.Next()));
+        private double ReadFromGPIO()
+        {
+            var value = Math.Abs(70.0d * _random.NextDouble() * (-0.5 + _random.NextDouble()));
+            return value;
         }
         
     }

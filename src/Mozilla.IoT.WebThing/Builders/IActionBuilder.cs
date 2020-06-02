@@ -5,7 +5,6 @@ using System.Reflection;
 using Mozilla.IoT.WebThing.Actions;
 using Mozilla.IoT.WebThing.Attributes;
 using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing.Builders
 {
@@ -39,20 +38,20 @@ namespace Mozilla.IoT.WebThing.Builders
         /// Add property.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="information">The <see cref="Information"/> about action.</param>
-        void Add(MethodInfo action, ThingActionAttribute? information);
+        /// <param name="information">The <see cref="JsonSchema"/> about action.</param>
+        IActionBuilder Add(MethodInfo action, ThingActionAttribute? information);
         
         /// <summary>
         /// Add property.
         /// </summary>
         /// <param name="parameter">The parameter.</param>
-        /// <param name="information">The <see cref="Information"/> about parameter.</param>
-        void Add(ParameterInfo parameter, Information information);
+        /// <param name="jsonSchema">The <see cref="JsonSchema"/> about parameter.</param>
+        IActionBuilder Add(ParameterInfo parameter, JsonSchema jsonSchema);
 
         /// <summary>
         /// Build the <see cref="Dictionary{TKey,TValue}"/>
         /// </summary>
-        /// <returns>New <see cref="Dictionary{TKey,TValue}"/> of the <see cref="IProperty"/></returns>
+        /// <returns>New <see cref="Dictionary{TKey,TValue}"/> of the <see cref="ThingProperty"/></returns>
         Dictionary<string, ActionCollection> Build();
     }
 }

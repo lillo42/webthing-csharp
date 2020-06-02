@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Mozilla.IoT.WebThing.Extensions;
-using Mozilla.IoT.WebThing.Properties;
 
 namespace Mozilla.IoT.WebThing.Builders
 {
@@ -28,13 +27,13 @@ namespace Mozilla.IoT.WebThing.Builders
         /// Add property.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="information">The <see cref="Information"/> about property</param>
-        void Add(PropertyInfo property, Information information);
+        /// <param name="jsonSchema">The <see cref="JsonSchema"/> about property</param>
+        void Add(PropertyInfo property, JsonSchema jsonSchema);
 
         /// <summary>
         /// Build the <see cref="Dictionary{TKey,TValue}"/>
         /// </summary>
-        /// <returns>New <see cref="Dictionary{TKey,TValue}"/> of the <see cref="IProperty"/></returns>
-        Dictionary<string, IProperty> Build();
+        /// <returns>New <see cref="Dictionary{TKey,TValue}"/> of the <see cref="ThingProperty"/></returns>
+        Dictionary<string, IThingProperty> Build();
     }
 }

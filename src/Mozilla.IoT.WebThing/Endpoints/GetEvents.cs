@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mozilla.IoT.WebThing.Extensions;
 
 namespace Mozilla.IoT.WebThing.Endpoints
 {
     internal class GetEvents
     {
-        public static Task InvokeAsync(HttpContext context)
+        public static async Task InvokeAsync(HttpContext context)
         {
             var service = context.RequestServices;
             var logger = service.GetRequiredService<ILogger<GetEvents>>();
@@ -27,26 +28,26 @@ namespace Mozilla.IoT.WebThing.Endpoints
             {
                 logger.LogInformation("Thing not found. [Thing: {name}]", name);
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                return Task.CompletedTask;
+                return;
             }
-
-            var result = new LinkedList<object>();
+            
+            var option = service.GetRequiredService<ThingOption>();
+            var result = new LinkedList<Dictionary<string, object>>();
             
             foreach (var (key, events) in thing.ThingContext.Events)
             {
                 var @eventsArray = events.ToArray();
                 foreach (var @event in eventsArray)
                 {
-                    result.AddLast(new Dictionary<string, object> {[key] = @event});
+                    result.AddLast(new Dictionary<string, object>
+                    {
+                        [option.PropertyNamingPolicy.ConvertName(key)] = @event
+                    });
                 }
             }
-
-
-            logger.LogInformation("Found Thing with {counter} events. [Thing: {name}]", result.Count, thing.Name);
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = Const.ContentType;
             
-            return JsonSerializer.SerializeAsync(context.Response.Body, result, service.GetRequiredService<JsonSerializerOptions>());
+            logger.LogInformation("Found {counter} events. [Thing: {name}]", result.Count, thing.Name);
+            await context.WriteBodyAsync(HttpStatusCode.OK, result);
         }
     }
 }

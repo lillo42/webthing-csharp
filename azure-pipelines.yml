@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - master
+      - release-*
+pr:
+- master
+- release-*
+
+stages:
+  - stage: ubuntu_latest
+    displayName: 'ubuntu-latest'
+    dependsOn: [  ]
+    pool:
+      vmImage: 'ubuntu-latest'
+    jobs:
+      - job: Compile
+        displayName: 'Compile'
+        dependsOn: [  ]
+        steps:
+          - task: CmdLine@2
+            inputs:
+              script: './build.sh Restore Compile --skip'
+      - job: Test
+        displayName: 'Test'
+        dependsOn: [ Compile ]
+        strategy:
+          parallel: 2
+        steps:
+          - task: CmdLine@2
+            inputs:
+              script: './build.sh Test --skip --test-partition $(System.JobPositionInPhase)'
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: test-results
+              pathtoPublish: 'artifacts/test-results'
+      - job: AcceptanceTest
+        displayName: 'Acceptance Test'
+        dependsOn: [ Test ]
+        steps:
+          - task: UsePythonVersion@0
+            displayName: 'Use Python 3.7'
+            inputs:
+              versionSpec: '3.7'
+          - script: './build.sh AcceptanceTest --skip'
+            displayName: 'Execute Acceptance Test'
+      - job: Pack
+        displayName: 'Pack'
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-') 
+        dependsOn: [ Compile, Test, AcceptanceTest ]
+        steps:
+          - task: CmdLine@2
+            inputs:
+              script: './build.sh Pack --api-key=$[NUGET_TOKEN] --skip'
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: packages
+              pathtoPublish: 'artifacts/packages'

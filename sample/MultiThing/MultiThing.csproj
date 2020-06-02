@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Mozilla.IoT.WebThing.Newtonsoft\Mozilla.IoT.WebThing.Newtonsoft.csproj" />
     <ProjectReference Include="..\..\src\Mozilla.IoT.WebThing\Mozilla.IoT.WebThing.csproj" />
   </ItemGroup>
 

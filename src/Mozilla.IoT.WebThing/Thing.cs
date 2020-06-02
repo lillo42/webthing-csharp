@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using Mozilla.IoT.WebThing.Attributes;
@@ -24,31 +26,66 @@ namespace Mozilla.IoT.WebThing
         /// <summary>
         /// URI for a schema repository which defines standard schemas for common "types" of device capabilities.
         /// </summary>
+        [ThingProperty(Ignore = true)]
         public virtual string Context { get; } = DefaultContext;
 
         /// <summary>
-        /// The name of the thing.
-        /// It's used to generated Id.
+        /// The id of the thing.
+        /// Default value is same as name
         /// </summary>
+        [ThingProperty(Ignore = true)]
+        public virtual string Id => Name;
+        
+        /// <summary>
+        /// The name of the thing.
+        /// </summary>
+        [ThingProperty(Ignore = true)]
         public abstract string Name { get; }
 
         /// <summary>
         /// The title member is a human friendly string which describes the device.
         /// This can be set to any value by the device creator and may include a brand name or model number.
         /// </summary>
+        [ThingProperty(Ignore = true)]
         public virtual string? Title { get; } = null;
 
         /// <summary>
         /// The description member is a human friendly string which describes the device and its functions.
         /// This can be set to any value by the device creator.
         /// </summary>
+        [ThingProperty(Ignore = true)]
         public virtual string? Description { get; } = null;
 
         /// <summary>
         /// The names of schemas for types of capabilities a device supports.
         /// </summary>
+        [ThingProperty(Ignore = true)]
         public virtual string[]? Type { get; } = null;
 
+        /// <summary>
+        /// Security define. The default value is nosec_sc
+        /// </summary>
+        [ThingProperty(Ignore = true)]
+        public virtual string Security => "nosec_sc";
+        
+        
+        /// <summary>
+        /// The security definition. The default value is.
+        /// {
+        ///     "nosec_sc":
+        ///     {
+        ///         "scheme": "nosec"
+        ///     }
+        /// }
+        /// </summary>
+        [ThingProperty(Ignore = true)]
+        public virtual Dictionary<string, object> SecurityDefinitions { get; } = new Dictionary<string, object>
+        {
+            ["nosec_sc"] = new Dictionary<string, object>
+            {
+                ["scheme"] = "nosec"
+            }
+        };
         #endregion
 
         /// <summary>
@@ -56,7 +93,7 @@ namespace Mozilla.IoT.WebThing
         /// </summary>
         /// <param name="other">The <see cref="Thing"/> to comparer with current object.</param>
         /// <returns>A <see cref="bool"/> indicating if the passed in object obj is Equal to this.</returns>
-        public bool Equals(Thing other)
+        public bool Equals([AllowNull]Thing other)
         {
             if (ReferenceEquals(null, other))
             {

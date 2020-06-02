@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Mozilla.IoT.WebThing.Converts;
 
 namespace Mozilla.IoT.WebThing.Extensions
 {
@@ -28,9 +27,9 @@ namespace Mozilla.IoT.WebThing.Extensions
 
         /// <summary>
         /// If when serialize thing should serialize for use thing adapter.
-        /// The default value is false.
+        /// The default value is true.
         /// </summary>
-        public bool UseThingAdapterUrl { get; set; }
+        public bool UseThingAdapterUrl { get; set; } = true;
         
         /// <summary>
         /// Specifies the policy used to convert a property's name on an object to another format, such as camel-casing.
@@ -40,35 +39,5 @@ namespace Mozilla.IoT.WebThing.Extensions
         public JsonNamingPolicy PropertyNamingPolicy { get; set; } = JsonNamingPolicy.CamelCase;
         
         internal bool WriteIndented { get; set; }
-
-        private JsonSerializerOptions? _options;
-        private readonly object _locker = new object();
-        
-        internal JsonSerializerOptions ToJsonSerializerOptions()
-        {
-            if (_options == null)
-            {
-                lock (_locker)
-                {
-                    if (_options == null)
-                    {
-                        _options = new JsonSerializerOptions
-                        {
-                            PropertyNamingPolicy = PropertyNamingPolicy,
-                            DictionaryKeyPolicy = PropertyNamingPolicy,
-                            IgnoreReadOnlyProperties = false,
-                            IgnoreNullValues = IgnoreNullValues,
-                            WriteIndented = WriteIndented,
-                            Converters =
-                            {
-                                new ActionStatusConverter()
-                            }
-                        };
-                    }
-                }
-            }
-
-            return _options!;
-        }
     }
 }
