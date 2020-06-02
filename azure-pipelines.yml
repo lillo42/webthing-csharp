@@ -2,10 +2,12 @@ trigger:
   branches:
     include:
       - master
-      - [Rr]elease-*
+      - release-*
+      - Release-*
 pr:
 - master
-- [Rr]elease-*
+- Release-*
+- release-*
 
 stages:
   - stage: ubuntu_latest
