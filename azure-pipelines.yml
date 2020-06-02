@@ -37,16 +37,16 @@ stages:
               artifactName: test-results
               pathtoPublish: 'artifacts/test-results'
       - job: Coverage
-          displayName: 'Coverage'
-          dependsOn: [ Test ]
-          steps:
-            - task: CmdLine@2
-              inputs:
-                script: './build.sh Coverage --skip'
-            - task: PublishBuildArtifacts@1
-              inputs:
-                artifactName: coverage-report
-                pathtoPublish: 'artifacts/coverage-report.zip'
+        displayName: 'Coverage'
+        dependsOn: [ Test ]
+        steps:
+          - task: CmdLine@2
+            inputs:
+              script: './build.sh Coverage --skip'
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: coverage-report
+              pathtoPublish: 'artifacts/coverage-report.zip'
       - job: AcceptanceTest
         displayName: 'Acceptance Test'
         dependsOn: [ Test ]
