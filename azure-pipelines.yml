@@ -69,10 +69,10 @@ stages:
               artifactName: packages
               pathtoPublish: 'artifacts/packages'
       - job: Publish
-          displayName: 'Publish'
-          condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-          dependsOn: [ Pack ]
-          steps:
-            - task: CmdLine@2
-              inputs:
-                script: './build.sh Publish --api-key=$[NUGET_TOKEN] --skip'
+        displayName: 'Publish'
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+        dependsOn: [ Pack ]
+        steps:
+          - task: CmdLine@2
+            inputs:
+              script: './build.sh Publish --api-key=$[NUGET_TOKEN] --skip'
