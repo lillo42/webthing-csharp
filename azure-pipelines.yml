@@ -48,7 +48,7 @@ stages:
             displayName: 'Execute Acceptance Test'
       - job: Pack
         displayName: 'Pack'
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/release-') 
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v') 
         dependsOn: [ Compile, Test, AcceptanceTest ]
         steps:
           - task: CmdLine@2
