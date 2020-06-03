@@ -207,7 +207,7 @@ class Build : NukeBuild
                 .SetApiKey(ApiKey)
                 .SetSkipDuplicate(true)
                 .SetSource(NugetSource)
-                .SetTargetPath(PackageDirectory));
+                .SetWorkingDirectory(PackageDirectory));
         });
 
 }
