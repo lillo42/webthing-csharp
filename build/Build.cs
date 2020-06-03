@@ -38,7 +38,7 @@ class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
     
-    [Parameter("Nuget API key", Name = "api-key")] 
+    [Parameter("Nuget API key")] 
     readonly string ApiKey;
 
     [Parameter("NuGet Source for Packages", Name = "nuget-source")]
