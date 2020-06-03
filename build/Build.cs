@@ -52,8 +52,6 @@ class Build : NukeBuild
     AbsolutePath SourceDirectory => RootDirectory/ "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
-    
-    AbsolutePath PackageDirectory => ArtifactsDirectory / "packages";
 
     const string ReleaseBranchPrefix = "release-";
     
@@ -178,6 +176,9 @@ class Build : NukeBuild
             
             source.Cancel();
         });
+    
+    
+    AbsolutePath PackageDirectory => ArtifactsDirectory / "packages";
     Target Pack => _ => _
         .DependsOn(Compile)
         .Produces(PackageDirectory / "*.nupkg")
@@ -205,7 +206,8 @@ class Build : NukeBuild
             DotNetNuGetPush(s => s
                 .SetApiKey(ApiKey)
                 .SetSkipDuplicate(true)
-                .SetSource(NugetSource));
+                .SetSource(NugetSource)
+                .SetTargetPath(PackageDirectory));
         });
 
 }
