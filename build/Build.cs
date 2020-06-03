@@ -200,7 +200,6 @@ class Build : NukeBuild
         .Consumes(Pack)
         .Requires(() => ApiKey)
         .Requires(() => Configuration.Equals(Configuration.Release))
-        .Requires(() => GitRepository.Branch.StartsWith(ReleaseBranchPrefix))
         .Executes(() =>
         {
             DotNetNuGetPush(s => s
