@@ -207,7 +207,13 @@ class Build : NukeBuild
                 .SetApiKey(ApiKey)
                 .SetSkipDuplicate(true)
                 .SetSource(NugetSource)
-                .SetWorkingDirectory(PackageDirectory));
+                .SetTargetPath(PackageDirectory / "*.snupkg"));
+            
+            DotNetNuGetPush(s => s
+                .SetApiKey(ApiKey)
+                .SetSkipDuplicate(true)
+                .SetSource(NugetSource)
+                .SetTargetPath(PackageDirectory / "*.nupkg"));
         });
 
 }
