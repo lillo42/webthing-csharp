@@ -38,10 +38,23 @@ namespace MultiThing
                 app.UseDeveloperExceptionPage();
             }
             
+            app.Use(async (context, next) =>
+            {
+                var url = context.Request.Path.Value;
+
+                // Rewrite to index
+                if (url == "/")
+                {
+                    // rewrite and continue processing
+                    context.Request.Path = "/things";
+                }
+                await next();
+            });
+            
             app.UseRouting();
 
             app.UseWebSockets();
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapThings();
