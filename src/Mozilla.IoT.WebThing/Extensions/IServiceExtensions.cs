@@ -48,13 +48,12 @@ namespace Microsoft.Extensions.DependencyInjection
             service.TryAddSingleton<IJsonConvert>(provider => provider.GetRequiredService<SystemTextJson>());
             service.TryAddSingleton<ThingObserver>();
 
-            service.TryAddScoped<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
-            service.TryAddScoped<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
-            service.TryAddScoped<IConvertibleFactory, ConvertibleFactory>();
+            service.TryAddSingleton<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
+            service.TryAddSingleton<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
+            service.TryAddTransient<IConvertibleFactory, ConvertibleFactory>();
 
             var builder = new ThingCollectionBuilder(service);
             return builder;
         }
     }
-
 }

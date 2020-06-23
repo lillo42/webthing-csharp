@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,9 +31,22 @@ namespace SingleThing
             {
                 app.UseDeveloperExceptionPage();
             }
+            
+            app.Use(async (context, next) =>
+            {
+                var url = context.Request.Path.Value;
 
+                // Rewrite to index
+                if (url == "/")
+                {
+                    // rewrite and continue processing
+                    context.Request.Path = "/things";
+                }
+                await next();
+            });
+            
             app.UseRouting();
-
+            
             app.UseWebSockets();
 
             app.UseEndpoints(endpoints =>
