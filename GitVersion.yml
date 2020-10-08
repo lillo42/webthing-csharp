@@ -4,8 +4,8 @@ tag-prefix: 'v'
 assembly-versioning-scheme: MajorMinorPatch
 assembly-versioning-format: '{Major}.{Minor}.{Patch}'
 branches:
-    master:
-        regex: master
+    main:
+        regex: main
         tag: 'unstable'
         increment: None
     release:

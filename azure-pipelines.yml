@@ -1,12 +1,12 @@
 trigger:
   branches:
     include:
-      - master
+      - main
       - release-*
       - Release-*
       - refs/tags/v*
 pr:
-- master
+- main
 - release-*
 
 stages:
