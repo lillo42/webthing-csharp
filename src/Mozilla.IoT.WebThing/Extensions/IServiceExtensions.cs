@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             service.TryAddSingleton<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
             service.TryAddSingleton<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
             service.TryAddTransient<IConvertibleFactory, ConvertibleFactory>();
-            service.AddHostedService<MDnsRegister>();
+            service.AddHostedService<MDnsRegisterHostedService>();
 
             var builder = new ThingCollectionBuilder(service);
             return builder;

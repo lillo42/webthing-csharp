@@ -10,6 +10,7 @@ using Makaretu.Dns;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Logging;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.HostServices;
 using NSubstitute;
@@ -23,12 +24,14 @@ namespace Mozilla.IoT.WebThing.Test.HostServices
         private readonly IServer _server;
         private readonly ThingOption _option;
         private readonly ICollection<Thing> _things;
+        private readonly ILogger<MDnsRegisterHostedService> _logger;
 
         public MDnsRegisterTest()
         {
             _fixture = new Fixture();
             _server = Substitute.For<IServer>();
             _option = new ThingOption();
+            _logger = Substitute.For<ILogger<MDnsRegisterHostedService>>();
             
             _things = new List<Thing>();
         }
@@ -40,7 +43,7 @@ namespace Mozilla.IoT.WebThing.Test.HostServices
             _option.RegistermDNS = false;
             _option.ServerName = serverName;
             
-            var host = new MDnsRegister(_server, _option, _things);
+            var host = new MDnsRegisterHostedService(_server, _option, _things, _logger);
             await host.StartAsync(CancellationToken.None);
             
             using var discovery = new ServiceDiscovery();
@@ -54,7 +57,7 @@ namespace Mozilla.IoT.WebThing.Test.HostServices
                 args.ServiceInstanceName.Labels.Contains(serverName).Should().BeFalse();
             };
 
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            await Task.Delay(TimeSpan.FromSeconds(5));
             await host.StopAsync(CancellationToken.None);
         }
 
@@ -88,10 +91,10 @@ namespace Mozilla.IoT.WebThing.Test.HostServices
                 }
             };
 
-            var host = new MDnsRegister(_server, _option, _things);
+            var host = new MDnsRegisterHostedService(_server, _option, _things, _logger);
             await host.StartAsync(CancellationToken.None);
             
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            await Task.Delay(TimeSpan.FromSeconds(10));
             find.Should().BeTrue();
             
             await host.StopAsync(CancellationToken.None);
@@ -115,6 +118,7 @@ namespace Mozilla.IoT.WebThing.Test.HostServices
 
             var find = false;
             using var discovery = new ServiceDiscovery();
+            
             discovery.ServiceDiscovered += (sender, name) =>
             {
                 if (name.Labels.Contains("Fake"))
@@ -131,10 +135,10 @@ namespace Mozilla.IoT.WebThing.Test.HostServices
                 }
             };
 
-            var host = new MDnsRegister(_server, _option, _things);
+            var host = new MDnsRegisterHostedService(_server, _option, _things, _logger);
             await host.StartAsync(CancellationToken.None);
             
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            await Task.Delay(TimeSpan.FromSeconds(10));
             find.Should().BeTrue();
             
             await host.StopAsync(CancellationToken.None);
