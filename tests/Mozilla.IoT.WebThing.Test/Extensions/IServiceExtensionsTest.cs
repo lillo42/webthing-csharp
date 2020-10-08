@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Factories;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
+using NSubstitute;
 using Xunit;
 
 namespace Mozilla.IoT.WebThing.Test.Extensions
@@ -21,8 +23,9 @@ namespace Mozilla.IoT.WebThing.Test.Extensions
                 .AddThing<FakeThing>();
 
             service.AddLogging();
-
             service.AddWebSockets(opt => { });
+
+            service.AddSingleton(Substitute.For<IServer>());
 
             var provider = service.BuildServiceProvider(new ServiceProviderOptions
             {

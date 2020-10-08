@@ -10,7 +10,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web
         public IHost Host { get; }
         
         public TestHost()
-        { 
+        {
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(null)
                 .ConfigureWebHostDefaults(builder =>
                 {
@@ -20,8 +20,7 @@ namespace Mozilla.IoT.WebThing.Integration.Test.Web
                 })
                 .Start();
         }
-        
-        
+
         public void Dispose()
         {
             Host.Dispose();

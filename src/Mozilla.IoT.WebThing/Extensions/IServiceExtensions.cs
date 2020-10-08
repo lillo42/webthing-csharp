@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Mozilla.IoT.WebThing.Builders;
 using Mozilla.IoT.WebThing.Extensions;
 using Mozilla.IoT.WebThing.Factories;
+using Mozilla.IoT.WebThing.HostServices;
 using Mozilla.IoT.WebThing.Json;
 using Mozilla.IoT.WebThing.WebSockets;
 
@@ -51,6 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
             service.TryAddSingleton<IJsonSchemaValidationFactory, SystemTexJsonSchemaValidationFactory>();
             service.TryAddSingleton<IJsonConvertibleFactory, SystemTexJsonConvertibleFactory>();
             service.TryAddTransient<IConvertibleFactory, ConvertibleFactory>();
+            service.AddHostedService<MDnsRegisterHostedService>();
 
             var builder = new ThingCollectionBuilder(service);
             return builder;
