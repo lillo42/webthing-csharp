@@ -47,7 +47,7 @@ namespace Mozilla.IoT.WebThing.Extensions
         /// <summary>
         /// If use mDNS
         /// </summary>
-        public bool UseMultiDNS { get; set; } = true;
+        public bool RegistermDNS { get; set; } = true;
         
         /// <summary>
         /// The delay before execute mDNS advertise. It's necessary to the application know which port was bind by ASP.NET Core

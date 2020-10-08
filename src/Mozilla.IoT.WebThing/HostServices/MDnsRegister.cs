@@ -21,11 +21,11 @@ namespace Mozilla.IoT.WebThing.HostServices
         private readonly IServer _server;
         private readonly ICollection<ServiceProfile> _profiles;
 
-        public MDnsRegister(IServer addressesFeature, ThingOption options, IEnumerable<Thing> things)
+        public MDnsRegister(IServer server, ThingOption options, IEnumerable<Thing> things)
         {
             _discovery = new ServiceDiscovery();
             _profiles = new List<ServiceProfile>();
-            _server = addressesFeature ?? throw new ArgumentNullException(nameof(addressesFeature));
+            _server = server ?? throw new ArgumentNullException(nameof(server));
             _option = options;
             _name = options.ServerName;
 
@@ -36,7 +36,7 @@ namespace Mozilla.IoT.WebThing.HostServices
         }
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            if (_option.UseMultiDNS)
+            if (_option.RegistermDNS)
             {
                 Task.Run(() =>
                 {
