@@ -4,7 +4,7 @@ tag-prefix: 'v'
 assembly-versioning-scheme: MajorMinorPatch
 assembly-versioning-format: '{Major}.{Minor}.{Patch}'
 branches:
-    main:
+    master:
         regex: main
         tag: 'unstable'
         increment: None
